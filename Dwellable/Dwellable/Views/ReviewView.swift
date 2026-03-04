@@ -24,30 +24,28 @@ struct ReviewView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 24)
-                .padding(.vertical, 8)
+                .padding(.vertical, 10)
 
-                // Textarea for moment body
+                // Main content area
                 VStack(spacing: 0) {
                     TextEditor(text: $momentBody)
                         .font(.system(size: 20, weight: .light))
                         .foregroundColor(Theme.text)
                         .tint(Theme.gold)
-                        .padding(12)
-                        .padding(.top, 12)
                         .lineSpacing(1.8)
+                        .frame(maxWidth: .infinity)
 
                     // Hint text for sense of Lord
                     TextEditor(text: $senseOfLord)
                         .font(.system(size: 13, weight: .regular))
                         .italic()
-                        .foregroundColor(senseOfLord.isEmpty ? Color(red: 0.16, green: 0.18, blue: 0.21) : Theme.tertiaryText)
+                        .foregroundColor(senseOfLord.isEmpty ? Color(red: 0.167, green: 0.18, blue: 0.208) : Theme.tertiaryText)
                         .tint(Theme.gold)
                         .frame(height: 50)
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 12)
+                        .padding(.top, 8)
                 }
                 .padding(.horizontal, 24)
-                .padding(.top, 8)
+                .padding(.top, 12)
 
                 Spacer()
 
@@ -56,7 +54,7 @@ struct ReviewView: View {
                     Button(action: { dismiss() }) {
                         HStack(spacing: 6) {
                             Text("↩")
-                                .font(.system(size: 16))
+                                .font(.system(size: 14))
                             Text("Re-record")
                                 .font(.system(size: 14, weight: .regular))
                         }
@@ -79,7 +77,7 @@ struct ReviewView: View {
                     }
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 36)
+                .padding(.vertical, 14)
             }
         }
         .navigationBarBackButtonHidden(true)
