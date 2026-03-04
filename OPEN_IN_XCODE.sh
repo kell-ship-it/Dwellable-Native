@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# This script guides you through opening the project in Xcode
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Dwellable Native iOS — Quick Setup"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "The Swift source files are ready in:"
+echo "  Dwellable/Dwellable/Views/"
+echo "  Dwellable/Dwellable/Managers/"
+echo "  Dwellable/Dwellable/Models/"
+echo "  Dwellable/Dwellable/Utilities/"
+echo ""
+echo "Next step: Create Xcode project"
+echo ""
+echo "1. Open Xcode"
+echo "2. File → New → Project"
+echo "3. iOS → App"
+echo "4. Configure:"
+echo "   - Product Name: Dwellable"
+echo "   - Bundle ID: com.kellgolden.Dwell"
+echo "   - Interface: SwiftUI"
+echo "   - Language: Swift"
+echo "   - Save to: /Users/kell/Projects/Dwellable-Native"
+echo ""
+echo "Once created, I (Claude) will:"
+echo "  ✓ Add all source files to Xcode"
+echo "  ✓ Set up Supabase integration"
+echo "  ✓ Configure CocoaPods"
+echo "  ✓ Get it building and running"
+echo ""
+

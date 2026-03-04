@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>12</integer>
+	<key>logs</key>
+	<dict>
+		<key>0684BE83-B534-4116-BCBF-5F009B87D83D</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>0684BE83-B534-4116-BCBF-5F009B87D83D.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>W</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>3</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Dwellable project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>Dwellable</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>0</integer>
+			<key>signature</key>
+			<string>Building project Dwellable with scheme Dwellable and configuration Debug</string>
+			<key>timeStartedRecording</key>
+			<real>794353137.70554996</real>
+			<key>timeStoppedRecording</key>
+			<real>794353140.75082004</real>
+			<key>title</key>
+			<string>Building project Dwellable with scheme Dwellable and configuration Debug</string>
+			<key>uniqueIdentifier</key>
+			<string>0684BE83-B534-4116-BCBF-5F009B87D83D</string>
+		</dict>
+		<key>15BCFFA6-316B-4E78-AB61-7321D828BB4C</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>15BCFFA6-316B-4E78-AB61-7321D828BB4C.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>W</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>3</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Dwellable project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>Dwellable</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>0</integer>
+			<key>signature</key>
+			<string>Building project Dwellable with scheme Dwellable and configuration Debug</string>
+			<key>timeStartedRecording</key>
+			<real>794352773.499789</real>
+			<key>timeStoppedRecording</key>
+			<real>794352776.43071699</real>
+			<key>title</key>
+			<string>Building project Dwellable with scheme Dwellable and configuration Debug</string>
+			<key>uniqueIdentifier</key>
+			<string>15BCFFA6-316B-4E78-AB61-7321D828BB4C</string>
+		</dict>
+		<key>50F354A9-6DF0-47EB-AAFC-9421D5051A06</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>50F354A9-6DF0-47EB-AAFC-9421D5051A06.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>W</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>3</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Dwellable project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>Dwellable</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>0</integer>
+			<key>signature</key>
+			<string>Building project Dwellable with scheme Dwellable and configuration Debug</string>
+			<key>timeStartedRecording</key>
+			<real>794353287.90947604</real>
+			<key>timeStoppedRecording</key>
+			<real>794353290.31414998</real>
+			<key>title</key>
+			<string>Building project Dwellable with scheme Dwellable and configuration Debug</string>
+			<key>uniqueIdentifier</key>
+			<string>50F354A9-6DF0-47EB-AAFC-9421D5051A06</string>
+		</dict>
+	</dict>
+</dict>
+</plist>
