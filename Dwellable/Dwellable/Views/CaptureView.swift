@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CaptureView: View {
     @Environment(\.dismiss) var dismiss
+    @State private var showReview = false
 
     var body: some View {
         ZStack {
@@ -37,7 +38,9 @@ struct CaptureView: View {
                             .frame(width: CGFloat(160 - index * 40), height: CGFloat(160 - index * 40))
                     }
 
-                    Button(action: {}) {
+                    Button(action: {
+                        showReview = true
+                    }) {
                         Image(systemName: "mic.fill")
                             .font(.system(size: 26))
                             .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
@@ -74,7 +77,9 @@ struct CaptureView: View {
                 .padding(.bottom, 32)
 
                 // Type instead button
-                Button(action: {}) {
+                Button(action: {
+                    showReview = true
+                }) {
                     Text("type instead →")
                         .font(.system(size: 13, weight: .regular))
                         .foregroundColor(Theme.tertiaryText)
@@ -91,6 +96,9 @@ struct CaptureView: View {
             .padding(.horizontal, 28)
         }
         .navigationBarBackButtonHidden(true)
+        .navigationDestination(isPresented: $showReview) {
+            ReviewView()
+        }
     }
 }
 
