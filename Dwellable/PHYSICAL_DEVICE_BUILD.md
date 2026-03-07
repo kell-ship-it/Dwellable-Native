@@ -41,13 +41,13 @@ open Dwellable.xcodeproj
 
 ### 2.1 Select Project Settings
 
-1. In Xcode, select **Dwellable** (blue project icon) in the left sidebar
-2. Select target **Dwellable** (not DwellableUITests)
-3. Go to **Signing & Capabilities** tab
+| Action | Where |
+|---|---|
+| 1. Select **Dwellable** (blue project icon) | Left sidebar of Xcode |
+| 2. Select target **Dwellable** | Under project, NOT DwellableUITests |
+| 3. Go to **Signing & Capabilities** tab | Right panel of Xcode |
 
-### 2.2 Configure Signing
-
-In the **Signing & Capabilities** panel:
+### 2.2 Configure Signing Settings
 
 | Setting | Value |
 |---|---|
@@ -56,17 +56,17 @@ In the **Signing & Capabilities** panel:
 | **Signing Certificate** | Automatic (let Xcode manage) |
 | **Provisioning Profile** | Automatic (let Xcode manage) |
 
-**If you see a red error:**
-- Click **Fix Issue** button (blue) → Xcode will auto-create certificate
-- If that fails, create a free Apple Developer account and try again
+**If you see a red error:** Click **Fix Issue** button (blue) → Xcode will auto-create certificate
 
 ### 2.3 Verify All Targets
 
-Also set signing for:
-- **DwellableTests** (if exists)
-- **DwellableUITests** (if exists)
+Apply same signing settings to these targets (if they exist):
 
-Use same team and bundle ID for all targets.
+| Target | Team | Bundle ID |
+|---|---|---|
+| Dwellable | kell.golden@outlook.com | com.kellgolden.Dwell |
+| DwellableTests | kell.golden@outlook.com | com.kellgolden.Dwell |
+| DwellableUITests | kell.golden@outlook.com | com.kellgolden.Dwell |
 
 ---
 
@@ -74,24 +74,24 @@ Use same team and bundle ID for all targets.
 
 ### 3.1 Choose Device in Xcode
 
-In the top toolbar of Xcode:
+| Step | Action |
+|---|---|
+| 1 | In top toolbar, find scheme selector (shows "Dwellable") |
+| 2 | Click device dropdown next to scheme |
+| 3 | Look for your iPhone (e.g., "iPhone (16 Pro)") |
+| 4 | **Select your iPhone** |
 
-1. Find the scheme selector (shows "Dwellable" on left side)
-2. Click the device dropdown next to it
-3. You should see your iPhone listed with its name (e.g., "iPhone (16 Pro)")
-4. **Select your iPhone**
-
-The toolbar should now show:
-```
-Scheme: Dwellable | Device: iPhone 16 Pro
-```
+**Result:** Toolbar should show `Scheme: Dwellable | Device: iPhone 16 Pro`
 
 ### 3.2 Verify Connection
 
-In Xcode menu: **Window → Devices and Simulators**
-- You should see your iPhone listed under "Connected"
-- Status should be "Paired" or "Connected"
-- If not, disconnect/reconnect USB cable
+In Xcode: **Window → Devices and Simulators**
+
+| Check | Expected | If Problem |
+|---|---|---|
+| iPhone listed | Under "Connected" section | Disconnect/reconnect USB |
+| Status | "Paired" or "Connected" | Restart Xcode + iPhone |
+| USB visible | Device shows in list | Check USB cable |
 
 ---
 
@@ -99,99 +99,117 @@ In Xcode menu: **Window → Devices and Simulators**
 
 ### 4.1 Build the App
 
-In Xcode:
-1. **Product → Build** (or Cmd+B)
-2. Wait for build to complete (check bottom panel for progress)
-3. Look for **"Build Complete"** message
+| Action | Keyboard | What to See |
+|---|---|---|
+| Build | **Product → Build** | Cmd+B |
+| Wait | Watch bottom panel | Progress bar fills |
+| Verify | Check for | "Build Complete" message |
 
 **If build fails:**
-- Check error message in bottom panel
-- Common issues:
-  - Missing signing certificate → Fix Issue button
-  - Derived data corrupted → **Product → Clean Build Folder** (Cmd+Shift+K)
-  - Code sign error → Re-run signing setup in Step 2
+
+| Error | Cause | Fix |
+|---|---|---|
+| Red error in Signing & Capabilities | Missing signing certificate | Click blue "Fix Issue" button |
+| Build fails after cleaning | Derived data corrupted | **Product → Clean Build Folder** (Cmd+Shift+K) |
+| "Code signing denied" | Signing setup incomplete | Re-run Step 2 signing setup |
 
 ### 4.2 Run on Physical Device
 
-In Xcode:
-1. **Product → Run** (or Cmd+R)
-2. App will build, sign, and install on your iPhone
-3. Watch for progress in Xcode console
-4. App should launch on iPhone automatically
+| Step | Action | Expected |
+|---|---|---|
+| 1 | **Product → Run** (Cmd+R) | Build starts, watch console |
+| 2 | App builds + signs | Takes 30–60 seconds |
+| 3 | Install starts | See "Installing..." in console |
+| 4 | App launches on iPhone | Icon appears, app opens |
 
 **First launch may prompt:**
-- "Untrusted Developer" → Go to **Settings → General → Device Management → kell.golden → Trust**
-- Then return to homescreen and tap Dwellable again
+
+| Prompt | Action |
+|---|---|
+| "Untrusted Developer" appears | iPhone: **Settings → General → Device Management → kell.golden → Trust** |
+| After trusting | Return to homescreen and tap Dwellable again |
 
 ---
 
 ## Step 5️⃣ — Verify Installation
 
-On your iPhone:
-1. Look for **Dwellable** app icon on homescreen
-2. Tap to launch
-3. You should see **LoginView** (dark theme, gold button)
+| What to Do | Expected Result |
+|---|---|
+| 1. Look on homescreen | Find **Dwellable** app icon |
+| 2. Tap app | App launches |
+| 3. First screen | See **LoginView** (dark background, gold button) |
 
 ### 5.1 Test Basic Flow
 
-Try a quick test:
-1. **Login:** `test@example.com` / `password123`
-2. **Check MomentsListView** appears with moments list
-3. **Tap mic button** → You should hear audio permission request
-4. **Grant microphone access** → Mic will be active (blue indicator)
+| Action | Expected |
+|---|---|
+| **Login:** test@example.com / password123 | MomentsListView appears |
+| **Check moments list** | See list of your moments |
+| **Tap mic button** | Audio permission prompt appears |
+| **Grant permission** | Mic is active (blue indicator) |
 
 ---
 
 ## Step 6️⃣ — Test Voice Recording (Key Feature)
 
-This is what you **can't test** on simulator:
+This is what you **can't test** on simulator — physical device only! 🎙️
 
 ### 6.1 Record a Moment
 
-1. On MomentsListView, tap the **mic button** (circular)
-2. Start speaking: *"This is a test of the Dwellable voice recording"*
-3. Tap **Stop** (should show recording duration, e.g., "0:12")
-4. View ReviewView with auto-transcribed text
-5. Tap **Save**
+| Step | Action |
+|---|---|
+| 1 | On MomentsListView, tap **mic button** (circular) |
+| 2 | Speak clearly: *"This is a test of the Dwellable voice recording"* |
+| 3 | Tap **Stop** button |
+| 4 | See duration displayed (e.g., "0:12") |
+| 5 | Wait for transcription to complete |
+| 6 | See ReviewView with auto-transcribed text |
+| 7 | Tap **Save** |
 
-### 6.2 Verify Result
+### 6.2 Verify Success
 
-- Moment appears in MomentsListView
-- Transcript matches what you said (speech-to-text quality varies)
-- Date/time is correct
+| Check | Expected |
+|---|---|
+| Moment appears in list | Yes, at top of MomentsListView |
+| Transcript text | Matches what you said (quality varies) |
+| Date/time | Correct timestamp shown |
+| No crashes | App stays open |
 
 ---
 
 ## Step 7️⃣ — Test Offline Functionality (Critical)
 
-This is where the physical device really shines:
-
 ### 7.1 Test Offline Save
 
-1. **Disable WiFi + Cellular:**
-   - iPhone Settings → WiFi → toggle OFF
-   - Settings → Cellular → toggle OFF (or Settings → Airplane Mode ON)
+| Step | Action |
+|---|---|
+| 1 | Disable network: **Settings → WiFi → OFF** |
+| 2 | Alternative: **Settings → Airplane Mode → ON** |
+| 3 | Go to MomentsListView |
+| 4 | Tap mic button |
+| 5 | Record: *"Testing offline"* |
+| 6 | Tap Stop → Tap Save |
 
-2. **Create offline moment:**
-   - MomentsListView → Tap mic
-   - Record: *"Testing offline"*
-   - Tap Stop → Tap Save
+| Expected Result | Check |
+|---|---|
+| "Pending sync" message | Appears for 1.5 seconds |
+| Moment in list | Still visible (not lost) |
+| No error | App stays open |
 
-3. **Expected behavior:**
-   - "Pending sync" message appears for 1.5 seconds
-   - Moment still appears in list
-   - No error shown
+### 7.2 Test Auto-Sync When Network Returns
 
-### 7.2 Test Auto-Sync
+| Step | Action |
+|---|---|
+| 1 | Enable WiFi: **Settings → WiFi → ON** |
+| 2 | OR disable Airplane Mode |
+| 3 | Wait 10 seconds |
+| 4 | Watch moment in list |
 
-1. **Re-enable network:**
-   - Settings → WiFi → toggle ON
-   - Wait 10 seconds
-
-2. **Expected behavior:**
-   - Offline moment syncs automatically
-   - No manual action needed
-   - Moment persists in list
+| Expected Result | Check |
+|---|---|
+| Moment syncs | Automatically (no manual refresh) |
+| Still in list | Moment persists |
+| No sync message | Message disappears naturally |
 
 ---
 
@@ -199,16 +217,22 @@ This is where the physical device really shines:
 
 ### 8.1 Create Offline, Restart, Then Sync
 
-1. **Disable WiFi + Cellular** (airplane mode)
-2. **Create moment** (voice or text)
-3. See "Pending sync" message
-4. **Force-quit app:**
-   - Swipe up from bottom → Stop swiping → Swipe up again
-   - Or: Settings → General → iPhone Storage → Dwellable → Delete App
-5. **Re-launch app** (tap Dwellable icon)
-6. Should still be logged in
-7. Offline moment should still be there
-8. **Enable WiFi** → Moment syncs automatically
+| Step | Action |
+|---|---|
+| 1 | **Disable network:** Airplane Mode ON |
+| 2 | **Create moment** (voice or text) |
+| 3 | See "Pending sync" message |
+| 4 | **Force-quit app:** Swipe up twice from bottom |
+| 5 | **Re-launch:** Tap Dwellable icon |
+| 6 | Check login status | Should still be logged in (Keychain) |
+| 7 | Check moment | Offline moment still there |
+| 8 | **Enable WiFi** → Moment syncs automatically |
+
+| Expected Result | Check |
+|---|---|
+| Still logged in | No LoginView appears |
+| Offline moment saved | Visible in list |
+| Auto-sync works | Moment syncs without refresh |
 
 ---
 
@@ -235,21 +259,26 @@ In Xcode:
 
 ## 🔟 Wireless Deployment (Optional)
 
-Once you've deployed once via USB, you can deploy wirelessly:
+Once you've deployed once via USB, deploy wirelessly:
 
 ### 10.1 Set Up Wireless
 
-1. **Xcode → Window → Devices and Simulators**
-2. Right-click your iPhone → **Connect via Network**
-3. Xcode will upload signing certificates to device
+| Step | Action |
+|---|---|
+| 1 | **Xcode → Window → Devices and Simulators** |
+| 2 | Right-click your iPhone |
+| 3 | Select **Connect via Network** |
+| 4 | Xcode uploads signing certificates |
+| 5 | Wait for setup to complete |
 
 ### 10.2 Deploy Wirelessly
 
-After setup:
-1. Device should still appear in Xcode device selector
-2. Select it (may show wireless icon)
-3. **Product → Run** (Cmd+R)
-4. App will deploy over WiFi (slower than USB, but works)
+| Step | Action | Speed |
+|---|---|---|
+| 1 | Device appears in selector | Shows wireless icon |
+| 2 | Select your iPhone | Appears in device dropdown |
+| 3 | **Product → Run** (Cmd+R) | Initiates deployment |
+| 4 | App deploys over WiFi | Slower than USB (but works) |
 
 ---
 

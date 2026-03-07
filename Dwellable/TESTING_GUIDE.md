@@ -100,15 +100,13 @@
 
 ## 🔄 Dependencies & Order
 
-```
-PHYSICAL_DEVICE_BUILD ✅ (Do this first)
-         ↓
-MANUAL_TESTING_CHECKLIST (Can start immediately after build)
-         ↓
-XCUI_TESTS (Can start once manual testing is in progress)
-```
+| Sequence | Task | Duration | Dependencies |
+|---|---|---|---|
+| **1** | PHYSICAL_DEVICE_BUILD | 15 min | None — **start here** |
+| **2A** | MANUAL_TESTING_CHECKLIST | 30 min–3 hours | Completes #1 |
+| **2B** | XCUI_TESTS | 1+ hours | Can start after #1 |
 
-**You don't need to complete Phase 2 before starting Phase 3.** XCUI tests and manual tests can run in parallel.
+**Note:** You don't need to complete Phase 2A before starting Phase 2B. Both can run in parallel.
 
 ---
 

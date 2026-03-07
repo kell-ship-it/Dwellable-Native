@@ -25,39 +25,13 @@ XCUITest allows us to:
 
 ## 🏗️ Setup Steps
 
-### Step 1: Create XCUITest Target in Xcode
-
-```bash
-# In Xcode:
-# 1. File → New → Target
-# 2. Select "iOS" → "UI Testing Bundle"
-# 3. Name it "DwellableUITests"
-# 4. Click Create
-```
-
-This creates:
-```
-Dwellable/
-  DwellableUITests/
-    DwellableUITests.swift        # Main test file
-    Info.plist                     # Test config
-```
-
-### Step 2: Configure Test Target
-
-In `Info.plist` (DwellableUITests):
-```xml
-<key>NSBonjourServiceTypes</key>
-<array>
-    <string>_http._tcp</string>
-</array>
-```
-
-### Step 3: Build Settings
-
-Ensure test target has:
-- **Test Host:** `Dwellable`
-- **Bundle Loader:** `$(BUILT_PRODUCTS_DIR)/Dwellable.app/Dwellable`
+| # | Step | Action |
+|---|---|---|
+| 1 | **Create XCUI Target** | File → New → Target → iOS → UI Testing Bundle → Name: "DwellableUITests" |
+| 2 | **Verify Files Created** | Check DwellableUITests/DwellableUITests.swift and Info.plist exist |
+| 3 | **Configure Info.plist** | Add NSBonjourServiceTypes key with _http._tcp value |
+| 4 | **Check Build Settings** | Verify Test Host = "Dwellable", Bundle Loader = "$(BUILT_PRODUCTS_DIR)/Dwellable.app/Dwellable" |
+| 5 | **Build Test Target** | ⌘B to ensure no compilation errors |
 
 ---
 
@@ -370,38 +344,12 @@ Button("Save") { /* ... */ }
 
 ## 🚀 Running Tests
 
-### Run All Tests
-
-```bash
-# Build and run all XCUI tests on simulator
-xcodebuild test \
-  -scheme Dwellable \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
-  -configuration Debug
-
-# Or in Xcode:
-# Cmd + U (with simulator running)
-```
-
-### Run Single Test
-
-```bash
-xcodebuild test \
-  -scheme Dwellable \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
-  -only-testing 'DwellableUITests/DwellableUITests/testValidLogin'
-```
-
-### Run on Physical Device
-
-```bash
-# First, connect iPhone via USB
-# Then build for physical device:
-xcodebuild test \
-  -scheme Dwellable \
-  -destination 'generic/platform=iOS' \
-  -configuration Debug
-```
+| Scenario | Command | Notes |
+|---|---|---|
+| **All tests on simulator** | `xcodebuild test -scheme Dwellable -destination 'platform=iOS Simulator,name=iPhone 16 Pro'` | Or Cmd+U in Xcode |
+| **Single test** | `xcodebuild test -scheme Dwellable -destination 'platform=iOS Simulator,name=iPhone 16 Pro' -only-testing 'DwellableUITests/DwellableUITests/testValidLogin'` | Replace test name as needed |
+| **All tests on physical device** | `xcodebuild test -scheme Dwellable -destination 'generic/platform=iOS'` | Connect iPhone first |
+| **Watch test output** | `xcodebuild test ... -verbose` | Add `-verbose` to any command above |
 
 ---
 
