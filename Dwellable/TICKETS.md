@@ -130,6 +130,26 @@
   - Loading spinner shows during save operation, button disabled while saving
   - Both views pass apiClient and userId as parameters from parent (CaptureView)
 
+### Backend Integration (Complete)
+- [x] **T-001:** Set up backend API
+  - Created Supabase project (lhcjobrtmbawlhjyodxz) with PostgreSQL backend
+  - Set up users table (id, email, created_at, updated_at) with indexes
+  - Set up moments table (id, user_id, body, created_at, updated_at) with foreign key to users
+  - Created appropriate indexes for query performance
+  - Obtained Supabase publishable API key (sb_publishable_...)
+  - Integrated with GitHub via Supabase org
+
+- [x] **T-002:** Define API endpoints
+  - Created SupabaseAPIClient implementing APIClient protocol
+  - `POST /rest/v1/moments` — Create moment (requires user_id, body, created_at)
+  - `GET /rest/v1/moments?user_id=eq.{userId}&order=created_at.desc` — Fetch user's moments
+  - `GET /rest/v1/moments?id=eq.{id}` — Fetch single moment
+  - `DELETE /rest/v1/moments?id=eq.{id}` — Delete moment
+  - `POST /auth/v1/token?grant_type=password` — Login with email/password
+  - Bearer token authentication with Authorization header
+  - JSON encoding/decoding with ISO8601 date formatting
+  - Comprehensive error handling (404, 400-499, 500+)
+
 ---
 
 ## 🔄 In Progress
@@ -141,14 +161,6 @@
 ## 🔲 Not Started
 
 ---
-
-### Backend Integration
-- [ ] **T-001:** Set up backend API
-  - Define API server structure, database models, `.env` configuration
-
-- [ ] **T-002:** Define API endpoints
-  - `POST /moments`, `GET /moments`, `GET /moments/:id`
-  - `DELETE /moments/:id`, `POST /auth/login`, `POST /auth/logout`
 
 ### File Organization / Technical Debt
 - [ ] **T-007:** Refactor embedded views to separate files
@@ -184,20 +196,27 @@
   - Log auth failures, API errors, transcription errors with context
 
 ### Testing & QA
-- [ ] **T-020:** Unit tests for AuthManager
-- [ ] **T-021:** Unit tests for StorageManager
-- [ ] **T-022:** Unit tests for SyncManager
-- [ ] **T-023:** Manual testing on real device
-- [ ] **T-024:** TestFlight beta testing with users
+- [ ] **T-020:** Set up XCUI test target for automated UI testing
+  - Create XCUITest target in Xcode project
+  - Wire up test helper methods for login, moment creation, navigation
+  - Set up test fixtures (mock data, test user account)
+  - Write initial test cases for key workflows (see details in XCUI_TESTS.md)
+  - Verify tests run on both simulator and physical device
+
+- [ ] **T-021:** Unit tests for AuthManager
+- [ ] **T-022:** Unit tests for StorageManager
+- [ ] **T-023:** Unit tests for SyncManager
+- [ ] **T-024:** Manual testing on real device
+- [ ] **T-025:** TestFlight beta testing with users
 
 ### Deployment
-- [ ] **T-025:** Prepare for App Store submission
+- [ ] **T-026:** Prepare for App Store submission
   - Privacy policy, terms of service, screenshots, description, pricing
 
-- [ ] **T-026:** Configure production environment *(deferred — v2)*
+- [ ] **T-027:** Configure production environment *(deferred — v2)*
   - Production backend, Supabase project, CI/CD pipeline
 
-- [ ] **T-027:** Create user onboarding flow *(deferred — v2)*
+- [ ] **T-028:** Create user onboarding flow *(deferred — v2)*
   - Welcome screen, permission explanations, quick tutorial
 
 ---
@@ -205,16 +224,16 @@
 ## 📊 Priority Summary
 
 ### 🔴 BLOCKING — Nothing ships without these
-T-001 · T-002 · T-003 · T-004 · T-005
+(All complete: T-001 · T-002 · T-003 · T-004 · T-005 · T-006 · API Client Architecture)
 
 ### 🟡 HIGH — Required before v1.0
-V-001 · V-002 · V-003 · V-004 · V-005 · V-006 · T-007 · T-025
+V-001 · V-002 · V-003 · V-004 · V-005 · V-006 · T-007 · T-020 · T-026
 
 ### 🟢 MEDIUM — v1.1 quality improvements
-V-007 · V-008 · T-008 · T-009 · T-010 · T-018 · T-019 · T-020 · T-021 · T-022 · T-023 · T-024
+V-007 · V-008 · T-008 · T-009 · T-010 · T-018 · T-019 · T-021 · T-022 · T-023 · T-024 · T-025
 
 ### ⚪ LOW — v2.0 and beyond
-T-011 · T-012 · T-013 · T-026 · T-027
+T-011 · T-012 · T-013 · T-027 · T-028
 
 ---
 
@@ -225,23 +244,25 @@ T-011 · T-012 · T-013 · T-026 · T-027
 | UI Screens — Main | 7 | 7 | 0 | 0 |
 | Voice Features | 8 | 8 | 0 | 0 |
 | API & Auth | 2 | 2 | 0 | 0 |
-| Backend Integration | 2 | 0 | 0 | 2 |
+| Backend Integration | 2 | 2 | 0 | 0 |
 | Data Persistence | 3 | 3 | 0 | 0 |
 | File Organization | 3 | 0 | 0 | 3 |
 | UI Screens — Sub | 4 | 0 | 0 | 4 |
 | Analytics | 2 | 0 | 0 | 2 |
 | Testing & QA | 5 | 0 | 0 | 5 |
 | Deployment | 3 | 0 | 0 | 3 |
-| **TOTAL** | **39** | **20** | **0** | **19** |
+| **TOTAL** | **39** | **22** | **0** | **17** |
 
 ---
 
 ## 📝 Notes
 
-- **Save/fetch fully functional end-to-end:** Create moment (voice/text) → save to API → fetch in list
-- Moments fetched per authenticated user, all data synced through single APIClient instance
+- **Save/fetch fully functional end-to-end:** Create moment (voice/text) → save to Supabase → fetch in list
+- **Supabase backend live:** PostgreSQL with REST API, JWT auth, users + moments tables
+- Moments fetched per authenticated user, all data synced through single SupabaseAPIClient instance
 - **Offline-first architecture complete:** Full local persistence with LocalStorageManager + auto-sync with SyncManager
 - Pagination deferred (will implement with real backend when needed)
 - All voice features (V-001–V-008) complete and functional
-- Next blocking: T-001/T-002 (backend setup for production) and T-007 (refactor embedded views to separate files)
+- **Next session priorities:** T-020 (XCUI test setup), T-007 (refactor embedded views), physical device testing (USER_ACTIVITIES.md)
+- User activity tracking in separate USER_ACTIVITIES.md + MANUAL_TESTING_CHECKLIST.md
 - `NSMicrophoneUsageDescription` must be added to Info.plist before App Store submission
