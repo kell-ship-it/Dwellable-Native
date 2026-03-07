@@ -1,235 +1,201 @@
-# Dwellable Native — Remaining Work
+# Dwellable Native — Full Ticket Registry
 
-**Last Updated:** March 4, 2026
-**Status:** Major UI milestone complete; backend integration next
+**Last Updated:** March 7, 2026
+**Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
 
-## 🎯 Core Feature Work
+## ✅ Completed
+
+### UI Screens — Main (6 screens)
+- [x] **S-001:** Build LoginView
+  - Dark theme, email/password fields, gold CTA button, wordmark
+
+- [x] **S-002:** Build MomentsListView
+  - Moments list with MomentRow, date header, chevron, divider separators
+  - Empty state with centered prompt
+  - 10 hardcoded sample moments (placeholder until backend ships)
+
+- [x] **S-003:** Build CaptureView
+  - Voice-first layout, centered mic button
+  - "Type instead" pill navigation to TypeFlowView
+  - TranscribingView overlay (UI only)
+
+- [x] **S-004:** Build ReviewView
+  - Voice review mode: pre-filled transcript, Re-record + Save footer
+  - "Add where you sensed the Lord" hint field
+
+- [x] **S-005:** Build TypeFlowView
+  - Full-screen text entry, "Begin here..." placeholder
+  - Save moment CTA
+
+- [x] **S-006:** Build MomentDetailView
+  - Full moment body with date header
+  - "Sense of Lord" section with divider (conditional)
+
+### Voice — UI Only
+- [x] **S-007:** Build TranscribingView (UI)
+  - 5 animated bars with staggered heights
+  - Animated dot indicator, "Transcribing" label
+  - UI complete — not wired to real recording state yet
+
+---
+
+## 🔄 In Progress
+
+### Voice Features
+- [ ] **V-001:** Implement microphone recording (AVFoundation)
+  - AVAudioRecorder setup, start/stop recording
+  - Audio file written to temp storage
+
+- [ ] **V-002:** Request microphone permission
+  - `NSMicrophoneUsageDescription` in Info.plist
+  - Runtime permission request, handle denial gracefully
+
+- [ ] **V-003:** Wire CaptureView mic button to recording
+  - Tap to start/stop recording
+  - Pass audio file forward to transcription step
+
+---
+
+## 🔲 Not Started
+
+### Voice Features (remaining)
+- [ ] **V-004:** Choose and integrate transcription service
+  - Evaluate: OpenAI Whisper vs Apple Speech framework vs Google Cloud
+  - Implement chosen service, handle API key securely
+
+- [ ] **V-005:** Wire transcription output to ReviewView
+  - Pass transcribed text as parameter
+  - Pre-fill TextEditor in ReviewView on arrival
+
+- [ ] **V-006:** Wire TranscribingView to real transcription state
+  - Show overlay while request is in flight
+  - Dismiss on completion or error
+
+- [ ] **V-007:** Handle transcription errors and edge cases
+  - Empty transcript, network failure, timeout, mic denied mid-session
+
+- [ ] **V-008:** Add recording duration timer UI
+  - Display live duration during recording
+  - Stop at max length (TBD)
+
+---
 
 ### Backend Integration
-- [ ] **T-001:** Set up backend API (Node/Express or similar)
-  - Define API server structure
-  - Set up database models
-  - Create `.env` configuration for API endpoints
+- [ ] **T-001:** Set up backend API
+  - Define API server structure, database models, `.env` configuration
 
 - [ ] **T-002:** Define API endpoints
-  - `POST /moments` — Create a new moment
-  - `GET /moments` — Fetch all moments for authenticated user
-  - `GET /moments/:id` — Fetch single moment
-  - `PATCH /moments/:id` — Update moment (future)
-  - `DELETE /moments/:id` — Delete moment (future)
-  - `POST /auth/login` — User authentication
-  - `POST /auth/logout` — Session termination
+  - `POST /moments`, `GET /moments`, `GET /moments/:id`
+  - `DELETE /moments/:id`, `POST /auth/login`, `POST /auth/logout`
 
 - [ ] **T-003:** Wire up authentication to backend
   - Connect LoginView to backend auth endpoint
-  - Replace stub authentication with real API calls
-  - Store auth token securely (Keychain)
-  - Handle session expiry and refresh
+  - Replace stub auth with real API calls
+  - Store auth token in Keychain, handle session expiry
 
 ### Data Persistence
 - [ ] **T-004:** Replace hardcoded moments with API calls
   - Remove sample data from MomentsListView
-  - Fetch moments from backend on app launch
-  - Implement pagination/lazy loading for large lists
-  - Add loading states and error handling
+  - Fetch on app launch, implement pagination, add loading states
 
 - [ ] **T-005:** Implement save functionality
-  - Wire ReviewView "Save" button to POST /moments endpoint
-  - Wire TypeFlowView "Save moment" button to POST /moments endpoint
-  - Add loading indicator during save
-  - Handle success/error responses
+  - Wire ReviewView and TypeFlowView save buttons to `POST /moments`
+  - Add loading indicator, handle success/error
 
 - [ ] **T-006:** Network error handling
-  - Add graceful offline support (queue moments for sync)
-  - Implement retry logic with exponential backoff
-  - Display user-friendly error messages
-  - Handle 409 conflicts (duplicate moments)
+  - Graceful offline support, retry logic, user-friendly error messages
 
 ### File Organization / Technical Debt
 - [ ] **T-007:** Refactor embedded views to separate files
-  - Move `TypeFlowView` from CaptureView.swift to `TypeFlowView.swift`
-  - Move `MomentDetailView` from MomentsListView.swift to `MomentDetailView.swift`
-  - Move `TranscribingView` to separate file
-  - Move `MomentRow` to separate file (reusable component)
+  - Move `TypeFlowView`, `MomentDetailView`, `TranscribingView`, `MomentRow` to own files
 
 - [ ] **T-008:** Fix Xcode build target configuration
-  - Ensure all new Swift files are added to build target automatically
-  - Review and optimize build settings
-  - Clean up derived data
+  - Ensure new Swift files auto-added to build target
 
 - [ ] **T-009:** Centralize theme and styling
-  - Extract all hardcoded colors to Theme.swift
-  - Extract all hardcoded font sizes to Theme.swift
-  - Create reusable button styles
-  - Create reusable text styles
+  - Extract all hardcoded colors and fonts to `Theme.swift`
+  - Create reusable button and text styles
 
----
-
-## 🎨 Remaining UI Screens (Sub-screens)
-
-### Settings/Profile Screen
+### UI Screens — Sub-screens
 - [ ] **T-010:** Build SettingsView
-  - User profile display (email, account info)
-  - Sign out button (wire to AuthManager)
-  - App version display
-  - Terms/Privacy links
-  - Navigation: accessible from MomentsListView header
+  - User profile display, sign out, app version, terms/privacy links
+  - Accessible from MomentsListView header
 
-### Edit Moment Screen (Future — Low Priority)
-- [ ] **T-011:** Build EditMomentView
-  - Allow users to edit existing moments
-  - Pre-populate with current moment data
-  - Save changes to backend
-  - Add delete button with confirmation
-  - **Status:** User indicated not needed yet; defer until v2
+- [ ] **T-011:** Build EditMomentView *(deferred — v2)*
+  - Edit existing moments, pre-populate data, delete with confirmation
 
-### Search/Filter Screen (Future — Low Priority)
-- [ ] **T-012:** Build SearchView
-  - Search moments by text content
-  - Filter by date range
-  - Filter by "sense of Lord" presence
-  - **Status:** Defer to v2
+- [ ] **T-012:** Build SearchView *(deferred — v2)*
+  - Search by text, filter by date range, filter by sense of Lord
 
-### Archive/Collections Screen (Future — Low Priority)
-- [ ] **T-013:** Build ArchiveView or CollectionsView
-  - Organize moments into collections/tags
-  - Archive old moments
-  - **Status:** Defer to v2
+- [ ] **T-013:** Build ArchiveView / CollectionsView *(deferred — v2)*
+  - Organize moments into collections, archive old moments
 
----
-
-## 🎙️ Voice Features
-
-### Transcription Integration
-- [ ] **T-014:** Integrate voice-to-text transcription
-  - Choose transcription service (OpenAI Whisper, Google Cloud Speech, etc.)
-  - Add microphone recording to CaptureView
-  - Implement audio file handling
-  - Send audio to transcription API
-  - Display transcribed text in ReviewView
-  - Add manual editing of transcription
-
-- [ ] **T-015:** Implement audio permission handling
-  - Request microphone permission from user
-  - Handle permission denial gracefully
-  - Display permission request prompt
-
-- [ ] **T-016:** Add recording UI feedback
-  - Animate waveform during recording
-  - Display recording duration timer
-  - Add stop/cancel buttons
-
-- [ ] **T-017:** Implement TranscribingView functionality
-  - Already UI-built; add backend integration
-  - Show transcription progress
-  - Handle transcription errors
-
----
-
-## 🔄 State Management & Analytics
-
-### User Feedback & Telemetry
+### Analytics & Observability
 - [ ] **T-018:** Add basic analytics
-  - Track screen views
-  - Track moment creation (voice vs. type)
-  - Track save success/failure
-  - **Note:** Be privacy-conscious; minimize data collection
+  - Track screen views, moment creation (voice vs type), save success/failure
+  - Privacy-conscious — minimize data collection
 
 - [ ] **T-019:** Add error logging
-  - Log authentication failures
-  - Log API errors with context
-  - Log transcription errors
+  - Log auth failures, API errors, transcription errors with context
 
----
-
-## 📋 Testing & QA
-
+### Testing & QA
 - [ ] **T-020:** Unit tests for AuthManager
-- [ ] **T-021:** Unit tests for StorageManager (when created)
-- [ ] **T-022:** Unit tests for SyncManager (when created)
+- [ ] **T-021:** Unit tests for StorageManager
+- [ ] **T-022:** Unit tests for SyncManager
 - [ ] **T-023:** Manual testing on real device
 - [ ] **T-024:** TestFlight beta testing with users
 
----
-
-## 🚀 Deployment Readiness
-
+### Deployment
 - [ ] **T-025:** Prepare for App Store submission
-  - Create app privacy policy
-  - Create terms of service
-  - Prepare app store screenshots
-  - Write app store description
-  - Set pricing (if paid) or free tier
+  - Privacy policy, terms of service, screenshots, description, pricing
 
-- [ ] **T-026:** Configure production environment
-  - Set up production backend
-  - Configure production Supabase project
-  - Set up CI/CD pipeline
-  - Create release notes
+- [ ] **T-026:** Configure production environment *(deferred — v2)*
+  - Production backend, Supabase project, CI/CD pipeline
 
-- [ ] **T-027:** Create user onboarding flow
-  - Welcome screen
-  - Permission explanations
-  - Quick tutorial (optional)
+- [ ] **T-027:** Create user onboarding flow *(deferred — v2)*
+  - Welcome screen, permission explanations, quick tutorial
 
 ---
 
-## 📊 Priority Grouping
+## 📊 Priority Summary
 
-### 🔴 **BLOCKING (Ship Blocker)**
-- T-001: Backend API setup
-- T-002: API endpoints definition
-- T-003: Authentication integration
-- T-004: Fetch moments from backend
-- T-005: Save moment functionality
+### 🔴 BLOCKING — Nothing ships without these
+T-001 · T-002 · T-003 · T-004 · T-005
 
-### 🟡 **HIGH (Before v1.0)**
-- T-006: Network error handling
-- T-007: Refactor embedded views
-- T-014: Transcription integration
-- T-015: Audio permissions
-- T-025: App Store submission prep
+### 🟡 HIGH — Required before v1.0
+V-001 · V-002 · V-003 · V-004 · V-005 · V-006 · T-006 · T-007 · T-025
 
-### 🟢 **MEDIUM (v1.1+)**
-- T-008: Fix Xcode build config
-- T-009: Centralize theming
-- T-010: Settings/Profile screen
-- T-016: Recording UI feedback
-- T-017: TranscribingView integration
-- T-018-T-024: Testing & analytics
+### 🟢 MEDIUM — v1.1 quality improvements
+V-007 · V-008 · T-008 · T-009 · T-010 · T-018 · T-019 · T-020 · T-021 · T-022 · T-023 · T-024
 
-### ⚪ **LOW (v2.0+)**
-- T-011: Edit moment screen
-- T-012: Search/filter
-- T-013: Archive/collections
-- T-026: CI/CD pipeline
-- T-027: User onboarding
+### ⚪ LOW — v2.0 and beyond
+T-011 · T-012 · T-013 · T-026 · T-027
 
 ---
 
-## 🛠️ Current Project State
+## 📈 Progress
 
-**Main Branch Status:** ✅ UI complete, no backend integration yet
-**Main Screens (6):** LoginView, MomentsListView, CaptureView, ReviewView, TypeFlowView, MomentDetailView
-**Sub-screens Remaining (3-4):** SettingsView, EditMomentView, SearchView, ArchiveView
-**Tech Stack:** Swift/SwiftUI, Supabase (backend ready), Core Data (local persistence)
-
-**Estimated Work:**
-- Backend integration: ~8-10 hours
-- Transcription integration: ~6-8 hours
-- File organization & refactoring: ~4-6 hours
-- Remaining screens: ~4-6 hours (sub-screens are simpler than main screens)
-- Testing & polish: ~4-6 hours
-- **Total to v1.0 launch:** ~30-40 hours
+| Category | Total | ✅ Done | 🔄 In Progress | 🔲 Not Started |
+|---|---|---|---|---|
+| UI Screens — Main | 7 | 7 | 0 | 0 |
+| Voice Features | 8 | 0 | 3 | 5 |
+| Backend Integration | 3 | 0 | 0 | 3 |
+| Data Persistence | 3 | 0 | 0 | 3 |
+| File Organization | 3 | 0 | 0 | 3 |
+| UI Screens — Sub | 4 | 0 | 0 | 4 |
+| Analytics | 2 | 0 | 0 | 2 |
+| Testing & QA | 5 | 0 | 0 | 5 |
+| Deployment | 3 | 0 | 0 | 3 |
+| **TOTAL** | **40** | **7** | **3** | **30** |
 
 ---
 
 ## 📝 Notes
 
-- All sample data (10 moments) currently hardcoded in MomentsListView; will be replaced with backend data in T-004
-- Voice recording UI (CaptureView) is built but non-functional; transcription integration in T-014
-- All save buttons are stubs (no-op); will be wired in T-005
-- Authentication is UI-only; actual login will be implemented in T-003
-- App assumes authenticated state; logout will be implemented in T-003
+- All save buttons are stubs (no-op) until T-005 ships
+- Authentication is UI-only until T-003 ships
+- 10 hardcoded sample moments until T-004 ships
+- Voice mic button is non-functional until V-001–V-003 ship
+- `NSMicrophoneUsageDescription` must be added to Info.plist before App Store submission
