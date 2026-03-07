@@ -1,5 +1,40 @@
 # CLAUDE.md
 
+---
+
+## 🚨 SESSION START — DO THIS FIRST. NO EXCEPTIONS.
+
+**Before reading anything else, before asking any questions, before touching any code:**
+
+**1. Read `TICKETS.md` and output the full ticket table to Kell right now.**
+
+The table must include EVERY ticket — ✅ Complete, 🔄 In Progress, 🔲 Not Started, and ⚪ Deferred. No partial lists. Use this format:
+
+| # | ID | Title | Epic | Priority | Status |
+|---|---|---|---|---|---|
+| 1 | S-001 | Build LoginView | UI Screens | BLOCKING | ✅ Complete |
+| ... | | | | | |
+
+**2. State which ticket is next** (first 🔄 In Progress, or first 🔲 Not Started).
+
+**3. Wait for Kell's confirmation before writing any code.**
+
+DO NOT skip this. DO NOT ask if you should do it. Just do it.
+
+---
+
+## 🚨 SESSION END — DO THIS LAST. NO EXCEPTIONS.
+
+**Before closing the session:**
+
+**1. Update `TICKETS.md` and `TICKETS.csv`** to reflect any status changes.
+
+**2. Output the full ticket table again** — same format as session open, all tickets, all statuses.
+
+**3. State the next session opener** — the single first action for the next agent, specific enough to execute without clarification.
+
+---
+
 This file provides guidance to Claude when working in this repository.
 
 ## Project
