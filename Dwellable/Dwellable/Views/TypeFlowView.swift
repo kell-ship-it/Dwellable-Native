@@ -4,6 +4,13 @@ struct TypeFlowView: View {
     @Environment(\.dismiss) var dismiss
     @State private var momentBody: String = ""
     @State private var senseOfLord: String = ""
+    @State private var isSaving = false
+    @State private var saveError: String?
+    @State private var isSyncPending = false
+
+    let apiClient: APIClient
+    let userId: String
+    let syncManager: SyncManager
 
     var body: some View {
         ZStack {
@@ -32,6 +39,35 @@ struct TypeFlowView: View {
                     Spacer()
                         .frame(height: 10)
 
+                    // Save error display
+                    if let errorMessage = saveError {
+                        VStack(spacing: 8) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "exclamationmark.circle.fill")
+                                    .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+                                Text(errorMessage)
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+                                Spacer()
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(Color(red: 0.95, green: 0.2, blue: 0.2, opacity: 0.1))
+                            .cornerRadius(8)
+
+                            Button(action: {
+                                saveError = nil
+                            }) {
+                                Text("Dismiss")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+                            }
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 8)
+                    }
+
                     TextEditor(text: $momentBody)
                         .font(.system(size: 20, weight: .light))
                         .foregroundColor(momentBody.isEmpty ? Color(red: 0.184, green: 0.188, blue: 0.22) : Theme.text)
@@ -54,15 +90,28 @@ struct TypeFlowView: View {
                 Spacer()
 
                 // Footer button - full width
-                Button(action: {}) {
-                    Text("Save moment")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 15)
-                        .background(Theme.gold)
-                        .cornerRadius(20)
+                Button(action: {
+                    Task {
+                        await saveMoment()
+                    }
+                }) {
+                    if isSaving {
+                        ProgressView()
+                            .tint(Color(red: 0.1, green: 0.08, blue: 0.05))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 15)
+                    } else {
+                        Text("Save moment")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 15)
+                    }
                 }
+                .background(Theme.gold)
+                .cornerRadius(20)
+                .disabled(isSaving || momentBody.trimmingCharacters(in: .whitespaces).isEmpty)
+                .opacity(isSaving || momentBody.trimmingCharacters(in: .whitespaces).isEmpty ? 0.6 : 1.0)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .padding(.bottom, 20)
@@ -70,10 +119,44 @@ struct TypeFlowView: View {
         }
         .navigationBarBackButtonHidden(true)
     }
+
+    private func saveMoment() async {
+        guard !momentBody.trimmingCharacters(in: .whitespaces).isEmpty else {
+            saveError = "Moment cannot be empty"
+            return
+        }
+
+        isSaving = true
+        saveError = nil
+        isSyncPending = false
+
+        let moment = Moment(
+            userId: userId,
+            body: momentBody,
+            senseOfLord: senseOfLord.isEmpty ? nil : senseOfLord,
+            createdAt: Date()
+        )
+
+        do {
+            _ = try await apiClient.saveMoment(moment)
+            dismiss()
+        } catch {
+            // Network error - save locally and mark for sync
+            syncManager.markMomentAsPending(moment)
+            DispatchQueue.main.async {
+                self.isSyncPending = true
+                self.isSaving = false
+            }
+            // Dismiss after a short delay to show "pending sync" message
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            dismiss()
+        }
+    }
 }
 
 #Preview {
+    let apiClient = MockAPIClient()
     NavigationStack {
-        TypeFlowView()
+        TypeFlowView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient))
     }
 }

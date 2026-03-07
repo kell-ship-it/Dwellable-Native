@@ -40,5 +40,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Dwellable uses your microphone to capture voice moments. We only record when you tap the mic button.</string>
 </dict>
 </plist>

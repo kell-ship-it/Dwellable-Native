@@ -7,9 +7,16 @@ class AuthManager: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
 
-    init() {
-        if let storedUserId = UserDefaults.standard.string(forKey: "userId") {
-            currentUser = AuthUser(id: storedUserId, email: "")
+    private let apiClient: APIClient
+    private let keychain = KeychainManager.shared
+
+    init(apiClient: APIClient) {
+        self.apiClient = apiClient
+
+        // Check for existing auth token on init
+        if let token = keychain.retrieve(forKey: "authToken"),
+           let userId = keychain.retrieve(forKey: "userId") {
+            currentUser = AuthUser(id: userId, email: "", token: token)
             isAuthenticated = true
         }
     }
@@ -21,11 +28,13 @@ class AuthManager: ObservableObject {
         }
 
         do {
-            try await Task.sleep(nanoseconds: 1_000_000_000)
+            let authToken = try await apiClient.login(email: email, password: password)
 
-            let user = AuthUser(id: UUID().uuidString, email: email)
-            UserDefaults.standard.set(user.id, forKey: "userId")
-            UserDefaults.standard.set(email, forKey: "userEmail")
+            // Store token and userId in Keychain
+            _ = keychain.save(authToken.token, forKey: "authToken")
+            _ = keychain.save(authToken.userId, forKey: "userId")
+
+            let user = AuthUser(id: authToken.userId, email: email, token: authToken.token)
 
             DispatchQueue.main.async {
                 self.currentUser = user
@@ -40,9 +49,17 @@ class AuthManager: ObservableObject {
         }
     }
 
-    func signOut() {
-        UserDefaults.standard.removeObject(forKey: "userId")
-        UserDefaults.standard.removeObject(forKey: "userEmail")
+    func signOut() async {
+        do {
+            try await apiClient.logout()
+        } catch {
+            // Log error but continue with local cleanup
+            print("Logout error: \(error.localizedDescription)")
+        }
+
+        // Clear keychain and local state
+        keychain.delete(forKey: "authToken")
+        keychain.delete(forKey: "userId")
 
         DispatchQueue.main.async {
             self.currentUser = nil
@@ -55,4 +72,5 @@ class AuthManager: ObservableObject {
 struct AuthUser: Identifiable {
     let id: String
     let email: String
+    let token: String
 }

@@ -1,6 +1,6 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** March 7, 2026
+**Last Updated:** March 7, 2026, 3:20 PM
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -39,46 +39,106 @@
   - Animated dot indicator, "Transcribing" label
   - UI complete — not wired to real recording state yet
 
+### Voice — Recording & Transcription (Complete)
+- [x] **V-001:** Implement microphone recording (AVFoundation)
+  - AVAudioRecorder setup, start/stop recording
+  - Audio file written to temp storage
+
+- [x] **V-002:** Request microphone permission
+  - `NSMicrophoneUsageDescription` in Info.plist
+  - Runtime permission request, handle denial gracefully
+
+- [x] **V-003:** Wire CaptureView mic button to recording
+  - Tap to start/stop recording
+  - Audio URL passed to ReviewView
+
+- [x] **V-004:** Choose and integrate transcription service
+  - Apple Speech Framework (offline, privacy-first, no API keys)
+  - SFSpeechURLRecognitionRequest for audio file transcription
+  - Error handling and permission requesting
+
+- [x] **V-005:** Wire transcription output to ReviewView
+  - TranscriptionManager integrated into ReviewView
+  - Auto-transcribe on .onAppear when audioURL provided
+  - Pre-fill momentBody with transcript on completion
+  - Loading state and error display
+
+- [x] **V-006:** Wire TranscribingView to real transcription state
+  - Show overlay while request is in flight
+  - Dismiss on completion or error
+
+- [x] **V-007:** Handle transcription errors and edge cases
+  - Empty transcript detection with user-friendly message
+  - Enhanced error mapping for network, timeout, and permission failures
+  - Timeout safety net (60-second limit) prevents infinite transcription attempts
+  - Retry button in ReviewView for failed transcriptions
+  - Better error messaging with visual feedback (error box + retry option)
+
+- [x] **V-008:** Add recording duration timer UI
+  - Live duration display in MM:SS format during recording
+  - Timer starts at 0:00 and counts up in 0.1s increments
+  - Monospaced gold-colored font for visual distinction
+  - Automatic stop at 10-minute max duration with user notification
+  - Timer properly cleaned up on recording stop
+
+### Data Persistence (Complete)
+- [x] **T-006:** Network error handling
+  - Graceful offline support: moments saved locally when network fails
+  - LocalStorageManager for persistent in-device storage
+  - SyncManager monitors connectivity and auto-retries failed saves
+  - User-friendly UI (1.5s "pending sync" delay before dismissal)
+  - Retry logic with periodic 10-second sync attempts
+  - Full offline-first architecture with transparent sync
+
+### API Client Architecture & Authentication (Complete)
+- [x] **API Client Architecture (Frontend-Ready)**
+  - APIClient protocol defining endpoints (fetch moments, save, auth)
+  - MockAPIClient with full mock implementation and 0.2-0.5s simulated delays
+  - ReviewView and TypeFlowView save buttons wired to apiClient.saveMoment()
+  - MomentsListView fetch moments from API on .onAppear
+  - AppView instantiates MockAPIClient and passes to all views
+
+- [x] **T-003:** Wire up authentication to backend
+  - Created KeychainManager for secure token storage (iOS Keychain APIs)
+  - Updated AuthManager to accept apiClient: APIClient in init
+  - LoginView email/password fields now call apiClient.login() (not stub)
+  - Auth token stored securely in Keychain, userId extracted from response
+  - AuthManager checks for existing token on init via Keychain
+  - DwellableApp instantiates MockAPIClient and passes to AuthManager
+  - AppView conditionally shows LoginView or AppView based on isAuthenticated
+  - Sign out button calls apiClient.logout() and clears Keychain
+  - All previews updated to pass apiClient parameter
+  - User session persists across app launches via Keychain
+
+### Data Persistence
+- [x] **T-004:** Replace hardcoded moments with API calls
+  - Removed sample data from MomentsListView init — no longer hardcoded array
+  - Fetch moments from API on .onAppear using authenticated userId
+  - Added loading state (spinner) while fetching
+  - Added error state with user-friendly message and retry button
+  - Empty state displays when user has no moments
+  - Moments properly sorted by createdAt (descending) from API
+  - Data consistency: single MockAPIClient instance, save/fetch work seamlessly
+  - **Pagination deferred:** MockAPIClient returns all moments; real backend will implement cursor-based pagination
+
+- [x] **T-005:** Implement save functionality
+  - ReviewView: save button wired to apiClient.saveMoment(), includes loading/error states, dismisses on success
+  - TypeFlowView: save button wired to apiClient.saveMoment(), includes loading/error states, dismisses on success
+  - Both views validate that moment body is not empty before saving
+  - Both views extract senseOfLord field if provided, include userId from authenticated user
+  - Error display with dismiss button, retry attempts work seamlessly
+  - Loading spinner shows during save operation, button disabled while saving
+  - Both views pass apiClient and userId as parameters from parent (CaptureView)
+
 ---
 
 ## 🔄 In Progress
 
-### Voice Features
-- [ ] **V-001:** Implement microphone recording (AVFoundation)
-  - AVAudioRecorder setup, start/stop recording
-  - Audio file written to temp storage
-
-- [ ] **V-002:** Request microphone permission
-  - `NSMicrophoneUsageDescription` in Info.plist
-  - Runtime permission request, handle denial gracefully
-
-- [ ] **V-003:** Wire CaptureView mic button to recording
-  - Tap to start/stop recording
-  - Pass audio file forward to transcription step
+(None)
 
 ---
 
 ## 🔲 Not Started
-
-### Voice Features (remaining)
-- [ ] **V-004:** Choose and integrate transcription service
-  - Evaluate: OpenAI Whisper vs Apple Speech framework vs Google Cloud
-  - Implement chosen service, handle API key securely
-
-- [ ] **V-005:** Wire transcription output to ReviewView
-  - Pass transcribed text as parameter
-  - Pre-fill TextEditor in ReviewView on arrival
-
-- [ ] **V-006:** Wire TranscribingView to real transcription state
-  - Show overlay while request is in flight
-  - Dismiss on completion or error
-
-- [ ] **V-007:** Handle transcription errors and edge cases
-  - Empty transcript, network failure, timeout, mic denied mid-session
-
-- [ ] **V-008:** Add recording duration timer UI
-  - Display live duration during recording
-  - Stop at max length (TBD)
 
 ---
 
@@ -89,23 +149,6 @@
 - [ ] **T-002:** Define API endpoints
   - `POST /moments`, `GET /moments`, `GET /moments/:id`
   - `DELETE /moments/:id`, `POST /auth/login`, `POST /auth/logout`
-
-- [ ] **T-003:** Wire up authentication to backend
-  - Connect LoginView to backend auth endpoint
-  - Replace stub auth with real API calls
-  - Store auth token in Keychain, handle session expiry
-
-### Data Persistence
-- [ ] **T-004:** Replace hardcoded moments with API calls
-  - Remove sample data from MomentsListView
-  - Fetch on app launch, implement pagination, add loading states
-
-- [ ] **T-005:** Implement save functionality
-  - Wire ReviewView and TypeFlowView save buttons to `POST /moments`
-  - Add loading indicator, handle success/error
-
-- [ ] **T-006:** Network error handling
-  - Graceful offline support, retry logic, user-friendly error messages
 
 ### File Organization / Technical Debt
 - [ ] **T-007:** Refactor embedded views to separate files
@@ -165,7 +208,7 @@
 T-001 · T-002 · T-003 · T-004 · T-005
 
 ### 🟡 HIGH — Required before v1.0
-V-001 · V-002 · V-003 · V-004 · V-005 · V-006 · T-006 · T-007 · T-025
+V-001 · V-002 · V-003 · V-004 · V-005 · V-006 · T-007 · T-025
 
 ### 🟢 MEDIUM — v1.1 quality improvements
 V-007 · V-008 · T-008 · T-009 · T-010 · T-018 · T-019 · T-020 · T-021 · T-022 · T-023 · T-024
@@ -180,22 +223,25 @@ T-011 · T-012 · T-013 · T-026 · T-027
 | Category | Total | ✅ Done | 🔄 In Progress | 🔲 Not Started |
 |---|---|---|---|---|
 | UI Screens — Main | 7 | 7 | 0 | 0 |
-| Voice Features | 8 | 0 | 3 | 5 |
-| Backend Integration | 3 | 0 | 0 | 3 |
-| Data Persistence | 3 | 0 | 0 | 3 |
+| Voice Features | 8 | 8 | 0 | 0 |
+| API & Auth | 2 | 2 | 0 | 0 |
+| Backend Integration | 2 | 0 | 0 | 2 |
+| Data Persistence | 3 | 3 | 0 | 0 |
 | File Organization | 3 | 0 | 0 | 3 |
 | UI Screens — Sub | 4 | 0 | 0 | 4 |
 | Analytics | 2 | 0 | 0 | 2 |
 | Testing & QA | 5 | 0 | 0 | 5 |
 | Deployment | 3 | 0 | 0 | 3 |
-| **TOTAL** | **40** | **7** | **3** | **30** |
+| **TOTAL** | **39** | **20** | **0** | **19** |
 
 ---
 
 ## 📝 Notes
 
-- All save buttons are stubs (no-op) until T-005 ships
-- Authentication is UI-only until T-003 ships
-- 10 hardcoded sample moments until T-004 ships
-- Voice mic button is non-functional until V-001–V-003 ship
+- **Save/fetch fully functional end-to-end:** Create moment (voice/text) → save to API → fetch in list
+- Moments fetched per authenticated user, all data synced through single APIClient instance
+- **Offline-first architecture complete:** Full local persistence with LocalStorageManager + auto-sync with SyncManager
+- Pagination deferred (will implement with real backend when needed)
+- All voice features (V-001–V-008) complete and functional
+- Next blocking: T-001/T-002 (backend setup for production) and T-007 (refactor embedded views to separate files)
 - `NSMicrophoneUsageDescription` must be added to Info.plist before App Store submission

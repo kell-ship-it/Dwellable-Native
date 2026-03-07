@@ -2,8 +2,13 @@ import SwiftUI
 
 struct CaptureView: View {
     @Environment(\.dismiss) var dismiss
+    @StateObject private var audioManager = AudioRecordingManager()
     @State private var showVoiceReview = false
     @State private var showTypeFlow = false
+
+    let apiClient: APIClient
+    let userId: String
+    let syncManager: SyncManager
 
     var body: some View {
         ZStack {
@@ -40,13 +45,18 @@ struct CaptureView: View {
                     }
 
                     Button(action: {
-                        showVoiceReview = true
+                        if audioManager.isRecording {
+                            audioManager.stopRecording()
+                            showVoiceReview = true
+                        } else {
+                            audioManager.startRecording()
+                        }
                     }) {
-                        Image(systemName: "mic.fill")
+                        Image(systemName: audioManager.isRecording ? "mic.fill" : "mic.fill")
                             .font(.system(size: 26))
                             .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
                             .frame(width: 80, height: 80)
-                            .background(Theme.gold)
+                            .background(audioManager.isRecording ? Color(red: 0.95, green: 0.2, blue: 0.2) : Theme.gold)
                             .clipShape(Circle())
                     }
                 }
@@ -63,6 +73,25 @@ struct CaptureView: View {
                 Text("speak freely — we'll handle the rest")
                     .font(.system(size: 13, weight: .regular))
                     .foregroundColor(Theme.tertiaryText)
+
+                // Recording duration
+                if audioManager.isRecording {
+                    Text(audioManager.formattedDuration(audioManager.recordingDuration))
+                        .font(.system(size: 18, weight: .semibold, design: .monospaced))
+                        .foregroundColor(Theme.gold)
+                        .padding(.top, 16)
+                        .transition(.opacity)
+                }
+
+                // Error message (if any)
+                if let errorMessage = audioManager.errorMessage {
+                    Text(errorMessage)
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+                        .padding(.top, 12)
+                        .padding(.horizontal, 8)
+                        .lineLimit(nil)
+                }
 
                 Spacer()
 
@@ -98,100 +127,17 @@ struct CaptureView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $showVoiceReview) {
-            ReviewView()
+            ReviewView(audioURL: audioManager.audioURL, apiClient: apiClient, userId: userId, syncManager: syncManager)
         }
         .navigationDestination(isPresented: $showTypeFlow) {
-            TypeFlowView()
+            TypeFlowView(apiClient: apiClient, userId: userId, syncManager: syncManager)
         }
     }
 }
 
 #Preview {
+    let apiClient = MockAPIClient()
     NavigationStack {
-        CaptureView()
-    }
-}
-
-struct TypeFlowView: View {
-    @Environment(\.dismiss) var dismiss
-    @State private var momentBody: String = ""
-    @State private var senseOfLord: String = ""
-
-    var body: some View {
-        ZStack {
-            Theme.background.ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                // Back button
-                HStack(spacing: 4) {
-                    Button(action: { dismiss() }) {
-                        Text("‹")
-                            .font(.system(size: 20))
-                            .foregroundColor(Theme.tertiaryText)
-                    }
-                    Button(action: { dismiss() }) {
-                        Text("Moments")
-                            .font(.system(size: 14, weight: .regular))
-                            .foregroundColor(Theme.tertiaryText)
-                    }
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
-
-                // Body content
-                VStack(spacing: 0) {
-                    Spacer()
-                        .frame(height: 10)
-
-                    ZStack(alignment: .topLeading) {
-                        TextEditor(text: $momentBody)
-                            .font(.system(size: 20, weight: .light))
-                            .foregroundColor(Theme.text)
-                            .tint(Theme.gold)
-                            .lineSpacing(1.8)
-                            .scrollContentBackground(.hidden)
-                            .background(Color.clear)
-                            .frame(maxWidth: .infinity)
-                            .frame(maxHeight: .infinity)
-
-                        // Placeholder overlay
-                        if momentBody.isEmpty {
-                            Text("Begin here...")
-                                .font(.system(size: 20, weight: .light))
-                                .foregroundColor(Color(red: 0.184, green: 0.188, blue: 0.22))
-                                .padding(.top, 8)
-                                .padding(.leading, 4)
-                                .allowsHitTesting(false)
-                        }
-                    }
-
-                    // Hint text
-                    Text("Add where you sensed the Lord, if at all...")
-                        .font(.system(size: 16, weight: .regular))
-                        .italic()
-                        .foregroundColor(senseOfLord.isEmpty ? Color(red: 0.184, green: 0.188, blue: 0.22) : Color(red: 0.227, green: 0.239, blue: 0.271))
-                        .padding(.top, 12)
-                }
-                .padding(.horizontal, 20)
-
-                Spacer()
-
-                // Footer button - full width
-                Button(action: {}) {
-                    Text("Save moment")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 15)
-                        .background(Theme.gold)
-                        .cornerRadius(20)
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
-                .padding(.bottom, 20)
-            }
-        }
-        .navigationBarBackButtonHidden(true)
+        CaptureView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient))
     }
 }

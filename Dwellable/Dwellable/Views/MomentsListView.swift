@@ -2,24 +2,89 @@ import SwiftUI
 
 struct MomentsListView: View {
     @EnvironmentObject var authManager: AuthManager
-    @State private var moments: [Moment] = [
-        Moment(userId: "test", body: "During worship this morning there was a stillness I haven't felt in weeks. Like something lifted. I stood there not wanting to move.", senseOfLord: "Yes, His presence was unmistakable.", createdAt: Date().addingTimeInterval(-86400 * 7)),
-        Moment(userId: "test", body: "Coffee with an old friend. We talked about faith and doubt. It was honest and real.", senseOfLord: "In the vulnerability, I felt Christ's compassion.", createdAt: Date().addingTimeInterval(-86400 * 6)),
-        Moment(userId: "test", body: "My daughter asked me why the sky is blue. In explaining it, I felt grateful for her curiosity and wonder.", createdAt: Date().addingTimeInterval(-86400 * 5)),
-        Moment(userId: "test", body: "Read a passage that hit me differently today. Same words, but my heart was ready to hear them.", senseOfLord: "God's timing is perfect.", createdAt: Date().addingTimeInterval(-86400 * 4)),
-        Moment(userId: "test", body: "Failed at something I was trying to do. But in the failure, I learned patience and trust.", createdAt: Date().addingTimeInterval(-86400 * 3)),
-        Moment(userId: "test", body: "Sunset from the hiking trail. The colors were impossible. Felt small and safe at the same time.", senseOfLord: "Creation speaks of the Creator.", createdAt: Date().addingTimeInterval(-86400 * 2)),
-        Moment(userId: "test", body: "A text from someone I'd been praying for. They're finding their way back. Small but significant.", createdAt: Date().addingTimeInterval(-86400 * 1)),
-        Moment(userId: "test", body: "Quiet morning with scripture and coffee. No big revelation, just presence.", senseOfLord: "Peace that doesn't need explanation.", createdAt: Date().addingTimeInterval(-3600 * 12)),
-        Moment(userId: "test", body: "Someone showed me kindness when I didn't expect it. Reminded me to do the same.", createdAt: Date().addingTimeInterval(-3600 * 6)),
-        Moment(userId: "test", body: "Beginning to see how past struggles have shaped my compassion for others. There's redemption in that.", senseOfLord: "He wastes nothing.", createdAt: Date())
-    ]
+    @State private var moments: [Moment] = []
+    @State private var isLoading = true
+    @State private var error: String?
+
+    let apiClient: APIClient
+    let userId: String
+    let syncManager: SyncManager
+
+    init(apiClient: APIClient, userId: String, syncManager: SyncManager) {
+        self.apiClient = apiClient
+        self.userId = userId
+        self.syncManager = syncManager
+    }
+
+    private func fetchMoments() async {
+        isLoading = true
+        error = nil
+
+        do {
+            let fetchedMoments = try await apiClient.fetchMoments(userId: userId)
+            DispatchQueue.main.async {
+                self.moments = fetchedMoments
+                self.isLoading = false
+            }
+        } catch {
+            DispatchQueue.main.async {
+                self.error = error.localizedDescription
+                self.isLoading = false
+            }
+        }
+    }
 
     var body: some View {
         ZStack {
             Theme.background.ignoresSafeArea()
 
-            if moments.isEmpty {
+            if isLoading {
+                VStack(spacing: 0) {
+                    Spacer()
+                    ProgressView()
+                        .tint(Theme.gold)
+                    Spacer()
+                }
+            } else if let error = error {
+                VStack(spacing: 0) {
+                    Spacer()
+
+                    VStack(spacing: 20) {
+                        VStack(spacing: 12) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.system(size: 32))
+                                .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+
+                            Text("Failed to load moments")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Theme.text)
+
+                            Text(error)
+                                .font(.system(size: 12, weight: .regular))
+                                .foregroundColor(Theme.secondaryText)
+                                .multilineTextAlignment(.center)
+                        }
+
+                        Button(action: {
+                            Task {
+                                await fetchMoments()
+                            }
+                        }) {
+                            Text("Try Again")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
+                                .frame(maxWidth: .infinity)
+                                .padding(12)
+                                .background(Theme.gold)
+                                .cornerRadius(18)
+                        }
+                        .padding(.horizontal, 32)
+                    }
+                    .padding(.horizontal, 20)
+
+                    Spacer()
+                }
+            } else if moments.isEmpty {
                 VStack(spacing: 0) {
                     Spacer()
 
@@ -47,7 +112,7 @@ struct MomentsListView: View {
                                 .frame(maxWidth: 220)
                         }
 
-                        NavigationLink(destination: CaptureView()) {
+                        NavigationLink(destination: CaptureView(apiClient: apiClient, userId: userId, syncManager: syncManager)) {
                             Text("Capture your first moment")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
@@ -78,7 +143,9 @@ struct MomentsListView: View {
                         Spacer()
 
                         Button(action: {
-                            authManager.signOut()
+                            Task {
+                                await authManager.signOut()
+                            }
                         }) {
                             Text("Sign out")
                                 .font(.system(size: 13, weight: .regular))
@@ -98,7 +165,7 @@ struct MomentsListView: View {
 
                     // Bottom "Capture moment" button
                     VStack {
-                        NavigationLink(destination: CaptureView()) {
+                        NavigationLink(destination: CaptureView(apiClient: apiClient, userId: userId, syncManager: syncManager)) {
                             Text("Capture moment")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
@@ -112,7 +179,13 @@ struct MomentsListView: View {
                 }
             }
         }
+        .onAppear {
+            Task {
+                await fetchMoments()
+            }
+        }
     }
+
 }
 
 struct MomentRow: View {
@@ -134,7 +207,9 @@ struct MomentRow: View {
 }
 
 #Preview {
-    MomentsListView()
+    let apiClient = MockAPIClient()
+    MomentsListView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient))
+        .environmentObject(AuthManager(apiClient: apiClient))
 }
 
 struct MomentDetailView: View {

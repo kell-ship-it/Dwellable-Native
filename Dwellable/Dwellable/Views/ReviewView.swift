@@ -2,8 +2,17 @@ import SwiftUI
 
 struct ReviewView: View {
     @Environment(\.dismiss) var dismiss
+    @StateObject private var transcriptionManager = TranscriptionManager()
     @State private var momentBody: String = ""
     @State private var senseOfLord: String = ""
+    @State private var isSaving = false
+    @State private var saveError: String?
+    @State private var isSyncPending = false
+
+    let audioURL: URL?
+    let apiClient: APIClient
+    let userId: String
+    let syncManager: SyncManager
 
     var body: some View {
         ZStack {
@@ -31,6 +40,57 @@ struct ReviewView: View {
                 VStack(spacing: 0) {
                     Spacer()
                         .frame(height: 10)
+
+                    // Transcribing indicator
+                    if transcriptionManager.isTranscribing {
+                        HStack(spacing: 8) {
+                            ProgressView()
+                                .tint(Theme.gold)
+                            Text("Transcribing...")
+                                .font(.system(size: 14, weight: .regular))
+                                .foregroundColor(Theme.tertiaryText)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.bottom, 8)
+                    }
+
+                    // Transcription error with retry option
+                    if let errorMessage = transcriptionManager.errorMessage {
+                        VStack(spacing: 8) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "exclamationmark.circle.fill")
+                                    .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+                                Text(errorMessage)
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+                                Spacer()
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(Color(red: 0.95, green: 0.2, blue: 0.2, opacity: 0.1))
+                            .cornerRadius(8)
+
+                            Button(action: {
+                                if let audioURL = audioURL {
+                                    transcriptionManager.cancelTranscription()
+                                    transcriptionManager.transcribeAudio(from: audioURL) { transcript in
+                                        if let transcript = transcript, !transcript.isEmpty {
+                                            momentBody = transcript
+                                        }
+                                    }
+                                }
+                            }) {
+                                Text("Retry Transcription")
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundColor(Theme.gold)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                    }
 
                     TextEditor(text: $momentBody)
                         .font(.system(size: 20, weight: .light))
@@ -67,15 +127,28 @@ struct ReviewView: View {
                             .lineLimit(1)
                     }
 
-                    Button(action: {}) {
-                        Text("Save")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 15)
-                            .background(Theme.gold)
-                            .cornerRadius(20)
+                    Button(action: {
+                        Task {
+                            await saveMoment()
+                        }
+                    }) {
+                        if isSaving {
+                            ProgressView()
+                                .tint(Color(red: 0.1, green: 0.08, blue: 0.05))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 15)
+                        } else {
+                            Text("Save")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 15)
+                        }
                     }
+                    .background(Theme.gold)
+                    .cornerRadius(20)
+                    .disabled(isSaving || momentBody.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .opacity(isSaving || momentBody.trimmingCharacters(in: .whitespaces).isEmpty ? 0.6 : 1.0)
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
@@ -83,11 +156,60 @@ struct ReviewView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .overlay(alignment: .center) {
+            if transcriptionManager.isTranscribing {
+                TranscribingView()
+                    .transition(.opacity)
+            }
+        }
+        .onAppear {
+            if let audioURL = audioURL, momentBody.isEmpty {
+                transcriptionManager.transcribeAudio(from: audioURL) { transcript in
+                    if let transcript = transcript, !transcript.isEmpty {
+                        momentBody = transcript
+                    }
+                }
+            }
+        }
+    }
+
+    private func saveMoment() async {
+        guard !momentBody.trimmingCharacters(in: .whitespaces).isEmpty else {
+            saveError = "Moment cannot be empty"
+            return
+        }
+
+        isSaving = true
+        saveError = nil
+        isSyncPending = false
+
+        let moment = Moment(
+            userId: userId,
+            body: momentBody,
+            senseOfLord: senseOfLord.isEmpty ? nil : senseOfLord,
+            createdAt: Date()
+        )
+
+        do {
+            _ = try await apiClient.saveMoment(moment)
+            dismiss()
+        } catch {
+            // Network error - save locally and mark for sync
+            syncManager.markMomentAsPending(moment)
+            DispatchQueue.main.async {
+                self.isSyncPending = true
+                self.isSaving = false
+            }
+            // Dismiss after a short delay to show "pending sync" message
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            dismiss()
+        }
     }
 }
 
 #Preview {
+    let apiClient = MockAPIClient()
     NavigationStack {
-        ReviewView()
+        ReviewView(audioURL: nil, apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient))
     }
 }

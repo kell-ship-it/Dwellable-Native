@@ -99,6 +99,7 @@ struct LoginView: View {
 }
 
 #Preview {
+    let apiClient = MockAPIClient()
     LoginView()
-        .environmentObject(AuthManager())
+        .environmentObject(AuthManager(apiClient: apiClient))
 }

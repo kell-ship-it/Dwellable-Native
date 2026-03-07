@@ -2,12 +2,21 @@ import SwiftUI
 
 @main
 struct DwellableApp: App {
-    @StateObject private var authManager = AuthManager()
+    @StateObject private var authManager: AuthManager
+    private let apiClient: APIClient
+    private let syncManager: SyncManager
+
+    init() {
+        let apiClient = MockAPIClient()
+        self.apiClient = apiClient
+        self.syncManager = SyncManager(apiClient: apiClient)
+        _authManager = StateObject(wrappedValue: AuthManager(apiClient: apiClient))
+    }
 
     var body: some Scene {
         WindowGroup {
             if authManager.isAuthenticated {
-                AppView()
+                AppView(apiClient: apiClient, syncManager: syncManager)
                     .environmentObject(authManager)
             } else {
                 LoginView()

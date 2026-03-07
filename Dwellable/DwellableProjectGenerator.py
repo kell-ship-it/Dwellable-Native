@@ -8,16 +8,24 @@ swift_files = [
     "Dwellable/Views/LoginView.swift",
     "Dwellable/Views/CaptureView.swift",
     "Dwellable/Views/ReviewView.swift",
+    "Dwellable/Views/TranscribingView.swift",
     "Dwellable/Views/AppView.swift",
     "Dwellable/Views/MomentsListView.swift",
+    "Dwellable/Views/TypeFlowView.swift",
     "Dwellable/Managers/AuthManager.swift",
+    "Dwellable/Managers/AudioRecordingManager.swift",
+    "Dwellable/Managers/TranscriptionManager.swift",
+    "Dwellable/Managers/APIClient.swift",
+    "Dwellable/Managers/MockAPIClient.swift",
+    "Dwellable/Managers/KeychainManager.swift",
+    "Dwellable/Managers/LocalStorageManager.swift",
+    "Dwellable/Managers/SyncManager.swift",
     "Dwellable/Models/Moment.swift",
     "Dwellable/Utilities/Theme.swift",
     "Dwellable/Config.swift"
 ]
 
 resource_files = [
-    "Dwellable/Info.plist"
 ]
 
 # Generate pbxproj content
@@ -34,13 +42,21 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t0102 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0103 /* LoginView.swift */; };
 \t\t0104 /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0105 /* CaptureView.swift */; };
 \t\t0106 /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0107 /* ReviewView.swift */; };
+\t\t012c /* TranscribingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012d /* TranscribingView.swift */; };
 \t\t0108 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0109 /* AppView.swift */; };
 \t\t0110 /* MomentsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0111 /* MomentsListView.swift */; };
+\t\t013e /* TypeFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013f /* TypeFlowView.swift */; };
 \t\t0112 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0113 /* AuthManager.swift */; };
+\t\t0128 /* AudioRecordingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0129 /* AudioRecordingManager.swift */; };
+\t\t012a /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012b /* TranscriptionManager.swift */; };
+\t\t012e /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012f /* APIClient.swift */; };
+\t\t0132 /* MockAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0133 /* MockAPIClient.swift */; };
+\t\t0136 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0137 /* KeychainManager.swift */; };
+\t\t013a /* LocalStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013b /* LocalStorageManager.swift */; };
+\t\t013c /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013d /* SyncManager.swift */; };
 \t\t0114 /* Moment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0115 /* Moment.swift */; };
 \t\t0116 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0117 /* Theme.swift */; };
 \t\t0118 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0119 /* Config.swift */; };
-\t\t0120 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0121 /* Info.plist */; };
 \t\t0122 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0123 /* UIKit.framework */; };
 \t\t0124 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0125 /* SwiftUI.framework */; };
 \t\t0126 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0127 /* Foundation.framework */; };
@@ -51,9 +67,18 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t0103 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 \t\t0105 /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
 \t\t0107 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
+\t\t012d /* TranscribingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscribingView.swift; sourceTree = "<group>"; };
 \t\t0109 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 \t\t0111 /* MomentsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentsListView.swift; sourceTree = "<group>"; };
+\t\t013f /* TypeFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeFlowView.swift; sourceTree = "<group>"; };
 \t\t0113 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+\t\t0129 /* AudioRecordingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecordingManager.swift; sourceTree = "<group>"; };
+\t\t012b /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
+\t\t012f /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+\t\t0133 /* MockAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAPIClient.swift; sourceTree = "<group>"; };
+\t\t0137 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
+\t\t013b /* LocalStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStorageManager.swift; sourceTree = "<group>"; };
+\t\t013d /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
 \t\t0115 /* Moment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Moment.swift; sourceTree = "<group>"; };
 \t\t0117 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 \t\t0119 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
@@ -98,8 +123,10 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t\t\t0103 /* LoginView.swift */,
 \t\t\t\t0105 /* CaptureView.swift */,
 \t\t\t\t0107 /* ReviewView.swift */,
+\t\t\t\t012d /* TranscribingView.swift */,
 \t\t\t\t0109 /* AppView.swift */,
 \t\t\t\t0111 /* MomentsListView.swift */,
+\t\t\t\t013f /* TypeFlowView.swift */,
 \t\t\t);
 \t\t\tpath = Views;
 \t\t\tsourceTree = "<group>";
@@ -108,6 +135,13 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t\tisa = PBXGroup;
 \t\t\tchildren = (
 \t\t\t\t0113 /* AuthManager.swift */,
+\t\t\t\t0129 /* AudioRecordingManager.swift */,
+\t\t\t\t012b /* TranscriptionManager.swift */,
+\t\t\t\t012f /* APIClient.swift */,
+\t\t\t\t0133 /* MockAPIClient.swift */,
+\t\t\t\t0137 /* KeychainManager.swift */,
+\t\t\t\t013b /* LocalStorageManager.swift */,
+\t\t\t\t013d /* SyncManager.swift */,
 \t\t\t);
 \t\t\tpath = Managers;
 \t\t\tsourceTree = "<group>";
@@ -207,7 +241,6 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t\tisa = PBXResourcesBuildPhase;
 \t\t\tbuildActionMask = 2147483647;
 \t\t\tfiles = (
-\t\t\t\t0120 /* Info.plist in Resources */,
 \t\t\t);
 \t\t\trunOnlyForDeploymentPostprocessing = 0;
 \t\t};
@@ -222,9 +255,18 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t\t\t0102 /* LoginView.swift in Sources */,
 \t\t\t\t0104 /* CaptureView.swift in Sources */,
 \t\t\t\t0106 /* ReviewView.swift in Sources */,
+\t\t\t\t012c /* TranscribingView.swift in Sources */,
 \t\t\t\t0108 /* AppView.swift in Sources */,
 \t\t\t\t0110 /* MomentsListView.swift in Sources */,
+\t\t\t\t013e /* TypeFlowView.swift in Sources */,
 \t\t\t\t0112 /* AuthManager.swift in Sources */,
+\t\t\t\t0128 /* AudioRecordingManager.swift in Sources */,
+\t\t\t\t012a /* TranscriptionManager.swift in Sources */,
+\t\t\t\t012e /* APIClient.swift in Sources */,
+\t\t\t\t0132 /* MockAPIClient.swift in Sources */,
+\t\t\t\t0136 /* KeychainManager.swift in Sources */,
+\t\t\t\t013a /* LocalStorageManager.swift in Sources */,
+\t\t\t\t013c /* SyncManager.swift in Sources */,
 \t\t\t\t0114 /* Moment.swift in Sources */,
 \t\t\t\t0116 /* Theme.swift in Sources */,
 \t\t\t\t0118 /* Config.swift in Sources */,
@@ -243,7 +285,7 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t\t\tCURRENT_PROJECT_VERSION = 1;
 \t\t\t\tDEVELOPMENT_TEAM = 38X95M6CUB;
 \t\t\t\tINFOPLIST_FILE = Dwellable/Info.plist;
-\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 15.0;
+\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 16.0;
 \t\t\t\tMARKETING_VERSION = 1.0;
 \t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = com.kellgolden.Dwell;
 \t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";
@@ -261,7 +303,7 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t\t\tCURRENT_PROJECT_VERSION = 1;
 \t\t\t\tDEVELOPMENT_TEAM = 38X95M6CUB;
 \t\t\t\tINFOPLIST_FILE = Dwellable/Info.plist;
-\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 15.0;
+\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 16.0;
 \t\t\t\tMARKETING_VERSION = 1.0;
 \t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = com.kellgolden.Dwell;
 \t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";
@@ -319,7 +361,7 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t\t\tGCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 \t\t\t\tGCC_WARN_UNUSED_FUNCTION = YES;
 \t\t\t\tGCC_WARN_UNUSED_VARIABLE = YES;
-\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 15.0;
+\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 16.0;
 \t\t\t\tMTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 \t\t\t\tMTL_FAST_MATH = YES;
 \t\t\t\tONLY_ACTIVE_ARCH = YES;
@@ -371,7 +413,7 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t\t\tGCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 \t\t\t\tGCC_WARN_UNUSED_FUNCTION = YES;
 \t\t\t\tGCC_WARN_UNUSED_VARIABLE = YES;
-\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 15.0;
+\t\t\t\tIPHONEOS_DEPLOYMENT_TARGET = 16.0;
 \t\t\t\tMTL_ENABLE_DEBUG_INFO = NO;
 \t\t\t\tMTL_FAST_MATH = YES;
 \t\t\t\tSDKROOT = iphoneos;
