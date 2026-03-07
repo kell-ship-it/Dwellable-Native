@@ -17,6 +17,7 @@ swift_files = [
     "Dwellable/Managers/TranscriptionManager.swift",
     "Dwellable/Managers/APIClient.swift",
     "Dwellable/Managers/MockAPIClient.swift",
+    "Dwellable/Managers/SupabaseAPIClient.swift",
     "Dwellable/Managers/KeychainManager.swift",
     "Dwellable/Managers/LocalStorageManager.swift",
     "Dwellable/Managers/SyncManager.swift",
@@ -51,6 +52,7 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t012a /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012b /* TranscriptionManager.swift */; };
 \t\t012e /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012f /* APIClient.swift */; };
 \t\t0132 /* MockAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0133 /* MockAPIClient.swift */; };
+\t\t0134 /* SupabaseAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0135 /* SupabaseAPIClient.swift */; };
 \t\t0136 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0137 /* KeychainManager.swift */; };
 \t\t013a /* LocalStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013b /* LocalStorageManager.swift */; };
 \t\t013c /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013d /* SyncManager.swift */; };
@@ -76,6 +78,7 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t012b /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
 \t\t012f /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 \t\t0133 /* MockAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAPIClient.swift; sourceTree = "<group>"; };
+\t\t0135 /* SupabaseAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAPIClient.swift; sourceTree = "<group>"; };
 \t\t0137 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 \t\t013b /* LocalStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStorageManager.swift; sourceTree = "<group>"; };
 \t\t013d /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
@@ -139,6 +142,7 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t\t\t012b /* TranscriptionManager.swift */,
 \t\t\t\t012f /* APIClient.swift */,
 \t\t\t\t0133 /* MockAPIClient.swift */,
+\t\t\t\t0135 /* SupabaseAPIClient.swift */,
 \t\t\t\t0137 /* KeychainManager.swift */,
 \t\t\t\t013b /* LocalStorageManager.swift */,
 \t\t\t\t013d /* SyncManager.swift */,
@@ -264,6 +268,7 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t\t\t012a /* TranscriptionManager.swift in Sources */,
 \t\t\t\t012e /* APIClient.swift in Sources */,
 \t\t\t\t0132 /* MockAPIClient.swift in Sources */,
+\t\t\t\t0134 /* SupabaseAPIClient.swift in Sources */,
 \t\t\t\t0136 /* KeychainManager.swift in Sources */,
 \t\t\t\t013a /* LocalStorageManager.swift in Sources */,
 \t\t\t\t013c /* SyncManager.swift in Sources */,

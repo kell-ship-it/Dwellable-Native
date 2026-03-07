@@ -1,0 +1,174 @@
+import Foundation
+
+class SupabaseAPIClient: APIClient {
+    private let baseURL: String
+    private let anonKey: String
+    private let session: URLSession
+
+    init(baseURL: String = Config.supabaseURL, anonKey: String = Config.supabaseAnonKey) {
+        self.baseURL = baseURL
+        self.anonKey = anonKey
+        self.session = URLSession.shared
+    }
+
+    private func makeRequest<T: Decodable>(
+        method: String,
+        endpoint: String,
+        body: Encodable? = nil,
+        responseType: T.Type
+    ) async throws -> T {
+        var urlComponents = URLComponents(string: baseURL)
+        urlComponents?.path = endpoint
+
+        guard let url = urlComponents?.url else {
+            throw APIError.invalidRequest
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if let body = body {
+            request.httpBody = try JSONEncoder().encode(body)
+        }
+
+        do {
+            let (data, response) = try await session.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw APIError.networkError
+            }
+
+            switch httpResponse.statusCode {
+            case 200...299:
+                return try JSONDecoder().decode(T.self, from: data)
+            case 404:
+                throw APIError.notFound
+            case 400...499:
+                throw APIError.invalidRequest
+            case 500...:
+                throw APIError.serverError
+            default:
+                throw APIError.unknown
+            }
+        } catch let error as APIError {
+            throw error
+        } catch {
+            throw APIError.networkError
+        }
+    }
+
+    // MARK: - Moments API
+
+    func saveMoment(_ moment: Moment) async throws -> Moment {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+
+        let payload = MomentPayload(
+            user_id: moment.userId,
+            body: moment.body,
+            created_at: moment.createdAt.ISO8601Format(),
+            updated_at: Date().ISO8601Format()
+        )
+
+        // Try to insert new moment
+        do {
+            let endpoint = "/rest/v1/moments"
+            return try await makeRequest(
+                method: "POST",
+                endpoint: endpoint,
+                body: payload,
+                responseType: Moment.self
+            )
+        } catch {
+            // If insert fails, could be due to existing ID - would need update logic
+            throw error
+        }
+    }
+
+    func fetchMoments(userId: String) async throws -> [Moment] {
+        let endpoint = "/rest/v1/moments?user_id=eq.\(userId)&order=created_at.desc"
+        return try await makeRequest(
+            method: "GET",
+            endpoint: endpoint,
+            responseType: [Moment].self
+        )
+    }
+
+    func fetchMoment(id: String) async throws -> Moment {
+        let endpoint = "/rest/v1/moments?id=eq.\(id)"
+        let moments = try await makeRequest(
+            method: "GET",
+            endpoint: endpoint,
+            responseType: [Moment].self
+        )
+
+        guard let moment = moments.first else {
+            throw APIError.notFound
+        }
+        return moment
+    }
+
+    func deleteMoment(id: String) async throws {
+        let endpoint = "/rest/v1/moments?id=eq.\(id)"
+        _ = try await makeRequest(
+            method: "DELETE",
+            endpoint: endpoint,
+            responseType: EmptyResponse.self
+        )
+    }
+
+    // MARK: - Auth API
+
+    func login(email: String, password: String) async throws -> AuthToken {
+        let payload = LoginPayload(email: email, password: password)
+        let endpoint = "/auth/v1/token?grant_type=password"
+
+        let response = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: AuthResponse.self
+        )
+
+        return AuthToken(
+            token: response.access_token,
+            userId: response.user.id,
+            expiresAt: Date(timeIntervalSinceNow: TimeInterval(response.expires_in))
+        )
+    }
+
+    func logout() async throws {
+        // Supabase logout is typically handled client-side (token removal)
+        // Could call /auth/v1/logout if needed
+    }
+}
+
+// MARK: - Payload and Response Models
+
+struct MomentPayload: Encodable {
+    let user_id: String
+    let body: String
+    let created_at: String
+    let updated_at: String
+}
+
+struct LoginPayload: Encodable {
+    let email: String
+    let password: String
+}
+
+struct AuthResponse: Decodable {
+    let access_token: String
+    let token_type: String
+    let expires_in: Int
+    let user: UserResponse
+}
+
+struct UserResponse: Decodable {
+    let id: String
+    let email: String
+}
+
+struct EmptyResponse: Decodable {}

@@ -20,6 +20,7 @@
 		012a /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012b /* TranscriptionManager.swift */; };
 		012e /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012f /* APIClient.swift */; };
 		0132 /* MockAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0133 /* MockAPIClient.swift */; };
+		0134 /* SupabaseAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0135 /* SupabaseAPIClient.swift */; };
 		0136 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0137 /* KeychainManager.swift */; };
 		013a /* LocalStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013b /* LocalStorageManager.swift */; };
 		013c /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013d /* SyncManager.swift */; };
@@ -45,6 +46,7 @@
 		012b /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
 		012f /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		0133 /* MockAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAPIClient.swift; sourceTree = "<group>"; };
+		0135 /* SupabaseAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAPIClient.swift; sourceTree = "<group>"; };
 		0137 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		013b /* LocalStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStorageManager.swift; sourceTree = "<group>"; };
 		013d /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
@@ -108,6 +110,7 @@
 				012b /* TranscriptionManager.swift */,
 				012f /* APIClient.swift */,
 				0133 /* MockAPIClient.swift */,
+				0135 /* SupabaseAPIClient.swift */,
 				0137 /* KeychainManager.swift */,
 				013b /* LocalStorageManager.swift */,
 				013d /* SyncManager.swift */,
@@ -233,6 +236,7 @@
 				012a /* TranscriptionManager.swift in Sources */,
 				012e /* APIClient.swift in Sources */,
 				0132 /* MockAPIClient.swift in Sources */,
+				0134 /* SupabaseAPIClient.swift in Sources */,
 				0136 /* KeychainManager.swift in Sources */,
 				013a /* LocalStorageManager.swift in Sources */,
 				013c /* SyncManager.swift in Sources */,

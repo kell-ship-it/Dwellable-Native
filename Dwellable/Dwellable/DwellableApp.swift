@@ -7,7 +7,7 @@ struct DwellableApp: App {
     private let syncManager: SyncManager
 
     init() {
-        let apiClient = MockAPIClient()
+        let apiClient = SupabaseAPIClient()
         self.apiClient = apiClient
         self.syncManager = SyncManager(apiClient: apiClient)
         _authManager = StateObject(wrappedValue: AuthManager(apiClient: apiClient))
