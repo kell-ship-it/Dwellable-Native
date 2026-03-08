@@ -166,6 +166,20 @@ class SupabaseAPIClient: APIClient {
         // Supabase logout is typically handled client-side (token removal)
         // Could call /auth/v1/logout if needed
     }
+
+    func ensureUserExists(userId: String, email: String) async throws {
+        // Create user record in public.users if it doesn't exist
+        // Using upsert (insert...on conflict do nothing)
+        let payload = UserPayload(id: userId, email: email)
+        let endpoint = "/rest/v1/users?on_conflict=id"
+
+        _ = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: UserResponse.self
+        )
+    }
 }
 
 // MARK: - Payload and Response Models
@@ -180,6 +194,11 @@ struct MomentPayload: Encodable {
 struct LoginPayload: Encodable {
     let email: String
     let password: String
+}
+
+struct UserPayload: Encodable {
+    let id: String
+    let email: String
 }
 
 struct AuthResponse: Decodable {

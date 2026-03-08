@@ -30,6 +30,14 @@ class AuthManager: ObservableObject {
         do {
             let authToken = try await apiClient.login(email: email, password: password)
 
+            // Create user record in database (idempotent - won't fail if already exists)
+            do {
+                try await apiClient.ensureUserExists(userId: authToken.userId, email: email)
+            } catch {
+                // Log but don't fail auth if user creation fails
+                print("Warning: Could not create user record: \(error.localizedDescription)")
+            }
+
             // Store token and userId in Keychain
             _ = keychain.save(authToken.token, forKey: "authToken")
             _ = keychain.save(authToken.userId, forKey: "userId")
