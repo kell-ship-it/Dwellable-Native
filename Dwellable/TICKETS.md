@@ -132,11 +132,11 @@
 
 ### Bugs (Complete)
 - [x] **B-001:** Fix post-save navigation (ReviewView/TypeFlowView → MomentsListView)
-  - Child views now dismiss themselves immediately after calling onMomentSaved() callback
-  - Eliminates race condition that caused navigation to bounce through CaptureView
-  - Solution: ReviewView, TypeFlowView call dismiss() in success/error paths
-  - CaptureView simplified: removed momentWasSaved state and onChange logic
-  - Navigation flow now direct: Save → Child dismisses → Parent dismisses → MomentsListView
+  - Root cause: NavigationLink(destination:) gave no way to pop multiple levels at once
+  - Solution: MomentsListView owns `showCapture` binding via navigationDestination(isPresented:)
+  - Setting `showCapture = false` pops entire sub-hierarchy (CaptureView + child) in one shot
+  - Child views propagate onMomentSaved callback only — no dismiss() calls
+  - `disablesAnimations` on Transaction eliminates black screen flash during pop
 
 ### Backend Integration (Complete)
 - [x] **T-001:** Set up backend API

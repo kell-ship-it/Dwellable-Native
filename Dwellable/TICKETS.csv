@@ -37,4 +37,4 @@ T-024,TestFlight beta testing with users,Testing,MEDIUM,🔲 Not Started,2-3,"T-
 T-025,Prepare for App Store submission,Deployment,HIGH,🔲 Not Started,4-6,"T-005, V-005","Privacy policy, terms of service, screenshots, description"
 T-026,Configure production environment,Deployment,LOW,⚪ Deferred v2,4-6,"T-001, T-003","Production backend, Supabase project, CI/CD pipeline"
 T-027,Create user onboarding flow,Deployment,LOW,⚪ Deferred v2,4-6,"T-010","Welcome screen, permission explanations, quick tutorial"
-B-001,Fix post-save navigation to MomentsListView,Bugs,BLOCKING,✅ Complete,2-4,"T-005","Child views (ReviewView, TypeFlowView) now dismiss themselves immediately after onMomentSaved() callback. Eliminates race condition that caused bouncing navigation."
+B-001,Fix post-save navigation to MomentsListView,Bugs,BLOCKING,✅ Complete,2-4,"T-005","MomentsListView owns showCapture binding; setting false pops entire sub-hierarchy instantly. No dismiss() in child views. disablesAnimations prevents black screen flash."
