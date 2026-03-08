@@ -15,7 +15,8 @@ class SupabaseAPIClient: APIClient {
         method: String,
         endpoint: String,
         body: Encodable? = nil,
-        responseType: T.Type
+        responseType: T.Type,
+        requiresAuth: Bool = true
     ) async throws -> T {
         var urlComponents = URLComponents(string: baseURL)
         urlComponents?.path = endpoint
@@ -26,7 +27,10 @@ class SupabaseAPIClient: APIClient {
 
         var request = URLRequest(url: url)
         request.httpMethod = method
-        request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        if requiresAuth {
+            request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
+        }
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         if let body = body {
@@ -129,7 +133,8 @@ class SupabaseAPIClient: APIClient {
             method: "POST",
             endpoint: endpoint,
             body: payload,
-            responseType: AuthResponse.self
+            responseType: AuthResponse.self,
+            requiresAuth: false
         )
 
         return AuthToken(
