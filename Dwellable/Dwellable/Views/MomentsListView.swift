@@ -87,6 +87,44 @@ struct MomentsListView: View {
                 }
             } else if moments.isEmpty {
                 VStack(spacing: 0) {
+                    // Header
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Moments")
+                                .font(.system(size: 30, weight: .bold))
+                                .foregroundColor(Theme.text)
+
+                            Text("Document life. Discern over time.")
+                                .font(.system(size: 13, weight: .regular))
+                                .foregroundColor(Theme.secondaryText)
+                        }
+
+                        Spacer()
+
+                        HStack(spacing: 12) {
+                            Button(action: {
+                                Task {
+                                    await fetchMoments()
+                                }
+                            }) {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundColor(Theme.tertiaryText)
+                            }
+
+                            Button(action: {
+                                Task {
+                                    await authManager.signOut()
+                                }
+                            }) {
+                                Text("Sign out")
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundColor(Theme.tertiaryText)
+                            }
+                        }
+                    }
+                    .padding(20)
+
                     Spacer()
 
                     VStack(spacing: 24) {
