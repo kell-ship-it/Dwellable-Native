@@ -117,9 +117,6 @@ class SupabaseAPIClient: APIClient {
     // MARK: - Moments API
 
     func saveMoment(_ moment: Moment) async throws -> Moment {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-
         let payload = MomentPayload(
             user_id: moment.userId,
             body: moment.body,
@@ -127,19 +124,15 @@ class SupabaseAPIClient: APIClient {
             updated_at: Date().ISO8601Format()
         )
 
-        // Try to insert new moment
-        do {
-            let endpoint = "/rest/v1/moments"
-            return try await makeRequest(
-                method: "POST",
-                endpoint: endpoint,
-                body: payload,
-                responseType: Moment.self
-            )
-        } catch {
-            // If insert fails, could be due to existing ID - would need update logic
-            throw error
-        }
+        let endpoint = "/rest/v1/moments"
+        // Supabase returns an array even for single inserts
+        let moments: [Moment] = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: [Moment].self
+        )
+        return moments.first ?? moment
     }
 
     func fetchMoments(userId: String) async throws -> [Moment] {
