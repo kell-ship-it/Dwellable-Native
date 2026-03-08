@@ -43,6 +43,9 @@ class SupabaseAPIClient: APIClient {
             throw APIError.invalidRequest
         }
 
+        // Debug: Log the request details
+        print("🔵 API Request: \(method) \(url)")
+
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue(anonKey, forHTTPHeaderField: "apikey")
@@ -62,9 +65,32 @@ class SupabaseAPIClient: APIClient {
                 throw APIError.networkError
             }
 
+            // Debug: Log response
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("🟢 Response (\(httpResponse.statusCode)): \(responseString.prefix(500))")
+            }
+
             switch httpResponse.statusCode {
             case 200...299:
-                return try JSONDecoder().decode(T.self, from: data)
+                let decoder = JSONDecoder()
+                // Supabase returns ISO 8601 dates with fractional seconds
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZZZZZ"
+                formatter.locale = Locale(identifier: "en_US_POSIX")
+                formatter.timeZone = TimeZone(secondsFromGMT: 0)
+                decoder.dateDecodingStrategy = .custom { decoder in
+                    let container = try decoder.singleValueContainer()
+                    let dateString = try container.decode(String.self)
+                    // Try fractional seconds first, then standard ISO 8601
+                    if let date = formatter.date(from: dateString) {
+                        return date
+                    }
+                    if let date = ISO8601DateFormatter().date(from: dateString) {
+                        return date
+                    }
+                    throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date: \(dateString)")
+                }
+                return try decoder.decode(T.self, from: data)
             case 404:
                 throw APIError.notFound
             case 400...499:
@@ -77,6 +103,8 @@ class SupabaseAPIClient: APIClient {
         } catch let error as APIError {
             throw error
         } catch {
+            print("🔴 Network Error: \(error.localizedDescription)")
+            print("🔴 Full Error: \(error)")
             throw APIError.networkError
         }
     }
