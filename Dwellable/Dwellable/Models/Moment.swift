@@ -23,4 +23,13 @@ struct Moment: Identifiable, Codable {
         self.createdAt = createdAt
         self.syncedAt = syncedAt
     }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userId = "user_id"
+        case body
+        case senseOfLord = "sense_of_lord"
+        case createdAt = "created_at"
+        case syncedAt = "synced_at"
+    }
 }
