@@ -193,11 +193,10 @@ struct ReviewView: View {
 
         do {
             _ = try await apiClient.saveMoment(moment)
-            print("✅ ReviewView: save succeeded, dismissing immediately")
+            print("✅ ReviewView: save succeeded")
             await MainActor.run {
                 isSaving = false
                 onMomentSaved?()
-                dismiss()
             }
         } catch {
             print("🔴 ReviewView: save failed - \(error)")
@@ -207,7 +206,6 @@ struct ReviewView: View {
                 isSyncPending = true
                 isSaving = false
                 onMomentSaved?()
-                dismiss()
             }
         }
     }

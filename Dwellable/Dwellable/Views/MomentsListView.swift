@@ -6,6 +6,7 @@ struct MomentsListView: View {
     @State private var isLoading = true
     @State private var error: String?
     @State private var refreshTrigger = UUID()
+    @State private var showCapture = false
 
     let apiClient: APIClient
     let userId: String
@@ -151,9 +152,7 @@ struct MomentsListView: View {
                                 .frame(maxWidth: 220)
                         }
 
-                        NavigationLink(destination: CaptureView(apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
-                            refreshTrigger = UUID()
-                        })) {
+                        Button(action: { showCapture = true }) {
                             Text("Capture your first moment")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
@@ -218,9 +217,7 @@ struct MomentsListView: View {
 
                     // Bottom "Capture moment" button
                     VStack {
-                        NavigationLink(destination: CaptureView(apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
-                            refreshTrigger = UUID()
-                        })) {
+                        Button(action: { showCapture = true }) {
                             Text("Capture moment")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
@@ -233,6 +230,16 @@ struct MomentsListView: View {
                     .padding(16)
                 }
             }
+        }
+        .navigationDestination(isPresented: $showCapture) {
+            CaptureView(apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    showCapture = false
+                }
+                refreshTrigger = UUID()
+            })
         }
         .onAppear {
             Task {

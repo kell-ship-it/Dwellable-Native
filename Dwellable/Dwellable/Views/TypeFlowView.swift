@@ -140,11 +140,10 @@ struct TypeFlowView: View {
 
         do {
             _ = try await apiClient.saveMoment(moment)
-            print("✅ TypeFlowView: save succeeded, dismissing immediately")
+            print("✅ TypeFlowView: save succeeded")
             await MainActor.run {
                 isSaving = false
                 onMomentSaved?()
-                dismiss()
             }
         } catch {
             print("🔴 TypeFlowView: save failed - \(error)")
@@ -153,7 +152,6 @@ struct TypeFlowView: View {
                 isSyncPending = true
                 isSaving = false
                 onMomentSaved?()
-                dismiss()
             }
         }
     }

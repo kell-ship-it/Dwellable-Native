@@ -130,13 +130,11 @@ struct CaptureView: View {
         .navigationDestination(isPresented: $showVoiceReview) {
             ReviewView(audioURL: audioManager.audioURL, apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
                 onMomentSaved?()
-                dismiss()
             })
         }
         .navigationDestination(isPresented: $showTypeFlow) {
             TypeFlowView(apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
                 onMomentSaved?()
-                dismiss()
             })
         }
     }
