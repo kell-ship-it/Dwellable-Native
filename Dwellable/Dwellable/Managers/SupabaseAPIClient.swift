@@ -124,15 +124,41 @@ class SupabaseAPIClient: APIClient {
             updated_at: Date().ISO8601Format()
         )
 
-        let endpoint = "/rest/v1/moments"
-        // Supabase returns an array even for single inserts
-        let moments: [Moment] = try await makeRequest(
-            method: "POST",
-            endpoint: endpoint,
-            body: payload,
-            responseType: [Moment].self
-        )
-        return moments.first ?? moment
+        // Build request manually to avoid decoding the response
+        var urlComponents = URLComponents(string: baseURL)
+        urlComponents?.path = "/rest/v1/moments"
+
+        guard let url = urlComponents?.url else {
+            throw APIError.invalidRequest
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(payload)
+
+        print("🔵 API Request: POST \(url)")
+
+        let (data, response) = try await session.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.networkError
+        }
+
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("🟢 Save Response (\(httpResponse.statusCode)): \(responseString.prefix(500))")
+        }
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            print("🔴 Save failed with status: \(httpResponse.statusCode)")
+            throw APIError.serverError
+        }
+
+        // Save succeeded — return the local moment (no need to decode response)
+        print("✅ Moment saved successfully")
+        return moment
     }
 
     func fetchMoments(userId: String) async throws -> [Moment] {
