@@ -5,7 +5,6 @@ struct CaptureView: View {
     @StateObject private var audioManager = AudioRecordingManager()
     @State private var showVoiceReview = false
     @State private var showTypeFlow = false
-    @State private var momentWasSaved = false
 
     let apiClient: APIClient
     let userId: String
@@ -131,26 +130,14 @@ struct CaptureView: View {
         .navigationDestination(isPresented: $showVoiceReview) {
             ReviewView(audioURL: audioManager.audioURL, apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
                 onMomentSaved?()
-                momentWasSaved = true
+                dismiss()
             })
         }
         .navigationDestination(isPresented: $showTypeFlow) {
             TypeFlowView(apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
                 onMomentSaved?()
-                momentWasSaved = true
+                dismiss()
             })
-        }
-        .onChange(of: momentWasSaved) { saved in
-            if saved {
-                // Pop everything in one shot with no animation
-                var transaction = Transaction()
-                transaction.disablesAnimations = true
-                withTransaction(transaction) {
-                    showVoiceReview = false
-                    showTypeFlow = false
-                    dismiss()
-                }
-            }
         }
     }
 }
