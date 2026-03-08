@@ -193,20 +193,20 @@ struct ReviewView: View {
 
         do {
             _ = try await apiClient.saveMoment(moment)
-            onMomentSaved?()
-            // Navigation handled by CaptureView
+            print("✅ ReviewView: save succeeded, calling onMomentSaved")
+            await MainActor.run {
+                isSaving = false
+                onMomentSaved?()
+            }
         } catch {
+            print("🔴 ReviewView: save failed - \(error)")
             // Network error - save locally and mark for sync
             syncManager.markMomentAsPending(moment)
-            DispatchQueue.main.async {
-                self.isSyncPending = true
-                self.isSaving = false
+            await MainActor.run {
+                isSyncPending = true
+                isSaving = false
+                onMomentSaved?()
             }
-            // Call the callback anyway (data was saved locally)
-            DispatchQueue.main.async {
-                self.onMomentSaved?()
-            }
-            // Navigation handled by CaptureView
         }
     }
 }
