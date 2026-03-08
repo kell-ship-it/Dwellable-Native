@@ -141,7 +141,7 @@ struct TypeFlowView: View {
         do {
             _ = try await apiClient.saveMoment(moment)
             onMomentSaved?()
-            dismiss()
+            // Navigation handled by CaptureView
         } catch {
             // Network error - save locally and mark for sync
             syncManager.markMomentAsPending(moment)
@@ -153,9 +153,7 @@ struct TypeFlowView: View {
             DispatchQueue.main.async {
                 self.onMomentSaved?()
             }
-            // Dismiss after a short delay to show "pending sync" message
-            try? await Task.sleep(nanoseconds: 1_500_000_000)
-            dismiss()
+            // Navigation handled by CaptureView
         }
     }
 }
