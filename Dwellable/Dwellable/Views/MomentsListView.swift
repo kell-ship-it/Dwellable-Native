@@ -145,14 +145,26 @@ struct MomentsListView: View {
 
                         Spacer()
 
-                        Button(action: {
-                            Task {
-                                await authManager.signOut()
+                        HStack(spacing: 12) {
+                            Button(action: {
+                                Task {
+                                    await fetchMoments()
+                                }
+                            }) {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundColor(Theme.tertiaryText)
                             }
-                        }) {
-                            Text("Sign out")
-                                .font(.system(size: 13, weight: .regular))
-                                .foregroundColor(Theme.tertiaryText)
+
+                            Button(action: {
+                                Task {
+                                    await authManager.signOut()
+                                }
+                            }) {
+                                Text("Sign out")
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundColor(Theme.tertiaryText)
+                            }
                         }
                     }
                     .padding(20)
@@ -189,10 +201,8 @@ struct MomentsListView: View {
                 await fetchMoments()
             }
         }
-        .onChange(of: refreshTrigger) { _ in
-            Task {
-                await fetchMoments()
-            }
+        .task(id: refreshTrigger) {
+            await fetchMoments()
         }
     }
 
