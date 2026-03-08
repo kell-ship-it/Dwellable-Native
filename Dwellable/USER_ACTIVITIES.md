@@ -12,6 +12,7 @@
 | 1 | U-001 | Manual Testing on Physical iPhone | Testing | BLOCKING | 🔲 Not Started | Build to physical device + test voice recording, offline sync, auth flow |
 | 2 | U-002 | Manual Testing Scenarios Checklist | Testing | BLOCKING | 🔲 Not Started | Run through 40+ test cases covering offline, auth, CRUD, network, persistence |
 | 3 | U-003 | XCUI Test Setup & Offline Sync Tests | Testing + Automation | HIGH | 🔲 Not Started | Collaborate with assistant on XCTest automation for UI testing; test offline sync, auth, moment creation |
+| 4 | U-004 | Generate 10 Test Participant Accounts | Setup | MEDIUM | 🔲 Not Started | Create 10 test accounts in Supabase for participant testing; use bash script provided |
 
 ---
 
@@ -82,6 +83,27 @@ See **MANUAL_TESTING_CHECKLIST.md** for the detailed checklist.
 - [ ] At least 5 test cases written and passing
 - [ ] Tests can run on both simulator and device
 - [ ] Tests verify offline → online sync behavior
+
+---
+
+### U-004: Generate 10 Test Participant Accounts
+**Priority:** MEDIUM
+**Category:** Setup — Test data
+**What you'll do:**
+- [ ] Get Supabase service role key from dashboard
+- [ ] Run the bash script provided (generates 10 test accounts)
+- [ ] Verify accounts created in Supabase dashboard
+- [ ] Share account list with participants
+
+**Accounts generated:**
+- `participant1@dwellable.test` through `participant10@dwellable.test`
+- Password: `ParticipantTest123` (same for all)
+- All accounts auto-confirmed (no email verification needed)
+
+**Acceptance Criteria:**
+- [ ] All 10 accounts exist in Supabase users table
+- [ ] All accounts can log in successfully
+- [ ] Ready to distribute to participants
 
 ---
 

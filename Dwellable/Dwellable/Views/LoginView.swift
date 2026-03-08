@@ -4,6 +4,7 @@ struct LoginView: View {
     @EnvironmentObject var authManager: AuthManager
     @State private var email = ""
     @State private var password = ""
+    @State private var showPassword = false
 
     var body: some View {
         ZStack {
@@ -47,14 +48,31 @@ struct LoginView: View {
                         }
 
                         ZStack(alignment: .leading) {
-                            SecureField("", text: $password)
-                                .textContentType(.password)
-                                .padding(16)
-                                .background(Color(red: 0.07, green: 0.07, blue: 0.09))
-                                .foregroundColor(.white)
-                                .tint(Theme.gold)
-                                .border(Color(red: 0.6, green: 0.64, blue: 0.71, opacity: 0.2), width: 1)
-                                .cornerRadius(14)
+                            HStack(spacing: 0) {
+                                if showPassword {
+                                    TextField("", text: $password)
+                                        .textContentType(.password)
+                                        .padding(16)
+                                        .foregroundColor(.white)
+                                        .tint(Theme.gold)
+                                } else {
+                                    SecureField("", text: $password)
+                                        .textContentType(.password)
+                                        .padding(16)
+                                        .foregroundColor(.white)
+                                        .tint(Theme.gold)
+                                }
+
+                                Button(action: { showPassword.toggle() }) {
+                                    Image(systemName: showPassword ? "eye.slash" : "eye")
+                                        .font(.system(size: 16, weight: .regular))
+                                        .foregroundColor(Theme.tertiaryText)
+                                        .padding(.trailing, 16)
+                                }
+                            }
+                            .background(Color(red: 0.07, green: 0.07, blue: 0.09))
+                            .border(Color(red: 0.6, green: 0.64, blue: 0.71, opacity: 0.2), width: 1)
+                            .cornerRadius(14)
 
                             if password.isEmpty {
                                 Text("Password")
