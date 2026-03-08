@@ -130,6 +130,14 @@
   - Loading spinner shows during save operation, button disabled while saving
   - Both views pass apiClient and userId as parameters from parent (CaptureView)
 
+### Bugs (Complete)
+- [x] **B-001:** Fix post-save navigation (ReviewView/TypeFlowView → MomentsListView)
+  - Child views now dismiss themselves immediately after calling onMomentSaved() callback
+  - Eliminates race condition that caused navigation to bounce through CaptureView
+  - Solution: ReviewView, TypeFlowView call dismiss() in success/error paths
+  - CaptureView simplified: removed momentWasSaved state and onChange logic
+  - Navigation flow now direct: Save → Child dismisses → Parent dismisses → MomentsListView
+
 ### Backend Integration (Complete)
 - [x] **T-001:** Set up backend API
   - Created Supabase project (lhcjobrtmbawlhjyodxz) with PostgreSQL backend
@@ -153,15 +161,7 @@
 ---
 
 ## 🔄 In Progress
-
-### Bugs
-- [ ] **B-001:** Fix post-save navigation (ReviewView/TypeFlowView → MomentsListView) ⬅️ NEXT SESSION
-  - After saving a moment, user should go directly from transcription/type screen to MomentsListView
-  - Currently bounces through CaptureView multiple times before reaching MomentsListView
-  - Root cause: `dismiss()` in child views conflicts with `navigationDestination(isPresented:)` binding in CaptureView
-  - Callback-only approach (onMomentSaved → onChange → dismiss) not firing reliably
-  - **Try next:** Add debug prints to verify onChange fires; if not, consider NavigationPath-based approach or popToRoot pattern
-  - Priority: BLOCKING (core UX flow broken)
+(None)
 
 ---
 
@@ -258,8 +258,8 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Analytics | 2 | 0 | 0 | 2 |
 | Testing & QA | 5 | 0 | 0 | 5 |
 | Deployment | 3 | 0 | 0 | 3 |
-| Bugs | 1 | 0 | 1 | 0 |
-| **TOTAL** | **40** | **22** | **1** | **17** |
+| Bugs | 1 | 1 | 0 | 0 |
+| **TOTAL** | **40** | **23** | **0** | **17** |
 
 ---
 
@@ -271,6 +271,6 @@ T-011 · T-012 · T-013 · T-027 · T-028
 - **Offline-first architecture complete:** Full local persistence with LocalStorageManager + auto-sync with SyncManager
 - Pagination deferred (will implement with real backend when needed)
 - All voice features (V-001–V-008) complete and functional
-- **Next session priorities:** B-001 (fix post-save navigation — BLOCKING), then T-020 (XCUI test setup), T-007 (refactor embedded views)
+- **Next session priorities:** T-020 (XCUI test setup — HIGH), T-007 (refactor embedded views — HIGH), T-009 (centralize theme/styling — MEDIUM)
 - User activity tracking in separate USER_ACTIVITIES.md + MANUAL_TESTING_CHECKLIST.md
 - `NSMicrophoneUsageDescription` must be added to Info.plist before App Store submission
