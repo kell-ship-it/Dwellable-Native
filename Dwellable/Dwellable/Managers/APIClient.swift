@@ -10,6 +10,7 @@ protocol APIClient {
     // Auth endpoints
     func login(email: String, password: String) async throws -> AuthToken
     func logout() async throws
+    func ensureUserExists(userId: String, email: String) async throws
 }
 
 struct AuthToken: Codable {

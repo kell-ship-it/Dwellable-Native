@@ -93,6 +93,13 @@ class MockAPIClient: APIClient {
 
         // Clear stored token (would be done by AuthManager in real app)
     }
+
+    func ensureUserExists(userId: String, email: String) async throws {
+        // Simulate network delay
+        try await Task.sleep(nanoseconds: 200_000_000) // 0.2 second
+
+        // Mock implementation - just succeeds (in real app, this creates user in DB)
+    }
 }
 
 enum APIError: LocalizedError {
