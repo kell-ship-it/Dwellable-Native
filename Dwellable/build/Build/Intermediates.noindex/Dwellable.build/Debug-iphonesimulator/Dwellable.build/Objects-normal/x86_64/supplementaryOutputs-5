@@ -1,0 +1,23 @@
+{
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/AuthManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/MomentsListView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/TypeFlowView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView.swiftdeps"
+  }
+}

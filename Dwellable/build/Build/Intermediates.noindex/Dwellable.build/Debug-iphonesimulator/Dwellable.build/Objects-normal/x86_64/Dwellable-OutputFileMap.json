@@ -1,0 +1,209 @@
+{
+  "" : {
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Dwellable-primary.dia",
+    "emit-module-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Dwellable-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Dwellable-primary-emit-module.dia",
+    "pch" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Dwellable-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Dwellable-primary.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Config.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Config.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Config.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Config.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Config.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Config.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Config.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Config.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Config~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/DwellableApp.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/DwellableApp.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/DwellableApp.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/DwellableApp.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/DwellableApp.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/DwellableApp.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/DwellableApp.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/DwellableApp.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/DwellableApp~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/APIClient.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/APIClient.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/APIClient.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/APIClient.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/APIClient.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/APIClient.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/APIClient.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/APIClient.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/APIClient~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/AudioRecordingManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AudioRecordingManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AudioRecordingManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AudioRecordingManager.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AudioRecordingManager.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AudioRecordingManager.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AudioRecordingManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AudioRecordingManager.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AudioRecordingManager~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/AuthManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AuthManager~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/KeychainManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/KeychainManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/KeychainManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/KeychainManager.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/KeychainManager.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/KeychainManager.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/KeychainManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/KeychainManager.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/KeychainManager~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/LocalStorageManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LocalStorageManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LocalStorageManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LocalStorageManager.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LocalStorageManager.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LocalStorageManager.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LocalStorageManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LocalStorageManager.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LocalStorageManager~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/MockAPIClient.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MockAPIClient.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MockAPIClient.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MockAPIClient.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MockAPIClient.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MockAPIClient.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MockAPIClient.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MockAPIClient.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MockAPIClient~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/SupabaseAPIClient.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SupabaseAPIClient.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SupabaseAPIClient.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SupabaseAPIClient.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SupabaseAPIClient.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SupabaseAPIClient.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SupabaseAPIClient.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SupabaseAPIClient.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SupabaseAPIClient~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/SyncManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SyncManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SyncManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SyncManager.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SyncManager.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SyncManager.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SyncManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SyncManager.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/SyncManager~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/TranscriptionManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscriptionManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscriptionManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscriptionManager.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscriptionManager.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscriptionManager.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscriptionManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscriptionManager.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscriptionManager~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Models/Moment.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Moment.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Moment.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Moment.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Moment.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Moment.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Moment.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Moment.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Moment~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Utilities/Theme.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Theme.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Theme.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Theme.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Theme.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Theme.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Theme.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Theme.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/Theme~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/AppView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AppView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AppView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AppView.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AppView.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AppView.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AppView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AppView.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/AppView~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/CaptureView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/CaptureView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/CaptureView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/CaptureView.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/CaptureView.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/CaptureView.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/CaptureView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/CaptureView.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/CaptureView~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/LoginView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LoginView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LoginView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LoginView.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LoginView.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LoginView.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LoginView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LoginView.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/LoginView~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/MomentsListView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/MomentsListView~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/ReviewView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/ReviewView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/ReviewView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/ReviewView.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/ReviewView.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/ReviewView.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/ReviewView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/ReviewView.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/ReviewView~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/TranscribingView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscribingView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscribingView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscribingView.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscribingView.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscribingView.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscribingView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscribingView.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TranscribingView~partial.swiftmodule"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/TypeFlowView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView.dia",
+    "index-unit-output-path" : "/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView.o",
+    "llvm-bc" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView.bc",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView.swiftdeps",
+    "swiftmodule" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/x86_64/TypeFlowView~partial.swiftmodule"
+  }
+}

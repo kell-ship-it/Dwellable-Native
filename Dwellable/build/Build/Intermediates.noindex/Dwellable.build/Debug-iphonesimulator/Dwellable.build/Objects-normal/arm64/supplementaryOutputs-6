@@ -1,0 +1,23 @@
+{
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/APIClient.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/APIClient.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/APIClient.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/APIClient.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/APIClient.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/APIClient.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/AudioRecordingManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/AudioRecordingManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/AudioRecordingManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/AudioRecordingManager.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/AudioRecordingManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/AudioRecordingManager.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/TranscriptionManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/TranscriptionManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/TranscriptionManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/TranscriptionManager.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/TranscriptionManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/TranscriptionManager.swiftdeps"
+  }
+}

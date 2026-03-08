@@ -1,0 +1,23 @@
+{
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/DwellableApp.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/DwellableApp.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/DwellableApp.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/DwellableApp.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/DwellableApp.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/DwellableApp.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/CaptureView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/CaptureView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/CaptureView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/CaptureView.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/CaptureView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/CaptureView.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/LoginView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/LoginView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/LoginView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/LoginView.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/LoginView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/build/Build/Intermediates.noindex/Dwellable.build/Debug-iphonesimulator/Dwellable.build/Objects-normal/arm64/LoginView.swiftdeps"
+  }
+}

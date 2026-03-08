@@ -19,7 +19,25 @@ class SupabaseAPIClient: APIClient {
         requiresAuth: Bool = true
     ) async throws -> T {
         var urlComponents = URLComponents(string: baseURL)
-        urlComponents?.path = endpoint
+
+        // Separate endpoint path from query string
+        if let queryIndex = endpoint.firstIndex(of: "?") {
+            let pathPart = String(endpoint[..<queryIndex])
+            let queryPart = String(endpoint[endpoint.index(after: queryIndex)...])
+
+            urlComponents?.path = pathPart
+
+            // Parse query parameters and add them properly
+            let queryItems = queryPart.split(separator: "&").map { param in
+                let parts = param.split(separator: "=", maxSplits: 1)
+                let name = String(parts[0])
+                let value = parts.count > 1 ? String(parts[1]) : ""
+                return URLQueryItem(name: name, value: value)
+            }
+            urlComponents?.queryItems = queryItems
+        } else {
+            urlComponents?.path = endpoint
+        }
 
         guard let url = urlComponents?.url else {
             throw APIError.invalidRequest
