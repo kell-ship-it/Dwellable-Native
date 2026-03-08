@@ -5,6 +5,7 @@ struct MomentsListView: View {
     @State private var moments: [Moment] = []
     @State private var isLoading = true
     @State private var error: String?
+    @State private var refreshTrigger = UUID()
 
     let apiClient: APIClient
     let userId: String
@@ -112,7 +113,9 @@ struct MomentsListView: View {
                                 .frame(maxWidth: 220)
                         }
 
-                        NavigationLink(destination: CaptureView(apiClient: apiClient, userId: userId, syncManager: syncManager)) {
+                        NavigationLink(destination: CaptureView(apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
+                            refreshTrigger = UUID()
+                        })) {
                             Text("Capture your first moment")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
@@ -165,7 +168,9 @@ struct MomentsListView: View {
 
                     // Bottom "Capture moment" button
                     VStack {
-                        NavigationLink(destination: CaptureView(apiClient: apiClient, userId: userId, syncManager: syncManager)) {
+                        NavigationLink(destination: CaptureView(apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
+                            refreshTrigger = UUID()
+                        })) {
                             Text("Capture moment")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
@@ -180,6 +185,11 @@ struct MomentsListView: View {
             }
         }
         .onAppear {
+            Task {
+                await fetchMoments()
+            }
+        }
+        .onChange(of: refreshTrigger) { _ in
             Task {
                 await fetchMoments()
             }

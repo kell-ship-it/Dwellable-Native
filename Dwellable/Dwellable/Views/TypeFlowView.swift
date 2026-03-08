@@ -11,6 +11,7 @@ struct TypeFlowView: View {
     let apiClient: APIClient
     let userId: String
     let syncManager: SyncManager
+    var onMomentSaved: (() -> Void)?
 
     var body: some View {
         ZStack {
@@ -139,6 +140,7 @@ struct TypeFlowView: View {
 
         do {
             _ = try await apiClient.saveMoment(moment)
+            onMomentSaved?()
             dismiss()
         } catch {
             // Network error - save locally and mark for sync
@@ -146,6 +148,10 @@ struct TypeFlowView: View {
             DispatchQueue.main.async {
                 self.isSyncPending = true
                 self.isSaving = false
+            }
+            // Call the callback anyway (data was saved locally)
+            DispatchQueue.main.async {
+                self.onMomentSaved?()
             }
             // Dismiss after a short delay to show "pending sync" message
             try? await Task.sleep(nanoseconds: 1_500_000_000)
@@ -157,6 +163,6 @@ struct TypeFlowView: View {
 #Preview {
     let apiClient = MockAPIClient()
     NavigationStack {
-        TypeFlowView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient))
+        TypeFlowView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient), onMomentSaved: nil)
     }
 }

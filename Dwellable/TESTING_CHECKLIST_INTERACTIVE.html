@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dwellable Testing Checklist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0e11 0%, #1a1823 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #d4af37;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #999;
+            font-size: 0.95em;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            color: #d4af37;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #d4af37;
+            color: #1a1823;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #e5c158;
+            transform: translateY(-2px);
+        }
+
+        button.secondary {
+            background: #333;
+            color: #d4af37;
+            border: 1px solid #d4af37;
+        }
+
+        button.secondary:hover {
+            background: #444;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: #2a2735;
+            color: #999;
+            border: 1px solid #333;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #d4af37;
+            color: #1a1823;
+            border-color: #d4af37;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            background: #1a1823;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            border-color: #d4af37;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .priority-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-blocking {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .priority-high {
+            background: #ff6f00;
+            color: white;
+        }
+
+        .priority-medium {
+            background: #f57c00;
+            color: white;
+        }
+
+        .priority-low {
+            background: #666;
+            color: white;
+        }
+
+        .section h3 {
+            color: #d4af37;
+            font-size: 1.3em;
+            flex: 1;
+        }
+
+        .section-id {
+            color: #999;
+            font-size: 0.9em;
+            background: #2a2735;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #2a2735;
+            border-radius: 6px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .task-item:hover {
+            background: #333;
+            border-left-color: #d4af37;
+        }
+
+        .task-item.completed {
+            background: #1a3a1a;
+            border-left-color: #4caf50;
+        }
+
+        .task-item input[type="checkbox"] {
+            margin-top: 3px;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            accent-color: #d4af37;
+        }
+
+        .task-item.completed label {
+            color: #4caf50;
+            text-decoration: line-through;
+        }
+
+        .task-item label {
+            flex: 1;
+            cursor: pointer;
+            color: #e0e0e0;
+        }
+
+        .description {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #333;
+            line-height: 1.5;
+        }
+
+        .acceptance-criteria {
+            margin-top: 15px;
+        }
+
+        .acceptance-criteria h4 {
+            color: #d4af37;
+            font-size: 0.95em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #d4af37, #ff9800);
+            transition: width 0.3s ease;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .stats {
+                gap: 20px;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DWELLABLE TESTING</h1>
+            <p class="subtitle">Interactive Checklist for Testing & QA Activities</p>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number" id="total-tasks">0</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="completed-tasks">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="progress-percent">0%</div>
+                    <div class="stat-label">Progress</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="controls">
+            <button onclick="checkAll()">✓ Check All</button>
+            <button class="secondary" onclick="uncheckAll()">✕ Uncheck All</button>
+            <button class="secondary" onclick="clearProgress()">🔄 Reset</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('user-activities')">👤 User Activities (4)</button>
+            <button class="tab-btn" onclick="switchTab('dev-tickets')">🛠️ Dev Tickets (5)</button>
+        </div>
+
+        <!-- USER ACTIVITIES TAB -->
+        <div id="user-activities" class="tab-content active">
+            <!-- U-001 -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-id">U-001</span>
+                    <h3>Manual Testing on Physical iPhone</h3>
+                    <span class="priority-badge priority-blocking">BLOCKING</span>
+                </div>
+                <p class="description">Build to physical device + test voice recording, offline sync, auth flow</p>
+
+                <div class="task-list">
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u001-1">
+                        <label>App successfully builds and deploys to physical iPhone 16</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u001-2">
+                        <label>Login flow works with Supabase authentication</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u001-3">
+                        <label>Voice recording works (microphone access tested)</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u001-4">
+                        <label>Offline moment creation works (save without network)</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u001-5">
+                        <label>Sync queue executes when network restored</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u001-6">
+                        <label>Moment list displays correctly with fetched data</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u001-7">
+                        <label>No crashes on navigation or data operations</label>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%" data-section="u001"></div>
+                </div>
+            </div>
+
+            <!-- U-002 -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-id">U-002</span>
+                    <h3>Manual Testing Scenarios Checklist</h3>
+                    <span class="priority-badge priority-blocking">BLOCKING</span>
+                </div>
+                <p class="description">Run through 40+ test cases covering offline, auth, CRUD, network, persistence (see MANUAL_TESTING_CHECKLIST.md)</p>
+
+                <div class="task-list">
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u002-1">
+                        <label>Complete Offline Support scenarios (5 test cases)</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u002-2">
+                        <label>Complete Authentication scenarios (6 test cases)</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u002-3">
+                        <label>Complete Moment CRUD scenarios (5 test cases)</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u002-4">
+                        <label>Complete Network State Changes scenarios (6 test cases)</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u002-5">
+                        <label>Complete Data Persistence scenarios (6 test cases)</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u002-6">
+                        <label>Complete Error Handling scenarios (4 test cases)</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u002-7">
+                        <label>Complete Performance scenarios (3 test cases)</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u002-8">
+                        <label>Complete UI/UX scenarios (5 test cases)</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u002-9">
+                        <label>Document any failures or unexpected behavior</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u002-10">
+                        <label>Record findings in session notes</label>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%" data-section="u002"></div>
+                </div>
+            </div>
+
+            <!-- U-003 -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-id">U-003</span>
+                    <h3>XCUI Test Setup & Offline Sync Tests</h3>
+                    <span class="priority-badge priority-high">HIGH</span>
+                </div>
+                <p class="description">Collaborate with assistant on XCTest automation for UI testing; test offline sync, auth, moment creation</p>
+
+                <div class="task-list">
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u003-1">
+                        <label>Review XCUI test setup guide</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u003-2">
+                        <label>Collaborate on building out XCTest automation</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u003-3">
+                        <label>Run XCUI tests on simulator</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u003-4">
+                        <label>Run XCUI tests on physical device</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u003-5">
+                        <label>Verify at least 5 test cases passing</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u003-6">
+                        <label>Tests verify offline → online sync behavior</label>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%" data-section="u003"></div>
+                </div>
+            </div>
+
+            <!-- U-004 -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-id">U-004</span>
+                    <h3>Generate 10 Test Participant Accounts</h3>
+                    <span class="priority-badge priority-medium">MEDIUM</span>
+                </div>
+                <p class="description">Create 10 test accounts in Supabase for participant testing; use bash script provided</p>
+
+                <div class="task-list">
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u004-1">
+                        <label>Get Supabase service role key from dashboard</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u004-2">
+                        <label>Run the bash script: generate-test-accounts.sh</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u004-3">
+                        <label>Verify all 10 accounts exist in Supabase users table</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u004-4">
+                        <label>Test login with at least one participant account</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="u004-5">
+                        <label>Ready to distribute account list to participants</label>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%" data-section="u004"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEV TICKETS TAB -->
+        <div id="dev-tickets" class="tab-content">
+            <!-- T-007 -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-id">T-007</span>
+                    <h3>Refactor embedded views to separate files</h3>
+                    <span class="priority-badge priority-high">HIGH</span>
+                </div>
+                <p class="description">Move TypeFlowView, MomentDetailView, TranscribingView, MomentRow to own files</p>
+
+                <div class="task-list">
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t007-1">
+                        <label>Create TypeFlowView.swift</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t007-2">
+                        <label>Create MomentDetailView.swift</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t007-3">
+                        <label>Create TranscribingView.swift</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t007-4">
+                        <label>Create MomentRow.swift</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t007-5">
+                        <label>Update imports in parent files</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t007-6">
+                        <label>Verify all previews still work</label>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%" data-section="t007"></div>
+                </div>
+            </div>
+
+            <!-- T-020 -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-id">T-020</span>
+                    <h3>Set up XCUI test target for automated UI testing</h3>
+                    <span class="priority-badge priority-high">HIGH</span>
+                </div>
+                <p class="description">Create XCUITest target, write initial test cases for key workflows (see XCUI_TESTS.md)</p>
+
+                <div class="task-list">
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t020-1">
+                        <label>Create XCUITest target in Xcode project</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t020-2">
+                        <label>Write test case: testValidLogin</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t020-3">
+                        <label>Write test case: testCreateTextMoment</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t020-4">
+                        <label>Write test case: testOfflineMomentCreationAndSync</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t020-5">
+                        <label>Write test case: testFetchAndDisplayMoments</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t020-6">
+                        <label>Verify tests pass on simulator</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t020-7">
+                        <label>Verify tests pass on physical device</label>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%" data-section="t020"></div>
+                </div>
+            </div>
+
+            <!-- T-009 -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-id">T-009</span>
+                    <h3>Centralize theme and styling</h3>
+                    <span class="priority-badge priority-high">HIGH</span>
+                </div>
+                <p class="description">Extract all hardcoded colors and fonts to Theme.swift; create reusable button and text styles</p>
+
+                <div class="task-list">
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t009-1">
+                        <label>Extract all colors to Theme.swift</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t009-2">
+                        <label>Extract all fonts to Theme.swift</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t009-3">
+                        <label>Create reusable button styles</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t009-4">
+                        <label>Create reusable text styles</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t009-5">
+                        <label>Update all views to use Theme</label>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%" data-section="t009"></div>
+                </div>
+            </div>
+
+            <!-- T-010 -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-id">T-010</span>
+                    <h3>Build SettingsView</h3>
+                    <span class="priority-badge priority-high">HIGH</span>
+                </div>
+                <p class="description">User profile display, sign out, app version, terms/privacy links; accessible from MomentsListView header</p>
+
+                <div class="task-list">
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t010-1">
+                        <label>Create SettingsView.swift</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t010-2">
+                        <label>Display user email/profile</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t010-3">
+                        <label>Add sign out button</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t010-4">
+                        <label>Display app version</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t010-5">
+                        <label>Add terms/privacy links</label>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <input type="checkbox" data-id="t010-6">
+                        <label>Add settings button to MomentsListView header</label>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%" data-section="t010"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>💾 Progress is automatically saved to your browser • Last updated: March 7, 2026</p>
+        </div>
+    </div>
+
+    <script>
+        // Load progress from localStorage
+        function loadProgress() {
+            const saved = localStorage.getItem('dwellable-checklist');
+            if (saved) {
+                const checked = JSON.parse(saved);
+                Object.keys(checked).forEach(id => {
+                    const checkbox = document.querySelector(`[data-id="${id}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        checkbox.parentElement.classList.add('completed');
+                    }
+                });
+            }
+            updateStats();
+        }
+
+        // Save progress to localStorage
+        function saveProgress() {
+            const checked = {};
+            document.querySelectorAll('[data-id]:checked').forEach(checkbox => {
+                checked[checkbox.dataset.id] = true;
+            });
+            localStorage.setItem('dwellable-checklist', JSON.stringify(checked));
+            updateStats();
+        }
+
+        // Toggle task
+        function toggleTask(element) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            element.classList.toggle('completed');
+            saveProgress();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = document.querySelectorAll('[data-id]').length;
+            const completed = document.querySelectorAll('[data-id]:checked').length;
+            const percent = Math.round((completed / total) * 100);
+
+            document.getElementById('total-tasks').textContent = total;
+            document.getElementById('completed-tasks').textContent = completed;
+            document.getElementById('progress-percent').textContent = percent + '%';
+
+            // Update section progress bars
+            const sections = ['u001', 'u002', 'u003', 'u004', 't007', 't009', 't010', 't020'];
+            sections.forEach(section => {
+                const items = document.querySelectorAll(`[data-id^="${section}-"]`);
+                const completedItems = document.querySelectorAll(`[data-id^="${section}-"]:checked`);
+                const sectionPercent = items.length > 0 ? Math.round((completedItems.length / items.length) * 100) : 0;
+                const bar = document.querySelector(`.progress-fill[data-section="${section}"]`);
+                if (bar) bar.style.width = sectionPercent + '%';
+            });
+        }
+
+        // Check all tasks
+        function checkAll() {
+            document.querySelectorAll('[data-id]').forEach(checkbox => {
+                checkbox.checked = true;
+                checkbox.parentElement.classList.add('completed');
+            });
+            saveProgress();
+        }
+
+        // Uncheck all tasks
+        function uncheckAll() {
+            document.querySelectorAll('[data-id]').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.parentElement.classList.remove('completed');
+            });
+            saveProgress();
+        }
+
+        // Reset progress
+        function clearProgress() {
+            if (confirm('Are you sure you want to reset all progress?')) {
+                localStorage.removeItem('dwellable-checklist');
+                location.reload();
+            }
+        }
+
+        // Switch tab
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', loadProgress);
+    </script>
+</body>
+</html>

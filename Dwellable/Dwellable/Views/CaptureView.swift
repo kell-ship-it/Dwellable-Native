@@ -9,6 +9,7 @@ struct CaptureView: View {
     let apiClient: APIClient
     let userId: String
     let syncManager: SyncManager
+    var onMomentSaved: (() -> Void)?
 
     var body: some View {
         ZStack {
@@ -127,10 +128,10 @@ struct CaptureView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $showVoiceReview) {
-            ReviewView(audioURL: audioManager.audioURL, apiClient: apiClient, userId: userId, syncManager: syncManager)
+            ReviewView(audioURL: audioManager.audioURL, apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: onMomentSaved)
         }
         .navigationDestination(isPresented: $showTypeFlow) {
-            TypeFlowView(apiClient: apiClient, userId: userId, syncManager: syncManager)
+            TypeFlowView(apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: onMomentSaved)
         }
     }
 }
@@ -138,6 +139,6 @@ struct CaptureView: View {
 #Preview {
     let apiClient = MockAPIClient()
     NavigationStack {
-        CaptureView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient))
+        CaptureView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient), onMomentSaved: nil)
     }
 }
