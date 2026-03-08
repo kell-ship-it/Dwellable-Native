@@ -1,6 +1,6 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** March 7, 2026, 3:20 PM
+**Last Updated:** March 7, 2026, 8:15 PM
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -154,7 +154,14 @@
 
 ## 🔄 In Progress
 
-(None)
+### Bugs
+- [ ] **B-001:** Fix post-save navigation (ReviewView/TypeFlowView → MomentsListView) ⬅️ NEXT SESSION
+  - After saving a moment, user should go directly from transcription/type screen to MomentsListView
+  - Currently bounces through CaptureView multiple times before reaching MomentsListView
+  - Root cause: `dismiss()` in child views conflicts with `navigationDestination(isPresented:)` binding in CaptureView
+  - Callback-only approach (onMomentSaved → onChange → dismiss) not firing reliably
+  - **Try next:** Add debug prints to verify onChange fires; if not, consider NavigationPath-based approach or popToRoot pattern
+  - Priority: BLOCKING (core UX flow broken)
 
 ---
 
@@ -251,7 +258,8 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Analytics | 2 | 0 | 0 | 2 |
 | Testing & QA | 5 | 0 | 0 | 5 |
 | Deployment | 3 | 0 | 0 | 3 |
-| **TOTAL** | **39** | **22** | **0** | **17** |
+| Bugs | 1 | 0 | 1 | 0 |
+| **TOTAL** | **40** | **22** | **1** | **17** |
 
 ---
 
@@ -263,6 +271,6 @@ T-011 · T-012 · T-013 · T-027 · T-028
 - **Offline-first architecture complete:** Full local persistence with LocalStorageManager + auto-sync with SyncManager
 - Pagination deferred (will implement with real backend when needed)
 - All voice features (V-001–V-008) complete and functional
-- **Next session priorities:** T-020 (XCUI test setup), T-007 (refactor embedded views), physical device testing (USER_ACTIVITIES.md)
+- **Next session priorities:** B-001 (fix post-save navigation — BLOCKING), then T-020 (XCUI test setup), T-007 (refactor embedded views)
 - User activity tracking in separate USER_ACTIVITIES.md + MANUAL_TESTING_CHECKLIST.md
 - `NSMicrophoneUsageDescription` must be added to Info.plist before App Store submission

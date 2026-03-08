@@ -142,15 +142,14 @@ struct CaptureView: View {
         }
         .onChange(of: momentWasSaved) { saved in
             if saved {
-                // Instantly dismiss child views (no animation)
+                // Pop everything in one shot with no animation
                 var transaction = Transaction()
                 transaction.disablesAnimations = true
                 withTransaction(transaction) {
                     showVoiceReview = false
                     showTypeFlow = false
+                    dismiss()
                 }
-                // Then pop back to moments list
-                dismiss()
             }
         }
     }

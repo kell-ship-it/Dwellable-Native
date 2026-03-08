@@ -140,14 +140,13 @@ struct TypeFlowView: View {
 
         do {
             _ = try await apiClient.saveMoment(moment)
-            print("✅ TypeFlowView: save succeeded, calling onMomentSaved")
+            print("✅ TypeFlowView: save succeeded")
             await MainActor.run {
                 isSaving = false
                 onMomentSaved?()
             }
         } catch {
             print("🔴 TypeFlowView: save failed - \(error)")
-            // Network error - save locally and mark for sync
             syncManager.markMomentAsPending(moment)
             await MainActor.run {
                 isSyncPending = true
