@@ -54,6 +54,11 @@ class SupabaseAPIClient: APIClient {
         }
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
+        // Tell Supabase to return the created/updated record in response
+        if method == "POST" || method == "PATCH" || method == "PUT" {
+            request.setValue("return=representation", forHTTPHeaderField: "Prefer")
+        }
+
         if let body = body {
             request.httpBody = try JSONEncoder().encode(body)
         }
