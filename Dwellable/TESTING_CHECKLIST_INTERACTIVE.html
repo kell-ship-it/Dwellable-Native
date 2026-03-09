@@ -948,9 +948,11 @@
         // Load structured fields from localStorage
         function loadFields() {
             const fields = JSON.parse(localStorage.getItem('dwellable-checklist-fields') || '{}');
+            const reviewed = JSON.parse(localStorage.getItem('dwellable-checklist-reviewed') || '{}');
             Object.keys(fields).forEach(id => {
                 const fieldData = fields[id];
-                ['represents', 'sees', 'issue', 'action'].forEach(fieldName => {
+                // Only load the 2 current fields: issue and action
+                ['issue', 'action'].forEach(fieldName => {
                     if (fieldData[fieldName]) {
                         const textarea = document.getElementById(`field-${fieldName}-${id}`);
                         if (textarea) {
@@ -959,7 +961,61 @@
                     }
                 });
                 updateNoteToggle(id);
+                // Update review indicator if it exists
+                if (reviewed[id]) {
+                    updateReviewIndicator(id);
+                }
             });
+        }
+
+        function markAsReviewed(id) {
+            const reviewed = JSON.parse(localStorage.getItem('dwellable-checklist-reviewed') || '{}');
+            reviewed[id] = new Date().toISOString();
+            localStorage.setItem('dwellable-checklist-reviewed', JSON.stringify(reviewed));
+            updateReviewIndicator(id);
+        }
+
+        function updateReviewIndicator(id) {
+            const reviewed = JSON.parse(localStorage.getItem('dwellable-checklist-reviewed') || '{}');
+            const taskItem = document.querySelector(`[data-id="${id}"]`).closest('.task-item');
+            let indicator = taskItem.querySelector('.review-indicator');
+
+            if (reviewed[id]) {
+                if (!indicator) {
+                    indicator = document.createElement('span');
+                    indicator.className = 'review-indicator';
+                    indicator.style.cssText = 'color: #d4af37; font-size: 0.85em; margin-left: 8px; font-weight: 600;';
+                    taskItem.querySelector('label').appendChild(indicator);
+                }
+                const date = new Date(reviewed[id]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                indicator.textContent = `✓ Reviewed (${date})`;
+            }
+        }
+
+        function clearFeedback(id) {
+            // Clear the stored field data for this test item
+            const fields = JSON.parse(localStorage.getItem('dwellable-checklist-fields') || '{}');
+            if (fields[id]) {
+                delete fields[id];
+                localStorage.setItem('dwellable-checklist-fields', JSON.stringify(fields));
+            }
+
+            // Clear the field images for this test item
+            const fieldImages = JSON.parse(localStorage.getItem('dwellable-checklist-field-images') || '{}');
+            ['issue', 'action'].forEach(fieldName => {
+                const key = `${id}-${fieldName}`;
+                if (fieldImages[key]) {
+                    delete fieldImages[key];
+                }
+            });
+            localStorage.setItem('dwellable-checklist-field-images', JSON.stringify(fieldImages));
+
+            // Refresh the form
+            const notesArea = document.getElementById('notes-' + id);
+            if (notesArea) {
+                notesArea.querySelectorAll('textarea').forEach(ta => ta.value = '');
+                notesArea.querySelectorAll('.image-gallery').forEach(gal => gal.innerHTML = '');
+            }
         }
 
         // Export all notes as text
@@ -977,14 +1033,12 @@
 
                 // Add structured fields if they exist
                 if (fields[id]) {
-                    if (fields[id].represents) output += `  📸 What it represents: ${fields[id].represents}\n`;
-                    if (fields[id].sees) output += `  👁️ What I see: ${fields[id].sees}\n`;
                     if (fields[id].issue) output += `  ⚠️ The issue: ${fields[id].issue}\n`;
                     if (fields[id].action) output += `  ✓ Intended action: ${fields[id].action}\n`;
                 }
 
-                // Add field images
-                ['represents', 'sees', 'issue', 'action'].forEach(field => {
+                // Add field images (only for issue and action)
+                ['issue', 'action'].forEach(field => {
                     const key = `${id}-${field}`;
                     if (fieldImages[key] && fieldImages[key].length > 0) {
                         output += `  📷 ${field} images: ${fieldImages[key].length} screenshot(s)\n`;
@@ -1117,6 +1171,16 @@
                                 <span style="color:#555; font-size: 0.75em;">drag & drop</span>
                             </div>
                             <div class="image-gallery" id="gallery-action-${id}" onclick="event.stopPropagation()" style="margin-top: 8px;"></div>
+                        </div>
+
+                        <!-- ACTION BUTTONS -->
+                        <div style="display: flex; gap: 10px; margin-top: 8px; padding-top: 12px; border-top: 1px solid #333;">
+                            <button onclick="markAsReviewed('${id}'); event.stopPropagation();" style="padding: 6px 12px; background: transparent; border: 1px solid #d4af37; border-radius: 4px; color: #d4af37; font-size: 0.8em; cursor: pointer; transition: all 0.2s;">
+                                Mark as Reviewed ✓
+                            </button>
+                            <button onclick="clearFeedback('${id}'); event.stopPropagation();" style="padding: 6px 12px; background: transparent; border: 1px solid #666; border-radius: 4px; color: #999; font-size: 0.8em; cursor: pointer; transition: all 0.2s;">
+                                Clear for Retest
+                            </button>
                         </div>
                     </div>
                 `;
