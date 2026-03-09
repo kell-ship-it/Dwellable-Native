@@ -53,11 +53,9 @@ struct MomentDetailView: View {
 }
 
 #Preview {
-    NavigationStack {
-        MomentDetailView(moment: Moment(
-            userId: "test",
-            body: "During worship this morning there was a stillness I haven't felt in weeks. Like something lifted. I stood there not wanting to move.",
-            createdAt: Date()
-        ))
-    }
+    MomentDetailView(moment: Moment(
+        userId: "test",
+        body: "During worship this morning there was a stillness I haven't felt in weeks. God's presence felt so near and real.",
+        createdAt: Date()
+    ))
 }

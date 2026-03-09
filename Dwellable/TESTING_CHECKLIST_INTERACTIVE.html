@@ -212,6 +212,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             border-left: 3px solid transparent;
+            flex-wrap: wrap;
         }
 
         .task-item:hover {
@@ -241,6 +242,160 @@
             flex: 1;
             cursor: pointer;
             color: #e0e0e0;
+        }
+
+        .task-item .notes-toggle {
+            font-size: 0.8em;
+            color: #999;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #1a1823;
+            border: 1px solid #333;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .task-item .notes-toggle:hover {
+            color: #d4af37;
+            border-color: #d4af37;
+        }
+
+        .task-item .notes-toggle.has-notes {
+            color: #d4af37;
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .notes-area {
+            display: none;
+            width: 100%;
+            margin-top: 8px;
+            padding-left: 30px;
+        }
+
+        .notes-area.visible {
+            display: block;
+        }
+
+        .notes-area textarea {
+            width: 100%;
+            min-height: 60px;
+            padding: 10px;
+            background: #1a1823;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-family: inherit;
+            font-size: 0.85em;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .notes-area textarea:focus {
+            border-color: #d4af37;
+        }
+
+        .notes-area textarea::placeholder {
+            color: #555;
+        }
+
+        .notes-area .image-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .notes-area .add-image-btn {
+            font-size: 0.8em;
+            color: #999;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: #1a1823;
+            border: 1px solid #333;
+            transition: all 0.2s ease;
+        }
+
+        .notes-area .add-image-btn:hover {
+            color: #d4af37;
+            border-color: #d4af37;
+        }
+
+        .notes-area .image-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .notes-area .image-thumb {
+            position: relative;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+        .notes-area .image-thumb:hover {
+            border-color: #d4af37;
+        }
+
+        .notes-area .image-thumb img {
+            display: block;
+            max-width: 200px;
+            max-height: 150px;
+            object-fit: cover;
+        }
+
+        .notes-area .image-thumb .remove-img {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(211, 47, 47, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .notes-area .image-thumb:hover .remove-img {
+            opacity: 1;
+        }
+
+        .image-lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .image-lightbox.visible {
+            display: flex;
+        }
+
+        .image-lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
         }
 
         .description {
@@ -333,6 +488,7 @@
             <button onclick="checkAll()">✓ Check All</button>
             <button class="secondary" onclick="uncheckAll()">✕ Uncheck All</button>
             <button class="secondary" onclick="clearProgress()">🔄 Reset</button>
+            <button class="secondary" onclick="exportNotes()">📋 Export Results</button>
         </div>
 
         <div class="tabs">
@@ -352,31 +508,31 @@
                 <p class="description">Build to physical device + test voice recording, offline sync, auth flow</p>
 
                 <div class="task-list">
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u001-1">
                         <label>App successfully builds and deploys to physical iPhone 16</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u001-2">
                         <label>Login flow works with Supabase authentication</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u001-3">
                         <label>Voice recording works (microphone access tested)</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u001-4">
                         <label>Offline moment creation works (save without network)</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u001-5">
                         <label>Sync queue executes when network restored</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u001-6">
                         <label>Moment list displays correctly with fetched data</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u001-7">
                         <label>No crashes on navigation or data operations</label>
                     </div>
@@ -396,43 +552,43 @@
                 <p class="description">Run through 40+ test cases covering offline, auth, CRUD, network, persistence (see MANUAL_TESTING_CHECKLIST.md)</p>
 
                 <div class="task-list">
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u002-1">
                         <label>Complete Offline Support scenarios (5 test cases)</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u002-2">
                         <label>Complete Authentication scenarios (6 test cases)</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u002-3">
                         <label>Complete Moment CRUD scenarios (5 test cases)</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u002-4">
                         <label>Complete Network State Changes scenarios (6 test cases)</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u002-5">
                         <label>Complete Data Persistence scenarios (6 test cases)</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u002-6">
                         <label>Complete Error Handling scenarios (4 test cases)</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u002-7">
                         <label>Complete Performance scenarios (3 test cases)</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u002-8">
                         <label>Complete UI/UX scenarios (5 test cases)</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u002-9">
                         <label>Document any failures or unexpected behavior</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u002-10">
                         <label>Record findings in session notes</label>
                     </div>
@@ -452,27 +608,27 @@
                 <p class="description">Collaborate with assistant on XCTest automation for UI testing; test offline sync, auth, moment creation</p>
 
                 <div class="task-list">
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u003-1">
                         <label>Review XCUI test setup guide</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u003-2">
                         <label>Collaborate on building out XCTest automation</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u003-3">
                         <label>Run XCUI tests on simulator</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u003-4">
                         <label>Run XCUI tests on physical device</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u003-5">
                         <label>Verify at least 5 test cases passing</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u003-6">
                         <label>Tests verify offline → online sync behavior</label>
                     </div>
@@ -492,23 +648,23 @@
                 <p class="description">Create 10 test accounts in Supabase for participant testing; use bash script provided</p>
 
                 <div class="task-list">
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u004-1">
                         <label>Get Supabase service role key from dashboard</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u004-2">
                         <label>Run the bash script: generate-test-accounts.sh</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u004-3">
                         <label>Verify all 10 accounts exist in Supabase users table</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u004-4">
                         <label>Test login with at least one participant account</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u004-5">
                         <label>Ready to distribute account list to participants</label>
                     </div>
@@ -531,27 +687,27 @@
                 <p class="description">Move TypeFlowView, MomentDetailView, TranscribingView, MomentRow to own files</p>
 
                 <div class="task-list">
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t007-1">
                         <label>Create TypeFlowView.swift</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t007-2">
                         <label>Create MomentDetailView.swift</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t007-3">
                         <label>Create TranscribingView.swift</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t007-4">
                         <label>Create MomentRow.swift</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t007-5">
                         <label>Update imports in parent files</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t007-6">
                         <label>Verify all previews still work</label>
                     </div>
@@ -571,31 +727,31 @@
                 <p class="description">Create XCUITest target, write initial test cases for key workflows (see XCUI_TESTS.md)</p>
 
                 <div class="task-list">
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t020-1">
                         <label>Create XCUITest target in Xcode project</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t020-2">
                         <label>Write test case: testValidLogin</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t020-3">
                         <label>Write test case: testCreateTextMoment</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t020-4">
                         <label>Write test case: testOfflineMomentCreationAndSync</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t020-5">
                         <label>Write test case: testFetchAndDisplayMoments</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t020-6">
                         <label>Verify tests pass on simulator</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t020-7">
                         <label>Verify tests pass on physical device</label>
                     </div>
@@ -615,23 +771,23 @@
                 <p class="description">Extract all hardcoded colors and fonts to Theme.swift; create reusable button and text styles</p>
 
                 <div class="task-list">
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t009-1">
                         <label>Extract all colors to Theme.swift</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t009-2">
                         <label>Extract all fonts to Theme.swift</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t009-3">
                         <label>Create reusable button styles</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t009-4">
                         <label>Create reusable text styles</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t009-5">
                         <label>Update all views to use Theme</label>
                     </div>
@@ -651,27 +807,27 @@
                 <p class="description">User profile display, sign out, app version, terms/privacy links; accessible from MomentsListView header</p>
 
                 <div class="task-list">
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t010-1">
                         <label>Create SettingsView.swift</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t010-2">
                         <label>Display user email/profile</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t010-3">
                         <label>Add sign out button</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t010-4">
                         <label>Display app version</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t010-5">
                         <label>Add terms/privacy links</label>
                     </div>
-                    <div class="task-item" onclick="toggleTask(this)">
+                    <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="t010-6">
                         <label>Add settings button to MomentsListView header</label>
                     </div>
@@ -680,6 +836,10 @@
                     <div class="progress-fill" style="width: 0%" data-section="t010"></div>
                 </div>
             </div>
+        </div>
+
+        <div class="image-lightbox" id="lightbox" onclick="closeLightbox()">
+            <img id="lightbox-img" src="" alt="Full size">
         </div>
 
         <div class="footer">
@@ -714,12 +874,139 @@
             updateStats();
         }
 
-        // Toggle task
-        function toggleTask(element) {
+        // Toggle task (only if click is NOT on the notes area)
+        function toggleTask(element, event) {
+            if (event && (event.target.classList.contains('notes-toggle') ||
+                event.target.tagName === 'TEXTAREA' ||
+                event.target.closest('.notes-area'))) {
+                return;
+            }
             const checkbox = element.querySelector('input[type="checkbox"]');
             checkbox.checked = !checkbox.checked;
             element.classList.toggle('completed');
             saveProgress();
+        }
+
+        // Toggle notes visibility
+        function toggleNotes(btn, id, event) {
+            event.stopPropagation();
+            const notesArea = document.getElementById('notes-' + id);
+            notesArea.classList.toggle('visible');
+        }
+
+        // Save individual structured field to localStorage
+        function saveField(id, fieldName) {
+            const fields = JSON.parse(localStorage.getItem('dwellable-checklist-fields') || '{}');
+            if (!fields[id]) fields[id] = {};
+
+            const textarea = document.getElementById(`field-${fieldName}-${id}`);
+            if (textarea) {
+                if (textarea.value.trim()) {
+                    fields[id][fieldName] = textarea.value;
+                } else {
+                    delete fields[id][fieldName];
+                }
+                localStorage.setItem('dwellable-checklist-fields', JSON.stringify(fields));
+                updateNoteToggle(id);
+            }
+        }
+
+        // Save a note
+        function saveNote(id) {
+            const textarea = document.querySelector(`#notes-${id} textarea`);
+            const notes = JSON.parse(localStorage.getItem('dwellable-checklist-notes') || '{}');
+            if (textarea.value.trim()) {
+                notes[id] = textarea.value;
+            } else {
+                delete notes[id];
+            }
+            localStorage.setItem('dwellable-checklist-notes', JSON.stringify(notes));
+            // Update toggle button appearance
+            const toggle = document.querySelector(`[data-notes-id="${id}"]`);
+            if (toggle) {
+                toggle.classList.toggle('has-notes', !!textarea.value.trim());
+                toggle.textContent = textarea.value.trim() ? 'Notes' : '+ Note';
+            }
+        }
+
+        // Load notes from localStorage
+        function loadNotes() {
+            const notes = JSON.parse(localStorage.getItem('dwellable-checklist-notes') || '{}');
+            Object.keys(notes).forEach(id => {
+                const textarea = document.querySelector(`#notes-${id} textarea`);
+                if (textarea) {
+                    textarea.value = notes[id];
+                }
+                const toggle = document.querySelector(`[data-notes-id="${id}"]`);
+                if (toggle) {
+                    toggle.classList.add('has-notes');
+                    toggle.textContent = 'Notes';
+                }
+            });
+        }
+
+        // Load structured fields from localStorage
+        function loadFields() {
+            const fields = JSON.parse(localStorage.getItem('dwellable-checklist-fields') || '{}');
+            Object.keys(fields).forEach(id => {
+                const fieldData = fields[id];
+                ['represents', 'sees', 'issue', 'action'].forEach(fieldName => {
+                    if (fieldData[fieldName]) {
+                        const textarea = document.getElementById(`field-${fieldName}-${id}`);
+                        if (textarea) {
+                            textarea.value = fieldData[fieldName];
+                        }
+                    }
+                });
+                updateNoteToggle(id);
+            });
+        }
+
+        // Export all notes as text
+        function exportNotes() {
+            const notes = JSON.parse(localStorage.getItem('dwellable-checklist-notes') || '{}');
+            const fields = JSON.parse(localStorage.getItem('dwellable-checklist-fields') || '{}');
+            const images = JSON.parse(localStorage.getItem('dwellable-checklist-images') || '{}');
+            const fieldImages = JSON.parse(localStorage.getItem('dwellable-checklist-field-images') || '{}');
+            let output = 'DWELLABLE TESTING RESULTS\n' + '='.repeat(40) + '\n\n';
+            document.querySelectorAll('[data-id]').forEach(checkbox => {
+                const id = checkbox.dataset.id;
+                const label = checkbox.parentElement.querySelector('label').textContent;
+                const status = checkbox.checked ? 'PASS' : 'NOT TESTED';
+                output += `[${status}] ${label}\n`;
+
+                // Add structured fields if they exist
+                if (fields[id]) {
+                    if (fields[id].represents) output += `  📸 What it represents: ${fields[id].represents}\n`;
+                    if (fields[id].sees) output += `  👁️ What I see: ${fields[id].sees}\n`;
+                    if (fields[id].issue) output += `  ⚠️ The issue: ${fields[id].issue}\n`;
+                    if (fields[id].action) output += `  ✓ Intended action: ${fields[id].action}\n`;
+                }
+
+                // Add field images
+                ['represents', 'sees', 'issue', 'action'].forEach(field => {
+                    const key = `${id}-${field}`;
+                    if (fieldImages[key] && fieldImages[key].length > 0) {
+                        output += `  📷 ${field} images: ${fieldImages[key].length} screenshot(s)\n`;
+                    }
+                });
+
+                // Add legacy notes if they exist
+                if (notes[id]) {
+                    output += `  📝 Notes: ${notes[id]}\n`;
+                }
+
+                // Add legacy image count
+                if (images[id] && images[id].length > 0) {
+                    output += `  📷 Legacy images: ${images[id].length} screenshot(s) attached\n`;
+                }
+                output += '\n';
+            });
+            const blob = new Blob([output], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'dwellable-testing-results.txt';
+            a.click();
         }
 
         // Update statistics
@@ -763,8 +1050,12 @@
 
         // Reset progress
         function clearProgress() {
-            if (confirm('Are you sure you want to reset all progress?')) {
+            if (confirm('Are you sure you want to reset all progress? This will also clear all notes, fields, and images.')) {
                 localStorage.removeItem('dwellable-checklist');
+                localStorage.removeItem('dwellable-checklist-notes');
+                localStorage.removeItem('dwellable-checklist-fields');
+                localStorage.removeItem('dwellable-checklist-images');
+                localStorage.removeItem('dwellable-checklist-field-images');
                 location.reload();
             }
         }
@@ -784,8 +1075,314 @@
             event.target.classList.add('active');
         }
 
+        // Inject notes UI into each task item
+        function injectNotesUI() {
+            document.querySelectorAll('[data-id]').forEach(checkbox => {
+                const id = checkbox.dataset.id;
+                const taskItem = checkbox.parentElement;
+
+                // Add notes toggle button next to label
+                const toggle = document.createElement('span');
+                toggle.className = 'notes-toggle';
+                toggle.textContent = '+ Note';
+                toggle.setAttribute('data-notes-id', id);
+                toggle.onclick = function(e) { toggleNotes(this, id, e); };
+                taskItem.appendChild(toggle);
+
+                // Add notes area below task item
+                const notesArea = document.createElement('div');
+                notesArea.className = 'notes-area';
+                notesArea.id = 'notes-' + id;
+                notesArea.innerHTML = `
+                    <div style="display: grid; gap: 16px;">
+                        <!-- FIELD 1: What it represents -->
+                        <div>
+                            <label style="color: #d4af37; font-size: 0.9em; font-weight: 600; display: block; margin-bottom: 6px;">📸 What it represents</label>
+                            <textarea id="field-represents-${id}" placeholder="Describe the scenario, action, or condition being tested..." oninput="saveField('${id}', 'represents')" onclick="event.stopPropagation()" style="min-height: 60px; width: 100%; padding: 10px; background: #1a1823; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-family: inherit; font-size: 0.85em; resize: vertical; outline: none;"></textarea>
+                            <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
+                                <input type="file" accept="image/*" multiple style="display:none" id="file-represents-${id}" onchange="handleFieldImageUpload('${id}', 'represents', this)">
+                                <span class="add-image-btn" onclick="document.getElementById('file-represents-${id}').click()" style="font-size: 0.75em; padding: 3px 8px;">+ Image</span>
+                                <span style="color:#555; font-size: 0.75em;">drag & drop</span>
+                            </div>
+                            <div class="image-gallery" id="gallery-represents-${id}" onclick="event.stopPropagation()" style="margin-top: 8px;"></div>
+                        </div>
+
+                        <!-- FIELD 2: What I see -->
+                        <div>
+                            <label style="color: #d4af37; font-size: 0.9em; font-weight: 600; display: block; margin-bottom: 6px;">👁️ What I see</label>
+                            <textarea id="field-sees-${id}" placeholder="Describe the actual behavior or result observed..." oninput="saveField('${id}', 'sees')" onclick="event.stopPropagation()" style="min-height: 60px; width: 100%; padding: 10px; background: #1a1823; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-family: inherit; font-size: 0.85em; resize: vertical; outline: none;"></textarea>
+                            <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
+                                <input type="file" accept="image/*" multiple style="display:none" id="file-sees-${id}" onchange="handleFieldImageUpload('${id}', 'sees', this)">
+                                <span class="add-image-btn" onclick="document.getElementById('file-sees-${id}').click()" style="font-size: 0.75em; padding: 3px 8px;">+ Image</span>
+                                <span style="color:#555; font-size: 0.75em;">drag & drop</span>
+                            </div>
+                            <div class="image-gallery" id="gallery-sees-${id}" onclick="event.stopPropagation()" style="margin-top: 8px;"></div>
+                        </div>
+
+                        <!-- FIELD 3: The issue -->
+                        <div>
+                            <label style="color: #d4af37; font-size: 0.9em; font-weight: 600; display: block; margin-bottom: 6px;">⚠️ The issue</label>
+                            <textarea id="field-issue-${id}" placeholder="What's the problem? What went wrong?..." oninput="saveField('${id}', 'issue')" onclick="event.stopPropagation()" style="min-height: 60px; width: 100%; padding: 10px; background: #1a1823; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-family: inherit; font-size: 0.85em; resize: vertical; outline: none;"></textarea>
+                            <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
+                                <input type="file" accept="image/*" multiple style="display:none" id="file-issue-${id}" onchange="handleFieldImageUpload('${id}', 'issue', this)">
+                                <span class="add-image-btn" onclick="document.getElementById('file-issue-${id}').click()" style="font-size: 0.75em; padding: 3px 8px;">+ Image</span>
+                                <span style="color:#555; font-size: 0.75em;">drag & drop</span>
+                            </div>
+                            <div class="image-gallery" id="gallery-issue-${id}" onclick="event.stopPropagation()" style="margin-top: 8px;"></div>
+                        </div>
+
+                        <!-- FIELD 4: Intended action -->
+                        <div>
+                            <label style="color: #d4af37; font-size: 0.9em; font-weight: 600; display: block; margin-bottom: 6px;">✓ Intended action</label>
+                            <textarea id="field-action-${id}" placeholder="What should happen instead? What's the expected behavior?..." oninput="saveField('${id}', 'action')" onclick="event.stopPropagation()" style="min-height: 60px; width: 100%; padding: 10px; background: #1a1823; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-family: inherit; font-size: 0.85em; resize: vertical; outline: none;"></textarea>
+                            <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
+                                <input type="file" accept="image/*" multiple style="display:none" id="file-action-${id}" onchange="handleFieldImageUpload('${id}', 'action', this)">
+                                <span class="add-image-btn" onclick="document.getElementById('file-action-${id}').click()" style="font-size: 0.75em; padding: 3px 8px;">+ Image</span>
+                                <span style="color:#555; font-size: 0.75em;">drag & drop</span>
+                            </div>
+                            <div class="image-gallery" id="gallery-action-${id}" onclick="event.stopPropagation()" style="margin-top: 8px;"></div>
+                        </div>
+                    </div>
+                `;
+
+                // Drag and drop support
+                notesArea.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    notesArea.style.borderColor = '#d4af37';
+                });
+                notesArea.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    notesArea.style.borderColor = '';
+                });
+                notesArea.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    notesArea.style.borderColor = '';
+                    if (e.dataTransfer.files.length > 0) {
+                        processFiles(id, e.dataTransfer.files);
+                    }
+                });
+
+                taskItem.appendChild(notesArea);
+            });
+        }
+
+        // Handle image file input for specific field
+        function handleFieldImageUpload(id, fieldName, input) {
+            if (input.files.length > 0) {
+                processFieldFiles(id, fieldName, input.files);
+                input.value = '';
+            }
+        }
+
+        // Handle image file input (legacy)
+        function handleImageUpload(id, input) {
+            if (input.files.length > 0) {
+                processFiles(id, input.files);
+                input.value = '';
+            }
+        }
+
+        // Process files into base64 and store per field
+        function processFieldFiles(id, fieldName, files) {
+            const fieldImages = JSON.parse(localStorage.getItem('dwellable-checklist-field-images') || '{}');
+            const key = `${id}-${fieldName}`;
+            if (!fieldImages[key]) fieldImages[key] = [];
+
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Resize to keep localStorage manageable
+                    resizeImage(e.target.result, 800, function(resized) {
+                        fieldImages[key].push(resized);
+                        try {
+                            localStorage.setItem('dwellable-checklist-field-images', JSON.stringify(fieldImages));
+                        } catch(err) {
+                            alert('Storage limit reached. Try smaller images or remove some existing ones.');
+                            fieldImages[key].pop();
+                            return;
+                        }
+                        renderFieldGallery(id, fieldName);
+                        updateNoteToggle(id);
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Process files into base64 and store (legacy)
+        function processFiles(id, files) {
+            const images = JSON.parse(localStorage.getItem('dwellable-checklist-images') || '{}');
+            if (!images[id]) images[id] = [];
+
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Resize to keep localStorage manageable
+                    resizeImage(e.target.result, 800, function(resized) {
+                        images[id].push(resized);
+                        try {
+                            localStorage.setItem('dwellable-checklist-images', JSON.stringify(images));
+                        } catch(err) {
+                            alert('Storage limit reached. Try smaller images or remove some existing ones.');
+                            images[id].pop();
+                            return;
+                        }
+                        renderGallery(id);
+                        updateNoteToggle(id);
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Resize image to max width while maintaining aspect ratio
+        function resizeImage(dataUrl, maxWidth, callback) {
+            const img = new Image();
+            img.onload = function() {
+                let w = img.width, h = img.height;
+                if (w > maxWidth) {
+                    h = Math.round(h * maxWidth / w);
+                    w = maxWidth;
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                callback(canvas.toDataURL('image/jpeg', 0.7));
+            };
+            img.src = dataUrl;
+        }
+
+        // Render image gallery for a specific field
+        function renderFieldGallery(id, fieldName) {
+            const gallery = document.getElementById(`gallery-${fieldName}-${id}`);
+            if (!gallery) return;
+            const fieldImages = JSON.parse(localStorage.getItem('dwellable-checklist-field-images') || '{}');
+            const key = `${id}-${fieldName}`;
+            const images = fieldImages[key] || [];
+            gallery.innerHTML = '';
+            images.forEach((src, idx) => {
+                const thumb = document.createElement('div');
+                thumb.className = 'image-thumb';
+                thumb.innerHTML = `
+                    <img src="${src}" onclick="openLightbox('${src}')" alt="Screenshot ${idx + 1}">
+                    <button class="remove-img" onclick="removeFieldImage('${id}', '${fieldName}', ${idx})" title="Remove">✕</button>
+                `;
+                gallery.appendChild(thumb);
+            });
+        }
+
+        // Render image gallery for a task (legacy)
+        function renderGallery(id) {
+            const gallery = document.getElementById('gallery-' + id);
+            if (!gallery) return;
+            const images = JSON.parse(localStorage.getItem('dwellable-checklist-images') || '{}');
+            const taskImages = images[id] || [];
+            gallery.innerHTML = '';
+            taskImages.forEach((src, idx) => {
+                const thumb = document.createElement('div');
+                thumb.className = 'image-thumb';
+                thumb.innerHTML = `
+                    <img src="${src}" onclick="openLightbox('${src}')" alt="Screenshot ${idx + 1}">
+                    <button class="remove-img" onclick="removeImage('${id}', ${idx})" title="Remove">✕</button>
+                `;
+                gallery.appendChild(thumb);
+            });
+        }
+
+        // Remove an image from a specific field
+        function removeFieldImage(id, fieldName, idx) {
+            const fieldImages = JSON.parse(localStorage.getItem('dwellable-checklist-field-images') || '{}');
+            const key = `${id}-${fieldName}`;
+            if (fieldImages[key]) {
+                fieldImages[key].splice(idx, 1);
+                if (fieldImages[key].length === 0) delete fieldImages[key];
+                localStorage.setItem('dwellable-checklist-field-images', JSON.stringify(fieldImages));
+            }
+            renderFieldGallery(id, fieldName);
+            updateNoteToggle(id);
+        }
+
+        // Remove an image (legacy)
+        function removeImage(id, idx) {
+            const images = JSON.parse(localStorage.getItem('dwellable-checklist-images') || '{}');
+            if (images[id]) {
+                images[id].splice(idx, 1);
+                if (images[id].length === 0) delete images[id];
+                localStorage.setItem('dwellable-checklist-images', JSON.stringify(images));
+            }
+            renderGallery(id);
+            updateNoteToggle(id);
+        }
+
+        // Update note toggle to reflect if notes, fields, or images exist
+        function updateNoteToggle(id) {
+            const toggle = document.querySelector(`[data-notes-id="${id}"]`);
+            if (!toggle) return;
+            const notes = JSON.parse(localStorage.getItem('dwellable-checklist-notes') || '{}');
+            const fields = JSON.parse(localStorage.getItem('dwellable-checklist-fields') || '{}');
+            const images = JSON.parse(localStorage.getItem('dwellable-checklist-images') || '{}');
+            const fieldImages = JSON.parse(localStorage.getItem('dwellable-checklist-field-images') || '{}');
+
+            // Check if any content exists
+            const hasNotes = !!notes[id];
+            const hasFields = !!(fields[id] && Object.values(fields[id]).some(v => !!v));
+            const hasImages = !!(images[id] && images[id].length > 0);
+
+            // Check if any field has images
+            const hasFieldImages = ['represents', 'sees', 'issue', 'action'].some(field => {
+                const key = `${id}-${field}`;
+                return fieldImages[key] && fieldImages[key].length > 0;
+            });
+
+            const hasContent = hasNotes || hasFields || hasImages || hasFieldImages;
+
+            toggle.classList.toggle('has-notes', hasContent);
+            toggle.textContent = hasContent ? 'Notes' : '+ Note';
+        }
+
+        // Lightbox
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').classList.add('visible');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('visible');
+        }
+
+        // Load field images from localStorage
+        function loadFieldImages() {
+            const fieldImages = JSON.parse(localStorage.getItem('dwellable-checklist-field-images') || '{}');
+            Object.keys(fieldImages).forEach(key => {
+                const [id, fieldName] = key.split('-');
+                renderFieldGallery(id, fieldName);
+            });
+        }
+
+        // Load images from localStorage (legacy)
+        function loadImages() {
+            const images = JSON.parse(localStorage.getItem('dwellable-checklist-images') || '{}');
+            Object.keys(images).forEach(id => {
+                renderGallery(id);
+                updateNoteToggle(id);
+            });
+        }
+
         // Initialize on page load
-        window.addEventListener('load', loadProgress);
+        window.addEventListener('load', function() {
+            injectNotesUI();
+            loadProgress();
+            loadNotes();
+            loadFields();
+            loadImages();
+            loadFieldImages();
+        });
     </script>
 </body>
 </html>

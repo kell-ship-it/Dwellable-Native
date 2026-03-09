@@ -15,6 +15,8 @@
 		0108 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0109 /* AppView.swift */; };
 		0110 /* MomentsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0111 /* MomentsListView.swift */; };
 		013e /* TypeFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013f /* TypeFlowView.swift */; };
+		0144 /* MomentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0145 /* MomentDetailView.swift */; };
+		0146 /* MomentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0147 /* MomentRow.swift */; };
 		0112 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0113 /* AuthManager.swift */; };
 		0128 /* AudioRecordingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0129 /* AudioRecordingManager.swift */; };
 		012a /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012b /* TranscriptionManager.swift */; };
@@ -41,6 +43,8 @@
 		0109 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		0111 /* MomentsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentsListView.swift; sourceTree = "<group>"; };
 		013f /* TypeFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeFlowView.swift; sourceTree = "<group>"; };
+		0145 /* MomentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentDetailView.swift; sourceTree = "<group>"; };
+		0147 /* MomentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentRow.swift; sourceTree = "<group>"; };
 		0113 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
 		0129 /* AudioRecordingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecordingManager.swift; sourceTree = "<group>"; };
 		012b /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
@@ -98,6 +102,8 @@
 				0109 /* AppView.swift */,
 				0111 /* MomentsListView.swift */,
 				013f /* TypeFlowView.swift */,
+				0145 /* MomentDetailView.swift */,
+				0147 /* MomentRow.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -231,6 +237,8 @@
 				0108 /* AppView.swift in Sources */,
 				0110 /* MomentsListView.swift in Sources */,
 				013e /* TypeFlowView.swift in Sources */,
+				0144 /* MomentDetailView.swift in Sources */,
+				0146 /* MomentRow.swift in Sources */,
 				0112 /* AuthManager.swift in Sources */,
 				0128 /* AudioRecordingManager.swift in Sources */,
 				012a /* TranscriptionManager.swift in Sources */,
