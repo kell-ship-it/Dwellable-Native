@@ -260,13 +260,13 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | API & Auth | 2 | 2 | 0 | 0 |
 | Backend Integration | 2 | 2 | 0 | 0 |
 | Data Persistence | 3 | 3 | 0 | 0 |
-| File Organization | 3 | 2 | 0 | 1 |
+| File Organization | 3 | 2 | 1 | 0 |
 | UI Screens — Sub | 4 | 0 | 0 | 4 |
 | Analytics | 2 | 0 | 0 | 2 |
 | Testing & QA | 5 | 0 | 0 | 5 |
 | Deployment | 3 | 0 | 0 | 3 |
 | Bugs | 1 | 1 | 0 | 0 |
-| **TOTAL** | **40** | **25** | **0** | **15** |
+| **TOTAL** | **40** | **25** | **1** | **14** |
 
 ---
 
