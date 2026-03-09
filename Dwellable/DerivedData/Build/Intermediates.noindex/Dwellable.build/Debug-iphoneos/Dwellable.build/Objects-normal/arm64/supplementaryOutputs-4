@@ -1,0 +1,23 @@
+{
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/AudioRecordingManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/AudioRecordingManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/AudioRecordingManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/AudioRecordingManager.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/AudioRecordingManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/AudioRecordingManager.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/AuthManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/AuthManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/AuthManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/AuthManager.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/AuthManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/AuthManager.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/MomentRow.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentRow.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentRow.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentRow.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentRow.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentRow.swiftdeps"
+  }
+}

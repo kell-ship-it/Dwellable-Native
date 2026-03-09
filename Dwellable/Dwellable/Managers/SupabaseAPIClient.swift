@@ -118,8 +118,10 @@ class SupabaseAPIClient: APIClient {
 
     func saveMoment(_ moment: Moment) async throws -> Moment {
         let payload = MomentPayload(
+            id: moment.id,
             user_id: moment.userId,
             body: moment.body,
+            sense_of_lord: moment.senseOfLord,
             created_at: moment.createdAt.ISO8601Format(),
             updated_at: Date().ISO8601Format()
         )
@@ -153,7 +155,9 @@ class SupabaseAPIClient: APIClient {
         }
 
         guard (200...299).contains(httpResponse.statusCode) else {
+            let errorBody = String(data: data, encoding: .utf8) ?? "No response body"
             print("🔴 Save failed with status: \(httpResponse.statusCode)")
+            print("🔴 Error details: \(errorBody)")
             throw APIError.serverError
         }
 
@@ -238,8 +242,10 @@ class SupabaseAPIClient: APIClient {
 // MARK: - Payload and Response Models
 
 struct MomentPayload: Encodable {
+    let id: String
     let user_id: String
     let body: String
+    let sense_of_lord: String?
     let created_at: String
     let updated_at: String
 }

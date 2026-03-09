@@ -32,18 +32,18 @@ struct LoginView: View {
                                 .textContentType(.emailAddress)
                                 .keyboardType(.emailAddress)
                                 .autocapitalization(.none)
-                                .padding(16)
-                                .background(Color(red: 0.07, green: 0.07, blue: 0.09))
+                                .padding(Theme.Spacing.lg)
+                                .background(Theme.inputBackground)
                                 .foregroundColor(.white)
                                 .tint(Theme.gold)
-                                .border(Color(red: 0.6, green: 0.64, blue: 0.71, opacity: 0.2), width: 1)
+                                .border(Theme.border, width: 1)
                                 .cornerRadius(14)
 
                             if email.isEmpty {
                                 Text("Email")
                                     .font(.system(size: 16, weight: .regular))
-                                    .foregroundColor(Color(red: 0.85, green: 0.85, blue: 0.85))
-                                    .padding(.leading, 16)
+                                    .foregroundColor(Theme.placeholderText)
+                                    .padding(.leading, Theme.Spacing.lg)
                             }
                         }
 
@@ -52,13 +52,13 @@ struct LoginView: View {
                                 if showPassword {
                                     TextField("", text: $password)
                                         .textContentType(.password)
-                                        .padding(16)
+                                        .padding(Theme.Spacing.lg)
                                         .foregroundColor(.white)
                                         .tint(Theme.gold)
                                 } else {
                                     SecureField("", text: $password)
                                         .textContentType(.password)
-                                        .padding(16)
+                                        .padding(Theme.Spacing.lg)
                                         .foregroundColor(.white)
                                         .tint(Theme.gold)
                                 }
@@ -67,18 +67,18 @@ struct LoginView: View {
                                     Image(systemName: showPassword ? "eye.slash" : "eye")
                                         .font(.system(size: 16, weight: .regular))
                                         .foregroundColor(Theme.tertiaryText)
-                                        .padding(.trailing, 16)
+                                        .padding(.trailing, Theme.Spacing.lg)
                                 }
                             }
-                            .background(Color(red: 0.07, green: 0.07, blue: 0.09))
-                            .border(Color(red: 0.6, green: 0.64, blue: 0.71, opacity: 0.2), width: 1)
+                            .background(Theme.inputBackground)
+                            .border(Theme.border, width: 1)
                             .cornerRadius(14)
 
                             if password.isEmpty {
                                 Text("Password")
                                     .font(.system(size: 16, weight: .regular))
-                                    .foregroundColor(Color(red: 0.85, green: 0.85, blue: 0.85))
-                                    .padding(.leading, 16)
+                                    .foregroundColor(Theme.placeholderText)
+                                    .padding(.leading, Theme.Spacing.lg)
                             }
                         }
                     }
@@ -91,14 +91,14 @@ struct LoginView: View {
                     }) {
                         Text(authManager.isLoading ? "Signing in..." : "Sign In")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
+                            .foregroundColor(Theme.goldDark)
                             .frame(maxWidth: .infinity)
-                            .padding(18)
+                            .padding(Theme.Button.primaryPadding)
                             .background(Theme.gold)
-                            .cornerRadius(18)
+                            .cornerRadius(Theme.Button.primaryCornerRadius)
                     }
                     .disabled(authManager.isLoading || email.isEmpty || password.isEmpty)
-                    .padding(.horizontal, 32)
+                    .padding(.horizontal, Theme.Spacing.xxl)
                 }
 
                 if let error = authManager.errorMessage {

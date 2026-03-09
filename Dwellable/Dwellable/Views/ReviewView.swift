@@ -44,33 +44,33 @@ struct ReviewView: View {
 
                     // Transcribing indicator
                     if transcriptionManager.isTranscribing {
-                        HStack(spacing: 8) {
+                        HStack(spacing: Theme.Spacing.sm) {
                             ProgressView()
                                 .tint(Theme.gold)
                             Text("Transcribing...")
                                 .font(.system(size: 14, weight: .regular))
                                 .foregroundColor(Theme.tertiaryText)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
+                        .padding(.horizontal, Theme.Spacing.lg)
+                        .padding(.vertical, Theme.Spacing.md)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.bottom, 8)
+                        .padding(.bottom, Theme.Spacing.sm)
                     }
 
                     // Transcription error with retry option
                     if let errorMessage = transcriptionManager.errorMessage {
-                        VStack(spacing: 8) {
-                            HStack(spacing: 8) {
+                        VStack(spacing: Theme.Spacing.sm) {
+                            HStack(spacing: Theme.Spacing.sm) {
                                 Image(systemName: "exclamationmark.circle.fill")
-                                    .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+                                    .foregroundColor(Theme.error)
                                 Text(errorMessage)
                                     .font(.system(size: 12, weight: .regular))
-                                    .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+                                    .foregroundColor(Theme.error)
                                 Spacer()
                             }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
-                            .background(Color(red: 0.95, green: 0.2, blue: 0.2, opacity: 0.1))
+                            .padding(.horizontal, Theme.Spacing.md)
+                            .padding(.vertical, Theme.Spacing.sm)
+                            .background(Theme.error.opacity(0.1))
                             .cornerRadius(8)
 
                             Button(action: {
@@ -115,16 +115,16 @@ struct ReviewView: View {
                 Spacer()
 
                 // Footer buttons
-                HStack(spacing: 10) {
+                HStack(spacing: Theme.Spacing.md) {
                     Button(action: { dismiss() }) {
                         Text("Re-record")
                             .font(.system(size: 14, weight: .regular))
                             .foregroundColor(Theme.tertiaryText)
-                            .padding(.vertical, 15)
-                            .padding(.horizontal, 28)
-                            .background(Color(red: 1, green: 1, blue: 1, opacity: 0.04))
-                            .border(Color(red: 0.6, green: 0.64, blue: 0.71, opacity: 0.2), width: 1)
-                            .cornerRadius(20)
+                            .padding(.vertical, Theme.Button.primaryPadding - 1)
+                            .padding(.horizontal, Theme.Spacing.xxl)
+                            .background(Theme.subtleOverlay)
+                            .border(Theme.border, width: 1)
+                            .cornerRadius(Theme.Button.pillCornerRadius)
                             .lineLimit(1)
                     }
 
@@ -135,25 +135,25 @@ struct ReviewView: View {
                     }) {
                         if isSaving {
                             ProgressView()
-                                .tint(Color(red: 0.1, green: 0.08, blue: 0.05))
+                                .tint(Theme.goldDark)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 15)
+                                .padding(.vertical, Theme.Button.primaryPadding - 1)
                         } else {
                             Text("Save")
                                 .font(.system(size: 15, weight: .semibold))
-                                .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
+                                .foregroundColor(Theme.goldDark)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 15)
+                                .padding(.vertical, Theme.Button.primaryPadding - 1)
                         }
                     }
                     .background(Theme.gold)
-                    .cornerRadius(20)
+                    .cornerRadius(Theme.Button.pillCornerRadius)
                     .disabled(isSaving || momentBody.trimmingCharacters(in: .whitespaces).isEmpty)
                     .opacity(isSaving || momentBody.trimmingCharacters(in: .whitespaces).isEmpty ? 0.6 : 1.0)
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
-                .padding(.bottom, 20)
+                .padding(.horizontal, Theme.Spacing.xl)
+                .padding(.vertical, Theme.Spacing.md)
+                .padding(.bottom, Theme.Spacing.xl)
             }
         }
         .navigationBarBackButtonHidden(true)

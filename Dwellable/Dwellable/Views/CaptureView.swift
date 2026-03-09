@@ -39,7 +39,7 @@ struct CaptureView: View {
                     ForEach(0..<3, id: \.self) { index in
                         Circle()
                             .stroke(
-                                Color(red: 0.78, green: 0.69, blue: 0.48, opacity: [0.08, 0.14, 0.22][index]),
+                                [Theme.goldRingLight, Theme.goldRingMedium, Theme.goldRing][index],
                                 lineWidth: 1
                             )
                             .frame(width: CGFloat(160 - index * 40), height: CGFloat(160 - index * 40))
@@ -55,9 +55,9 @@ struct CaptureView: View {
                     }) {
                         Image(systemName: audioManager.isRecording ? "mic.fill" : "mic.fill")
                             .font(.system(size: 26))
-                            .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
+                            .foregroundColor(Theme.goldDark)
                             .frame(width: 80, height: 80)
-                            .background(audioManager.isRecording ? Color(red: 0.95, green: 0.2, blue: 0.2) : Theme.gold)
+                            .background(audioManager.isRecording ? Theme.error : Theme.gold)
                             .clipShape(Circle())
                     }
                 }
@@ -88,9 +88,9 @@ struct CaptureView: View {
                 if let errorMessage = audioManager.errorMessage {
                     Text(errorMessage)
                         .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
-                        .padding(.top, 12)
-                        .padding(.horizontal, 8)
+                        .foregroundColor(Theme.error)
+                        .padding(.top, Theme.Spacing.md)
+                        .padding(.horizontal, Theme.Spacing.sm)
                         .lineLimit(nil)
                 }
 
@@ -100,12 +100,12 @@ struct CaptureView: View {
                 HStack(alignment: .center, spacing: 4) {
                     ForEach([5, 13, 20, 9, 24, 15, 7, 19, 22, 11, 5], id: \.self) { height in
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(Color(red: 0.6, green: 0.64, blue: 0.71, opacity: 0.12))
+                            .fill(Theme.waveformFill)
                             .frame(width: 3, height: CGFloat(height))
                     }
                 }
                 .frame(height: 28)
-                .padding(.bottom, 32)
+                .padding(.bottom, Theme.Spacing.xxl)
 
                 // Type instead button
                 Button(action: {
@@ -114,15 +114,15 @@ struct CaptureView: View {
                     Text("type instead →")
                         .font(.system(size: 13, weight: .regular))
                         .foregroundColor(Theme.tertiaryText)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 18)
-                        .background(Color(red: 1, green: 1, blue: 1, opacity: 0.04))
-                        .border(Color(red: 0.6, green: 0.64, blue: 0.71, opacity: 0.12), width: 1)
-                        .cornerRadius(20)
+                        .padding(.vertical, Theme.Spacing.sm)
+                        .padding(.horizontal, Theme.Spacing.lg)
+                        .background(Theme.subtleOverlay)
+                        .border(Theme.borderLight, width: 1)
+                        .cornerRadius(Theme.Button.pillCornerRadius)
                 }
 
                 Spacer()
-                    .frame(height: 36)
+                    .frame(height: Theme.Spacing.xxl)
             }
             .padding(.horizontal, 28)
         }

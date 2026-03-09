@@ -1,0 +1,23 @@
+{
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/KeychainManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/KeychainManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/KeychainManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/KeychainManager.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/KeychainManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/KeychainManager.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/LocalStorageManager.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/LocalStorageManager.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/LocalStorageManager.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/LocalStorageManager.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/LocalStorageManager.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/LocalStorageManager.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Managers/SupabaseAPIClient.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/SupabaseAPIClient.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/SupabaseAPIClient.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/SupabaseAPIClient.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/SupabaseAPIClient.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/SupabaseAPIClient.swiftdeps"
+  }
+}

@@ -12,6 +12,8 @@ swift_files = [
     "Dwellable/Views/AppView.swift",
     "Dwellable/Views/MomentsListView.swift",
     "Dwellable/Views/TypeFlowView.swift",
+    "Dwellable/Views/MomentDetailView.swift",
+    "Dwellable/Views/MomentRow.swift",
     "Dwellable/Managers/AuthManager.swift",
     "Dwellable/Managers/AudioRecordingManager.swift",
     "Dwellable/Managers/TranscriptionManager.swift",
@@ -47,6 +49,8 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t0108 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0109 /* AppView.swift */; };
 \t\t0110 /* MomentsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0111 /* MomentsListView.swift */; };
 \t\t013e /* TypeFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013f /* TypeFlowView.swift */; };
+\t\t0144 /* MomentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0145 /* MomentDetailView.swift */; };
+\t\t0146 /* MomentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0147 /* MomentRow.swift */; };
 \t\t0112 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0113 /* AuthManager.swift */; };
 \t\t0128 /* AudioRecordingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0129 /* AudioRecordingManager.swift */; };
 \t\t012a /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012b /* TranscriptionManager.swift */; };
@@ -73,6 +77,8 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t0109 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 \t\t0111 /* MomentsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentsListView.swift; sourceTree = "<group>"; };
 \t\t013f /* TypeFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeFlowView.swift; sourceTree = "<group>"; };
+\t\t0145 /* MomentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentDetailView.swift; sourceTree = "<group>"; };
+\t\t0147 /* MomentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentRow.swift; sourceTree = "<group>"; };
 \t\t0113 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
 \t\t0129 /* AudioRecordingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecordingManager.swift; sourceTree = "<group>"; };
 \t\t012b /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
@@ -130,6 +136,8 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t\t\t0109 /* AppView.swift */,
 \t\t\t\t0111 /* MomentsListView.swift */,
 \t\t\t\t013f /* TypeFlowView.swift */,
+\t\t\t\t0145 /* MomentDetailView.swift */,
+\t\t\t\t0147 /* MomentRow.swift */,
 \t\t\t);
 \t\t\tpath = Views;
 \t\t\tsourceTree = "<group>";
@@ -263,6 +271,8 @@ pbxproj_content = '''// !$*UTF8*$!
 \t\t\t\t0108 /* AppView.swift in Sources */,
 \t\t\t\t0110 /* MomentsListView.swift in Sources */,
 \t\t\t\t013e /* TypeFlowView.swift in Sources */,
+\t\t\t\t0144 /* MomentDetailView.swift in Sources */,
+\t\t\t\t0146 /* MomentRow.swift in Sources */,
 \t\t\t\t0112 /* AuthManager.swift in Sources */,
 \t\t\t\t0128 /* AudioRecordingManager.swift in Sources */,
 \t\t\t\t012a /* TranscriptionManager.swift in Sources */,

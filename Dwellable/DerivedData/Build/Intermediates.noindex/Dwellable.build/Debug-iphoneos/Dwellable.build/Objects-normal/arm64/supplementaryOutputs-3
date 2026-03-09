@@ -1,0 +1,23 @@
+{
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/MomentDetailView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentDetailView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentDetailView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentDetailView.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentDetailView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentDetailView.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/MomentsListView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentsListView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentsListView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentsListView.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentsListView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/MomentsListView.swiftdeps"
+  },
+  "/Users/kell/Projects/Dwellable-Native/Dwellable/Dwellable/Views/TypeFlowView.swift" : {
+    "const-values" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/TypeFlowView.swiftconstvalues",
+    "dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/TypeFlowView.d",
+    "diagnostics" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/TypeFlowView.dia",
+    "object" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/TypeFlowView.o",
+    "swift-dependencies" : "/Users/kell/Projects/Dwellable-Native/Dwellable/DerivedData/Build/Intermediates.noindex/Dwellable.build/Debug-iphoneos/Dwellable.build/Objects-normal/arm64/TypeFlowView.swiftdeps"
+  }
+}

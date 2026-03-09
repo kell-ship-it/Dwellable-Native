@@ -7,6 +7,7 @@ struct MomentsListView: View {
     @State private var error: String?
     @State private var refreshTrigger = UUID()
     @State private var showCapture = false
+    @State private var isOffline = false
 
     let apiClient: APIClient
     let userId: String
@@ -27,11 +28,17 @@ struct MomentsListView: View {
             DispatchQueue.main.async {
                 self.moments = fetchedMoments
                 self.isLoading = false
+                self.isOffline = false
             }
         } catch {
+            // Network error — load from local storage instead
+            print("🔴 Network fetch failed: \(error.localizedDescription)")
+            let localMoments = LocalStorageManager.shared.getAllLocalMoments()
             DispatchQueue.main.async {
-                self.error = error.localizedDescription
+                self.moments = localMoments
                 self.isLoading = false
+                self.isOffline = !localMoments.isEmpty
+                self.error = localMoments.isEmpty ? error.localizedDescription : nil
             }
         }
     }
@@ -55,7 +62,7 @@ struct MomentsListView: View {
                         VStack(spacing: 12) {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .font(.system(size: 32))
-                                .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+                                .foregroundColor(Theme.error)
 
                             Text("Failed to load moments")
                                 .font(.system(size: 16, weight: .semibold))
@@ -74,11 +81,11 @@ struct MomentsListView: View {
                         }) {
                             Text("Try Again")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
+                                .foregroundColor(Theme.goldDark)
                                 .frame(maxWidth: .infinity)
-                                .padding(12)
+                                .padding(Theme.Button.secondaryPadding)
                                 .background(Theme.gold)
-                                .cornerRadius(18)
+                                .cornerRadius(Theme.Button.primaryCornerRadius)
                         }
                         .padding(.horizontal, 32)
                     }
@@ -132,11 +139,11 @@ struct MomentsListView: View {
                         // Circle with dot
                         ZStack {
                             Circle()
-                                .stroke(Color(red: 0.25, green: 0.27, blue: 0.31), lineWidth: 1)
+                                .stroke(Theme.borderMuted, lineWidth: 1)
                                 .frame(width: 64, height: 64)
 
                             Circle()
-                                .fill(Color(red: 0.6, green: 0.64, blue: 0.71))
+                                .fill(Theme.circleStroke)
                                 .frame(width: 6, height: 6)
                         }
 
@@ -155,19 +162,34 @@ struct MomentsListView: View {
                         Button(action: { showCapture = true }) {
                             Text("Capture your first moment")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
+                                .foregroundColor(Theme.goldDark)
                                 .frame(maxWidth: .infinity)
-                                .padding(16)
+                                .padding(Theme.Button.primaryPadding)
                                 .background(Theme.gold)
-                                .cornerRadius(22)
+                                .cornerRadius(Theme.Button.primaryCornerRadius)
                         }
-                        .padding(.horizontal, 32)
+                        .padding(.horizontal, Theme.Spacing.xxl)
                     }
 
                     Spacer()
                 }
             } else {
                 VStack(spacing: 0) {
+                    // Offline indicator
+                    if isOffline {
+                        HStack(spacing: Theme.Spacing.sm) {
+                            Image(systemName: "wifi.slash")
+                                .font(.system(size: 10, weight: .regular))
+                            Text("Offline — showing cached moments")
+                                .font(.system(size: 11, weight: .regular))
+                            Spacer()
+                        }
+                        .foregroundColor(Theme.secondaryText)
+                        .padding(.horizontal, Theme.Spacing.xl)
+                        .padding(.vertical, Theme.Spacing.sm)
+                        .background(Theme.offlineIndicator)
+                    }
+
                     // Header
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 4) {
@@ -220,14 +242,14 @@ struct MomentsListView: View {
                         Button(action: { showCapture = true }) {
                             Text("Capture moment")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
+                                .foregroundColor(Theme.goldDark)
                                 .frame(maxWidth: .infinity)
-                                .padding(16)
+                                .padding(Theme.Button.primaryPadding)
                                 .background(Theme.gold)
-                                .cornerRadius(22)
+                                .cornerRadius(Theme.Button.primaryCornerRadius)
                         }
                     }
-                    .padding(16)
+                    .padding(Theme.Spacing.lg)
                 }
             }
         }
