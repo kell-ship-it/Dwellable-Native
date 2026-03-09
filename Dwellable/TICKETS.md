@@ -1,6 +1,6 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** March 7, 2026, 8:15 PM
+**Last Updated:** March 8, 2026, 11:42 PM
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -138,6 +138,11 @@
   - Child views propagate onMomentSaved callback only — no dismiss() calls
   - `disablesAnimations` on Transaction eliminates black screen flash during pop
 
+### File Organization (Complete)
+- [x] **T-007:** Refactor embedded views to separate files
+  - Move `TypeFlowView`, `MomentDetailView`, `TranscribingView`, `MomentRow` to own files
+  - Verified March 9: All four views in separate files, build succeeds, no embedded views remaining
+
 ### Backend Integration (Complete)
 - [x] **T-001:** Set up backend API
   - Created Supabase project (lhcjobrtmbawlhjyodxz) with PostgreSQL backend
@@ -170,8 +175,6 @@
 ---
 
 ### File Organization / Technical Debt
-- [ ] **T-007:** Refactor embedded views to separate files
-  - Move `TypeFlowView`, `MomentDetailView`, `TranscribingView`, `MomentRow` to own files
 
 - [ ] **T-008:** Fix Xcode build target configuration
   - Ensure new Swift files auto-added to build target
@@ -253,13 +256,13 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | API & Auth | 2 | 2 | 0 | 0 |
 | Backend Integration | 2 | 2 | 0 | 0 |
 | Data Persistence | 3 | 3 | 0 | 0 |
-| File Organization | 3 | 0 | 0 | 3 |
+| File Organization | 3 | 1 | 0 | 2 |
 | UI Screens — Sub | 4 | 0 | 0 | 4 |
 | Analytics | 2 | 0 | 0 | 2 |
 | Testing & QA | 5 | 0 | 0 | 5 |
 | Deployment | 3 | 0 | 0 | 3 |
 | Bugs | 1 | 1 | 0 | 0 |
-| **TOTAL** | **40** | **23** | **0** | **17** |
+| **TOTAL** | **40** | **24** | **0** | **16** |
 
 ---
 
@@ -271,6 +274,19 @@ T-011 · T-012 · T-013 · T-027 · T-028
 - **Offline-first architecture complete:** Full local persistence with LocalStorageManager + auto-sync with SyncManager
 - Pagination deferred (will implement with real backend when needed)
 - All voice features (V-001–V-008) complete and functional
-- **Next session priorities:** T-020 (XCUI test setup — HIGH), T-007 (refactor embedded views — HIGH), T-009 (centralize theme/styling — MEDIUM)
+
+### March 8 Session Fixes
+- **FIXED:** Supabase moments not persisting — MomentPayload was missing `id` and `sense_of_lord` fields
+  - Updated SupabaseAPIClient.saveMoment() to include all required fields
+  - Added error logging to help debug API failures
+  - Moments now persist correctly to Supabase
+- **FIXED:** Offline moment capture broken — MomentsListView showed error when fetch failed
+  - Updated MomentsListView to load from LocalStorageManager on network error
+  - Added offline indicator showing "Offline — showing cached moments"
+  - User can now seamlessly capture, save, and view moments even without internet
+  - Auto-syncs pending moments when network returns
+
+- **Next session priorities:** T-020 (XCUI test setup — HIGH), T-007 (refactor embedded views — HIGH), TranscribingView duration fix, T-009 (centralize theme/styling — MEDIUM)
 - User activity tracking in separate USER_ACTIVITIES.md + MANUAL_TESTING_CHECKLIST.md
 - `NSMicrophoneUsageDescription` must be added to Info.plist before App Store submission
+- Testing protocol established: Export results from HTML checklist to `/Users/kell/Projects/Dwellable-Native/Dwellable/TESTING_RESULTS_CURRENT.txt`

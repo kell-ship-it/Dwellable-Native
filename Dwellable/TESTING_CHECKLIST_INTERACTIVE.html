@@ -885,6 +885,7 @@
             checkbox.checked = !checkbox.checked;
             element.classList.toggle('completed');
             saveProgress();
+            updateStats();
         }
 
         // Toggle notes visibility
@@ -1091,6 +1092,7 @@
                 checkbox.parentElement.classList.add('completed');
             });
             saveProgress();
+            updateStats();
         }
 
         // Uncheck all tasks
@@ -1100,6 +1102,7 @@
                 checkbox.parentElement.classList.remove('completed');
             });
             saveProgress();
+            updateStats();
         }
 
         // Reset progress
