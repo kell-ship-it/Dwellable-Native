@@ -1095,31 +1095,7 @@
                 notesArea.id = 'notes-' + id;
                 notesArea.innerHTML = `
                     <div style="display: grid; gap: 16px;">
-                        <!-- FIELD 1: What it represents -->
-                        <div>
-                            <label style="color: #d4af37; font-size: 0.9em; font-weight: 600; display: block; margin-bottom: 6px;">📸 What it represents</label>
-                            <textarea id="field-represents-${id}" placeholder="Describe the scenario, action, or condition being tested..." oninput="saveField('${id}', 'represents')" onclick="event.stopPropagation()" style="min-height: 60px; width: 100%; padding: 10px; background: #1a1823; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-family: inherit; font-size: 0.85em; resize: vertical; outline: none;"></textarea>
-                            <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-                                <input type="file" accept="image/*" multiple style="display:none" id="file-represents-${id}" onchange="handleFieldImageUpload('${id}', 'represents', this)">
-                                <span class="add-image-btn" onclick="document.getElementById('file-represents-${id}').click()" style="font-size: 0.75em; padding: 3px 8px;">+ Image</span>
-                                <span style="color:#555; font-size: 0.75em;">drag & drop</span>
-                            </div>
-                            <div class="image-gallery" id="gallery-represents-${id}" onclick="event.stopPropagation()" style="margin-top: 8px;"></div>
-                        </div>
-
-                        <!-- FIELD 2: What I see -->
-                        <div>
-                            <label style="color: #d4af37; font-size: 0.9em; font-weight: 600; display: block; margin-bottom: 6px;">👁️ What I see</label>
-                            <textarea id="field-sees-${id}" placeholder="Describe the actual behavior or result observed..." oninput="saveField('${id}', 'sees')" onclick="event.stopPropagation()" style="min-height: 60px; width: 100%; padding: 10px; background: #1a1823; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-family: inherit; font-size: 0.85em; resize: vertical; outline: none;"></textarea>
-                            <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center;">
-                                <input type="file" accept="image/*" multiple style="display:none" id="file-sees-${id}" onchange="handleFieldImageUpload('${id}', 'sees', this)">
-                                <span class="add-image-btn" onclick="document.getElementById('file-sees-${id}').click()" style="font-size: 0.75em; padding: 3px 8px;">+ Image</span>
-                                <span style="color:#555; font-size: 0.75em;">drag & drop</span>
-                            </div>
-                            <div class="image-gallery" id="gallery-sees-${id}" onclick="event.stopPropagation()" style="margin-top: 8px;"></div>
-                        </div>
-
-                        <!-- FIELD 3: The issue -->
+                        <!-- FIELD 1: The issue -->
                         <div>
                             <label style="color: #d4af37; font-size: 0.9em; font-weight: 600; display: block; margin-bottom: 6px;">⚠️ The issue</label>
                             <textarea id="field-issue-${id}" placeholder="What's the problem? What went wrong?..." oninput="saveField('${id}', 'issue')" onclick="event.stopPropagation()" style="min-height: 60px; width: 100%; padding: 10px; background: #1a1823; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-family: inherit; font-size: 0.85em; resize: vertical; outline: none;"></textarea>
@@ -1131,7 +1107,7 @@
                             <div class="image-gallery" id="gallery-issue-${id}" onclick="event.stopPropagation()" style="margin-top: 8px;"></div>
                         </div>
 
-                        <!-- FIELD 4: Intended action -->
+                        <!-- FIELD 2: Intended action -->
                         <div>
                             <label style="color: #d4af37; font-size: 0.9em; font-weight: 600; display: block; margin-bottom: 6px;">✓ Intended action</label>
                             <textarea id="field-action-${id}" placeholder="What should happen instead? What's the expected behavior?..." oninput="saveField('${id}', 'action')" onclick="event.stopPropagation()" style="min-height: 60px; width: 100%; padding: 10px; background: #1a1823; border: 1px solid #333; border-radius: 6px; color: #e0e0e0; font-family: inherit; font-size: 0.85em; resize: vertical; outline: none;"></textarea>

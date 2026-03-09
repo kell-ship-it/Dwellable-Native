@@ -159,7 +159,9 @@ struct ReviewView: View {
         .navigationBarBackButtonHidden(true)
         .overlay(alignment: .center) {
             if transcriptionManager.isTranscribing {
-                TranscribingView()
+                TranscribingView(onComplete: {
+                    transcriptionManager.isTranscribing = false
+                })
                     .transition(.opacity)
             }
         }

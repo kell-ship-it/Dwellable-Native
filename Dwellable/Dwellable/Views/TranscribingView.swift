@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TranscribingView: View {
     @State private var isAnimating = false
+    var onComplete: (() -> Void)?
 
     var body: some View {
         ZStack {
@@ -10,49 +11,36 @@ struct TranscribingView: View {
                 .opacity(0.7)
                 .ignoresSafeArea()
 
-            VStack(spacing: 24) {
-                // Animated bars
-                HStack(alignment: .center, spacing: 6) {
-                    ForEach([0.2, 0.4, 0.8, 0.5, 1.0], id: \.self) { heightMultiplier in
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(Theme.gold)
-                            .frame(width: 4, height: 32 * CGFloat(heightMultiplier))
-                            .scaleEffect(y: isAnimating ? 0.6 : 1.0, anchor: .center)
-                            .animation(
-                                Animation.easeInOut(duration: 0.6)
-                                    .repeatForever(autoreverses: true)
-                                    .delay(Double(0.1 * CGFloat(Array([0.2, 0.4, 0.8, 0.5, 1.0]).firstIndex(of: heightMultiplier) ?? 0))),
-                                value: isAnimating
-                            )
-                    }
-                }
-                .frame(height: 40)
-
-                // Animated dot
-                HStack(spacing: 6) {
+            VStack(spacing: 16) {
+                // Subtle pulsing indicator (gentle, non-distracting)
+                HStack(spacing: 4) {
                     ForEach(0..<3, id: \.self) { index in
                         Circle()
                             .fill(Theme.gold)
-                            .frame(width: 8, height: 8)
-                            .opacity(isAnimating && index == (isAnimating ? 1 : 0) ? 1.0 : 0.3)
+                            .frame(width: 6, height: 6)
+                            .opacity(isAnimating ? 0.8 : 0.3)
                             .animation(
-                                Animation.linear(duration: 0.6)
-                                    .repeatForever(autoreverses: false)
-                                    .delay(Double(0.2 * CGFloat(index))),
+                                Animation.easeInOut(duration: 0.8)
+                                    .repeatForever(autoreverses: true)
+                                    .delay(Double(0.15 * CGFloat(index))),
                                 value: isAnimating
                             )
                     }
                 }
-                .frame(height: 8)
+                .frame(height: 6)
 
                 // Label
-                Text("Transcribing")
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundColor(Theme.text)
+                Text("Processing moment...")
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundColor(Theme.secondaryText)
             }
         }
         .onAppear {
             isAnimating = true
+            // Fixed 5-second display duration
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                onComplete?()
+            }
         }
     }
 }
