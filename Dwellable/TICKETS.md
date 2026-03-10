@@ -244,6 +244,28 @@
   - Implementation: Keep current behavior (offline moments lost on reinstall)
   - Decided: March 10, 2026 (Kell decision)
 
+### Bugs — Found During Testing (March 10)
+- [ ] **B-002:** Handle empty/silent audio recording gracefully
+  - Issue: App crashes when user starts recording, stops immediately (no speech)
+  - Scenario: User taps mic → stops recording → empty audio file → transcription fails → crash
+  - Root cause: TranscriptionManager tries to process empty/invalid audio without validation
+  - Solution needed: Check audio duration before transcription, show user-friendly error
+  - Impact: CRITICAL — blocks voice recording workflow
+  - Discovered: March 10, 2026 (Xcode testing)
+  - Status: 🔲 Not Started
+
+- [ ] **B-003:** ForEach with duplicate IDs in view collection
+  - Issue: Xcode warning about duplicate IDs in ForEach loops
+  - Error: "ID 5 occurs multiple times within the collection, this will give undefined results!"
+  - Likely location: MomentsListView or another list view with dynamic IDs
+  - Status: 🔲 Not Started
+
+- [ ] **B-004:** Add NSMicrophoneUsageDescription to Info.plist
+  - Issue: App crashes when accessing microphone without privacy description
+  - Error: "This app has crashed because it attempted to access privacy-sensitive data without a usage description"
+  - Required before voice recording works: Must add NSMicrophoneUsageDescription key to Info.plist
+  - Status: 🔲 Not Started
+
 ### Deployment
 - [ ] **T-026:** Prepare for App Store submission
   - Privacy policy, terms of service, screenshots, description, pricing
@@ -288,7 +310,8 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Deployment | 3 | 0 | 0 | 3 |
 | Bugs | 1 | 1 | 0 | 0 |
 | Testing Issues — March 10 | 2 | 2 | 0 | 0 |
-| **TOTAL** | **42** | **29** | **0** | **13** |
+| Bugs — Found During Testing | 3 | 0 | 0 | 3 |
+| **TOTAL** | **45** | **29** | **0** | **16** |
 
 ---
 
