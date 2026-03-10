@@ -282,11 +282,14 @@
   - Fixed: March 10, 2026 (Commit 1acd728)
   - Result: Graceful error message instead of crash
 
-- [ ] **B-003:** ForEach with duplicate IDs in view collection
+- [x] **B-003:** ForEach with duplicate IDs in view collection ✅ **FIXED**
   - Issue: Xcode warning about duplicate IDs in ForEach loops
-  - Error: "ID 5 occurs multiple times within the collection, this will give undefined results!"
-  - Likely location: MomentsListView or another list view with dynamic IDs
-  - Status: 🔲 Not Started
+  - Root cause: TranscribingView and CaptureView used `id: \.self` on ranges and arrays with duplicate values
+  - Duplicate value: Waveform array had value `5` at index 0 and index 10
+  - Solution: Replaced `ForEach(0..<3, id: \.self)` with `ForEach(Array(0..<3).enumerated(), id: \.offset)` in TranscribingView and CaptureView mic rings
+  - Waveform array: Changed from `id: \.self` to `id: \.offset` using enumerated()
+  - Result: ✅ Build succeeds with no warnings
+  - Fixed: March 10, 2026
 
 - [x] **B-004:** Add NSMicrophoneUsageDescription to Info.plist ✅ **ALREADY PRESENT**
   - Issue: App crashes when accessing microphone without privacy description
@@ -339,9 +342,9 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Deployment | 3 | 0 | 0 | 3 |
 | Bugs | 3 | 3 | 0 | 0 |
 | Testing Issues — March 10 | 2 | 2 | 0 | 0 |
-| Bugs — Found During Testing | 3 | 2 | 0 | 1 |
+| Bugs — Found During Testing | 3 | 3 | 0 | 0 |
 | UI Screens — Sub | 4 | 1 | 0 | 3 |
-| **TOTAL** | **47** | **34** | **0** | **13** |
+| **TOTAL** | **47** | **35** | **0** | **12** |
 
 ---
 

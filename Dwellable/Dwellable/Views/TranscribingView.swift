@@ -14,7 +14,7 @@ struct TranscribingView: View {
             VStack(spacing: 16) {
                 // Subtle pulsing indicator (gentle, non-distracting)
                 HStack(spacing: 4) {
-                    ForEach(0..<3, id: \.self) { index in
+                    ForEach(Array(0..<3).enumerated(), id: \.offset) { _, index in
                         Circle()
                             .fill(Theme.gold)
                             .frame(width: 6, height: 6)

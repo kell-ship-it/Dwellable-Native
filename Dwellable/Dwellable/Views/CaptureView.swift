@@ -36,7 +36,7 @@ struct CaptureView: View {
 
                 // Mic button with rings
                 ZStack {
-                    ForEach(0..<3, id: \.self) { index in
+                    ForEach(Array(0..<3).enumerated(), id: \.offset) { _, index in
                         Circle()
                             .stroke(
                                 [Theme.goldRingLight, Theme.goldRingMedium, Theme.goldRing][index],
@@ -98,7 +98,7 @@ struct CaptureView: View {
 
                 // Waveform
                 HStack(alignment: .center, spacing: 4) {
-                    ForEach([5, 13, 20, 9, 24, 15, 7, 19, 22, 11, 5], id: \.self) { height in
+                    ForEach(Array([5, 13, 20, 9, 24, 15, 7, 19, 22, 11, 5].enumerated()), id: \.offset) { offset, height in
                         RoundedRectangle(cornerRadius: 2)
                             .fill(Theme.waveformFill)
                             .frame(width: 3, height: CGFloat(height))
