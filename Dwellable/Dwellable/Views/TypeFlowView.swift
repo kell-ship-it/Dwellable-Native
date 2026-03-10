@@ -69,16 +69,28 @@ struct TypeFlowView: View {
                         .padding(.bottom, 8)
                     }
 
-                    TextEditor(text: $momentBody)
-                        .font(.system(size: 20, weight: .light))
-                        .foregroundColor(momentBody.isEmpty ? Theme.inputPlaceholder : Theme.text)
-                        .tint(Theme.gold)
-                        .lineSpacing(1.8)
-                        .scrollContentBackground(.hidden)
-                        .background(Color.clear)
-                        .frame(maxWidth: .infinity)
-                        .frame(maxHeight: .infinity)
-                        .accessibilityIdentifier("moment_body")
+                    ZStack(alignment: .topLeading) {
+                        // Placeholder text
+                        if momentBody.isEmpty {
+                            Text("Begin here...")
+                                .font(.system(size: 20, weight: .light))
+                                .foregroundColor(Theme.inputPlaceholder)
+                                .padding(.top, 8)
+                                .padding(.leading, 4)
+                                .allowsHitTesting(false)
+                        }
+
+                        TextEditor(text: $momentBody)
+                            .font(.system(size: 20, weight: .light))
+                            .foregroundColor(momentBody.isEmpty ? Color.clear : Theme.text)
+                            .tint(Theme.gold)
+                            .lineSpacing(1.8)
+                            .scrollContentBackground(.hidden)
+                            .background(Color.clear)
+                            .accessibilityIdentifier("moment_body")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(maxHeight: .infinity)
 
                     // Sense of Lord field
                     TextField("Add where you sensed the Lord, if at all...", text: $senseOfLord)
