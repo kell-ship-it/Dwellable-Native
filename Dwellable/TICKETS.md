@@ -364,7 +364,7 @@ T-011 · T-012 · T-013 · T-027 · T-028
 - **Design decisions finalized** (March 10):
   - **T-029 (Offline sign-in):** CLOSED — Won't Do for v1.0. Rationale: No local data to retrieve when offline + signed out. Internet requirement acceptable.
   - **T-030 (Cloud sync):** CLOSED — Won't Do for v1.0. Rationale: Can't verify entitlements without database connection. Local-only storage sufficient.
-  - **Test 1.2 (Offline capture → sync):** ✅ Works well, no changes needed
+  - **Test 1.2 (Intended workflow):** ✅ **CORE FEATURE** — Capture while offline → save locally → sign-out → sign-in (online) → moments sync. Must continue to work. ✅ Currently working well.
   - **Test 1.5 (App reinstall):** ✅ Expected behavior documented (local storage cleared on uninstall)
   - **Test 2.5 (Sign-out):** ✅ Working correctly
 - **Ticket progress updated:** 29/42 complete (69%)
