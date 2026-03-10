@@ -127,6 +127,18 @@
 
 ---
 
+## Phase 9 — Bug Fix Verification (3 scenarios)
+
+> **Goal:** Verify that the three critical bugs fixed in this session work correctly
+
+| # | Scenario | Steps | Expected | Status | Notes / Questions |
+|---|---|---|---|---|---|
+| 9.1 | Build completes with zero warnings (B-003 fix) | 1. In Xcode, clean build folder (Cmd+Shift+K) 2. Build project (Cmd+B) 3. Check build log for warnings | Build succeeds with **zero warnings** (previously had duplicate ID warnings in TranscribingView and CaptureView) | ☐ | |
+| 9.2 | Login error message displays (B-007 fix) | 1. Open LoginView 2. Enter `test@example.com` 3. Enter wrong password: `wrongpassword` 4. Tap Login | Error message displays: **"Email or password is incorrect"** (stays on LoginView, does not proceed to MomentsListView). Valid test accounts: `test@example.com` / `password123` or `kell@example.com` / `test1234` | ☐ | |
+| 9.3 | Offline moments persist during online workflow (B-008 fix) | 1. Log in (online) 2. Create 1 moment and save (appears in list) 3. Disable WiFi 4. Create 2 more moments offline 5. Enable WiFi 6. Wait 10s for sync | All 3 moments remain visible in MomentsListView (newly created offline moments don't disappear when going back online) | ☐ | |
+
+---
+
 ## Quick Test Path (30 minutes)
 
 If you're in a rush, test **these scenarios first:**
