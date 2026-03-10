@@ -1,6 +1,6 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** March 9, 2026, 5:50 PM
+**Last Updated:** March 10, 2026, 6:30 PM
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -168,6 +168,25 @@
   - ⚠️ Note: Full suite run experiences simulator stability issue (mach error) — resolves with simulator restart. Infrastructure is production-ready.
   - Comprehensive documentation: XCUI_TESTS.md and T-020_SETUP_STATUS.md
 
+### App Icon & TestFlight Deployment (Complete)
+- [x] **T-031:** Build App Icon and configure asset catalog
+  - Generated bold gold "D" logo (Dwellable gold #C9B27C) using Swift CoreText
+  - Created all required icon sizes: 40px, 58px, 60px, 80px, 87px, 120px, 180px, 1024px
+  - Helvetica-Bold font for consistent, professional appearance
+  - Configured Assets.xcassets with proper Contents.json manifest
+  - Fixed critical build setting typo: `ASETCATALOG_COMPILER_APPICON_NAME` → `ASSETCATALOG_COMPILER_APPICON_NAME`
+  - Verified Assets.car (49.8KB) included in bundle
+  - Fixed Info.plist: `CFBundleIconName = AppIcon` (root level, correct key)
+  - Result: Build 104 uploaded to App Store Connect with zero validation errors
+
+- [x] **T-032:** Push Build 104 to TestFlight
+  - Build 104 uploaded to App Store Connect (March 10, 6:17 PM) — **Complete** ✅
+  - Export compliance documentation provided (no custom encryption)
+  - Build 104 assigned to "Dwellable Pilot Members" internal testing group
+  - TestFlight app on iPhone 13 Pro Max: Build 104 ready to install with gold "D" icon
+  - Test group has 1 tester (Kell Golden) with 199 sessions, 80 crashes on previous build
+  - **Status:** Ready for user testing on real device
+
 ### Backend Integration (Complete)
 - [x] **T-001:** Set up backend API
   - Created Supabase project (lhcjobrtmbawlhjyodxz) with PostgreSQL backend
@@ -250,11 +269,30 @@
 - [ ] **T-019:** Add error logging
   - Log auth failures, API errors, transcription errors with context
 
-### Testing & QA
+### Testing & QA (Build 104)
+- [ ] **T-033:** Phase 6: Error Handling (4 tests)
+  - Test error messages for network failures, transcription errors, auth errors, and save failures
+  - Verify friendly, user-facing error copy from ERROR_MESSAGE_TESTING_GUIDE.md
+  - Scenarios: offline network, timeout, invalid credentials, empty audio, sync failures
+  - See TESTING_CHECKLIST_MASTER.html Phase 6 section
+
+- [ ] **T-034:** Phase 7: Performance (3 tests)
+  - Test app responsiveness, launch time, moment list scrolling performance
+  - Verify no janky animations, smooth transitions between screens
+  - Test with 50+ moments in list, voice recording with background activity
+  - See TESTING_CHECKLIST_MASTER.html Phase 7 section
+
+- [ ] **T-035:** Phase 8: UI/UX (5 tests)
+  - Test overall visual design consistency (colors, typography, spacing match prototype)
+  - Verify accessibility (button sizes, text contrast, tap targets)
+  - Test keyboard behavior, form validation, empty states, loading indicators
+  - See TESTING_CHECKLIST_MASTER.html Phase 8 section
+
+### Testing & QA (Deferred)
 - [ ] **T-021:** Unit tests for AuthManager
 - [ ] **T-022:** Unit tests for StorageManager
 - [ ] **T-023:** Unit tests for SyncManager
-- [ ] **T-024:** Manual testing on real device
+- [ ] **T-024:** Manual testing on real device — device testing results (see USER_ACTIVITIES.md)
 - [ ] **T-025:** TestFlight beta testing with users
 
 ### Testing Issues — March 10 Session (Decided — Won't Do for v1.0)
@@ -358,16 +396,17 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Backend Integration | 2 | 2 | 0 | 0 |
 | Data Persistence | 3 | 3 | 0 | 0 |
 | File Organization | 3 | 3 | 0 | 0 |
+| App Icon & TestFlight | 2 | 2 | 0 | 0 |
 | UI Screens — Sub | 4 | 0 | 0 | 4 |
 | Analytics | 2 | 0 | 0 | 2 |
-| Testing & QA | 5 | 1 | 0 | 4 |
+| Testing & QA (Build 104) | 4 | 0 | 0 | 4 |
+| Testing & QA (Deferred) | 5 | 1 | 0 | 4 |
 | Deployment | 3 | 0 | 0 | 3 |
 | Bugs | 3 | 3 | 0 | 0 |
 | Testing Issues — March 10 | 2 | 2 | 0 | 0 |
 | Bugs — Found During Testing | 3 | 3 | 0 | 0 |
 | Bugs — Found During Live Testing | 2 | 2 | 0 | 0 |
-| UI Screens — Sub | 4 | 1 | 0 | 3 |
-| **TOTAL** | **49** | **37** | **0** | **12** |
+| **TOTAL** | **55** | **39** | **0** | **16** |
 
 ---
 
@@ -447,3 +486,19 @@ T-011 · T-012 · T-013 · T-027 · T-028
   - **Test 1.5 (App reinstall):** ✅ Expected behavior documented (local storage cleared on uninstall)
   - **Test 2.5 (Sign-out):** ✅ Working correctly
 - **Ticket progress updated:** 29/42 complete (69%)
+
+### March 10 Session — Icon & TestFlight Push (Evening)
+- **✅ T-031 & T-032: COMPLETE** — App icon created and Build 104 pushed to TestFlight
+- **Root cause of delays:** Single-character typo in project.pbxproj build settings
+  - `ASETCATALOG_COMPILER_APPICON_NAME` (missing "S") prevented asset catalog compilation
+  - Caused Assets.car file to never be generated in bundle
+  - Result: Repeated "Missing icon" validation failures despite icon files being present
+  - All 6 previous Build 103 attempts failed with this typo
+- **Icon design journey:**
+  - Multiple iterations with geometric shapes that didn't look like letters
+  - Final solution: Swift CoreText rendering Helvetica-Bold "D" in gold (#C9B27C)
+  - All 8 required sizes generated: 40, 58, 60, 80, 87, 120, 180, 1024 pixels
+  - Perfect rendering on physical device
+- **TestFlight status:** Build 104 now live, assigned to Dwellable Pilot Members group, ready for testing
+- **Key lesson:** Asset compilation failures cascade silently — build settings typos can masquerade as missing files
+- **Next:** User to assess 3-4 items in Build 104 (T-033 through T-036)

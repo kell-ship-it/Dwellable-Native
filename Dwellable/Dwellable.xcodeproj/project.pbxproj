@@ -347,10 +347,10 @@
 		0013 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 103;
+				CURRENT_PROJECT_VERSION = 104;
 				DEVELOPMENT_TEAM = 38X95M6CUB;
 				INFOPLIST_FILE = Dwellable/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -366,10 +366,10 @@
 		0014 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 103;
+				CURRENT_PROJECT_VERSION = 104;
 				DEVELOPMENT_TEAM = 38X95M6CUB;
 				INFOPLIST_FILE = Dwellable/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;

@@ -1,6 +1,15 @@
 # Dwellable Native — Session Memory
 
-## Session: March 10, 2026 — Error Message Enhancement & B-002 Bug Fix
+## Session: March 10, 2026 (Evening) — Icon & TestFlight Push
+
+### 🎯 TL;DR
+**BUILD 104 DEPLOYED TO TESTFLIGHT.** Fixed critical typo in project.pbxproj that prevented asset catalog compilation (`ASETCATALOG_COMPILER_APPICON_NAME` → `ASSETCATALOG_COMPILER_APPICON_NAME`). Created bold gold "D" logo using Swift CoreText (Helvetica-Bold, Dwellable gold #C9B27C). Generated 8 icon sizes (40→1024px). Build 104 uploaded to App Store Connect (zero validation errors). Assigned to "Dwellable Pilot Members" testing group on TestFlight. Ready for user to install on physical device. **Lesson:** Single-character build setting typos cascade into silent asset compilation failures that look like missing files. Took 6 failed Build 103 attempts before agent discovered root cause.
+
+**Status:** 39/55 tickets complete (71%). **Next:** User to assess 3-4 testing items in Build 104 (T-033–T-036).
+
+---
+
+## Session: March 10, 2026 (Daytime) — Error Message Enhancement & B-002 Bug Fix
 
 ### 🎯 TL;DR
 **B-002 CRITICAL BUG FIXED** — App crashed when recording empty/silent audio. Root cause: Missing Speech Recognition privacy description + no audio validation. **Fixed:** (1) Added `NSSpeechRecognitionUsageDescription` to Info.plist, (2) Implemented `isValidAudioFile()` method with file size (5KB minimum) and duration (0.5s minimum) validation. **Error messages overhauled:** 50+ messages across TranscriptionManager and AudioRecordingManager replaced with friendly, empathetic, brand-consistent tone (ChatGPT-style). **Testing infrastructure created:** ERROR_MESSAGE_TESTING_GUIDE.md with 12 error scenarios + Phase 5 added to TESTING_CHECKLIST_MASTER.html with interactive test matrix for 5 accounts. All changes committed locally (6 commits). **No remote push.** Ready for user to rebuild in Xcode and test with 5 accounts.
