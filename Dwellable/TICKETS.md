@@ -147,6 +147,16 @@
   - Ensure new Swift files auto-added to build target
   - Verified March 9: All 22 Swift files compile automatically, build target properly configured for iOS simulator/device
 
+- [x] **T-009:** Centralize theme and styling
+  - Expanded Theme.swift with comprehensive color constants (white, inputPlaceholder, inputActive, errorLight)
+  - Added complete font styles (titleFont, subtitleFont, bodyFont, smallFont, tinyFont, headingFont, etc.)
+  - Expanded Button struct with primaryTextColor, primaryBackgroundColor, primaryDisabledColor
+  - Added Input struct (backgroundColor, borderColor, textColor, placeholderColor, cornerRadius)
+  - Added Error struct (textColor, backgroundColor)
+  - Migrated all view files (LoginView, ReviewView, TypeFlowView, TranscribingView) to use Theme constants
+  - Verified: CaptureView, MomentsListView, MomentDetailView, MomentRow, SettingsView already using Theme
+  - ✅ Build succeeded with no errors — all 5 modified files compile cleanly
+
 ### Testing & QA (Complete)
 - [x] **T-020:** Set up XCUI test target for automated UI testing
   - ✅ Created XCUI test target in Xcode (File → New → Target → UI Testing Bundle)
@@ -189,15 +199,6 @@
 ## 🔲 Not Started
 
 ---
-
-### File Organization / Technical Debt
-
-- [ ] **T-008:** Fix Xcode build target configuration
-  - Ensure new Swift files auto-added to build target
-
-- [ ] **T-009:** Centralize theme and styling
-  - Extract all hardcoded colors and fonts to `Theme.swift`
-  - Create reusable button and text styles
 
 ### UI Screens — Sub-screens
 - [ ] **T-010:** Build SettingsView
@@ -271,7 +272,7 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Testing & QA | 5 | 1 | 0 | 4 |
 | Deployment | 3 | 0 | 0 | 3 |
 | Bugs | 1 | 1 | 0 | 0 |
-| **TOTAL** | **40** | **26** | **0** | **14** |
+| **TOTAL** | **40** | **27** | **0** | **13** |
 
 ---
 
