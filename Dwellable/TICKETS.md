@@ -308,14 +308,17 @@
   - Fixed: March 10, 2026
   - Impact: CRITICAL for v1.0 — users need feedback when login fails
 
-- [ ] **B-008:** Offline moments disappear when creating new moments while offline
-  - Issue: Test 1.3 — existing moments vanish when going offline + capturing new moments
-  - Expected: Previous moments stay visible while new ones are added to the list
-  - Current behavior: Previous moments disappear, then reappear when coming back online
-  - Root cause: Likely cache/storage switching between API results and LocalStorageManager
-  - Status: 🔲 Not Started — needs investigation into MomentsListView fetch/cache logic
-  - User note: "Whether I'm offline or online once I'm in my account, [moments] shouldn't disappear once I create new moments while being offline"
-  - Impact: HIGH — UX regression, moments should persist during offline capture
+- [x] **B-008:** Offline moments disappear when creating new moments while offline ✅ **FIXED**
+  - Issue: Test 1.3 — existing moments vanished when going offline + capturing new moments
+  - Root cause: API-fetched moments were NOT cached to LocalStorageManager
+  - When offline: app loaded from LocalStorageManager, which only had pending offline moments
+  - API-fetched moments would disappear, then reappear when coming back online
+  - Solution: Cache all API-fetched moments using LocalStorageManager.saveSyncedMoment()
+  - Now when going offline: both API-cached moments + pending offline moments visible
+  - Scenario: Sign in → go offline → create moments → come back online → all moments persist
+  - Result: ✅ Moments now persist during entire offline → offline capture → online workflow
+  - Fixed: March 10, 2026 (Commit 49ea0a1)
+  - Impact: HIGH — fixes UX regression in offline capture workflow
 
 ### Deployment
 - [ ] **T-026:** Prepare for App Store submission
@@ -362,9 +365,9 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Bugs | 3 | 3 | 0 | 0 |
 | Testing Issues — March 10 | 2 | 2 | 0 | 0 |
 | Bugs — Found During Testing | 3 | 3 | 0 | 0 |
-| Bugs — Found During Live Testing | 2 | 1 | 0 | 1 |
+| Bugs — Found During Live Testing | 2 | 2 | 0 | 0 |
 | UI Screens — Sub | 4 | 1 | 0 | 3 |
-| **TOTAL** | **49** | **36** | **0** | **13** |
+| **TOTAL** | **49** | **37** | **0** | **12** |
 
 ---
 
