@@ -27,7 +27,7 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
             try audioSession.setActive(true)
         } catch {
             DispatchQueue.main.async {
-                self.errorMessage = "Audio session setup failed: \(error.localizedDescription)"
+                self.errorMessage = "Audio setup encountered an issue. Try again in a moment."
             }
         }
     }
@@ -37,7 +37,7 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
             DispatchQueue.main.async {
                 self.hasPermission = granted
                 if !granted {
-                    self.errorMessage = "Microphone permission denied. Enable it in Settings to record moments."
+                    self.errorMessage = "Enable microphone access in Settings to capture moments."
                 }
                 completion(granted)
             }
@@ -50,7 +50,7 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
 
         if permission == .denied {
             DispatchQueue.main.async {
-                self.errorMessage = "Microphone permission denied. Enable it in Settings to record moments."
+                self.errorMessage = "Microphone access is disabled. Enable it in Settings to capture moments."
                 self.hasPermission = false
             }
         } else if permission == .undetermined {
@@ -59,7 +59,7 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
                     self.performStartRecording()
                 } else {
                     DispatchQueue.main.async {
-                        self.errorMessage = "Microphone permission required to record moments."
+                        self.errorMessage = "Enable microphone access in Settings to capture moments."
                     }
                 }
             }
@@ -94,7 +94,7 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
             }
         } catch {
             DispatchQueue.main.async {
-                self.errorMessage = "Recording start failed: \(error.localizedDescription)"
+                self.errorMessage = "Couldn't start recording. Try again in a moment."
                 self.isRecording = false
             }
         }
@@ -125,7 +125,7 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
                 // Stop recording if max duration reached
                 if elapsed >= Self.MAX_RECORDING_DURATION {
                     self.stopRecording()
-                    self.errorMessage = "Maximum recording duration (10 minutes) reached."
+                    self.errorMessage = "You've reached the 10-minute capture limit. Start a new moment to continue."
                 } else {
                     self.recordingDuration = elapsed
                 }
@@ -143,7 +143,7 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
     func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
         if !flag {
             DispatchQueue.main.async {
-                self.errorMessage = "Recording failed"
+                self.errorMessage = "Recording encountered an issue. Try again."
                 self.isRecording = false
             }
         }

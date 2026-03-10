@@ -58,11 +58,11 @@ class TranscriptionManager: NSObject, ObservableObject {
                 case .authorized:
                     break
                 case .denied, .restricted:
-                    self.errorMessage = "Speech recognition permission denied. Enable it in Settings."
+                    self.errorMessage = "Speech recognition is disabled. Enable it in Settings to use voice capture."
                 case .notDetermined:
                     break
                 @unknown default:
-                    self.errorMessage = "Unknown speech recognition permission status."
+                    self.errorMessage = "Please check your speech recognition settings."
                 }
             }
         }
@@ -78,7 +78,7 @@ class TranscriptionManager: NSObject, ObservableObject {
         if !isValidAudioFile(url: fileURL) {
             DispatchQueue.main.async {
                 self.isTranscribing = false
-                self.errorMessage = "Recording was too short. Please record at least 0.5 seconds of audio."
+                self.errorMessage = "That was too quick. Try speaking for a bit longer and we'll catch it."
                 completion(nil)
             }
             return
@@ -88,7 +88,7 @@ class TranscriptionManager: NSObject, ObservableObject {
         transcriptionTimeoutTimer = Timer.scheduledTimer(withTimeInterval: Self.TRANSCRIPTION_TIMEOUT, repeats: false) { [weak self] _ in
             DispatchQueue.main.async {
                 if self?.isTranscribing == true {
-                    self?.errorMessage = "Transcription took too long. Please try again with a shorter recording."
+                    self?.errorMessage = "That took a moment. Try again with a shorter recording."
                     self?.isTranscribing = false
                     self?.recognitionTask?.cancel()
                     completion(nil)
@@ -102,7 +102,7 @@ class TranscriptionManager: NSObject, ObservableObject {
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
             DispatchQueue.main.async {
-                self.errorMessage = "Audio session setup failed: \(error.localizedDescription)"
+                self.errorMessage = "Audio setup encountered an issue. Try again in a moment."
                 self.isTranscribing = false
                 self.transcriptionTimeoutTimer?.invalidate()
                 self.transcriptionTimeoutTimer = nil
@@ -127,7 +127,7 @@ class TranscriptionManager: NSObject, ObservableObject {
 
                             // Handle empty transcript
                             if self.transcript.trimmingCharacters(in: .whitespaces).isEmpty {
-                                self.errorMessage = "No speech was detected. Please try re-recording."
+                                self.errorMessage = "Dwellable didn't catch that. Feel free to speak again."
                                 completion(nil)
                             } else {
                                 completion(self.transcript)
@@ -146,7 +146,7 @@ class TranscriptionManager: NSObject, ObservableObject {
             }
         } else {
             DispatchQueue.main.async {
-                self.errorMessage = "Speech recognition is not available on this device."
+                self.errorMessage = "Speech recognition isn't available right now. Check your device settings."
                 self.isTranscribing = false
                 self.transcriptionTimeoutTimer?.invalidate()
                 self.transcriptionTimeoutTimer = nil
@@ -158,27 +158,27 @@ class TranscriptionManager: NSObject, ObservableObject {
     private func handleTranscriptionError(_ error: Error) {
         let nsError = error as NSError
 
-        // Map error codes to user-friendly messages
+        // Map error codes to user-friendly, brand-appropriate messages
         switch nsError.code {
         case 216:
             // SFSpeechRecognitionError.noMatch - No speech detected
-            errorMessage = "No speech detected. Please speak clearly and try again."
+            errorMessage = "Dwellable didn't catch that. Feel free to speak again."
         case 1101:
             // Network/connectivity error
-            errorMessage = "Network error. Please check your connection and try again."
+            errorMessage = "Network connection lost. Please check your connection and try again."
         case -1:
             // Timeout or operation cancelled
-            errorMessage = "Transcription took too long. Please try a shorter recording."
+            errorMessage = "That took a moment. Try again with a shorter recording."
         default:
             // Check domain for permission-related errors
             if nsError.domain == "kLSRightsError" || error.localizedDescription.lowercased().contains("permission") {
-                errorMessage = "Speech recognition permission was denied. Please enable it in Settings."
+                errorMessage = "Speech recognition is disabled. Enable it in Settings to continue."
             } else if error.localizedDescription.lowercased().contains("network") {
-                errorMessage = "Network connection error. Please try again."
+                errorMessage = "Can't reach the server. Check your connection and try again."
             } else if error.localizedDescription.lowercased().contains("timeout") {
-                errorMessage = "Transcription took too long. Please try a shorter recording."
+                errorMessage = "That took a moment. Try again with a shorter recording."
             } else {
-                errorMessage = "Transcription failed. Please try again."
+                errorMessage = "Dwellable didn't catch your capture. Feel free to articulate again or speak it once more."
             }
         }
     }
