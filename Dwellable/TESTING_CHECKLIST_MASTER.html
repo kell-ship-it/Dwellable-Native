@@ -457,6 +457,132 @@
             background: rgba(255, 100, 100, 0.08);
         }
 
+        .general-issue-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 100, 100, 0.3);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .issue-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: flex-start;
+        }
+
+        .issue-title-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 100, 100, 0.3);
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.95em;
+            font-weight: 600;
+        }
+
+        .issue-title-input:focus {
+            outline: none;
+            border-color: #ff6464;
+            background: rgba(255, 100, 100, 0.08);
+        }
+
+        .issue-description {
+            width: 100%;
+            min-height: 80px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 100, 100, 0.3);
+            color: #e0e0e0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: inherit;
+            margin-bottom: 12px;
+            resize: vertical;
+        }
+
+        .issue-description:focus {
+            outline: none;
+            border-color: #ff6464;
+            background: rgba(255, 100, 100, 0.08);
+        }
+
+        .issue-images-section {
+            margin-top: 12px;
+            padding: 10px;
+            background: rgba(255, 100, 100, 0.05);
+            border: 1px dashed rgba(255, 100, 100, 0.3);
+            border-radius: 4px;
+        }
+
+        .issue-images-section label {
+            color: #ff6464;
+            font-weight: 600;
+            font-size: 0.85em;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .issue-images-section input[type="file"] {
+            display: block;
+            margin-bottom: 10px;
+            color: #e0e0e0;
+        }
+
+        .issue-images-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .general-issue-image {
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 100, 100, 0.3);
+        }
+
+        .general-issue-image img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .general-issue-image .image-delete-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            padding: 3px 8px;
+            font-size: 0.7em;
+            background: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .general-issue-image .image-delete-btn:hover {
+            background: #b71c1c;
+        }
+
+        .issue-delete-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.85em;
+            white-space: nowrap;
+        }
+
+        .issue-delete-btn:hover {
+            background: #b71c1c;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.8em;
@@ -949,12 +1075,13 @@
             <!-- GENERAL ISSUES SECTION -->
             <div class="general-issues-section">
                 <h3>🚨 General Issues (Not Related to Specific Scenarios)</h3>
-                <p style="color: #c0c0c0; margin-bottom: 10px;">Use this section for any bugs, issues, or observations that don't fit within the specific test scenarios above.</p>
-                <textarea id="general-issues" placeholder="Describe any general issues, crashes, unexpected behavior, or observations...
-Example:
-- App crashes when toggling airplane mode
-- UI elements misaligned on small screens
-- Performance degradation after 10 minutes of use"></textarea>
+                <p style="color: #c0c0c0; margin-bottom: 15px;">Add multiple unique issues, each with their own description and images.</p>
+
+                <button onclick="addGeneralIssue()" style="margin-bottom: 20px; background: #d32f2f;">➕ Add New Issue</button>
+
+                <div id="general-issues-list">
+                    <!-- Issues will be added here dynamically -->
+                </div>
             </div>
 
             <!-- EXPORT AND ACTIONS -->
@@ -980,6 +1107,8 @@ Example:
 
     <script>
         const testImages = {};
+        const generalIssues = {};
+        let issueCounter = 0;
 
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
@@ -1035,12 +1164,91 @@ Example:
             }
         }
 
+        function addGeneralIssue() {
+            issueCounter++;
+            const issueId = `issue-${issueCounter}`;
+            const listContainer = document.getElementById('general-issues-list');
+
+            const issueCard = document.createElement('div');
+            issueCard.className = 'general-issue-card';
+            issueCard.id = issueId;
+            issueCard.innerHTML = `
+                <div class="issue-header">
+                    <input type="text" class="issue-title-input" placeholder="Issue title (e.g., 'App crashes on launch')">
+                    <button onclick="deleteGeneralIssue('${issueId}')" class="issue-delete-btn" title="Delete this issue">🗑️ Delete</button>
+                </div>
+                <textarea class="issue-description" placeholder="Describe the issue, steps to reproduce, device state, etc." rows="4"></textarea>
+                <div class="issue-images-section">
+                    <label>📸 Upload Images (optional, click to add multiple):</label>
+                    <input type="file" accept="image/*" multiple onchange="handleGeneralIssueImageUpload(this, '${issueId}')">
+                    <div class="issue-images-container" id="images-${issueId}"></div>
+                </div>
+            `;
+
+            listContainer.appendChild(issueCard);
+            generalIssues[issueId] = {
+                title: '',
+                description: '',
+                images: []
+            };
+        }
+
+        function handleGeneralIssueImageUpload(input, issueId) {
+            if (input.files) {
+                Array.from(input.files).forEach(file => {
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        if (!generalIssues[issueId].images) {
+                            generalIssues[issueId].images = [];
+                        }
+                        generalIssues[issueId].images.push({
+                            name: file.name,
+                            data: e.target.result
+                        });
+
+                        const container = document.getElementById(`images-${issueId}`);
+                        const imgWrapper = document.createElement('div');
+                        imgWrapper.className = 'general-issue-image';
+
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'image-delete-btn';
+                        deleteBtn.textContent = '✕';
+                        deleteBtn.onclick = function(e) {
+                            e.preventDefault();
+                            imgWrapper.remove();
+                            generalIssues[issueId].images = generalIssues[issueId].images.filter(img => img.name !== file.name);
+                        };
+
+                        imgWrapper.appendChild(img);
+                        imgWrapper.appendChild(deleteBtn);
+                        container.appendChild(imgWrapper);
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+                input.value = '';
+            }
+        }
+
+        function deleteGeneralIssue(issueId) {
+            if (confirm('Delete this issue? This cannot be undone.')) {
+                const card = document.getElementById(issueId);
+                if (card) {
+                    card.remove();
+                }
+                delete generalIssues[issueId];
+            }
+        }
+
         function exportResults() {
             const device = document.getElementById('device')?.value || 'iPhone 13';
             const ios = document.getElementById('ios')?.value || '';
             const testDate = document.getElementById('testDate')?.value || new Date().toISOString().split('T')[0];
             const tester = document.getElementById('tester')?.value || 'Tester';
-            const generalIssues = document.getElementById('general-issues')?.value || '';
 
             let results = `DWELLABLE TESTING RESULTS\n`;
             results += `================================\n`;
@@ -1078,10 +1286,37 @@ Example:
                 }
             });
 
-            if (generalIssues.trim()) {
+            // Export general issues
+            const hasGeneralIssues = Object.keys(generalIssues).some(key => {
+                const card = document.getElementById(key);
+                if (card) {
+                    const title = card.querySelector('.issue-title-input')?.value || '';
+                    const desc = card.querySelector('.issue-description')?.value || '';
+                    return title.trim() || desc.trim() || generalIssues[key].images.length > 0;
+                }
+                return false;
+            });
+
+            if (hasGeneralIssues) {
                 results += `\nGENERAL ISSUES:\n`;
                 results += `================================\n`;
-                results += generalIssues + '\n';
+                Object.keys(generalIssues).forEach(issueId => {
+                    const card = document.getElementById(issueId);
+                    if (card) {
+                        const title = card.querySelector('.issue-title-input')?.value || '(No title)';
+                        const desc = card.querySelector('.issue-description')?.value || '';
+                        if (title.trim() || desc.trim() || generalIssues[issueId].images.length > 0) {
+                            results += `\nTitle: ${title}\n`;
+                            if (desc.trim()) {
+                                results += `Description: ${desc}\n`;
+                            }
+                            if (generalIssues[issueId].images.length > 0) {
+                                results += `Images: ${generalIssues[issueId].images.map(img => img.name).join(', ')}\n`;
+                            }
+                        }
+                    }
+                });
+                results += `\n`;
             }
 
             results += `\n================================\n`;
@@ -1104,7 +1339,7 @@ Example:
         }
 
         function clearForm() {
-            if (confirm('Are you sure you want to clear all test results?')) {
+            if (confirm('Are you sure you want to clear all test results and general issues?')) {
                 document.querySelectorAll('.status-input, .notes-input').forEach(input => {
                     input.value = '';
                 });
@@ -1114,6 +1349,15 @@ Example:
                 Object.keys(testImages).forEach(key => {
                     delete testImages[key];
                 });
+                // Clear general issues
+                const issuesList = document.getElementById('general-issues-list');
+                if (issuesList) {
+                    issuesList.innerHTML = '';
+                }
+                Object.keys(generalIssues).forEach(key => {
+                    delete generalIssues[key];
+                });
+                issueCounter = 0;
                 alert('Form cleared!');
             }
         }
