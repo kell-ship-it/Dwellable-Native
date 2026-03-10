@@ -7,7 +7,7 @@ struct TranscribingView: View {
     var body: some View {
         ZStack {
             // Semi-transparent dark background
-            Color(red: 0.1, green: 0.08, blue: 0.05)
+            Theme.goldDark
                 .opacity(0.7)
                 .ignoresSafeArea()
 

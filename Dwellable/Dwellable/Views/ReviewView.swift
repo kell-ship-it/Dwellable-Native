@@ -107,7 +107,7 @@ struct ReviewView: View {
                     Text("Add where you sensed the Lord, if at all...")
                         .font(.system(size: 16, weight: .regular))
                         .italic()
-                        .foregroundColor(senseOfLord.isEmpty ? Color(red: 0.184, green: 0.188, blue: 0.22) : Color(red: 0.227, green: 0.239, blue: 0.271))
+                        .foregroundColor(senseOfLord.isEmpty ? Theme.inputPlaceholder : Theme.inputActive)
                         .padding(.top, 12)
                 }
                 .padding(.horizontal, 20)

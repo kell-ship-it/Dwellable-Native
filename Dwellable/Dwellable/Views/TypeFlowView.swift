@@ -45,15 +45,15 @@ struct TypeFlowView: View {
                         VStack(spacing: 8) {
                             HStack(spacing: 8) {
                                 Image(systemName: "exclamationmark.circle.fill")
-                                    .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+                                    .foregroundColor(Theme.error)
                                 Text(errorMessage)
                                     .font(.system(size: 12, weight: .regular))
-                                    .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+                                    .foregroundColor(Theme.error)
                                 Spacer()
                             }
                             .padding(.horizontal, 12)
                             .padding(.vertical, 10)
-                            .background(Color(red: 0.95, green: 0.2, blue: 0.2, opacity: 0.1))
+                            .background(Theme.errorLight)
                             .cornerRadius(8)
 
                             Button(action: {
@@ -61,7 +61,7 @@ struct TypeFlowView: View {
                             }) {
                                 Text("Dismiss")
                                     .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(Color(red: 0.95, green: 0.2, blue: 0.2))
+                                    .foregroundColor(Theme.error)
                             }
                             .frame(maxWidth: .infinity, alignment: .trailing)
                         }
@@ -71,7 +71,7 @@ struct TypeFlowView: View {
 
                     TextEditor(text: $momentBody)
                         .font(.system(size: 20, weight: .light))
-                        .foregroundColor(momentBody.isEmpty ? Color(red: 0.184, green: 0.188, blue: 0.22) : Theme.text)
+                        .foregroundColor(momentBody.isEmpty ? Theme.inputPlaceholder : Theme.text)
                         .tint(Theme.gold)
                         .lineSpacing(1.8)
                         .scrollContentBackground(.hidden)
@@ -83,7 +83,7 @@ struct TypeFlowView: View {
                     // Sense of Lord field
                     TextField("Add where you sensed the Lord, if at all...", text: $senseOfLord)
                         .font(.system(size: 16, weight: .regular))
-                        .foregroundColor(senseOfLord.isEmpty ? Color(red: 0.184, green: 0.188, blue: 0.22) : Color(red: 0.227, green: 0.239, blue: 0.271))
+                        .foregroundColor(senseOfLord.isEmpty ? Theme.inputPlaceholder : Theme.inputActive)
                         .padding(.top, 12)
                         .accessibilityIdentifier("sense_of_lord")
                 }
@@ -99,13 +99,13 @@ struct TypeFlowView: View {
                 }) {
                     if isSaving {
                         ProgressView()
-                            .tint(Color(red: 0.1, green: 0.08, blue: 0.05))
+                            .tint(Theme.goldDark)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 15)
                     } else {
                         Text("Save moment")
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(Color(red: 0.1, green: 0.08, blue: 0.05))
+                            .foregroundColor(Theme.goldDark)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 15)
                     }

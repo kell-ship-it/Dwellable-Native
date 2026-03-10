@@ -13,11 +13,15 @@ struct Theme {
     static let secondaryText = Color(red: 0.61, green: 0.64, blue: 0.71)
     static let tertiaryText = Color(red: 0.42, green: 0.45, blue: 0.50)
     static let placeholderText = Color(red: 0.85, green: 0.85, blue: 0.85)
+    static let white = Color.white
+    static let inputPlaceholder = Color(red: 0.184, green: 0.188, blue: 0.22)
+    static let inputActive = Color(red: 0.227, green: 0.239, blue: 0.271)
 
     // Accent & State Colors
     static let gold = Color(red: 0.79, green: 0.70, blue: 0.48)
     static let goldDark = Color(red: 0.1, green: 0.08, blue: 0.05)
     static let error = Color(red: 0.95, green: 0.2, blue: 0.2)
+    static let errorLight = Color(red: 0.95, green: 0.2, blue: 0.2, opacity: 0.1)
     static let success = Color(red: 0.30, green: 0.68, blue: 0.31)
 
     // Borders & Dividers
@@ -43,7 +47,14 @@ struct Theme {
     static let tinySize: CGFloat = 12
     static let headingSize: CGFloat = 22
 
-    // MARK: - Font Weights
+    // MARK: - Font Styles
+    static let titleFont = Font.system(size: titleSize, weight: .light, design: .default)
+    static let subtitleFont = Font.system(size: subtitleSize, weight: .regular, design: .default)
+    static let bodyFont = Font.system(size: bodySize, weight: .regular, design: .default)
+    static let smallFont = Font.system(size: smallSize, weight: .regular, design: .default)
+    static let tinyFont = Font.system(size: tinySize, weight: .regular, design: .default)
+    static let headingFont = Font.system(size: headingSize, weight: .light, design: .default)
+
     static let boldFont = Font.system(size: bodySize, weight: .bold)
     static let semiboldFont = Font.system(size: bodySize, weight: .semibold)
     static let regularFont = Font.system(size: bodySize, weight: .regular)
@@ -57,6 +68,11 @@ struct Theme {
         static let secondaryPadding: CGFloat = 12
         static let secondaryCornerRadius: CGFloat = 20
         static let pillCornerRadius: CGFloat = 20
+
+        // Button text style
+        static let primaryTextColor = Color.white
+        static let primaryBackgroundColor = Theme.gold
+        static let primaryDisabledColor = Theme.gold.opacity(0.5)
     }
 
     struct Spacing {
@@ -66,5 +82,18 @@ struct Theme {
         static let lg: CGFloat = 16
         static let xl: CGFloat = 20
         static let xxl: CGFloat = 28
+    }
+
+    struct Input {
+        static let backgroundColor = Theme.inputBackground
+        static let borderColor = Theme.border
+        static let textColor = Theme.text
+        static let placeholderColor = Theme.inputPlaceholder
+        static let cornerRadius: CGFloat = 12
+    }
+
+    struct Error {
+        static let textColor = Theme.error
+        static let backgroundColor = Theme.errorLight
     }
 }
