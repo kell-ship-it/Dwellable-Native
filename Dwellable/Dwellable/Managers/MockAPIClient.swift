@@ -4,6 +4,12 @@ class MockAPIClient: APIClient {
     private var storedMoments: [Moment] = []
     private let currentUserId = "user-demo-001"
 
+    // Mock test accounts for authentication
+    private let validCredentials: [String: String] = [
+        "test@example.com": "password123",
+        "kell@example.com": "test1234"
+    ]
+
     init() {
         // Initialize with sample moments
         storedMoments = [
@@ -75,9 +81,14 @@ class MockAPIClient: APIClient {
         // Simulate network delay
         try await Task.sleep(nanoseconds: 500_000_000) // 0.5 second
 
-        // Mock validation
+        // Validate email and password are not empty
         guard !email.isEmpty, !password.isEmpty else {
             throw APIError.invalidRequest
+        }
+
+        // Validate against known test credentials
+        guard let expectedPassword = validCredentials[email], expectedPassword == password else {
+            throw APIError.invalidCredentials
         }
 
         return AuthToken(
@@ -108,6 +119,7 @@ class MockAPIClient: APIClient {
 
 enum APIError: LocalizedError {
     case invalidRequest
+    case invalidCredentials
     case notFound
     case networkError
     case serverError
@@ -117,6 +129,8 @@ enum APIError: LocalizedError {
         switch self {
         case .invalidRequest:
             return "Invalid request"
+        case .invalidCredentials:
+            return "Email or password is incorrect"
         case .notFound:
             return "Resource not found"
         case .networkError:
