@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dwellable Manual Testing Checklist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0e11 0%, #1a1823 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #d4af37;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #999;
+            font-size: 0.95em;
+            margin-bottom: 10px;
+        }
+
+        .info-bar {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 4px solid #d4af37;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-item label {
+            color: #d4af37;
+            font-weight: 600;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .info-item input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        .info-item input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.15);
+        }
+
+        h2 {
+            color: #d4af37;
+            font-size: 1.6em;
+            margin-top: 50px;
+            margin-bottom: 15px;
+            border-left: 4px solid #d4af37;
+            padding-left: 15px;
+        }
+
+        .phase-header {
+            background: rgba(212, 175, 55, 0.08);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #d4af37;
+        }
+
+        .phase-header p {
+            color: #c0c0c0;
+            margin: 5px 0;
+        }
+
+        .phase-header strong {
+            color: #d4af37;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            font-size: 0.95em;
+        }
+
+        th {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #d4af37;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .num {
+            color: #d4af37;
+            font-weight: 600;
+            width: 40px;
+            text-align: center;
+        }
+
+        .scenario {
+            font-weight: 600;
+            color: #e0e0e0;
+            width: 150px;
+            min-width: 150px;
+        }
+
+        .steps {
+            color: #c0c0c0;
+            font-size: 0.9em;
+            max-width: 300px;
+        }
+
+        .expected {
+            color: #a8d468;
+            font-size: 0.9em;
+            max-width: 250px;
+        }
+
+        .status-cell {
+            width: 80px;
+            text-align: center;
+        }
+
+        .status-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #e0e0e0;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            width: 70px;
+            cursor: pointer;
+        }
+
+        .status-input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+
+        .notes-cell {
+            width: 250px;
+        }
+
+        .notes-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: #e0e0e0;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        .notes-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.08);
+        }
+
+        .actions {
+            text-align: center;
+            margin: 40px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #d4af37, #e8c547);
+            color: #0f0e11;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+        }
+
+        .secondary {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            border: 1px solid #d4af37;
+        }
+
+        .secondary:hover {
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .instructions {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 4px solid #d4af37;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .instructions h3 {
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #c0c0c0;
+        }
+
+        .instructions li {
+            margin: 8px 0;
+        }
+
+        @media (max-width: 768px) {
+            table {
+                font-size: 0.85em;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .steps, .expected, .notes-input {
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dwellable Testing Checklist</h1>
+            <p class="subtitle">Manual Testing on Physical iPhone 13</p>
+        </header>
+
+        <div class="info-bar">
+            <div class="info-item">
+                <label>Device</label>
+                <input type="text" value="iPhone 13" placeholder="e.g., iPhone 13">
+            </div>
+            <div class="info-item">
+                <label>iOS Version</label>
+                <input type="text" placeholder="e.g., iOS 18.2">
+            </div>
+            <div class="info-item">
+                <label>Date Tested</label>
+                <input type="date">
+            </div>
+            <div class="info-item">
+                <label>Tester Name</label>
+                <input type="text" placeholder="Your name">
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>How to use this checklist:</h3>
+            <ol>
+                <li>Test each scenario on your physical iPhone 13</li>
+                <li>Mark the <strong>Status</strong> column: <span style="color: #a8d468;">Pass</span>, <span style="color: #ff6b6b;">Fail</span>, or <span style="color: #ffd93d;">Bug</span></li>
+                <li>Use the <strong>Notes</strong> column to document anything important:
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>What actually happened (if it failed)</li>
+                        <li>Device state (online/offline, WiFi/cellular)</li>
+                        <li>Screenshots if something looks wrong</li>
+                        <li>Questions or concerns</li>
+                    </ul>
+                </li>
+                <li>Click <strong>Export Results</strong> when done to save your results</li>
+            </ol>
+        </div>
+
+        <!-- Phase 1 -->
+        <h2>Phase 1 — Offline Support (5 scenarios)</h2>
+        <div class="phase-header">
+            <strong>Goal:</strong> Verify moments save locally when network is unavailable
+        </div>
+        <table>
+            <tr>
+                <th class="num">#</th>
+                <th class="scenario">Scenario</th>
+                <th class="steps">Steps</th>
+                <th class="expected">Expected</th>
+                <th class="status-cell">Status</th>
+                <th class="notes-cell">Notes / Questions</th>
+            </tr>
+            <tr>
+                <td class="num">1.1</td>
+                <td class="scenario">Create moment offline (voice)</td>
+                <td class="steps">1. Disable WiFi & cellular 2. Open app 3. Tap mic, record "Test moment" 4. Tap Save</td>
+                <td class="expected">Moment saved, "pending sync" message appears, dismisses after 1.5s</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="1.1"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">1.2</td>
+                <td class="scenario">Create moment offline (text)</td>
+                <td class="steps">1. Disable WiFi & cellular 2. Open app 3. Tap "Type instead" 4. Enter text, Save</td>
+                <td class="expected">Moment saved locally, "pending sync" message appears</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="1.2"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">1.3</td>
+                <td class="scenario">Sync queue waits for network</td>
+                <td class="steps">1. Create moment while offline 2. Wait 30 seconds 3. Enable WiFi</td>
+                <td class="expected">Moment syncs automatically, appears in list (no manual refresh needed)</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="1.3"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">1.4</td>
+                <td class="scenario">Multiple offline moments sync</td>
+                <td class="steps">1. Disable WiFi 2. Create 3 moments (mix voice/text) 3. Enable WiFi 4. Wait 10s</td>
+                <td class="expected">All 3 moments appear in list, none duplicated</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="1.4"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">1.5</td>
+                <td class="scenario">Offline moment persists after restart</td>
+                <td class="steps">1. Disable WiFi 2. Create moment 3. Force-quit app 4. Relaunch 5. Enable WiFi</td>
+                <td class="expected">Moment still in app, syncs on network restore</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="1.5"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+        </table>
+
+        <!-- Phase 2 -->
+        <h2>Phase 2 — Authentication (6 scenarios)</h2>
+        <div class="phase-header">
+            <strong>Goal:</strong> Verify login, logout, and session persistence work correctly
+        </div>
+        <table>
+            <tr>
+                <th class="num">#</th>
+                <th class="scenario">Scenario</th>
+                <th class="steps">Steps</th>
+                <th class="expected">Expected</th>
+                <th class="status-cell">Status</th>
+                <th class="notes-cell">Notes / Questions</th>
+            </tr>
+            <tr>
+                <td class="num">2.1</td>
+                <td class="scenario">Valid login</td>
+                <td class="steps">1. Open LoginView 2. Enter: test@example.com / password123 3. Tap Login</td>
+                <td class="expected">App shows MomentsListView, displays user's moments</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="2.1"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">2.2</td>
+                <td class="scenario">Invalid email</td>
+                <td class="steps">1. LoginView 2. Enter: invalid / password123 3. Tap Login</td>
+                <td class="expected">Error message: "Invalid request" displayed, still on LoginView</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="2.2"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">2.3</td>
+                <td class="scenario">Invalid password</td>
+                <td class="steps">1. LoginView 2. Enter: test@example.com / wrongpassword 3. Tap Login</td>
+                <td class="expected">Error message displayed (from Supabase), still on LoginView</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="2.3"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">2.4</td>
+                <td class="scenario">Session persists on restart</td>
+                <td class="steps">1. Log in 2. Go to MomentsListView 3. Kill app 4. Relaunch</td>
+                <td class="expected">Still logged in, MomentsListView displays (no LoginView)</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="2.4"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">2.5</td>
+                <td class="scenario">Logout clears session</td>
+                <td class="steps">1. Log in 2. Tap sign out button 3. Confirm logout</td>
+                <td class="expected">LoginView appears, token removed from Keychain</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="2.5"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">2.6</td>
+                <td class="scenario">Empty fields validation</td>
+                <td class="steps">1. LoginView 2. Leave email/password empty 3. Tap Login</td>
+                <td class="expected">Error message, login rejected</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="2.6"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+        </table>
+
+        <!-- Phase 3 -->
+        <h2>Phase 3 — Moment CRUD Operations (5 scenarios)</h2>
+        <div class="phase-header">
+            <strong>Goal:</strong> Verify create, read, update (implicit), delete operations
+        </div>
+        <table>
+            <tr>
+                <th class="num">#</th>
+                <th class="scenario">Scenario</th>
+                <th class="steps">Steps</th>
+                <th class="expected">Expected</th>
+                <th class="status-cell">Status</th>
+                <th class="notes-cell">Notes / Questions</th>
+            </tr>
+            <tr>
+                <td class="num">3.1</td>
+                <td class="scenario">Create moment with voice</td>
+                <td class="steps">1. MomentsListView 2. Tap mic 3. Record voice 4. Review & Save</td>
+                <td class="expected">Moment appears at top of list with transcript + timestamp</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="3.1"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">3.2</td>
+                <td class="scenario">Create moment with text</td>
+                <td class="steps">1. MomentsListView 2. Tap "Type instead" 3. Enter text 4. Save</td>
+                <td class="expected">Moment appears at top of list with text + timestamp</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="3.2"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">3.3</td>
+                <td class="scenario">Add "Sense of Lord" field</td>
+                <td class="steps">1. Create moment 2. On ReviewView, tap "Add where you sensed..." 3. Enter text 4. Save</td>
+                <td class="expected">Moment saved with senseOfLord field visible in detail view</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="3.3"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">3.4</td>
+                <td class="scenario">Fetch moments list</td>
+                <td class="steps">1. Log in 2. MomentsListView displays 3. Scroll through list</td>
+                <td class="expected">All moments load, sorted by date (newest first)</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="3.4"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">3.5</td>
+                <td class="scenario">View moment detail</td>
+                <td class="steps">1. MomentsListView 2. Tap any moment 3. See detail view</td>
+                <td class="expected">Full body text displayed, date + senseOfLord (if present) visible</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="3.5"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+        </table>
+
+        <!-- Additional Phases (4-8) -->
+        <h2>Phase 4 — Network State Changes (6 scenarios)</h2>
+        <div class="phase-header">
+            <strong>Goal:</strong> Verify app behaves correctly when network changes mid-operation
+        </div>
+        <table>
+            <tr>
+                <th class="num">#</th>
+                <th class="scenario">Scenario</th>
+                <th class="steps">Steps</th>
+                <th class="expected">Expected</th>
+                <th class="status-cell">Status</th>
+                <th class="notes-cell">Notes / Questions</th>
+            </tr>
+            <tr>
+                <td class="num">4.1</td>
+                <td class="scenario">Network fails during save</td>
+                <td class="steps">1. Start typing moment 2. Disable WiFi/cellular mid-typing 3. Tap Save</td>
+                <td class="expected">Error shown, moment saved locally, "pending sync" message</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="4.1"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">4.2</td>
+                <td class="scenario">Network restored during sync</td>
+                <td class="steps">1. Create moment offline 2. Enable WiFi 3. Watch sync status</td>
+                <td class="expected">Moment syncs automatically, no manual action needed</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="4.2"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">4.3</td>
+                <td class="scenario">Toggle airplane mode</td>
+                <td class="steps">1. Create moment 2. Enable airplane mode 3. Disable 4. Wait 10s</td>
+                <td class="expected">Moment stays in app, syncs when plane mode off</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="4.3"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">4.4</td>
+                <td class="scenario">Fetch fails, shows cached data</td>
+                <td class="steps">1. Log in 2. Create + save moment 3. Disable WiFi 4. Restart app</td>
+                <td class="expected">App shows previously cached moments (no error)</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="4.4"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">4.5</td>
+                <td class="scenario">Retry on network restore</td>
+                <td class="steps">1. Create moment while offline 2. Network unavailable 10+ seconds 3. Enable WiFi</td>
+                <td class="expected">Auto-retry fires, moment syncs (no manual button needed)</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="4.5"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+            <tr>
+                <td class="num">4.6</td>
+                <td class="scenario">Error state shows retry button</td>
+                <td class="steps">1. Create moment during network failure 2. See error state on ReviewView</td>
+                <td class="expected">"Retry" button visible and functional</td>
+                <td class="status-cell"><input type="text" class="status-input" placeholder="Pass/Fail" data-scenario="4.6"></td>
+                <td class="notes-cell"><textarea class="notes-input" placeholder="Your notes..."></textarea></td>
+            </tr>
+        </table>
+
+        <!-- Continue with Phases 5-8 (abbreviated for brevity) -->
+        <div style="text-align: center; margin: 40px 0; padding: 20px; background: rgba(212, 175, 55, 0.08); border-radius: 4px;">
+            <p style="color: #d4af37; font-size: 1.1em; margin-bottom: 10px;">📋 Phases 5-8 (Data Persistence, Error Handling, Performance, UI/UX)</p>
+            <p style="color: #c0c0c0; margin-bottom: 15px;">Due to length, these phases are available in the MANUAL_TESTING_CHECKLIST.md file with the same detailed format.</p>
+            <p style="color: #999; font-size: 0.9em;">For a complete testing experience, open MANUAL_TESTING_CHECKLIST.md in your editor to see all 40+ test scenarios.</p>
+        </div>
+
+        <div class="actions">
+            <button onclick="exportResults()">📋 Export Results</button>
+            <button class="secondary" onclick="clearForm()">🔄 Clear Form</button>
+        </div>
+
+        <div class="footer">
+            <p><strong>After Testing:</strong></p>
+            <ol style="margin-top: 10px;">
+                <li>Share your exported results file back to Claude</li>
+                <li>Include any bugs or issues you found</li>
+                <li>I'll create tickets for failures and fix them next session</li>
+            </ol>
+            <p style="margin-top: 20px; color: #666;">Last updated: March 9, 2026</p>
+        </div>
+    </div>
+
+    <script>
+        function exportResults() {
+            const device = document.querySelector('.info-item input').value || 'iPhone 13';
+            const date = document.querySelectorAll('.info-item input')[2].value;
+            const tester = document.querySelectorAll('.info-item input')[3].value || 'Tester';
+
+            let results = `DWELLABLE TESTING RESULTS\n`;
+            results += `================================\n\n`;
+            results += `Device: ${device}\n`;
+            results += `Date: ${date}\n`;
+            results += `Tester: ${tester}\n`;
+            results += `================================\n\n`;
+
+            const statuses = document.querySelectorAll('.status-input');
+            const notes = document.querySelectorAll('.notes-input');
+
+            let passCount = 0;
+            let failCount = 0;
+
+            statuses.forEach((status, index) => {
+                if (status.value.toLowerCase() === 'pass') passCount++;
+                if (status.value.toLowerCase() === 'fail') failCount++;
+
+                const scenario = status.getAttribute('data-scenario');
+                const note = notes[index].value;
+
+                if (status.value) {
+                    results += `[${status.value.toUpperCase()}] Scenario ${scenario}\n`;
+                    if (note) {
+                        results += `Notes: ${note}\n`;
+                    }
+                    results += `\n`;
+                }
+            });
+
+            results += `\n================================\n`;
+            results += `SUMMARY\n`;
+            results += `Pass: ${passCount}\n`;
+            results += `Fail: ${failCount}\n`;
+            results += `================================\n`;
+
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(results));
+            element.setAttribute('download', `Dwellable_Testing_Results_${date || 'export'}.txt`);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+
+            alert('✅ Results exported successfully!');
+        }
+
+        function clearForm() {
+            if (confirm('Are you sure you want to clear all results?')) {
+                document.querySelectorAll('.status-input, .notes-input').forEach(input => {
+                    input.value = '';
+                });
+                alert('Form cleared!');
+            }
+        }
+    </script>
+</body>
+</html>

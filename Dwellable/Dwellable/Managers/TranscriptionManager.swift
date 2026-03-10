@@ -21,12 +21,34 @@ class TranscriptionManager: NSObject, ObservableObject {
     }
 
     private func isValidAudioFile(url: URL) -> Bool {
-        let asset = AVAsset(url: url)
-        let duration = asset.duration
+        do {
+            // Check file exists and has content (at least 5KB to ensure it's not just a header)
+            let fileManager = FileManager.default
+            guard fileManager.fileExists(atPath: url.path) else {
+                return false
+            }
 
-        // Reject audio shorter than 0.5 seconds to prevent empty audio crashes
-        let durationSeconds = duration.seconds
-        return durationSeconds >= 0.5 && !durationSeconds.isNaN && durationSeconds.isFinite
+            let fileAttributes = try fileManager.attributesOfItem(atPath: url.path)
+            let fileSize = fileAttributes[.size] as? NSNumber ?? 0
+
+            // Minimum 5KB to ensure the file has actual audio data
+            guard fileSize.intValue >= 5000 else {
+                return false
+            }
+
+            let asset = AVAsset(url: url)
+            let duration = asset.duration
+
+            // Reject audio shorter than 0.5 seconds to prevent empty audio crashes
+            let durationSeconds = duration.seconds
+
+            // Check for valid audio: minimum 0.5 seconds, not NaN, and finite
+            let isValid = durationSeconds >= 0.5 && !durationSeconds.isNaN && durationSeconds.isFinite
+            return isValid
+        } catch {
+            // If anything fails (file access error, etc.), treat as invalid audio
+            return false
+        }
     }
 
     func requestSpeechRecognitionPermission() {

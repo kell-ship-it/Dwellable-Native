@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dwellable Testing Guide — Plain English Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0e11 0%, #1a1823 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #d4af37;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #999;
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            color: #d4af37;
+            font-size: 1.8em;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-left: 4px solid #d4af37;
+            padding-left: 15px;
+        }
+
+        h3 {
+            color: #d4af37;
+            font-size: 1.3em;
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+
+        .quick-answer {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 4px solid #d4af37;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .quick-answer strong {
+            color: #d4af37;
+            font-size: 1.1em;
+        }
+
+        .phase {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
+            border-left: 5px solid #d4af37;
+        }
+
+        .phase h3 {
+            margin-top: 0;
+        }
+
+        .plain-english {
+            background: rgba(212, 175, 55, 0.08);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-style: italic;
+        }
+
+        .why-matters {
+            margin: 15px 0;
+        }
+
+        .why-matters strong {
+            color: #d4af37;
+        }
+
+        .why-matters ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .why-matters li {
+            margin: 8px 0;
+            color: #c0c0c0;
+        }
+
+        .key-tests {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            border-left: 3px solid #999;
+        }
+
+        .key-tests strong {
+            color: #d4af37;
+        }
+
+        .key-tests ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .key-tests li {
+            margin: 8px 0;
+        }
+
+        .account-note {
+            color: #d4af37;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        th {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        tr:hover {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .highlight {
+            background: rgba(212, 175, 55, 0.15);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #d4af37;
+            font-weight: 600;
+        }
+
+        .code {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            color: #a0d468;
+            font-size: 0.9em;
+        }
+
+        .section {
+            margin: 30px 0;
+        }
+
+        .divider {
+            border: 0;
+            height: 1px;
+            background: rgba(212, 175, 55, 0.2);
+            margin: 40px 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            color: #999;
+            font-size: 0.95em;
+        }
+
+        .cta {
+            background: linear-gradient(135deg, #d4af37, #e8c547);
+            color: #0f0e11;
+            padding: 15px 30px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+            margin: 30px 0;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            h2 {
+                font-size: 1.4em;
+            }
+
+            .phase {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dwellable Testing Guide</h1>
+            <p class="subtitle">Plain English Edition</p>
+        </header>
+
+        <div class="quick-answer">
+            <strong>Goal:</strong> Make sure the app works reliably before we release it. You'll test real-world scenarios on your iPhone 13.
+        </div>
+
+        <section class="section">
+            <h2>Quick Answer: One Account or Multiple?</h2>
+
+            <div class="quick-answer">
+                <strong>Answer: Use ONE main account for most testing. Create additional accounts only for specific tests.</strong>
+            </div>
+
+            <h3>Primary Testing Account</h3>
+            <p class="code">test.normal@example.com / password123</p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>Use this for 95% of your testing</li>
+                <li>Create multiple moments with this account</li>
+                <li>Test all workflows with the same user</li>
+            </ul>
+
+            <h3>Additional Accounts (only if needed)</h3>
+            <ul style="margin-left: 20px;">
+                <li>Create separate accounts only to test multi-user scenarios or data isolation</li>
+                <li>For now, one account is fine</li>
+            </ul>
+        </section>
+
+        <hr class="divider">
+
+        <section class="section">
+            <h2>Testing Phases Explained</h2>
+
+            <div class="phase">
+                <h3>Phase 1: Offline Support (5 tests)</h3>
+                <div class="plain-english">
+                    Can you capture moments and save them when you don't have WiFi? When the internet comes back, does the app automatically send those moments to the database?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>Users will be capturing moments in random places (church, hiking, car) where WiFi isn't always available</li>
+                        <li>We can't ask them to stay on WiFi — the app must work offline</li>
+                        <li>The moment should save locally, and sync automatically when they get internet back</li>
+                    </ul>
+                </div>
+                <div class="account-note">Account to use: One account (test.normal@example.com)</div>
+                <div class="key-tests">
+                    <strong>Key tests:</strong>
+                    <ul>
+                        <li>Create a moment while WiFi is OFF → should save locally</li>
+                        <li>Turn WiFi back ON → moment should automatically upload (you shouldn't have to do anything)</li>
+                        <li>Create 3 moments offline → all should sync when you reconnect</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="phase">
+                <h3>Phase 2: Authentication (6 tests)</h3>
+                <div class="plain-english">
+                    Does login work correctly? Can you log in, stay logged in, and log out?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>Users need a secure way to sign in and access only their own moments</li>
+                        <li>If login is broken, nothing else works</li>
+                        <li>If the app logs you out randomly, users will get frustrated</li>
+                    </ul>
+                </div>
+                <div class="account-note">Account to use: Primary test account + one wrong password test</div>
+                <div class="key-tests">
+                    <strong>Key tests:</strong>
+                    <ul>
+                        <li>Log in with correct email/password → should work</li>
+                        <li>Try logging in with wrong password → should show an error</li>
+                        <li>Log out → should ask for login again</li>
+                        <li>Close the app and reopen it → should still be logged in (your session should persist)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="phase">
+                <h3>Phase 3: Moment Operations (5 tests)</h3>
+                <div class="plain-english">
+                    Can you create a moment by recording your voice? Can you type one instead? Can you see your moments in the list?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>The core feature is capturing moments</li>
+                        <li>Users need to be able to use voice OR type (voice option)</li>
+                        <li>They need to see what they've captured and read it back</li>
+                    </ul>
+                </div>
+                <div class="account-note">Account to use: One account (test.normal@example.com)</div>
+                <div class="key-tests">
+                    <strong>Key tests:</strong>
+                    <ul>
+                        <li>Record a voice moment → it should show up in your list with the transcript</li>
+                        <li>Type a moment instead of recording → should also show up</li>
+                        <li>Add a "Sense of the Lord" note to a moment → should be saved</li>
+                        <li>View your moments list → should see newest moments first</li>
+                        <li>Tap a moment → should read the full text</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="phase">
+                <h3>Phase 4: Network State Changes (6 tests)</h3>
+                <div class="plain-english">
+                    What happens when WiFi drops while you're in the middle of doing something? Can the app recover gracefully?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>Users won't always have stable internet</li>
+                        <li>WiFi might drop in the middle of saving a moment</li>
+                        <li>The app should handle this without crashing or losing data</li>
+                    </ul>
+                </div>
+                <div class="account-note">Account to use: One account (test.normal@example.com)</div>
+                <div class="key-tests">
+                    <strong>Key tests:</strong>
+                    <ul>
+                        <li>Start saving a moment, then disable WiFi mid-save → should catch the error, save locally</li>
+                        <li>Turn WiFi back on → should automatically retry and upload</li>
+                        <li>Turn on airplane mode mid-operation → should handle gracefully</li>
+                        <li>Turn airplane mode off → should continue working normally</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="phase">
+                <h3>Phase 5: Data Persistence (6 tests)</h3>
+                <div class="plain-english">
+                    If you force-quit the app or restart your phone, do you lose your data? Does everything stay safe?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>Users might accidentally close the app mid-operation</li>
+                        <li>Their phone might die and restart</li>
+                        <li>We can't lose their moments</li>
+                    </ul>
+                </div>
+                <div class="account-note">Account to use: One account (test.normal@example.com)</div>
+                <div class="key-tests">
+                    <strong>Key tests:</strong>
+                    <ul>
+                        <li>Create a moment, then force-quit the app and reopen it → moment should still be there</li>
+                        <li>Create a moment offline, kill the app before it syncs, reopen and turn on WiFi → should still sync</li>
+                        <li>Check your iPhone's Settings > Passwords — your app's auth token should be stored securely there</li>
+                        <li>After logging out, check Settings > Passwords again — the token should be gone</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="phase">
+                <h3>Phase 6: Error Handling (4 tests)</h3>
+                <div class="plain-english">
+                    If something goes wrong (bad internet, Supabase crashes, you deny microphone access), does the app crash or handle it gracefully?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>Apps that crash on errors are terrible user experiences</li>
+                        <li>Users need to see helpful error messages</li>
+                        <li>The app should never become unusable</li>
+                    </ul>
+                </div>
+                <div class="account-note">Account to use: One account (test.normal@example.com)</div>
+                <div class="key-tests">
+                    <strong>Key tests:</strong>
+                    <ul>
+                        <li>Try to tap the mic button without granting microphone permission → should show a helpful error</li>
+                        <li>Create an error state and see if a "Retry" button appears → should let you try again</li>
+                        <li>If the server is down (unlikely), does the app crash? → should show an error message instead</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="phase">
+                <h3>Phase 7: Performance (3 tests)</h3>
+                <div class="plain-english">
+                    Does the app stay fast and responsive? Does it use too much memory?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>Slow apps feel broken to users</li>
+                        <li>Apps that use tons of memory drain battery and cause crashes</li>
+                        <li>Users expect smooth scrolling and quick responses</li>
+                    </ul>
+                </div>
+                <div class="account-note">Account to use: One account (test.normal@example.com)</div>
+                <div class="key-tests">
+                    <strong>Key tests:</strong>
+                    <ul>
+                        <li>Create lots of moments and scroll through the list → should feel smooth, no stuttering</li>
+                        <li>Use the app for a while, create/fetch moments repeatedly → app should stay responsive</li>
+                        <li>Save multiple moments quickly (tap save 5 times fast) while offline → all should queue and sync without duplicates</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="phase">
+                <h3>Phase 8: UI/UX (5 tests)</h3>
+                <div class="plain-english">
+                    Does the interface feel polished? Are buttons clickable? Does the keyboard work smoothly?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>A beautiful interface makes people want to use the app</li>
+                        <li>Broken buttons or janky animations frustrate users</li>
+                        <li>The app should feel professional and reliable</li>
+                    </ul>
+                </div>
+                <div class="account-note">Account to use: One account (test.normal@example.com)</div>
+                <div class="key-tests">
+                    <strong>Key tests:</strong>
+                    <ul>
+                        <li>While the app is fetching moments, you should see a loading spinner</li>
+                        <li>While saving, buttons should be disabled (can't double-submit)</li>
+                        <li>Type in the text field → keyboard should appear/disappear smoothly</li>
+                        <li>Enable dark mode in your iPhone settings and relaunch the app → colors should look right</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <section class="section">
+            <h2>Minimum Testing Path (if short on time)</h2>
+            <p>If you only have 30 minutes, test these critical scenarios:</p>
+            <table>
+                <tr>
+                    <th>Phase</th>
+                    <th>Why It's Critical</th>
+                </tr>
+                <tr>
+                    <td><span class="highlight">Offline 1.1</span></td>
+                    <td>Can you save a moment with no WiFi?</td>
+                </tr>
+                <tr>
+                    <td><span class="highlight">Auth 2.1</span></td>
+                    <td>Can you log in?</td>
+                </tr>
+                <tr>
+                    <td><span class="highlight">CRUD 3.1</span></td>
+                    <td>Can you record and save a moment?</td>
+                </tr>
+                <tr>
+                    <td><span class="highlight">Network 4.2</span></td>
+                    <td>When WiFi comes back, does it sync?</td>
+                </tr>
+                <tr>
+                    <td><span class="highlight">Persistence 5.1</span></td>
+                    <td>If you kill the app, is your moment still there?</td>
+                </tr>
+            </table>
+        </section>
+
+        <hr class="divider">
+
+        <section class="section">
+            <h2>Common Issues to Watch For</h2>
+            <ol style="margin-left: 20px;">
+                <li><strong>"Pending sync" message disappears too fast</strong> — We know about this, probably fine</li>
+                <li><strong>Keyboard doesn't appear when tapping text field</strong> — Report this</li>
+                <li><strong>App crashes during any operation</strong> — Definitely report this</li>
+                <li><strong>Can't see your moments in the list after saving</strong> — Report this</li>
+                <li><strong>Login button doesn't respond</strong> — Report this</li>
+                <li><strong>Typing is slow or laggy</strong> — Might be device-specific, note it</li>
+            </ol>
+        </section>
+
+        <hr class="divider">
+
+        <section class="section">
+            <h2>Testing Checklist</h2>
+            <h3>Before You Start</h3>
+            <ol style="margin-left: 20px;">
+                <li><strong>One account:</strong> <span class="code">test.normal@example.com</span> / <span class="code">password123</span></li>
+                <li><strong>Fresh start:</strong> Log out of the app if you're already logged in</li>
+                <li><strong>Have a plan:</strong> Follow the "Minimum Testing Path" if you're short on time</li>
+            </ol>
+
+            <h3>During Testing</h3>
+            <ol style="margin-left: 20px;">
+                <li><strong>Mark Pass/Fail:</strong> In MANUAL_TESTING_CHECKLIST.html, mark each scenario as Pass or Fail</li>
+                <li><strong>Write notes:</strong> If something breaks, explain what happened and how to reproduce it</li>
+                <li><strong>Take screenshots:</strong> If something looks wrong, take a screenshot</li>
+            </ol>
+
+            <h3>After Testing</h3>
+            <ol style="margin-left: 20px;">
+                <li><strong>Export results:</strong> From the HTML checklist, click "Export Results" and save the file</li>
+                <li><strong>Send back:</strong> Share the results file with me</li>
+                <li><strong>I'll fix bugs:</strong> I'll create tickets for anything that fails and fix them next session</li>
+            </ol>
+        </section>
+
+        <div class="cta">
+            ✨ Ready to test? Open MANUAL_TESTING_CHECKLIST.html and start with Phase 1! ✨
+        </div>
+
+        <div class="footer">
+            <p>Questions? Write them in the Notes column of the checklist. I'll read all notes and respond to every question.</p>
+            <p style="margin-top: 10px;">Last updated: March 9, 2026</p>
+        </div>
+    </div>
+</body>
+</html>
