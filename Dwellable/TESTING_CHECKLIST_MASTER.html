@@ -948,6 +948,23 @@
                 <tr>
                     <td colspan="5">
                         <div id="details-2.1" class="test-row-details">
+                            <strong>How to run this test:</strong>
+                            <ol style="margin: 10px 0 10px 20px;">
+                                <li>Launch the Dwellable app</li>
+                                <li>You should see the LoginView (dark background, email/password fields, gold button)</li>
+                                <li>Enter email: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px;">test.normal@example.com</code></li>
+                                <li>Enter password: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px;">password123</code></li>
+                                <li>Tap the gold "Log In" button</li>
+                                <li>Wait 1-2 seconds for authentication to complete</li>
+                            </ol>
+                            <strong>Expected result:</strong> You should see MomentsListView (moments list or "No moments yet" if account is empty). No error message.<br>
+                            <strong>What to verify:</strong>
+                            <ul style="margin: 10px 0 10px 20px;">
+                                <li>LoginView disappears</li>
+                                <li>MomentsListView appears with "Moments" header</li>
+                                <li>"Document life. Discern over time." tagline visible</li>
+                                <li>Refresh icon + Sign out button in top right</li>
+                            </ul>
                             <strong>Notes:</strong>
                             <textarea class="notes-input" placeholder="Add your notes here..." data-test="2.1"></textarea>
                             <div class="image-upload">
@@ -969,6 +986,13 @@
                 <tr>
                     <td colspan="5">
                         <div id="details-2.2" class="test-row-details">
+                            <strong>How to run this test:</strong>
+                            <ol style="margin: 10px 0 10px 20px;">
+                                <li>From LoginView, enter email: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px;">invalid</code></li>
+                                <li>Enter password: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px;">password123</code></li>
+                                <li>Tap "Log In"</li>
+                            </ol>
+                            <strong>Expected result:</strong> Error message appears (e.g., "Invalid email format" or "Sign in failed: Invalid email"). LoginView stays visible.<br>
                             <strong>Notes:</strong>
                             <textarea class="notes-input" placeholder="Add your notes here..." data-test="2.2"></textarea>
                             <div class="image-upload">
@@ -990,6 +1014,13 @@
                 <tr>
                     <td colspan="5">
                         <div id="details-2.3" class="test-row-details">
+                            <strong>How to run this test:</strong>
+                            <ol style="margin: 10px 0 10px 20px;">
+                                <li>From LoginView, enter email: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px;">test.normal@example.com</code></li>
+                                <li>Enter password: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px;">wrongpassword</code></li>
+                                <li>Tap "Log In"</li>
+                            </ol>
+                            <strong>Expected result:</strong> Error message appears (e.g., "Sign in failed: Invalid credentials"). LoginView stays visible.<br>
                             <strong>Notes:</strong>
                             <textarea class="notes-input" placeholder="Add your notes here..." data-test="2.3"></textarea>
                             <div class="image-upload">
@@ -1011,6 +1042,26 @@
                 <tr>
                     <td colspan="5">
                         <div id="details-2.4" class="test-row-details">
+                            <strong>How to run this test:</strong>
+                            <ol style="margin: 10px 0 10px 20px;">
+                                <li>Complete test 2.1 (log in successfully)</li>
+                                <li>You should be on MomentsListView with moments displayed or "No moments yet"</li>
+                                <li>Kill the app completely:
+                                    <ul style="margin: 10px 0 10px 20px;">
+                                        <li><strong>On iPhone:</strong> Swipe up from bottom of screen, then swipe Dwellable card upward</li>
+                                        <li><strong>On simulator:</strong> Cmd+Shift+H to go home, or just close Xcode window</li>
+                                    </ul>
+                                </li>
+                                <li>Wait 2 seconds</li>
+                                <li>Relaunch the app (tap Dwellable icon on home screen)</li>
+                            </ol>
+                            <strong>Expected result:</strong> App opens directly to MomentsListView (NOT LoginView). You're still signed in. Session was restored from Keychain.<br>
+                            <strong>What to verify:</strong>
+                            <ul style="margin: 10px 0 10px 20px;">
+                                <li>No LoginView appears</li>
+                                <li>MomentsListView is visible immediately</li>
+                                <li>Your moments are visible (or "No moments yet" message)</li>
+                            </ul>
                             <strong>Notes:</strong>
                             <textarea class="notes-input" placeholder="Add your notes here..." data-test="2.4"></textarea>
                             <div class="image-upload">
@@ -1032,6 +1083,20 @@
                 <tr>
                     <td colspan="5">
                         <div id="details-2.5" class="test-row-details">
+                            <strong>How to run this test:</strong>
+                            <ol style="margin: 10px 0 10px 20px;">
+                                <li>Complete test 2.1 (log in successfully)</li>
+                                <li>You should be on MomentsListView</li>
+                                <li>Tap "Sign out" button (top right corner, next to refresh icon)</li>
+                                <li>Wait for sign out to complete</li>
+                            </ol>
+                            <strong>Expected result:</strong> App returns to LoginView. Your session is cleared from Keychain. You must log in again to continue.<br>
+                            <strong>What to verify:</strong>
+                            <ul style="margin: 10px 0 10px 20px;">
+                                <li>MomentsListView disappears</li>
+                                <li>LoginView appears with email/password fields empty</li>
+                                <li>You can log in again</li>
+                            </ul>
                             <strong>Notes:</strong>
                             <textarea class="notes-input" placeholder="Add your notes here..." data-test="2.5"></textarea>
                             <div class="image-upload">
@@ -1053,6 +1118,18 @@
                 <tr>
                     <td colspan="5">
                         <div id="details-2.6" class="test-row-details">
+                            <strong>How to run this test:</strong>
+                            <ol style="margin: 10px 0 10px 20px;">
+                                <li>From LoginView, leave both email and password fields empty</li>
+                                <li>Tap the gold "Log In" button</li>
+                            </ol>
+                            <strong>Expected result:</strong> Error message appears (e.g., "Please enter your email" or similar validation error). LoginView stays visible. Login is rejected.<br>
+                            <strong>Variations to test:</strong>
+                            <ul style="margin: 10px 0 10px 20px;">
+                                <li>Empty email only, password filled → Should show error</li>
+                                <li>Email filled, empty password → Should show error</li>
+                                <li>Both fields empty → Should show error</li>
+                            </ul>
                             <strong>Notes:</strong>
                             <textarea class="notes-input" placeholder="Add your notes here..." data-test="2.6"></textarea>
                             <div class="image-upload">
