@@ -653,7 +653,7 @@
 
             <div class="section">
                 <h3>What You're Testing</h3>
-                <p>This comprehensive testing checklist covers <strong>40+ test scenarios</strong> across 8 phases:</p>
+                <p>This comprehensive testing checklist covers <strong>43+ test scenarios</strong> across 9 phases:</p>
                 <ul style="margin-left: 20px; margin-top: 15px;">
                     <li><strong>Phase 1: Offline Support</strong> — Can you save moments without WiFi?</li>
                     <li><strong>Phase 2: Authentication</strong> — Does login work correctly?</li>
@@ -663,6 +663,7 @@
                     <li><strong>Phase 6: Error Handling</strong> — Does the app show helpful errors instead of crashing?</li>
                     <li><strong>Phase 7: Performance</strong> — Is the app fast and responsive?</li>
                     <li><strong>Phase 8: UI/UX</strong> — Does the interface feel polished and professional?</li>
+                    <li><strong>Phase 9: Bug Fix Verification</strong> — Were recent critical bugs fixed correctly?</li>
                 </ul>
             </div>
 
@@ -1472,6 +1473,124 @@
                                 <label>📸 Upload Image (optional):</label>
                                 <input type="file" accept="image/*" onchange="handleImageUpload(this, '5.12')">
                                 <div class="image-preview" id="images-5.12"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Phase 9: Bug Fix Verification -->
+            <h2>Phase 9 — Bug Fix Verification (3 scenarios)</h2>
+            <div class="plain-english">
+                These three tests verify that critical bugs found during testing have been fixed.
+            </div>
+            <div class="why-matters">
+                <strong>Why this matters:</strong>
+                <ul>
+                    <li>B-003: Warnings in the build can hide real errors (clean code = reliable app)</li>
+                    <li>B-007: Users need clear feedback when login fails (good UX = user trust)</li>
+                    <li>B-008: Moments shouldn't disappear when offline (data reliability = user confidence)</li>
+                </ul>
+            </div>
+            <table>
+                <tr>
+                    <th class="num">#</th>
+                    <th>Scenario</th>
+                    <th>Expected</th>
+                    <th style="width: 80px;">Status</th>
+                    <th style="width: 100px;">Actions</th>
+                </tr>
+
+                <tr id="test-row-9-1">
+                    <td class="num">9.1</td>
+                    <td><strong>B-003: No Build Warnings</strong><br><small>Build the app and check Xcode console for warnings</small></td>
+                    <td>Xcode build completes with zero warnings (no duplicate ID issues)</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="9.1"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('9.1')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-9.1" class="test-row-details">
+                            <strong>What was broken:</strong> ForEach loops were creating duplicate IDs, causing Xcode warnings like "ID 5 occurs multiple times within the collection"<br>
+                            <strong>What was fixed:</strong> Replaced id: \.self with id: \.offset using enumerated() for unique position-based IDs<br>
+                            <strong>How to verify:</strong> Build the app (Product → Build) and check the Xcode console — you should see zero warnings<br>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="9.1"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (Xcode console screenshot optional):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '9.1')">
+                                <div class="image-preview" id="images-9.1"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-9-2">
+                    <td class="num">9.2</td>
+                    <td><strong>B-007: Login Error Message Displays</strong><br><small>Try logging in with wrong password</small></td>
+                    <td>Red error message appears: "Email or password is incorrect"</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="9.2"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('9.2')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-9.2" class="test-row-details">
+                            <strong>Valid test accounts (use correct password first, then try wrong):</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li><strong>Email:</strong> test@example.com &nbsp; <strong>Password:</strong> password123 ✅</li>
+                                <li><strong>Email:</strong> kell@example.com &nbsp; <strong>Password:</strong> test1234 ✅</li>
+                            </ul>
+                            <strong>What was broken:</strong> Login accepted ANY non-empty email/password without validating. Wrong passwords silently succeeded.<br>
+                            <strong>What was fixed:</strong> Added credential validation — app now checks if password matches the email account<br>
+                            <strong>How to verify:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Enter test@example.com with password "wrongpassword"</li>
+                                <li>Tap Sign In</li>
+                                <li>You should see red error text: "Email or password is incorrect"</li>
+                                <li>Try again with correct password (password123) — should log in successfully</li>
+                            </ol>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="9.2"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (error message screenshot):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '9.2')">
+                                <div class="image-preview" id="images-9.2"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-9-3">
+                    <td class="num">9.3</td>
+                    <td><strong>B-008: Offline Moments Persist</strong><br><small>Sign in online → go offline → create moments → come back online</small></td>
+                    <td>Original moments + new offline moments ALL visible (nothing disappears)</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="9.3"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('9.3')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-9.3" class="test-row-details">
+                            <strong>What was broken:</strong> When you went offline, previously-viewed API moments would disappear from the list. They'd come back when you went online again.<br>
+                            <strong>What was fixed:</strong> App now caches API-fetched moments to local storage, so they persist when offline<br>
+                            <strong>Step-by-step test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Sign in with test@example.com / password123 (WiFi ON)</li>
+                                <li>Wait for moments list to load — you should see existing moments (from API)</li>
+                                <li>Take note of how many moments you see (e.g., 5 moments)</li>
+                                <li><strong>Turn OFF WiFi</strong> (Airplane mode or disable WiFi)</li>
+                                <li>Look at moments list — all 5 moments should STILL be visible ✅</li>
+                                <li>Create 2 new moments offline (voice or text)</li>
+                                <li>You should now see 7 moments total (5 API + 2 new) ✅</li>
+                                <li><strong>Turn WiFi BACK ON</strong></li>
+                                <li>Moments list syncs — you should still see all 7 moments ✅</li>
+                                <li><strong>❌ FAIL:</strong> If moments disappear at any point during this test, this fix isn't working</li>
+                            </ol>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="9.3"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Images (before offline, after offline, after sync):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '9.3')">
+                                <div class="image-preview" id="images-9.3"></div>
                             </div>
                         </div>
                     </td>
