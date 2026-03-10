@@ -229,18 +229,20 @@
 - [ ] **T-024:** Manual testing on real device
 - [ ] **T-025:** TestFlight beta testing with users
 
-### Testing Issues — March 10 Session
-- [ ] **T-029:** Support offline sign-in or clarify requirements
+### Testing Issues — March 10 Session (Decided — Won't Do for v1.0)
+- [x] **T-029:** Support offline sign-in or clarify requirements ⚪ **CLOSED — Won't Do for v1.0**
   - Issue from test 1.1: Users cannot sign in without internet access
-  - Current behavior: Sign-in requires network connection
-  - Decision needed: Should we support offline sign-in for returning users? Or is this acceptable?
-  - Scope: Requires design decision from Kell before implementation
+  - Decision: Prevent offline sign-in (keep internet requirement)
+  - Rationale: If user is signed out and offline, there's no local user data to retrieve anyway. Sign-up definitely requires internet.
+  - Implementation: Keep current behavior (internet required for sign-in)
+  - Decided: March 10, 2026 (Kell decision)
 
-- [ ] **T-030:** Handle app reinstall with offline moments gracefully
+- [x] **T-030:** Handle app reinstall with offline moments gracefully ⚪ **CLOSED — Won't Do for v1.0**
   - Issue from test 1.5: User creates moments offline, deletes app, reinstalls, moments are lost
-  - Current behavior: Offline moments stored locally; reinstall clears local storage (expected)
-  - Improvement: Consider cloud sync, recovery messaging, or user education about persistence
-  - Scope: Medium priority — impacts UX for users who reinstall the app
+  - Decision: Prevent cloud sync (keep local-only offline moments)
+  - Rationale: Without database connection, can't verify user entitlements anyway. Local-only storage sufficient for v1.0.
+  - Implementation: Keep current behavior (offline moments lost on reinstall)
+  - Decided: March 10, 2026 (Kell decision)
 
 ### Deployment
 - [ ] **T-026:** Prepare for App Store submission
@@ -285,8 +287,8 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Testing & QA | 5 | 1 | 0 | 4 |
 | Deployment | 3 | 0 | 0 | 3 |
 | Bugs | 1 | 1 | 0 | 0 |
-| Testing Issues — March 10 | 2 | 0 | 0 | 2 |
-| **TOTAL** | **42** | **27** | **0** | **15** |
+| Testing Issues — March 10 | 2 | 2 | 0 | 0 |
+| **TOTAL** | **42** | **29** | **0** | **13** |
 
 ---
 
@@ -359,7 +361,10 @@ T-011 · T-012 · T-013 · T-027 · T-028
   - User feedback captured: 2 screenshots uploaded to general issue
   - Key findings led to T-029 and T-030 creation (see notes above)
 
-- **Test clarifications documented** in TESTING_CLARIFICATIONS.md
-  - Test 1.5: App reinstall with offline moments (intentional behavior; see design decision options)
-  - Test 2.5: Sign-out flow verification (working as expected; no action needed)
-  - Test 1.1: Offline sign-in capability (requires design decision — see T-029)
+- **Design decisions finalized** (March 10):
+  - **T-029 (Offline sign-in):** CLOSED — Won't Do for v1.0. Rationale: No local data to retrieve when offline + signed out. Internet requirement acceptable.
+  - **T-030 (Cloud sync):** CLOSED — Won't Do for v1.0. Rationale: Can't verify entitlements without database connection. Local-only storage sufficient.
+  - **Test 1.2 (Offline capture → sync):** ✅ Works well, no changes needed
+  - **Test 1.5 (App reinstall):** ✅ Expected behavior documented (local storage cleared on uninstall)
+  - **Test 2.5 (Sign-out):** ✅ Working correctly
+- **Ticket progress updated:** 29/42 complete (69%)
