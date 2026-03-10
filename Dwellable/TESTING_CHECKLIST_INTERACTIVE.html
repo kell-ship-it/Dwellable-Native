@@ -602,35 +602,35 @@
             <div class="section">
                 <div class="section-header">
                     <span class="section-id">U-003</span>
-                    <h3>XCUI Test Setup & Offline Sync Tests</h3>
+                    <h3>Device Testing at Scale — Manual QA on iPhone 13</h3>
                     <span class="priority-badge priority-high">HIGH</span>
                 </div>
-                <p class="description">Collaborate with assistant on XCTest automation for UI testing; test offline sync, auth, moment creation</p>
+                <p class="description">Manual testing of core workflows on physical iPhone 13. Simple XCUI tests available for smoke testing (T-020 complete). Focus on: auth, offline sync, moment capture/review, voice recording, view transitions.</p>
 
                 <div class="task-list">
                     <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u003-1">
-                        <label>Review XCUI test setup guide</label>
+                        <label>Test login/auth flow (valid + invalid credentials)</label>
                     </div>
                     <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u003-2">
-                        <label>Collaborate on building out XCTest automation</label>
+                        <label>Test capture flow: voice recording → transcription → review → save</label>
                     </div>
                     <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u003-3">
-                        <label>Run XCUI tests on simulator</label>
+                        <label>Test offline capture → auto-sync when online</label>
                     </div>
                     <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u003-4">
-                        <label>Run XCUI tests on physical device</label>
+                        <label>Test moments list: fetch, display, detail view navigation</label>
                     </div>
                     <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u003-5">
-                        <label>Verify at least 5 test cases passing</label>
+                        <label>Test type-flow alternative (bypass voice recording)</label>
                     </div>
                     <div class="task-item" onclick="toggleTask(this, event)">
                         <input type="checkbox" data-id="u003-6">
-                        <label>Tests verify offline → online sync behavior</label>
+                        <label>Run simple XCUI smoke tests (testLoginWithEmptyFields) on simulator</label>
                     </div>
                 </div>
                 <div class="progress-bar">
