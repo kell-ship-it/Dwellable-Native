@@ -7,6 +7,7 @@ struct MomentsListView: View {
     @State private var error: String?
     @State private var refreshTrigger = UUID()
     @State private var showCapture = false
+    @State private var showSettings = false
     @State private var isOffline = false
 
     let apiClient: APIClient
@@ -121,12 +122,8 @@ struct MomentsListView: View {
                                     .foregroundColor(Theme.tertiaryText)
                             }
 
-                            Button(action: {
-                                Task {
-                                    await authManager.signOut()
-                                }
-                            }) {
-                                Text("Sign out")
+                            NavigationLink(destination: SettingsView()) {
+                                Image(systemName: "gear")
                                     .font(.system(size: 13, weight: .regular))
                                     .foregroundColor(Theme.tertiaryText)
                             }
@@ -217,12 +214,8 @@ struct MomentsListView: View {
                                     .foregroundColor(Theme.tertiaryText)
                             }
 
-                            Button(action: {
-                                Task {
-                                    await authManager.signOut()
-                                }
-                            }) {
-                                Text("Sign out")
+                            NavigationLink(destination: SettingsView()) {
+                                Image(systemName: "gear")
                                     .font(.system(size: 13, weight: .regular))
                                     .foregroundColor(Theme.tertiaryText)
                             }

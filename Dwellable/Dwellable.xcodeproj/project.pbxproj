@@ -129,6 +129,7 @@
 				013f /* TypeFlowView.swift */,
 				0145 /* MomentDetailView.swift */,
 				0147 /* MomentRow.swift */,
+				0149 /* SettingsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -305,6 +306,7 @@
 				013e /* TypeFlowView.swift in Sources */,
 				0144 /* MomentDetailView.swift in Sources */,
 				0146 /* MomentRow.swift in Sources */,
+				0148 /* SettingsView.swift in Sources */,
 				0112 /* AuthManager.swift in Sources */,
 				0128 /* AudioRecordingManager.swift in Sources */,
 				012a /* TranscriptionManager.swift in Sources */,

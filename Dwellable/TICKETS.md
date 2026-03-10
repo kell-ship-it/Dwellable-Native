@@ -201,19 +201,15 @@
 ---
 
 ### Bugs — Build & Configuration
-- [ ] **B-006:** Resolve Swift compiler scope issue with SettingsView — 🔄 **In Progress**
+- [x] **B-006:** Resolve Swift compiler scope issue with SettingsView — ✅ **FIXED**
   - Error: "cannot find 'SettingsView' in scope" when referenced from MomentsListView
-  - File exists at Dwellable/Views/SettingsView.swift and compiles independently
-  - Build succeeds when reference is removed; fails when `SettingsView()` is used in NavigationLink
-  - Root cause: SettingsView.swift was missing from Xcode project's build target (pbxproj)
-  - **Partial Fix Applied:** Added SettingsView.swift to project.pbxproj PBXFileReference and PBXBuildFile sections
-  - **Status:** File reference added but still not recognized by Swift compiler — may need:
-    1. ✅ Xcode build target membership (attempted via pbxproj edit)
-    2. ❓ Build phases configuration (may need to verify Sources build phase)
-    3. ❓ Xcode project regeneration or GUI-based fix
-    4. ⚠️ May require opening Xcode directly to properly add file
-  - Impact: T-010 navigation still blocked (SettingsView view is complete)
-  - **Next:** Either open Xcode GUI to properly add file, or find alternative pattern that doesn't require direct SettingsView reference
+  - Root cause: SettingsView.swift was missing from THREE places in Xcode project config:
+    1. PBXFileReference section (file definition)
+    2. PBXBuildFile section (build target)
+    3. **PBXGroup children for Views folder (file wasn't listed in Views group)**
+  - **Solution:** Added SettingsView to all three locations in pbxproj
+  - **Result:** ✅ Build now succeeds, SettingsView is properly integrated
+  - **Commit:** be4919c (partial), [next commit with full fix]
 
 ### Bugs — Session Persistence
 - [x] **B-005:** Fix auth persistence error page for empty accounts ✅ **FIXED**
@@ -226,16 +222,16 @@
 ---
 
 ### UI Screens — Sub-screens
-- [x] **T-010:** Build SettingsView — 🔄 **Blocked by B-006**
-  - ✅ **COMPLETE:** View fully built with all required features
+- [x] **T-010:** Build SettingsView — ✅ **COMPLETE**
+  - ✅ View fully built with all required features:
     - User profile display (email), sign out button, app version, terms/privacy links
     - Proper Theme styling, navigation back button, EnvironmentObject integration
-  - ❌ **BLOCKED:** Cannot add navigation link from MomentsListView to SettingsView
-    - Swift compiler error: "cannot find 'SettingsView' in scope"
-    - SettingsView.swift exists and compiles independently
-    - Issue appears to be Xcode project configuration/module visibility (see B-006)
-  - **Impact:** SettingsView gear icon button not accessible from header
-  - **Next:** Resolve B-006 (Xcode build config issue), then wire navigation
+  - ✅ **Navigation wired:** Gear icon in MomentsListView header → SettingsView
+    - Both empty state and moments list headers updated
+    - NavigationLink to SettingsView functional
+  - ✅ **B-006 resolved:** Fixed Xcode project configuration (pbxproj)
+  - Build verified with no errors
+  - **Impact:** SettingsView fully accessible from home screen
 
 - [ ] **T-011:** Build EditMomentView *(deferred — v2)*
   - Edit existing moments, pre-populate data, delete with confirmation
@@ -341,10 +337,11 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Analytics | 2 | 0 | 0 | 2 |
 | Testing & QA | 5 | 1 | 0 | 4 |
 | Deployment | 3 | 0 | 0 | 3 |
-| Bugs | 3 | 2 | 0 | 1 |
+| Bugs | 3 | 3 | 0 | 0 |
 | Testing Issues — March 10 | 2 | 2 | 0 | 0 |
 | Bugs — Found During Testing | 3 | 2 | 0 | 1 |
-| **TOTAL** | **47** | **32** | **0** | **15** |
+| UI Screens — Sub | 4 | 1 | 0 | 3 |
+| **TOTAL** | **47** | **34** | **0** | **13** |
 
 ---
 
