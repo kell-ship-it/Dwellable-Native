@@ -200,6 +200,21 @@
 
 ---
 
+### Bugs — Build & Configuration
+- [ ] **B-006:** Resolve Swift compiler scope issue with SettingsView
+  - Error: "cannot find 'SettingsView' in scope" when referenced from MomentsListView
+  - File exists at Dwellable/Views/SettingsView.swift and compiles independently
+  - Build succeeds when reference is removed; fails when `SettingsView()` is used in NavigationLink
+  - Likely cause: Xcode project configuration, build phase order, or module visibility issue
+  - Impact: Blocks T-010 navigation integration (SettingsView view is complete, just not reachable)
+  - Workarounds to try:
+    1. Check Xcode build target membership for SettingsView.swift
+    2. Verify build phases include all .swift files in correct order
+    3. Clean Xcode DerivedData and rebuild
+    4. Check for circular imports or forward declaration issues
+    5. Try using type-erased AnyView wrapper
+  - Status: 🔲 Not Started
+
 ### Bugs — Session Persistence
 - [x] **B-005:** Fix auth persistence error page for empty accounts ✅ **FIXED**
   - Issue: When closing app while signed in with zero moments, reopening shows error page instead of empty state
@@ -211,9 +226,16 @@
 ---
 
 ### UI Screens — Sub-screens
-- [ ] **T-010:** Build SettingsView
-  - User profile display, sign out, app version, terms/privacy links
-  - Accessible from MomentsListView header
+- [x] **T-010:** Build SettingsView — 🔄 **Blocked by B-006**
+  - ✅ **COMPLETE:** View fully built with all required features
+    - User profile display (email), sign out button, app version, terms/privacy links
+    - Proper Theme styling, navigation back button, EnvironmentObject integration
+  - ❌ **BLOCKED:** Cannot add navigation link from MomentsListView to SettingsView
+    - Swift compiler error: "cannot find 'SettingsView' in scope"
+    - SettingsView.swift exists and compiles independently
+    - Issue appears to be Xcode project configuration/module visibility (see B-006)
+  - **Impact:** SettingsView gear icon button not accessible from header
+  - **Next:** Resolve B-006 (Xcode build config issue), then wire navigation
 
 - [ ] **T-011:** Build EditMomentView *(deferred — v2)*
   - Edit existing moments, pre-populate data, delete with confirmation
@@ -319,10 +341,10 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Analytics | 2 | 0 | 0 | 2 |
 | Testing & QA | 5 | 1 | 0 | 4 |
 | Deployment | 3 | 0 | 0 | 3 |
-| Bugs | 2 | 2 | 0 | 0 |
+| Bugs | 3 | 2 | 0 | 1 |
 | Testing Issues — March 10 | 2 | 2 | 0 | 0 |
 | Bugs — Found During Testing | 3 | 2 | 0 | 1 |
-| **TOTAL** | **46** | **32** | **0** | **14** |
+| **TOTAL** | **47** | **32** | **0** | **15** |
 
 ---
 
