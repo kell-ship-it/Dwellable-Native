@@ -100,6 +100,10 @@ class MockAPIClient: APIClient {
 
         // Mock implementation - just succeeds (in real app, this creates user in DB)
     }
+
+    func setJWTToken(_ token: String) {
+        // Mock implementation - token not used in mock client
+    }
 }
 
 enum APIError: LocalizedError {

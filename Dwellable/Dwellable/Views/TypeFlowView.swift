@@ -78,13 +78,14 @@ struct TypeFlowView: View {
                         .background(Color.clear)
                         .frame(maxWidth: .infinity)
                         .frame(maxHeight: .infinity)
+                        .accessibilityIdentifier("moment_body")
 
-                    // Hint text
-                    Text("Add where you sensed the Lord, if at all...")
+                    // Sense of Lord field
+                    TextField("Add where you sensed the Lord, if at all...", text: $senseOfLord)
                         .font(.system(size: 16, weight: .regular))
-                        .italic()
                         .foregroundColor(senseOfLord.isEmpty ? Color(red: 0.184, green: 0.188, blue: 0.22) : Color(red: 0.227, green: 0.239, blue: 0.271))
                         .padding(.top, 12)
+                        .accessibilityIdentifier("sense_of_lord")
                 }
                 .padding(.horizontal, 20)
 
@@ -116,6 +117,7 @@ struct TypeFlowView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
                 .padding(.bottom, 20)
+                .accessibilityIdentifier("Save")
             }
         }
         .navigationBarBackButtonHidden(true)

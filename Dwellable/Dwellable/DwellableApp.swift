@@ -7,10 +7,21 @@ struct DwellableApp: App {
     private let syncManager: SyncManager
 
     init() {
-        let apiClient = SupabaseAPIClient()
-        self.apiClient = apiClient
-        self.syncManager = SyncManager(apiClient: apiClient)
-        _authManager = StateObject(wrappedValue: AuthManager(apiClient: apiClient))
+        // Auto-detect test environment and use appropriate client
+        let resolvedClient: APIClient
+
+        // Check if XCTest is loaded (indicates we're running tests)
+        if NSClassFromString("XCTest") != nil {
+            // Use MockAPIClient when running XCUI tests
+            resolvedClient = MockAPIClient()
+        } else {
+            // Use real Supabase client in production
+            resolvedClient = SupabaseAPIClient()
+        }
+
+        self.apiClient = resolvedClient
+        self.syncManager = SyncManager(apiClient: resolvedClient)
+        _authManager = StateObject(wrappedValue: AuthManager(apiClient: resolvedClient))
     }
 
     var body: some Scene {

@@ -38,6 +38,7 @@ struct LoginView: View {
                                 .tint(Theme.gold)
                                 .border(Theme.border, width: 1)
                                 .cornerRadius(14)
+                                .accessibilityIdentifier("Email")
 
                             if email.isEmpty {
                                 Text("Email")
@@ -55,12 +56,14 @@ struct LoginView: View {
                                         .padding(Theme.Spacing.lg)
                                         .foregroundColor(.white)
                                         .tint(Theme.gold)
+                                        .accessibilityIdentifier("Password")
                                 } else {
                                     SecureField("", text: $password)
                                         .textContentType(.password)
                                         .padding(Theme.Spacing.lg)
                                         .foregroundColor(.white)
                                         .tint(Theme.gold)
+                                        .accessibilityIdentifier("Password")
                                 }
 
                                 Button(action: { showPassword.toggle() }) {
@@ -99,6 +102,7 @@ struct LoginView: View {
                     }
                     .disabled(authManager.isLoading || email.isEmpty || password.isEmpty)
                     .padding(.horizontal, Theme.Spacing.xxl)
+                    .accessibilityIdentifier("Login")
                 }
 
                 if let error = authManager.errorMessage {

@@ -883,7 +883,12 @@
             }
             const checkbox = element.querySelector('input[type="checkbox"]');
             checkbox.checked = !checkbox.checked;
-            element.classList.toggle('completed');
+            // Make completed class follow checkbox state
+            if (checkbox.checked) {
+                element.classList.add('completed');
+            } else {
+                element.classList.remove('completed');
+            }
             saveProgress();
             updateStats();
         }

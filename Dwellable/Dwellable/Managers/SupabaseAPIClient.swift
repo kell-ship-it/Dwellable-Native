@@ -4,11 +4,18 @@ class SupabaseAPIClient: APIClient {
     private let baseURL: String
     private let anonKey: String
     private let session: URLSession
+    private var jwtToken: String?
 
-    init(baseURL: String = Config.supabaseURL, anonKey: String = Config.supabaseAnonKey) {
+    init(baseURL: String = Config.supabaseURL, anonKey: String = Config.supabaseAnonKey, jwtToken: String? = nil) {
         self.baseURL = baseURL
         self.anonKey = anonKey
+        self.jwtToken = jwtToken
         self.session = URLSession.shared
+    }
+
+    // Update JWT token when user authenticates
+    func setJWTToken(_ token: String) {
+        self.jwtToken = token
     }
 
     private func makeRequest<T: Decodable>(
@@ -50,7 +57,9 @@ class SupabaseAPIClient: APIClient {
         request.httpMethod = method
         request.setValue(anonKey, forHTTPHeaderField: "apikey")
         if requiresAuth {
-            request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
+            // Use JWT token if available (authenticated request), otherwise use anonKey (public request)
+            let authToken = jwtToken ?? anonKey
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         }
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
@@ -138,7 +147,9 @@ class SupabaseAPIClient: APIClient {
         request.httpMethod = "POST"
         request.timeoutInterval = 15 // 15 second timeout
         request.setValue(anonKey, forHTTPHeaderField: "apikey")
-        request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
+        // Use JWT token if available (authenticated request), otherwise use anonKey (public request)
+        let authToken = jwtToken ?? anonKey
+        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(payload)
 

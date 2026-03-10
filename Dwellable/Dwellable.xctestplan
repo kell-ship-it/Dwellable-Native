@@ -1,0 +1,30 @@
+{
+  "configurations" : [
+    {
+      "id" : "3CD376DE-B3A1-49BF-B9A4-A1440491B1DB",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Dwellable.xcodeproj",
+      "identifier" : "0010",
+      "name" : "Dwellable"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Dwellable.xcodeproj",
+        "identifier" : "23FB528B2F5F7485001E0468",
+        "name" : "DwellableUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

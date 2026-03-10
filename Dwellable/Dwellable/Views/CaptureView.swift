@@ -120,6 +120,7 @@ struct CaptureView: View {
                         .border(Theme.borderLight, width: 1)
                         .cornerRadius(Theme.Button.pillCornerRadius)
                 }
+                .accessibilityIdentifier("Type instead")
 
                 Spacer()
                     .frame(height: Theme.Spacing.xxl)

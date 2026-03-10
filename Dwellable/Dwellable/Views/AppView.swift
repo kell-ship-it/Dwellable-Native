@@ -6,13 +6,15 @@ struct AppView: View {
     let syncManager: SyncManager
 
     var body: some View {
-        if authManager.isAuthenticated, let user = authManager.currentUser {
+        // AppView is only shown when authenticated, so we can safely force-unwrap currentUser
+        if let user = authManager.currentUser {
             NavigationStack {
                 MomentsListView(apiClient: apiClient, userId: user.id, syncManager: syncManager)
             }
             .environment(\.colorScheme, .dark)
         } else {
-            LoginView()
+            // Fallback if currentUser is nil (shouldn't happen in normal flow)
+            ProgressView("Loading...")
                 .environment(\.colorScheme, .dark)
         }
     }

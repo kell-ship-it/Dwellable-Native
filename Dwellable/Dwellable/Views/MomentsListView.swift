@@ -169,6 +169,7 @@ struct MomentsListView: View {
                                 .cornerRadius(Theme.Button.primaryCornerRadius)
                         }
                         .padding(.horizontal, Theme.Spacing.xxl)
+                        .accessibilityIdentifier("Capture your first moment")
                     }
 
                     Spacer()
@@ -236,6 +237,7 @@ struct MomentsListView: View {
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
+                    .accessibilityIdentifier("MomentsList")
 
                     // Bottom "Capture moment" button
                     VStack {
@@ -248,6 +250,7 @@ struct MomentsListView: View {
                                 .background(Theme.gold)
                                 .cornerRadius(Theme.Button.primaryCornerRadius)
                         }
+                        .accessibilityIdentifier("Capture moment")
                     }
                     .padding(Theme.Spacing.lg)
                 }

@@ -11,6 +11,9 @@ protocol APIClient {
     func login(email: String, password: String) async throws -> AuthToken
     func logout() async throws
     func ensureUserExists(userId: String, email: String) async throws
+
+    // JWT token management
+    func setJWTToken(_ token: String)
 }
 
 struct AuthToken: Codable {

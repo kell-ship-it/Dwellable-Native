@@ -16,6 +16,8 @@ class AuthManager: ObservableObject {
         // Check for existing auth token on init
         if let token = keychain.retrieve(forKey: "authToken"),
            let userId = keychain.retrieve(forKey: "userId") {
+            // Restore JWT token to API client for session persistence
+            apiClient.setJWTToken(token)
             currentUser = AuthUser(id: userId, email: "", token: token)
             isAuthenticated = true
         }
@@ -29,6 +31,9 @@ class AuthManager: ObservableObject {
 
         do {
             let authToken = try await apiClient.login(email: email, password: password)
+
+            // Set JWT token on API client for authenticated requests
+            apiClient.setJWTToken(authToken.token)
 
             // Create user record in database (idempotent - won't fail if already exists)
             do {
