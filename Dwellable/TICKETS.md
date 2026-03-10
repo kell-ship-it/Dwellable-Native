@@ -201,19 +201,19 @@
 ---
 
 ### Bugs — Build & Configuration
-- [ ] **B-006:** Resolve Swift compiler scope issue with SettingsView
+- [ ] **B-006:** Resolve Swift compiler scope issue with SettingsView — 🔄 **In Progress**
   - Error: "cannot find 'SettingsView' in scope" when referenced from MomentsListView
   - File exists at Dwellable/Views/SettingsView.swift and compiles independently
   - Build succeeds when reference is removed; fails when `SettingsView()` is used in NavigationLink
-  - Likely cause: Xcode project configuration, build phase order, or module visibility issue
-  - Impact: Blocks T-010 navigation integration (SettingsView view is complete, just not reachable)
-  - Workarounds to try:
-    1. Check Xcode build target membership for SettingsView.swift
-    2. Verify build phases include all .swift files in correct order
-    3. Clean Xcode DerivedData and rebuild
-    4. Check for circular imports or forward declaration issues
-    5. Try using type-erased AnyView wrapper
-  - Status: 🔲 Not Started
+  - Root cause: SettingsView.swift was missing from Xcode project's build target (pbxproj)
+  - **Partial Fix Applied:** Added SettingsView.swift to project.pbxproj PBXFileReference and PBXBuildFile sections
+  - **Status:** File reference added but still not recognized by Swift compiler — may need:
+    1. ✅ Xcode build target membership (attempted via pbxproj edit)
+    2. ❓ Build phases configuration (may need to verify Sources build phase)
+    3. ❓ Xcode project regeneration or GUI-based fix
+    4. ⚠️ May require opening Xcode directly to properly add file
+  - Impact: T-010 navigation still blocked (SettingsView view is complete)
+  - **Next:** Either open Xcode GUI to properly add file, or find alternative pattern that doesn't require direct SettingsView reference
 
 ### Bugs — Session Persistence
 - [x] **B-005:** Fix auth persistence error page for empty accounts ✅ **FIXED**
