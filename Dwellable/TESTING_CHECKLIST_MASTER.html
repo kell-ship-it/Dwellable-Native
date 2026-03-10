@@ -1063,6 +1063,37 @@
                         </div>
                     </td>
                 </tr>
+
+                <tr id="test-row-2-7">
+                    <td class="num">2.7</td>
+                    <td><strong>Auth persists with empty account</strong><br><small>Log in to account with 0 moments → Kill app → Relaunch</small></td>
+                    <td>Still logged in, shows "No moments yet" (not error page)</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="2.7"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('2.7')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-2.7" class="test-row-details">
+                            <strong>Scenario:</strong> Test that session persists even when account has no saved moments<br>
+                            <strong>Steps:</strong>
+                            <ol style="margin: 10px 0 10px 20px;">
+                                <li>Create a fresh test account (or use account with no moments)</li>
+                                <li>Sign in successfully</li>
+                                <li>Kill the app completely (swipe from app switcher)</li>
+                                <li>Relaunch the app</li>
+                            </ol>
+                            <strong>Expected Result:</strong> You should still be logged in. MomentsListView shows "No moments yet" message, NOT an error page.<br>
+                            <strong>Verification:</strong> You can tap "Capture your first moment" button and proceed to recording.<br>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="2.7"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (optional):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '2.7')">
+                                <div class="image-preview" id="images-2.7"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
             </table>
 
             <!-- Continue with Phases 3-4 (abbreviated for space) -->

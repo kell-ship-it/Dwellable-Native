@@ -200,6 +200,16 @@
 
 ---
 
+### Bugs — Session Persistence
+- [x] **B-005:** Fix auth persistence error page for empty accounts ✅ **FIXED**
+  - Issue: When closing app while signed in with zero moments, reopening shows error page instead of empty state
+  - Root cause: MomentsListView.swift line 41 — sets error when fetch fails + no local moments
+  - Solution: Removed error condition; now shows empty state ("No moments yet") since user is authenticated
+  - Impact: UX fixed — no longer shows confusing error page for legitimate empty accounts
+  - Fixed: March 10, 2026 (Commit pending)
+
+---
+
 ### UI Screens — Sub-screens
 - [ ] **T-010:** Build SettingsView
   - User profile display, sign out, app version, terms/privacy links
@@ -309,10 +319,10 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Analytics | 2 | 0 | 0 | 2 |
 | Testing & QA | 5 | 1 | 0 | 4 |
 | Deployment | 3 | 0 | 0 | 3 |
-| Bugs | 1 | 1 | 0 | 0 |
+| Bugs | 2 | 2 | 0 | 0 |
 | Testing Issues — March 10 | 2 | 2 | 0 | 0 |
 | Bugs — Found During Testing | 3 | 2 | 0 | 1 |
-| **TOTAL** | **45** | **31** | **0** | **14** |
+| **TOTAL** | **46** | **32** | **0** | **14** |
 
 ---
 

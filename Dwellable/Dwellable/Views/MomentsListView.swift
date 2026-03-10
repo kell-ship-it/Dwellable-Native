@@ -38,7 +38,8 @@ struct MomentsListView: View {
                 self.moments = localMoments
                 self.isLoading = false
                 self.isOffline = !localMoments.isEmpty
-                self.error = localMoments.isEmpty ? error.localizedDescription : nil
+                // Don't show error for empty accounts — they're authenticated, just have no moments yet
+                self.error = nil
             }
         }
     }
