@@ -229,6 +229,19 @@
 - [ ] **T-024:** Manual testing on real device
 - [ ] **T-025:** TestFlight beta testing with users
 
+### Testing Issues — March 10 Session
+- [ ] **T-029:** Support offline sign-in or clarify requirements
+  - Issue from test 1.1: Users cannot sign in without internet access
+  - Current behavior: Sign-in requires network connection
+  - Decision needed: Should we support offline sign-in for returning users? Or is this acceptable?
+  - Scope: Requires design decision from Kell before implementation
+
+- [ ] **T-030:** Handle app reinstall with offline moments gracefully
+  - Issue from test 1.5: User creates moments offline, deletes app, reinstalls, moments are lost
+  - Current behavior: Offline moments stored locally; reinstall clears local storage (expected)
+  - Improvement: Consider cloud sync, recovery messaging, or user education about persistence
+  - Scope: Medium priority — impacts UX for users who reinstall the app
+
 ### Deployment
 - [ ] **T-026:** Prepare for App Store submission
   - Privacy policy, terms of service, screenshots, description, pricing
@@ -272,7 +285,8 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Testing & QA | 5 | 1 | 0 | 4 |
 | Deployment | 3 | 0 | 0 | 3 |
 | Bugs | 1 | 1 | 0 | 0 |
-| **TOTAL** | **40** | **27** | **0** | **13** |
+| Testing Issues — March 10 | 2 | 0 | 0 | 2 |
+| **TOTAL** | **42** | **27** | **0** | **15** |
 
 ---
 
@@ -332,3 +346,20 @@ T-011 · T-012 · T-013 · T-027 · T-028
 - `NSMicrophoneUsageDescription` must be added to Info.plist before App Store submission
 - Testing protocol established: Export results from HTML checklist to `/Users/kell/Projects/Dwellable-Native/Dwellable/TESTING_RESULTS_CURRENT.txt`
 - **All blocking tickets complete.** All high-priority items (V-001–V-008, T-007, T-020, T-026) are complete or functional. App is production-ready for TestFlight beta.
+
+### March 10 Session — Testing Results & Placeholder Enhancement
+- **✅ FIXED:** Text input placeholder issue — Added "Begin here..." placeholder text to TypeFlowView
+  - Issue from general issues section: Users not realizing they can type into moment body field
+  - Solution: ZStack overlay placeholder using Theme.inputPlaceholder color, disappears on input
+  - Commit: d518184 — "Add 'Begin here...' placeholder text to moment text input field"
+
+- **Testing results exported successfully** from TESTING_CHECKLIST_MASTER.html
+  - 10 tests passed (1.1–2.6), 1 MAYBE (1.5), 0 failed, 0 bugs
+  - General issues section working with multi-image support ✅
+  - User feedback captured: 2 screenshots uploaded to general issue
+  - Key findings led to T-029 and T-030 creation (see notes above)
+
+- **Test clarifications documented** in TESTING_CLARIFICATIONS.md
+  - Test 1.5: App reinstall with offline moments (intentional behavior; see design decision options)
+  - Test 2.5: Sign-out flow verification (working as expected; no action needed)
+  - Test 1.1: Offline sign-in capability (requires design decision — see T-029)
