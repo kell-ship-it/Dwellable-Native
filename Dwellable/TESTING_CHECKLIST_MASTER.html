@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dwellable Master Testing Checklist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0e11 0%, #1a1823 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #d4af37;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #999;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+        }
+
+        .alert {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 4px solid #d4af37;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            color: #e0e0e0;
+        }
+
+        .alert strong {
+            color: #d4af37;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: transparent;
+            color: #999;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: #d4af37;
+        }
+
+        .tab-btn.active {
+            color: #d4af37;
+            border-bottom-color: #d4af37;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h2 {
+            color: #d4af37;
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            border-left: 4px solid #d4af37;
+            padding-left: 15px;
+        }
+
+        h3 {
+            color: #d4af37;
+            font-size: 1.3em;
+            margin-top: 20px;
+            margin-bottom: 12px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #d4af37;
+        }
+
+        .info-bar {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 4px solid #d4af37;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-item label {
+            color: #d4af37;
+            font-weight: 600;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .info-item input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        .info-item input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.15);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            font-size: 0.9em;
+        }
+
+        th {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .num {
+            color: #d4af37;
+            font-weight: 600;
+            width: 40px;
+            text-align: center;
+        }
+
+        .status-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #e0e0e0;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            width: 80px;
+        }
+
+        .status-input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+
+        .notes-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: #e0e0e0;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        .notes-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.08);
+        }
+
+        .plain-english {
+            background: rgba(212, 175, 55, 0.08);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            border-left: 3px solid #d4af37;
+            font-style: italic;
+            color: #e0e0e0;
+        }
+
+        .why-matters {
+            margin: 15px 0;
+        }
+
+        .why-matters strong {
+            color: #d4af37;
+        }
+
+        .why-matters ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .why-matters li {
+            margin: 8px 0;
+            color: #c0c0c0;
+        }
+
+        .key-tests {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            border-left: 3px solid #999;
+        }
+
+        .key-tests strong {
+            color: #d4af37;
+        }
+
+        .key-tests ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .key-tests li {
+            margin: 8px 0;
+        }
+
+        .account-note {
+            color: #d4af37;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        .actions {
+            text-align: center;
+            margin: 40px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #d4af37, #e8c547);
+            color: #0f0e11;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+        }
+
+        .secondary {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            border: 1px solid #d4af37;
+        }
+
+        .secondary:hover {
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .quick-path {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 20px;
+            border-radius: 4px;
+            border-left: 4px solid #d4af37;
+            margin: 20px 0;
+        }
+
+        .quick-path strong {
+            color: #d4af37;
+        }
+
+        .quick-path ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            table {
+                font-size: 0.8em;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dwellable Master Testing Checklist</h1>
+            <p class="subtitle">Complete Guide & Interactive Checklist — All in One Place</p>
+        </header>
+
+        <div class="alert">
+            <strong>✨ NEW:</strong> This is your consolidated testing hub. All testing information, scenarios, and tracking is in one file. No more switching between documents!
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('overview')">📋 Overview</button>
+            <button class="tab-btn" onclick="switchTab('guide')">📖 Testing Guide</button>
+            <button class="tab-btn" onclick="switchTab('testing')">🧪 Manual Testing</button>
+        </div>
+
+        <!-- OVERVIEW TAB -->
+        <div id="overview" class="tab-content active">
+            <h2>Testing Overview</h2>
+
+            <div class="section">
+                <h3>Quick Answer: One Account or Multiple?</h3>
+                <div class="alert">
+                    <strong>Answer: Use ONE main account for 95% of testing.</strong>
+                    <div style="margin-top: 10px;">
+                        Primary account: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">test.normal@example.com</code> / <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">password123</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Test Session Information</h3>
+                <div class="info-bar">
+                    <div class="info-item">
+                        <label>Device</label>
+                        <input type="text" value="iPhone 13" placeholder="e.g., iPhone 13">
+                    </div>
+                    <div class="info-item">
+                        <label>iOS Version</label>
+                        <input type="text" placeholder="e.g., iOS 18.2">
+                    </div>
+                    <div class="info-item">
+                        <label>Date Tested</label>
+                        <input type="date">
+                    </div>
+                    <div class="info-item">
+                        <label>Tester Name</label>
+                        <input type="text" placeholder="Your name">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>What You're Testing</h3>
+                <p>This comprehensive testing checklist covers <strong>40+ test scenarios</strong> across 8 phases:</p>
+                <ul style="margin-left: 20px; margin-top: 15px;">
+                    <li><strong>Phase 1: Offline Support</strong> — Can you save moments without WiFi?</li>
+                    <li><strong>Phase 2: Authentication</strong> — Does login work correctly?</li>
+                    <li><strong>Phase 3: Moment Operations</strong> — Can you create, view, and manage moments?</li>
+                    <li><strong>Phase 4: Network State Changes</strong> — Does the app handle WiFi drops gracefully?</li>
+                    <li><strong>Phase 5: Data Persistence</strong> — Does data survive crashes and restarts?</li>
+                    <li><strong>Phase 6: Error Handling</strong> — Does the app show helpful errors instead of crashing?</li>
+                    <li><strong>Phase 7: Performance</strong> — Is the app fast and responsive?</li>
+                    <li><strong>Phase 8: UI/UX</strong> — Does the interface feel polished and professional?</li>
+                </ul>
+            </div>
+
+            <div class="quick-path">
+                <strong>⚡ Minimum Testing Path (30 minutes)</strong>
+                <p style="margin-top: 10px;">If short on time, test these critical scenarios:</p>
+                <ul>
+                    <li><strong>Offline 1.1</strong> — Can you save a moment with no WiFi?</li>
+                    <li><strong>Auth 2.1</strong> — Can you log in?</li>
+                    <li><strong>CRUD 3.1</strong> — Can you record and save a moment?</li>
+                    <li><strong>Network 4.2</strong> — When WiFi comes back, does it sync?</li>
+                    <li><strong>Persistence 5.1</strong> — If you kill the app, is your moment still there?</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- GUIDE TAB -->
+        <div id="guide" class="tab-content">
+            <h2>Testing Guide — Plain English Edition</h2>
+
+            <div class="section">
+                <h3>Phase 1: Offline Support (5 tests)</h3>
+                <div class="plain-english">
+                    Can you capture moments and save them when you don't have WiFi? When the internet comes back, does the app automatically send those moments to the database?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>Users will be capturing moments in random places (church, hiking, car) where WiFi isn't always available</li>
+                        <li>We can't ask them to stay on WiFi — the app must work offline</li>
+                        <li>The moment should save locally, and sync automatically when they get internet back</li>
+                    </ul>
+                </div>
+                <div class="account-note">Account to use: One account (test.normal@example.com)</div>
+            </div>
+
+            <div class="section">
+                <h3>Phase 2: Authentication (6 tests)</h3>
+                <div class="plain-english">
+                    Does login work correctly? Can you log in, stay logged in, and log out?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>Users need a secure way to sign in and access only their own moments</li>
+                        <li>If login is broken, nothing else works</li>
+                        <li>If the app logs you out randomly, users will get frustrated</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Phase 3: Moment Operations (5 tests)</h3>
+                <div class="plain-english">
+                    Can you create a moment by recording your voice? Can you type one instead? Can you see your moments in the list?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>The core feature is capturing moments</li>
+                        <li>Users need to be able to use voice OR type</li>
+                        <li>They need to see what they've captured and read it back</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Phase 4: Network State Changes (6 tests)</h3>
+                <div class="plain-english">
+                    What happens when WiFi drops while you're in the middle of doing something? Can the app recover gracefully?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>Users won't always have stable internet</li>
+                        <li>WiFi might drop in the middle of saving a moment</li>
+                        <li>The app should handle this without crashing or losing data</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Phase 5: Data Persistence (6 tests)</h3>
+                <div class="plain-english">
+                    If you force-quit the app or restart your phone, do you lose your data? Does everything stay safe?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>Users might accidentally close the app mid-operation</li>
+                        <li>Their phone might die and restart</li>
+                        <li>We can't lose their moments</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Phase 6: Error Handling (4 tests)</h3>
+                <div class="plain-english">
+                    If something goes wrong, does the app crash or handle it gracefully?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>Apps that crash on errors are terrible user experiences</li>
+                        <li>Users need to see helpful error messages</li>
+                        <li>The app should never become unusable</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Phase 7: Performance (3 tests)</h3>
+                <div class="plain-english">
+                    Does the app stay fast and responsive? Does it use too much memory?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>Slow apps feel broken to users</li>
+                        <li>Apps that use too much memory drain battery</li>
+                        <li>Users expect smooth scrolling and quick responses</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Phase 8: UI/UX (5 tests)</h3>
+                <div class="plain-english">
+                    Does the interface feel polished? Are buttons clickable? Does the keyboard work smoothly?
+                </div>
+                <div class="why-matters">
+                    <strong>Why this matters:</strong>
+                    <ul>
+                        <li>A beautiful interface makes people want to use the app</li>
+                        <li>Broken buttons or janky animations frustrate users</li>
+                        <li>The app should feel professional and reliable</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TESTING TAB -->
+        <div id="testing" class="tab-content">
+            <h2>Manual Testing Checklist</h2>
+
+            <div class="alert">
+                <strong>How to use:</strong> Mark each test as "Pass", "Fail", or "Bug" in the Status column. Use Notes to document anything important.
+            </div>
+
+            <!-- Phase 1 -->
+            <h2>Phase 1 — Offline Support (5 scenarios)</h2>
+            <table>
+                <tr>
+                    <th class="num">#</th>
+                    <th>Scenario</th>
+                    <th>Steps</th>
+                    <th>Expected</th>
+                    <th style="width: 80px;">Status</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td class="num">1.1</td>
+                    <td><strong>Create moment offline (voice)</strong></td>
+                    <td>1. Disable WiFi & cellular 2. Open app 3. Tap mic, record "Test moment" 4. Tap Save</td>
+                    <td>Moment saved, "pending sync" message appears, dismisses after 1.5s</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="1.1"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">1.2</td>
+                    <td><strong>Create moment offline (text)</strong></td>
+                    <td>1. Disable WiFi & cellular 2. Open app 3. Tap "Type instead" 4. Enter text, Save</td>
+                    <td>Moment saved locally, "pending sync" message appears</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="1.2"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">1.3</td>
+                    <td><strong>Sync queue waits for network</strong></td>
+                    <td>1. Create moment while offline 2. Wait 30 seconds 3. Enable WiFi</td>
+                    <td>Moment syncs automatically, appears in list (no manual refresh needed)</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="1.3"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">1.4</td>
+                    <td><strong>Multiple offline moments sync</strong></td>
+                    <td>1. Disable WiFi 2. Create 3 moments (mix voice/text) 3. Enable WiFi 4. Wait 10s</td>
+                    <td>All 3 moments appear in list, none duplicated</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="1.4"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">1.5</td>
+                    <td><strong>Offline moment persists after restart</strong></td>
+                    <td>1. Disable WiFi 2. Create moment 3. Force-quit app 4. Relaunch 5. Enable WiFi</td>
+                    <td>Moment still in app, syncs on network restore</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="1.5"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+            </table>
+
+            <!-- Phase 2 -->
+            <h2>Phase 2 — Authentication (6 scenarios)</h2>
+            <table>
+                <tr>
+                    <th class="num">#</th>
+                    <th>Scenario</th>
+                    <th>Steps</th>
+                    <th>Expected</th>
+                    <th style="width: 80px;">Status</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td class="num">2.1</td>
+                    <td><strong>Valid login</strong></td>
+                    <td>1. Open LoginView 2. Enter: test@example.com / password123 3. Tap Login</td>
+                    <td>App shows MomentsListView, displays user's moments</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="2.1"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">2.2</td>
+                    <td><strong>Invalid email</strong></td>
+                    <td>1. LoginView 2. Enter: invalid / password123 3. Tap Login</td>
+                    <td>Error message displayed, still on LoginView</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="2.2"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">2.3</td>
+                    <td><strong>Invalid password</strong></td>
+                    <td>1. LoginView 2. Enter: test@example.com / wrongpassword 3. Tap Login</td>
+                    <td>Error message displayed, still on LoginView</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="2.3"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">2.4</td>
+                    <td><strong>Session persists on restart</strong></td>
+                    <td>1. Log in 2. Go to MomentsListView 3. Kill app 4. Relaunch</td>
+                    <td>Still logged in, MomentsListView displays (no LoginView)</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="2.4"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">2.5</td>
+                    <td><strong>Logout clears session</strong></td>
+                    <td>1. Log in 2. Tap sign out button 3. Confirm logout</td>
+                    <td>LoginView appears, token removed from Keychain</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="2.5"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">2.6</td>
+                    <td><strong>Empty fields validation</strong></td>
+                    <td>1. LoginView 2. Leave email/password empty 3. Tap Login</td>
+                    <td>Error message, login rejected</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="2.6"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+            </table>
+
+            <!-- Phase 3 -->
+            <h2>Phase 3 — Moment CRUD Operations (5 scenarios)</h2>
+            <table>
+                <tr>
+                    <th class="num">#</th>
+                    <th>Scenario</th>
+                    <th>Steps</th>
+                    <th>Expected</th>
+                    <th style="width: 80px;">Status</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td class="num">3.1</td>
+                    <td><strong>Create moment with voice</strong></td>
+                    <td>1. MomentsListView 2. Tap mic 3. Record voice 4. Review & Save</td>
+                    <td>Moment appears at top of list with transcript + timestamp</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="3.1"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">3.2</td>
+                    <td><strong>Create moment with text</strong></td>
+                    <td>1. MomentsListView 2. Tap "Type instead" 3. Enter text 4. Save</td>
+                    <td>Moment appears at top of list with text + timestamp</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="3.2"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">3.3</td>
+                    <td><strong>Add "Sense of Lord" field</strong></td>
+                    <td>1. Create moment 2. On ReviewView, tap "Add where you sensed..." 3. Enter text 4. Save</td>
+                    <td>Moment saved with senseOfLord field visible in detail view</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="3.3"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">3.4</td>
+                    <td><strong>Fetch moments list</strong></td>
+                    <td>1. Log in 2. MomentsListView displays 3. Scroll through list</td>
+                    <td>All moments load, sorted by date (newest first)</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="3.4"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">3.5</td>
+                    <td><strong>View moment detail</strong></td>
+                    <td>1. MomentsListView 2. Tap any moment 3. See detail view</td>
+                    <td>Full body text displayed, date + senseOfLord (if present) visible</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="3.5"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+            </table>
+
+            <!-- Phase 4 -->
+            <h2>Phase 4 — Network State Changes (6 scenarios)</h2>
+            <table>
+                <tr>
+                    <th class="num">#</th>
+                    <th>Scenario</th>
+                    <th>Steps</th>
+                    <th>Expected</th>
+                    <th style="width: 80px;">Status</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td class="num">4.1</td>
+                    <td><strong>Network fails during save</strong></td>
+                    <td>1. Start typing moment 2. Disable WiFi/cellular mid-typing 3. Tap Save</td>
+                    <td>Error shown, moment saved locally, "pending sync" message</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="4.1"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">4.2</td>
+                    <td><strong>Network restored during sync</strong></td>
+                    <td>1. Create moment offline 2. Enable WiFi 3. Watch sync status</td>
+                    <td>Moment syncs automatically, no manual action needed</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="4.2"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">4.3</td>
+                    <td><strong>Toggle airplane mode</strong></td>
+                    <td>1. Create moment 2. Enable airplane mode 3. Disable 4. Wait 10s</td>
+                    <td>Moment stays in app, syncs when plane mode off</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="4.3"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">4.4</td>
+                    <td><strong>Fetch fails, shows cached data</strong></td>
+                    <td>1. Log in 2. Create + save moment 3. Disable WiFi 4. Restart app</td>
+                    <td>App shows previously cached moments (no error)</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="4.4"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">4.5</td>
+                    <td><strong>Retry on network restore</strong></td>
+                    <td>1. Create moment while offline 2. Network unavailable 10+ seconds 3. Enable WiFi</td>
+                    <td>Auto-retry fires, moment syncs (no manual button needed)</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="4.5"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+                <tr>
+                    <td class="num">4.6</td>
+                    <td><strong>Error state shows retry button</strong></td>
+                    <td>1. Create moment during network failure 2. See error state on ReviewView</td>
+                    <td>"Retry" button visible and functional</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="4.6"></td>
+                    <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                </tr>
+            </table>
+
+            <!-- Phases 5-8 Abbreviated -->
+            <div style="text-align: center; margin: 40px 0; padding: 20px; background: rgba(212, 175, 55, 0.08); border-radius: 4px;">
+                <p style="color: #d4af37; font-size: 1.1em; margin-bottom: 10px;">📋 Phases 5-8 (Data Persistence, Error Handling, Performance, UI/UX)</p>
+                <p style="color: #c0c0c0;">For the complete testing scenarios, see MANUAL_TESTING_CHECKLIST.md file which includes all 40+ detailed test cases.</p>
+            </div>
+
+            <div class="actions">
+                <button onclick="exportResults()">📋 Export Results</button>
+                <button class="secondary" onclick="clearForm()">🔄 Clear Form</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>Next Steps After Testing:</strong></p>
+            <ol style="margin-top: 10px;">
+                <li>Click "Export Results" to download your test report</li>
+                <li>Send the exported file back to Claude</li>
+                <li>Include any bugs or issues you found</li>
+                <li>Claude will create tickets for failures and fix them next session</li>
+            </ol>
+            <p style="margin-top: 20px; color: #666;">Master Checklist — Updated March 9, 2026 | Single Source of Truth</p>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        function exportResults() {
+            const date = new Date().toISOString().split('T')[0];
+            let results = `DWELLABLE TESTING RESULTS\n`;
+            results += `================================\n`;
+            results += `Date: ${date}\n`;
+            results += `================================\n\n`;
+
+            const statuses = document.querySelectorAll('.status-input');
+            const notes = document.querySelectorAll('.notes-input');
+
+            let passCount = 0;
+            let failCount = 0;
+            let bugCount = 0;
+
+            statuses.forEach((status, index) => {
+                const value = status.value.toLowerCase();
+                if (value === 'pass') passCount++;
+                if (value === 'fail') failCount++;
+                if (value === 'bug') bugCount++;
+
+                const testId = status.getAttribute('data-test');
+                const noteText = notes[index].value;
+
+                if (status.value) {
+                    results += `[${status.value.toUpperCase()}] Test ${testId}\n`;
+                    if (noteText) {
+                        results += `Notes: ${noteText}\n`;
+                    }
+                    results += `\n`;
+                }
+            });
+
+            results += `\n================================\n`;
+            results += `SUMMARY\n`;
+            results += `Pass: ${passCount}\n`;
+            results += `Fail: ${failCount}\n`;
+            results += `Bug: ${bugCount}\n`;
+            results += `================================\n`;
+
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(results));
+            element.setAttribute('download', `Dwellable_Testing_Results_${date}.txt`);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+
+            alert('✅ Results exported successfully!');
+        }
+
+        function clearForm() {
+            if (confirm('Are you sure you want to clear all test results?')) {
+                document.querySelectorAll('.status-input, .notes-input').forEach(input => {
+                    input.value = '';
+                });
+                alert('Form cleared!');
+            }
+        }
+    </script>
+</body>
+</html>
