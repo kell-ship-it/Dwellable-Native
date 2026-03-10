@@ -264,30 +264,35 @@
 
 ## 📋 Testing Checklist — 5 Accounts
 
-### Account 1: `power.user@example.com`
+### Account 1: `pilot@dwellable.com`
 - [ ] Test Scenario 1 (Empty Recording)
 - [ ] Test Scenario 2 (No Speech Detected)
 - [ ] Test Scenario 5 (Microphone Permission)
+- **Notes:** _______________________
 
-### Account 2: `light.user@example.com`
+### Account 2: `pilot1@dwellable.com`
 - [ ] Test Scenario 1 (Empty Recording)
 - [ ] Test Scenario 3 (Transcription Timeout)
 - [ ] Test Scenario 6 (Speech Recognition Permission)
+- **Notes:** _______________________
 
-### Account 3: `offline.tester@example.com`
+### Account 3: `pilot2@dwellable.com`
 - [ ] Test Scenario 1 (Empty Recording)
 - [ ] Test Scenario 4 (Network Error)
 - [ ] Test Scenario 2 (No Speech Detected)
+- **Notes:** _______________________
 
-### Account 4: `edge.cases@example.com`
+### Account 4: `pilot3@dwellable.com`
 - [ ] Test Scenario 1 (Empty Recording)
 - [ ] Test Scenario 10 (Max Duration Reached)
 - [ ] Test Scenario 12 (Generic Error)
+- **Notes:** _______________________
 
-### Account 5: (Your choice)
+### Account 5: `tester1@example.com`
 - [ ] Test Scenario 1 (Empty Recording)
 - [ ] Test Scenario 7-9 (Rare scenarios if possible)
-- [ ] Any remaining untested scenarios
+- [ ] Test Scenario 11 (Recording Issue)
+- **Notes:** _______________________
 
 ---
 
