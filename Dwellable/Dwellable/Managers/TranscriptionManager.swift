@@ -1,6 +1,7 @@
 import Foundation
 import Speech
 import Combine
+import AVFoundation
 
 class TranscriptionManager: NSObject, ObservableObject {
     @Published var transcript: String = ""
@@ -17,6 +18,15 @@ class TranscriptionManager: NSObject, ObservableObject {
     override init() {
         super.init()
         requestSpeechRecognitionPermission()
+    }
+
+    private func isValidAudioFile(url: URL) -> Bool {
+        let asset = AVAsset(url: url)
+        let duration = asset.duration
+
+        // Reject audio shorter than 0.5 seconds to prevent empty audio crashes
+        let durationSeconds = duration.seconds
+        return durationSeconds >= 0.5 && !durationSeconds.isNaN && durationSeconds.isFinite
     }
 
     func requestSpeechRecognitionPermission() {
@@ -40,6 +50,17 @@ class TranscriptionManager: NSObject, ObservableObject {
         isTranscribing = true
         errorMessage = nil
         transcript = ""
+
+        // VALIDATE AUDIO BEFORE TRANSCRIPTION (B-002 Fix)
+        // Prevent crashes from empty or too-short audio files
+        if !isValidAudioFile(url: fileURL) {
+            DispatchQueue.main.async {
+                self.isTranscribing = false
+                self.errorMessage = "Recording was too short. Please record at least 0.5 seconds of audio."
+                completion(nil)
+            }
+            return
+        }
 
         // Set up timeout safety net
         transcriptionTimeoutTimer = Timer.scheduledTimer(withTimeInterval: Self.TRANSCRIPTION_TIMEOUT, repeats: false) { [weak self] _ in
