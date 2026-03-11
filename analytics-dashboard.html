@@ -255,7 +255,7 @@
         <header>
             <h1>📊 Dwellable Analytics</h1>
             <div class="controls">
-                <input type="email" id="userEmail" placeholder="your@email.com" value="test.normal@example.com">
+                <input type="email" id="userEmail" placeholder="your@email.com" value="pilot2@dwellable.com">
                 <button onclick="loadAnalytics()">Load Analytics</button>
                 <div class="auto-refresh">
                     <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()">
@@ -311,27 +311,40 @@
         let autoRefreshInterval = null;
 
         async function loadAnalytics() {
-            const email = document.getElementById("userEmail").value;
+            const email = document.getElementById("userEmail").value.toLowerCase().trim();
             if (!email) {
                 showMessage("Please enter your email address.", "error");
                 return;
             }
 
+            console.log("🔍 Looking up email:", email);
+            showMessage("Loading...", "");
+
             try {
                 // Fetch user ID from users table
                 const { data: users, error: userError } = await supabase
                     .from("users")
-                    .select("id")
+                    .select("id, email")
                     .eq("email", email)
                     .limit(1);
 
-                if (userError || !users || users.length === 0) {
-                    showMessage("User not found. Check your email address.", "error");
+                console.log("📋 Users lookup:", { users, userError });
+
+                if (userError) {
+                    console.error("User lookup error:", userError);
+                    showMessage(`Error looking up user: ${userError.message}`, "error");
+                    updateStatus("Disconnected");
+                    return;
+                }
+
+                if (!users || users.length === 0) {
+                    showMessage(`User "${email}" not found. Check your email address.`, "error");
                     updateStatus("Disconnected");
                     return;
                 }
 
                 const userId = users[0].id;
+                console.log("✅ Found user:", userId);
 
                 // Fetch usage events
                 const { data: events, error: eventsError } = await supabase
@@ -341,7 +354,10 @@
                     .order("timestamp", { ascending: false })
                     .limit(50);
 
+                console.log("📊 Events lookup:", { eventCount: events?.length, eventsError });
+
                 if (eventsError) {
+                    console.error("Events lookup error:", eventsError);
                     showMessage(`Error loading events: ${eventsError.message}`, "error");
                     updateStatus("Disconnected");
                     return;
@@ -405,7 +421,11 @@
                     }).join("");
                 }
 
-                showMessage(`Loaded ${events.length} events for ${email}`, "success");
+                if (events.length === 0) {
+                    showMessage(`No events yet for ${email}. Use the app to create moments.`, "");
+                } else {
+                    showMessage(`✅ Loaded ${events.length} events for ${email}`, "success");
+                }
                 updateStatus("Connected");
             } catch (error) {
                 showMessage(`Error: ${error.message}`, "error");
