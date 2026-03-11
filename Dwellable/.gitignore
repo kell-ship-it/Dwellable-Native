@@ -1,0 +1,50 @@
+# Xcode
+build/
+.build/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Swift Package Manager
+.swiftpm/
+
+# Carthage
+Carthage/Build
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Testing
+.coverage/
+coverage.xml
+DwellableTests/
+DwellableUITests/
+
+# Archives
+*.zip
+*.tar.gz
+
+# Temporary files
+*.tmp
+*.temp
+*.orig
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
