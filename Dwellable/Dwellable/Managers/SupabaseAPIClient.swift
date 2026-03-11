@@ -248,6 +248,29 @@ class SupabaseAPIClient: APIClient {
             responseType: UserResponse.self
         )
     }
+
+    // MARK: - Analytics API
+
+    func sendUsageEvents(_ events: [UsageEventData], userId: String) async throws {
+        // Convert UsageEventData to payload format for Supabase
+        let payloads = events.map { event in
+            UsageEventPayload(
+                id: event.id,
+                user_id: userId,
+                event_type: event.eventType,
+                moment_type: event.momentType,
+                timestamp: event.timestamp.ISO8601Format()
+            )
+        }
+
+        let endpoint = "/rest/v1/usage_events"
+        _ = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payloads,
+            responseType: [UsageEventPayload].self
+        )
+    }
 }
 
 // MARK: - Payload and Response Models
@@ -281,6 +304,14 @@ struct AuthResponse: Decodable {
 struct UserResponse: Decodable {
     let id: String
     let email: String
+}
+
+struct UsageEventPayload: Encodable, Decodable {
+    let id: String
+    let user_id: String
+    let event_type: String
+    let moment_type: String?
+    let timestamp: String
 }
 
 struct EmptyResponse: Decodable {}

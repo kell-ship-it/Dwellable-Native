@@ -8,11 +8,11 @@ struct MomentsListView: View {
     @State private var refreshTrigger = UUID()
     @State private var showCapture = false
     @State private var showSettings = false
-    @State private var isOffline = false
+    @State private var wasLoadedOffline = false
 
     let apiClient: APIClient
     let userId: String
-    let syncManager: SyncManager
+    @ObservedObject var syncManager: SyncManager
 
     init(apiClient: APIClient, userId: String, syncManager: SyncManager) {
         self.apiClient = apiClient
@@ -37,7 +37,7 @@ struct MomentsListView: View {
             DispatchQueue.main.async {
                 self.moments = allMoments
                 self.isLoading = false
-                self.isOffline = false
+                self.wasLoadedOffline = false
             }
         } catch {
             // Network error — load from local storage instead (only for this user)
@@ -46,11 +46,15 @@ struct MomentsListView: View {
             DispatchQueue.main.async {
                 self.moments = localMoments
                 self.isLoading = false
-                self.isOffline = !localMoments.isEmpty
+                self.wasLoadedOffline = !localMoments.isEmpty
                 // Don't show error for empty accounts — they're authenticated, just have no moments yet
                 self.error = nil
             }
         }
+    }
+
+    private var shouldShowOfflineIndicator: Bool {
+        wasLoadedOffline && !syncManager.isOnline
     }
 
     var body: some View {
@@ -183,7 +187,7 @@ struct MomentsListView: View {
             } else {
                 VStack(spacing: 0) {
                     // Offline indicator
-                    if isOffline {
+                    if shouldShowOfflineIndicator {
                         HStack(spacing: Theme.Spacing.sm) {
                             Image(systemName: "wifi.slash")
                                 .font(.system(size: 10, weight: .regular))

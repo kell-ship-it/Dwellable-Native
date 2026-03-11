@@ -12,6 +12,9 @@ protocol APIClient {
     func logout() async throws
     func ensureUserExists(userId: String, email: String) async throws
 
+    // Analytics endpoints
+    func sendUsageEvents(_ events: [UsageEventData], userId: String) async throws
+
     // JWT token management
     func setJWTToken(_ token: String)
 }
@@ -20,4 +23,12 @@ struct AuthToken: Codable {
     let token: String
     let userId: String
     let expiresAt: Date
+}
+
+struct UsageEventData: Codable {
+    let id: String
+    let userId: String
+    let eventType: String
+    let momentType: String?
+    let timestamp: Date
 }

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dwellable Layer 1 — User Activities Checklist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #0f3460;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #c9b27c 0%, #a89968 100%);
+            color: #0f3460;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .meta {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(201, 178, 124, 0.1);
+            padding: 20px;
+            border-bottom: 1px solid rgba(201, 178, 124, 0.3);
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .meta-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #c9b27c;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .phase-section {
+            margin-bottom: 50px;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(201, 178, 124, 0.3);
+        }
+
+        .phase-badge {
+            background: #c9b27c;
+            color: #0f3460;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            margin-right: 20px;
+            white-space: nowrap;
+        }
+
+        .phase-title {
+            font-size: 1.8em;
+            flex: 1;
+        }
+
+        .phase-timeline {
+            font-size: 0.95em;
+            opacity: 0.8;
+        }
+
+        .subsection {
+            background: rgba(201, 178, 124, 0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 3px solid #c9b27c;
+            border-radius: 4px;
+        }
+
+        .subsection-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #c9b27c;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(201, 178, 124, 0.1);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: #c9b27c;
+            flex-shrink: 0;
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-item input[type="checkbox"]:checked + label {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .success-criteria {
+            background: rgba(46, 125, 50, 0.1);
+            border-left: 3px solid #66bb6a;
+            padding: 20px;
+            margin: 40px 0;
+            border-radius: 4px;
+        }
+
+        .success-criteria h3 {
+            color: #66bb6a;
+            margin-bottom: 15px;
+        }
+
+        .success-criteria ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .success-criteria li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .success-criteria li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #66bb6a;
+            font-weight: bold;
+        }
+
+        .progress-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 40px 0;
+            background: rgba(201, 178, 124, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-table thead {
+            background: rgba(201, 178, 124, 0.2);
+        }
+
+        .progress-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            color: #c9b27c;
+            border-bottom: 1px solid rgba(201, 178, 124, 0.3);
+        }
+
+        .progress-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(201, 178, 124, 0.1);
+        }
+
+        .progress-table tbody tr:hover {
+            background: rgba(201, 178, 124, 0.1);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ffb74d;
+        }
+
+        .status-done {
+            background: rgba(102, 187, 106, 0.2);
+            color: #66bb6a;
+        }
+
+        .notes {
+            background: rgba(25, 118, 210, 0.1);
+            border-left: 3px solid #1976d2;
+            padding: 20px;
+            margin: 40px 0;
+            border-radius: 4px;
+        }
+
+        .notes h3 {
+            color: #64b5f6;
+            margin-bottom: 15px;
+        }
+
+        .notes ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .notes li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .notes li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #64b5f6;
+            font-weight: bold;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 30px 40px;
+            text-align: center;
+            border-top: 1px solid rgba(201, 178, 124, 0.2);
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .save-button {
+            background: #c9b27c;
+            color: #0f3460;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .save-button:hover {
+            background: #d4c393;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .meta {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .phase-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .phase-badge {
+                margin-bottom: 10px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Dwellable Layer 1</h1>
+            <p>User Activities Checklist — 7-Day Dogfooding + Launch Readiness</p>
+        </header>
+
+        <div class="meta">
+            <div class="meta-item">
+                <div class="meta-label">Last Updated</div>
+                <div class="meta-value">March 10, 2026, 8:45 PM</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Ticket Progress</div>
+                <div class="meta-value">45/61 (74%)</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-label">Status</div>
+                <div class="meta-value">Ready for Testing</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Phase 1 -->
+            <div class="phase-section">
+                <div class="phase-header">
+                    <div class="phase-badge">PHASE 1</div>
+                    <div>
+                        <div class="phase-title">7-Day Personal Dogfooding</div>
+                        <div class="phase-timeline">March 10–17 • Objective: Use app daily in real-world scenarios</div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-title">📱 Phase 1.1 — Daily App Usage</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p1_1_1">
+                        <label for="p1_1_1"><strong>Create 15+ moments total</strong> — Target 8+ voice, 7+ text across different contexts</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p1_1_2">
+                        <label for="p1_1_2"><strong>Mix offline and online usage</strong> — Intentionally toggle airplane mode</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p1_1_3">
+                        <label for="p1_1_3"><strong>Cross-device testing</strong> — Use on 2+ devices if possible (iPhone + simulator)</label>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-title">📊 Phase 1.2 — Analytics Verification (T-037)</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p1_2_1">
+                        <label for="p1_2_1"><strong>Verify local event logging</strong> — Check UserDefaults for <code>usage_events_&lt;userId&gt;</code> entries</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p1_2_2">
+                        <label for="p1_2_2"><strong>Test backend sync</strong> — Create 5+ moments, manually call sync, verify events in Supabase</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p1_2_3">
+                        <label for="p1_2_3"><strong>Multi-account RLS test</strong> — Verify users can't see other users' events</label>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-title">💭 Phase 1.3 — User Experience Feedback</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p1_3_1">
+                        <label for="p1_3_1"><strong>Document impressions</strong> — Voice vs. text ease, responsiveness, error clarity</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p1_3_2">
+                        <label for="p1_3_2"><strong>Note friction points</strong> — Any confusing UI or workflow gaps</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 2 -->
+            <div class="phase-section">
+                <div class="phase-header">
+                    <div class="phase-badge">PHASE 2</div>
+                    <div>
+                        <div class="phase-title">QA Testing — Build 104</div>
+                        <div class="phase-timeline">March 17–20 • Objective: Comprehensive error, performance, and UI testing</div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-title">⚠️ Phase 2.1 — T-033: Error Handling QA</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p2_1_1">
+                        <label for="p2_1_1"><strong>Network failures</strong> — Offline mode, retry sync, airplane mode toggling</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p2_1_2">
+                        <label for="p2_1_2"><strong>Transcription errors</strong> — Silent recording, background noise, interrupted recording</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p2_1_3">
+                        <label for="p2_1_3"><strong>Auth errors</strong> — Wrong password, empty fields, verify error messages</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p2_1_4">
+                        <label for="p2_1_4"><strong>Save failures</strong> — Test with degraded network, verify retry button</label>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-title">⚡ Phase 2.2 — T-034: Performance QA</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p2_2_1">
+                        <label for="p2_2_1"><strong>App launch time</strong> — Measure startup, login prompt, list load</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p2_2_2">
+                        <label for="p2_2_2"><strong>List scrolling with 50+ moments</strong> — Verify smooth scrolling, no jank on real device</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p2_2_3">
+                        <label for="p2_2_3"><strong>Background activity test</strong> — Large file download + voice recording simultaneously</label>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-title">🎨 Phase 2.3 — T-035: UI/UX QA</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p2_3_1">
+                        <label for="p2_3_1"><strong>Design consistency</strong> — Colors, fonts, spacing match prototype</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p2_3_2">
+                        <label for="p2_3_2"><strong>Accessibility</strong> — Keyboard nav, tap targets (44x44pt), text contrast</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p2_3_3">
+                        <label for="p2_3_3"><strong>Edge cases</strong> — Long text, empty fields, form validation</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p2_3_4">
+                        <label for="p2_3_4"><strong>Empty states</strong> — Verify messaging and layout</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p2_3_5">
+                        <label for="p2_3_5"><strong>Loading indicators</strong> — Spinner visibility, timing</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 3 -->
+            <div class="phase-section">
+                <div class="phase-header">
+                    <div class="phase-badge">PHASE 3</div>
+                    <div>
+                        <div class="phase-title">Prototype Demo Prep</div>
+                        <div class="phase-timeline">March 20–22 • Objective: Prepare Layer 1 + Layer 2 demo for partners</div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-title">🎬 Phase 3.1 — T-036: Demo Preparation</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p3_1_1">
+                        <label for="p3_1_1"><strong>Demo script</strong> — Define talking points, plan 5–10 min flow</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p3_1_2">
+                        <label for="p3_1_2"><strong>Prepare test data</strong> — Multiple accounts, sample moments</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p3_1_3">
+                        <label for="p3_1_3"><strong>Test demo on device</strong> — Run through flow end-to-end on iPhone</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p3_1_4">
+                        <label for="p3_1_4"><strong>Record demo (optional)</strong> — Screen recording + voiceover walkthrough</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 4 -->
+            <div class="phase-section">
+                <div class="phase-header">
+                    <div class="phase-badge">PHASE 4</div>
+                    <div>
+                        <div class="phase-title">App Store Submission Prep</div>
+                        <div class="phase-timeline">March 22–25 • Objective: Prepare for App Store review</div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-title">📄 Phase 4.1 — T-026: App Store Submission</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p4_1_1">
+                        <label for="p4_1_1"><strong>Privacy policy</strong> — Document data collection, storage, transmission</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p4_1_2">
+                        <label for="p4_1_2"><strong>Terms of service</strong> — Acceptable use, liability, warranty</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p4_1_3">
+                        <label for="p4_1_3"><strong>App store assets</strong> — Description, 2–3 screenshots, release notes</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p4_1_4">
+                        <label for="p4_1_4"><strong>Test build process</strong> — Archive, upload, validate, no errors</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p4_1_5">
+                        <label for="p4_1_5"><strong>Determine pricing</strong> — Free tier or premium model</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 5 -->
+            <div class="phase-section">
+                <div class="phase-header">
+                    <div class="phase-badge">PHASE 5</div>
+                    <div>
+                        <div class="phase-title">Final Validation</div>
+                        <div class="phase-timeline">March 25–28 • Objective: Regression testing + sign-off</div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-title">✅ Phase 5.1 — Regression Testing</div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p5_1_1">
+                        <label for="p5_1_1"><strong>Core workflows</strong> — Sign up, create, save, view, delete moments</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p5_1_2">
+                        <label for="p5_1_2"><strong>Cross-device testing</strong> — Test on 2+ physical devices</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p5_1_3">
+                        <label for="p5_1_3"><strong>Offline sync verification</strong> — Cross-device offline moment syncing</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="p5_1_4">
+                        <label for="p5_1_4"><strong>Final sign-off</strong> — Launch readiness confirmed</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Criteria -->
+            <div class="success-criteria">
+                <h3>🎯 Success Criteria for Layer 1 Complete</h3>
+                <ul>
+                    <li><strong>Phase 1:</strong> 15+ moments created, analytics data visible in Supabase, feedback captured</li>
+                    <li><strong>Phase 2:</strong> All error messages clear, app smooth with 50+ moments, design matches prototype</li>
+                    <li><strong>Phase 3:</strong> Demo script ready, Layer 1 + Layer 2 scope communicated</li>
+                    <li><strong>Phase 4:</strong> Privacy policy + terms drafted, App Store bundle ready</li>
+                    <li><strong>Phase 5:</strong> All core workflows verified, no regressions, sign-off on launch</li>
+                </ul>
+            </div>
+
+            <!-- Progress Table -->
+            <table class="progress-table">
+                <thead>
+                    <tr>
+                        <th>Phase</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Due Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>7-Day Dogfooding</td>
+                        <td><span class="status-badge status-pending">🔲 Pending</span></td>
+                        <td>Mar 17</td>
+                    </tr>
+                    <tr>
+                        <td>2.1</td>
+                        <td>Error Handling QA</td>
+                        <td><span class="status-badge status-pending">🔲 Pending</span></td>
+                        <td>Mar 18</td>
+                    </tr>
+                    <tr>
+                        <td>2.2</td>
+                        <td>Performance QA</td>
+                        <td><span class="status-badge status-pending">🔲 Pending</span></td>
+                        <td>Mar 19</td>
+                    </tr>
+                    <tr>
+                        <td>2.3</td>
+                        <td>UI/UX QA</td>
+                        <td><span class="status-badge status-pending">🔲 Pending</span></td>
+                        <td>Mar 20</td>
+                    </tr>
+                    <tr>
+                        <td>3.1</td>
+                        <td>Demo Prep</td>
+                        <td><span class="status-badge status-pending">🔲 Pending</span></td>
+                        <td>Mar 22</td>
+                    </tr>
+                    <tr>
+                        <td>4.1</td>
+                        <td>App Store Prep</td>
+                        <td><span class="status-badge status-pending">🔲 Pending</span></td>
+                        <td>Mar 25</td>
+                    </tr>
+                    <tr>
+                        <td>5.1</td>
+                        <td>Final Validation</td>
+                        <td><span class="status-badge status-pending">🔲 Pending</span></td>
+                        <td>Mar 28</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Notes -->
+            <div class="notes">
+                <h3>📝 Quick Reference</h3>
+                <ul>
+                    <li><strong>Build 104 live on TestFlight</strong> — Install on physical device for testing</li>
+                    <li><strong>Analytics integrated</strong> — Events log to UserDefaults; sync to Supabase ready</li>
+                    <li><strong>7-day personal use</strong> — This is your primary feedback loop before partners</li>
+                    <li><strong>Supabase dashboard:</strong> https://app.supabase.com</li>
+                    <li><strong>TestFlight:</strong> Build 104 on your iPhone</li>
+                    <li><strong>Code location:</strong> /Users/kell/Desktop/Dwellable-Native/Dwellable/</li>
+                </ul>
+            </div>
+
+            <button class="save-button" onclick="saveProgress()">💾 Save Progress to Browser</button>
+        </div>
+
+        <footer>
+            <p><strong>Last Updated:</strong> March 10, 2026, 8:45 PM</p>
+            <p><strong>Ticket Progress:</strong> 45/61 complete (74%)</p>
+            <p>Next Review: After Phase 1 completion (March 17)</p>
+        </footer>
+    </div>
+
+    <script>
+        // Save checkbox state to localStorage
+        function saveProgress() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const progress = {};
+
+            checkboxes.forEach(checkbox => {
+                progress[checkbox.id] = checkbox.checked;
+            });
+
+            localStorage.setItem('layer1-checklist', JSON.stringify(progress));
+            alert('✅ Progress saved to browser!');
+        }
+
+        // Load checkbox state from localStorage
+        function loadProgress() {
+            const saved = localStorage.getItem('layer1-checklist');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+                checkboxes.forEach(checkbox => {
+                    if (progress[checkbox.id]) {
+                        checkbox.checked = true;
+                    }
+                });
+            }
+        }
+
+        // Load progress on page load
+        window.addEventListener('load', loadProgress);
+
+        // Auto-save on checkbox change
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                const progress = {};
+
+                checkboxes.forEach(cb => {
+                    progress[cb.id] = cb.checked;
+                });
+
+                localStorage.setItem('layer1-checklist', JSON.stringify(progress));
+            });
+        });
+    </script>
+</body>
+</html>

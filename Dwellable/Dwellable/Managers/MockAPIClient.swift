@@ -112,6 +112,16 @@ class MockAPIClient: APIClient {
         // Mock implementation - just succeeds (in real app, this creates user in DB)
     }
 
+    // MARK: - Analytics API
+
+    func sendUsageEvents(_ events: [UsageEventData], userId: String) async throws {
+        // Simulate network delay
+        try await Task.sleep(nanoseconds: 300_000_000) // 0.3 second
+
+        // Mock implementation - just succeeds (events logged locally in real app)
+        print("Mock: Synced \(events.count) usage events for user \(userId)")
+    }
+
     func setJWTToken(_ token: String) {
         // Mock implementation - token not used in mock client
     }

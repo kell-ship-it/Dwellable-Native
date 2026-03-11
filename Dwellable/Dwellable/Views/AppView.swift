@@ -16,6 +16,9 @@ struct AppView: View {
                 // Set real userId on SyncManager (replaces placeholder "app-sync")
                 syncManager.updateUserId(user.id)
                 syncManager.syncPendingMoments()
+
+                // Log app session
+                UsageTracker.shared.logAppOpened(userId: user.id)
             }
         } else {
             // Fallback if currentUser is nil (shouldn't happen in normal flow)

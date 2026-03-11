@@ -155,6 +155,7 @@ struct TypeFlowView: View {
         do {
             _ = try await apiClient.saveMoment(moment)
             print("✅ TypeFlowView: save succeeded")
+            UsageTracker.shared.logMomentCreated(userId: userId, type: "text")
             await MainActor.run {
                 isSaving = false
                 onMomentSaved?()
@@ -162,6 +163,7 @@ struct TypeFlowView: View {
         } catch {
             print("🔴 TypeFlowView: save failed - \(error)")
             syncManager.markMomentAsPending(moment)
+            UsageTracker.shared.logMomentCreated(userId: userId, type: "text")
             await MainActor.run {
                 isSyncPending = true
                 isSaving = false

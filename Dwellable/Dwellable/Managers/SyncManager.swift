@@ -5,11 +5,11 @@ class SyncManager: ObservableObject {
     @Published var isSyncing = false
     @Published var hasPendingMoments = false
     @Published var lastSyncError: String?
+    @Published var isOnline = true
 
     private let apiClient: APIClient
     private let localStorage = LocalStorageManager.shared
     private let monitor = NWPathMonitor()
-    private var isOnline = true
     private var syncTimer: Timer?
     private var userId: String
 
