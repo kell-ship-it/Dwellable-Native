@@ -299,7 +299,8 @@
         const SUPABASE_URL = "https://lhcjobrtmbawlhjyodxz.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_Mlu-MF7FXHHb-S1Kb89lZA_zzZ5dltg";
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Initialize Supabase client (use let instead of const to avoid redeclaration issues)
+        let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let autoRefreshInterval = null;
 
         async function loadAnalytics() {
