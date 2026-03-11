@@ -18,7 +18,8 @@ class AuthManager: ObservableObject {
            let userId = keychain.retrieve(forKey: "userId") {
             // Restore JWT token to API client for session persistence
             apiClient.setJWTToken(token)
-            currentUser = AuthUser(id: userId, email: "", token: token)
+            let email = keychain.retrieve(forKey: "userEmail") ?? ""
+            currentUser = AuthUser(id: userId, email: email, token: token)
             isAuthenticated = true
         }
     }
@@ -43,9 +44,10 @@ class AuthManager: ObservableObject {
                 print("Warning: Could not create user record: \(error.localizedDescription)")
             }
 
-            // Store token and userId in Keychain
+            // Store token, userId, and email in Keychain
             _ = keychain.save(authToken.token, forKey: "authToken")
             _ = keychain.save(authToken.userId, forKey: "userId")
+            _ = keychain.save(email, forKey: "userEmail")
 
             let user = AuthUser(id: authToken.userId, email: email, token: authToken.token)
 
@@ -73,6 +75,7 @@ class AuthManager: ObservableObject {
         // Clear keychain and local state
         keychain.delete(forKey: "authToken")
         keychain.delete(forKey: "userId")
+        keychain.delete(forKey: "userEmail")
 
         DispatchQueue.main.async {
             self.currentUser = nil

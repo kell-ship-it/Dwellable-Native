@@ -13,7 +13,8 @@ struct AppView: View {
             }
             .environment(\.colorScheme, .dark)
             .onAppear {
-                // B-013 Fix: Trigger sync when app comes online with pending offline moments
+                // Set real userId on SyncManager (replaces placeholder "app-sync")
+                syncManager.updateUserId(user.id)
                 syncManager.syncPendingMoments()
             }
         } else {

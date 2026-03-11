@@ -11,12 +11,17 @@ class SyncManager: ObservableObject {
     private let monitor = NWPathMonitor()
     private var isOnline = true
     private var syncTimer: Timer?
-    private let userId: String
+    private var userId: String
 
     init(apiClient: APIClient, userId: String) {
         self.apiClient = apiClient
         self.userId = userId
         startMonitoringConnectivity()
+    }
+
+    func updateUserId(_ newUserId: String) {
+        self.userId = newUserId
+        updatePendingStatus()
     }
 
     deinit {

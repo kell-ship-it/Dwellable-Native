@@ -74,6 +74,18 @@ class TranscriptionManager: NSObject, ObservableObject {
         errorMessage = nil
         transcript = ""
 
+        // Re-check speech permission before each transcription attempt
+        // Handles case where user re-enables permission in Settings mid-session
+        let authStatus = SFSpeechRecognizer.authorizationStatus()
+        if authStatus == .denied || authStatus == .restricted {
+            DispatchQueue.main.async {
+                self.isTranscribing = false
+                self.errorMessage = "Speech recognition is disabled. Enable it in Settings to use voice capture."
+                completion(nil)
+            }
+            return
+        }
+
         // VALIDATE AUDIO BEFORE TRANSCRIPTION (B-002 Fix)
         // Prevent crashes from empty or too-short audio files
         if !isValidAudioFile(url: fileURL) {
