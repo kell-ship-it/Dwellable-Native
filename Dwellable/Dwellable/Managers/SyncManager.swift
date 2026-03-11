@@ -43,6 +43,12 @@ class SyncManager: ObservableObject {
                 // If just came online, try syncing immediately
                 if !wasOnline && self?.isOnline == true {
                     self?.syncPendingMoments()
+                    // Also sync any pending usage events
+                    if let userId = self?.userId, let apiClient = self?.apiClient {
+                        Task {
+                            try? await UsageTracker.shared.syncEventsToBackend(userId: userId, apiClient: apiClient)
+                        }
+                    }
                 }
             }
         }
@@ -77,6 +83,11 @@ class SyncManager: ObservableObject {
                     return // Stop on first error, retry later
                 }
             }
+
+            // After moments sync, also sync any pending usage events
+            do {
+                try await UsageTracker.shared.syncEventsToBackend(userId: self.userId, apiClient: self.apiClient)
+            } catch { }
 
             DispatchQueue.main.async {
                 self.isSyncing = false

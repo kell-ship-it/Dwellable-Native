@@ -23,7 +23,8 @@ class SupabaseAPIClient: APIClient {
         endpoint: String,
         body: Encodable? = nil,
         responseType: T.Type,
-        requiresAuth: Bool = true
+        requiresAuth: Bool = true,
+        preferHeader: String? = nil
     ) async throws -> T {
         var urlComponents = URLComponents(string: baseURL)
 
@@ -65,7 +66,7 @@ class SupabaseAPIClient: APIClient {
 
         // Tell Supabase to return the created/updated record in response
         if method == "POST" || method == "PATCH" || method == "PUT" {
-            request.setValue("return=representation", forHTTPHeaderField: "Prefer")
+            request.setValue(preferHeader ?? "return=representation", forHTTPHeaderField: "Prefer")
         }
 
         if let body = body {
@@ -138,6 +139,7 @@ class SupabaseAPIClient: APIClient {
         // Build request manually to avoid decoding the response
         var urlComponents = URLComponents(string: baseURL)
         urlComponents?.path = "/rest/v1/moments"
+        urlComponents?.query = "on_conflict=id"
 
         guard let url = urlComponents?.url else {
             throw APIError.invalidRequest
@@ -151,6 +153,7 @@ class SupabaseAPIClient: APIClient {
         let authToken = jwtToken ?? anonKey
         request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("resolution=merge-duplicates,return=minimal", forHTTPHeaderField: "Prefer")
         request.httpBody = try JSONEncoder().encode(payload)
 
         print("🔵 API Request: POST \(url)")
@@ -263,12 +266,14 @@ class SupabaseAPIClient: APIClient {
             )
         }
 
-        let endpoint = "/rest/v1/usage_events"
+        // Use on_conflict=id with ignore-duplicates so stale local events never block new ones
+        let endpoint = "/rest/v1/usage_events?on_conflict=id"
         _ = try await makeRequest(
             method: "POST",
             endpoint: endpoint,
             body: payloads,
-            responseType: [UsageEventPayload].self
+            responseType: [UsageEventPayload].self,
+            preferHeader: "resolution=ignore-duplicates,return=representation"
         )
     }
 }
@@ -306,12 +311,27 @@ struct UserResponse: Decodable {
     let email: String
 }
 
-struct UsageEventPayload: Encodable, Decodable {
+struct UsageEventPayload: Decodable {
     let id: String
     let user_id: String
     let event_type: String
     let moment_type: String?
     let timestamp: String
+}
+
+extension UsageEventPayload: Encodable {
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(user_id, forKey: .user_id)
+        try container.encode(event_type, forKey: .event_type)
+        try container.encode(moment_type, forKey: .moment_type)
+        try container.encode(timestamp, forKey: .timestamp)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, user_id, event_type, moment_type, timestamp
+    }
 }
 
 struct EmptyResponse: Decodable {}

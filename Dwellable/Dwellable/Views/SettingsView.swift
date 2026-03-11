@@ -3,10 +3,6 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var authManager: AuthManager
-    @State private var analytics: [String: Any] = [:]
-    @State private var recentEvents: [UsageTracker.UsageEvent] = []
-    @State private var lastUpdated = Date()
-
     var body: some View {
         ZStack {
             Theme.background.ignoresSafeArea()
@@ -84,82 +80,6 @@ struct SettingsView: View {
                             }
                         }
 
-                        // Analytics section
-                        VStack(spacing: Theme.Spacing.md) {
-                            HStack(spacing: Theme.Spacing.sm) {
-                                Text("Analytics")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundColor(Theme.tertiaryText)
-                                Spacer()
-                                Button(action: { loadAnalytics() }) {
-                                    Image(systemName: "arrow.clockwise")
-                                        .font(.system(size: 12, weight: .regular))
-                                        .foregroundColor(Theme.gold)
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-
-                            VStack(spacing: Theme.Spacing.sm) {
-                                // Moments stat
-                                HStack(spacing: Theme.Spacing.lg) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Moments Created")
-                                            .font(.system(size: 12, weight: .regular))
-                                            .foregroundColor(Theme.tertiaryText)
-                                        HStack(spacing: 8) {
-                                            Text("\(analytics["total_moments_created"] as? Int ?? 0)")
-                                                .font(.system(size: 18, weight: .semibold))
-                                                .foregroundColor(Theme.text)
-                                            Text("(\(analytics["voice_moments"] as? Int ?? 0) voice, \(analytics["text_moments"] as? Int ?? 0) text)")
-                                                .font(.system(size: 12, weight: .regular))
-                                                .foregroundColor(Theme.secondaryText)
-                                        }
-                                    }
-                                    Spacer()
-                                }
-                                .padding(Theme.Spacing.lg)
-                                .background(Theme.surfaceBackground)
-                                .cornerRadius(10)
-
-                                // Sessions stat
-                                HStack(spacing: Theme.Spacing.lg) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("App Sessions")
-                                            .font(.system(size: 12, weight: .regular))
-                                            .foregroundColor(Theme.tertiaryText)
-                                        Text("\(analytics["total_sessions"] as? Int ?? 0)")
-                                            .font(.system(size: 18, weight: .semibold))
-                                            .foregroundColor(Theme.text)
-                                    }
-                                    Spacer()
-                                }
-                                .padding(Theme.Spacing.lg)
-                                .background(Theme.surfaceBackground)
-                                .cornerRadius(10)
-
-                                // Events pending sync
-                                HStack(spacing: Theme.Spacing.lg) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text("Events Pending Sync")
-                                            .font(.system(size: 12, weight: .regular))
-                                            .foregroundColor(Theme.tertiaryText)
-                                        HStack(spacing: 6) {
-                                            Circle()
-                                                .fill(recentEvents.isEmpty ? Theme.gold : Theme.secondaryText)
-                                                .frame(width: 6, height: 6)
-                                            Text(recentEvents.isEmpty ? "All synced" : "\(recentEvents.count) pending")
-                                                .font(.system(size: 14, weight: .regular))
-                                                .foregroundColor(recentEvents.isEmpty ? Theme.gold : Theme.secondaryText)
-                                        }
-                                    }
-                                    Spacer()
-                                }
-                                .padding(Theme.Spacing.lg)
-                                .background(Theme.surfaceBackground)
-                                .cornerRadius(10)
-                            }
-                        }
-
                         // Legal section
                         VStack(spacing: Theme.Spacing.md) {
                             Text("Legal")
@@ -227,18 +147,6 @@ struct SettingsView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .onAppear {
-            loadAnalytics()
-        }
-    }
-
-    private func loadAnalytics() {
-        if let userId = authManager.currentUser?.id {
-            let summary = UsageTracker.shared.getAnalyticsSummary(userId: userId)
-            analytics = summary
-            recentEvents = UsageTracker.shared.getEvents(userId: userId)
-            lastUpdated = Date()
-        }
     }
 }
 
