@@ -285,14 +285,6 @@
                 <div class="stat-label">App Sessions</div>
                 <div class="stat-value" id="sessions">0</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Total Events</div>
-                <div class="stat-value" id="totalEvents">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Last Activity</div>
-                <div class="stat-value" id="lastActivity" style="font-size: 16px;">--</div>
-            </div>
         </div>
 
         <div class="events-section">
@@ -363,41 +355,27 @@
                     return;
                 }
 
-                // Calculate stats
+                // Calculate stats - Focus on moments and sessions only
                 const momentEvents = events.filter(e => e.event_type === "moment_created");
                 const voiceMoments = momentEvents.filter(e => e.moment_type === "voice").length;
                 const textMoments = momentEvents.filter(e => e.moment_type === "text").length;
                 const sessionEvents = events.filter(e => e.event_type === "app_opened");
 
-                // Update stats
+                // Update display with 4 key stats
                 document.getElementById("totalMoments").textContent = momentEvents.length;
                 document.getElementById("momentDetail").textContent = `${voiceMoments} voice, ${textMoments} text`;
                 document.getElementById("voiceMoments").textContent = voiceMoments;
                 document.getElementById("textMoments").textContent = textMoments;
                 document.getElementById("sessions").textContent = sessionEvents.length;
-                document.getElementById("totalEvents").textContent = events.length;
 
-                // Last activity
-                if (events.length > 0) {
-                    const lastTime = new Date(events[0].timestamp);
-                    const now = new Date();
-                    const diff = Math.floor((now - lastTime) / 1000);
-                    let timeStr;
-                    if (diff < 60) timeStr = "now";
-                    else if (diff < 3600) timeStr = `${Math.floor(diff / 60)}m ago`;
-                    else if (diff < 86400) timeStr = `${Math.floor(diff / 3600)}h ago`;
-                    else timeStr = `${Math.floor(diff / 86400)}d ago`;
-                    document.getElementById("lastActivity").textContent = timeStr;
-                } else {
-                    document.getElementById("lastActivity").textContent = "Never";
-                }
-
-                // Display events
+                // Display moment and session events only
+                const relevantEvents = events.filter(e => e.event_type === "moment_created" || e.event_type === "app_opened");
                 const eventsList = document.getElementById("eventsList");
-                if (events.length === 0) {
-                    eventsList.innerHTML = '<div class="empty-state">No events found.</div>';
+
+                if (relevantEvents.length === 0) {
+                    eventsList.innerHTML = '<div class="empty-state">No moments or sessions yet.</div>';
                 } else {
-                    eventsList.innerHTML = events.map(event => {
+                    eventsList.innerHTML = relevantEvents.map(event => {
                         const timestamp = new Date(event.timestamp);
                         const timeStr = timestamp.toLocaleTimeString();
                         const dateStr = timestamp.toLocaleDateString();
@@ -421,10 +399,11 @@
                     }).join("");
                 }
 
-                if (events.length === 0) {
-                    showMessage(`No events yet for ${email}. Use the app to create moments.`, "");
+                if (momentEvents.length === 0 && sessionEvents.length === 0) {
+                    showMessage(`No moments or sessions yet for ${email}. Create moments in the app!`, "");
                 } else {
-                    showMessage(`✅ Loaded ${events.length} events for ${email}`, "success");
+                    const summary = `✅ ${momentEvents.length} moments (${voiceMoments}V/${textMoments}T) + ${sessionEvents.length} sessions`;
+                    showMessage(summary, "success");
                 }
                 updateStatus("Connected");
             } catch (error) {
