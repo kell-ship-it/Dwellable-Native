@@ -70,7 +70,10 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
 
     private func performStartRecording() {
         do {
-            try audioSession.setActive(true)
+            // Reset recorder before starting new recording
+            audioRecorder = nil
+
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
 
             let audioURL = getTempAudioURL()
             let settings: [String: Any] = [
@@ -82,7 +85,14 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
 
             audioRecorder = try AVAudioRecorder(url: audioURL, settings: settings)
             audioRecorder?.delegate = self
-            audioRecorder?.record()
+
+            guard audioRecorder?.record() == true else {
+                DispatchQueue.main.async {
+                    self.errorMessage = "Recording failed to start. Check microphone access in Settings."
+                    self.isRecording = false
+                }
+                return
+            }
 
             DispatchQueue.main.async {
                 self.isRecording = true
@@ -93,8 +103,9 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
                 self.startDurationTimer()
             }
         } catch {
+            print("🔴 Recording error: \(error.localizedDescription)")
             DispatchQueue.main.async {
-                self.errorMessage = "Couldn't start recording. Try again in a moment."
+                self.errorMessage = "Couldn't start recording. Check microphone permissions in Settings."
                 self.isRecording = false
             }
         }
