@@ -30,8 +30,12 @@ struct MomentsListView: View {
             // Replace local cache with fresh API data (clears stale moments)
             LocalStorageManager.shared.replaceSyncedMoments(fetchedMoments, userId: userId)
 
+            // Include any pending (unsynced) moments so they stay visible
+            let pendingMoments = LocalStorageManager.shared.getPendingMoments(userId: userId)
+            let allMoments = (fetchedMoments + pendingMoments).sorted { $0.createdAt > $1.createdAt }
+
             DispatchQueue.main.async {
-                self.moments = fetchedMoments
+                self.moments = allMoments
                 self.isLoading = false
                 self.isOffline = false
             }
