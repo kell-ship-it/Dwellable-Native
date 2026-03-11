@@ -105,8 +105,12 @@ class UsageTracker {
 
     func syncEventsToBackend(userId: String, apiClient: APIClient) async throws {
         let events = getEvents(userId: userId)
-        guard !events.isEmpty else { return }
+        guard !events.isEmpty else {
+            print("ℹ️ No events to sync for userId: \(userId)")
+            return
+        }
 
+        print("📤 Syncing \(events.count) usage events for userId: \(userId)")
         do {
             // Convert UsageEvent to UsageEventData for API
             let eventData = events.map { event in
@@ -118,12 +122,15 @@ class UsageTracker {
                     timestamp: event.timestamp
                 )
             }
+            print("📊 Event data being sent: \(eventData.map { "\($0.eventType)" }.joined(separator: ", "))")
             try await apiClient.sendUsageEvents(eventData, userId: userId)
             // Clear local events after successful sync
             clearEvents(userId: userId)
-            print("✅ Usage events synced to backend successfully")
+            print("✅ Usage events synced to backend successfully (\(events.count) events)")
         } catch {
             print("⚠️ Failed to sync usage events: \(error.localizedDescription)")
+            print("⚠️ Full error: \(error)")
+            print("⚠️ Events remain locally for retry")
             // Keep events locally if sync fails; will retry next time
             throw error
         }
