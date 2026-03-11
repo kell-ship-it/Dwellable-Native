@@ -4,6 +4,7 @@ import SwiftUI
 struct DwellableApp: App {
     @StateObject private var authManager: AuthManager
     private let apiClient: APIClient
+    @StateObject private var syncManager: SyncManager
 
     init() {
         // Auto-detect test environment and use appropriate client
@@ -20,12 +21,15 @@ struct DwellableApp: App {
 
         self.apiClient = resolvedClient
         _authManager = StateObject(wrappedValue: AuthManager(apiClient: resolvedClient))
+        // B-013 Fix: Create SyncManager at app startup with placeholder userId
+        // It will be used for all users; userId is passed per-view
+        _syncManager = StateObject(wrappedValue: SyncManager(apiClient: resolvedClient, userId: "app-sync"))
     }
 
     var body: some Scene {
         WindowGroup {
             if authManager.isAuthenticated {
-                AppView(apiClient: apiClient)
+                AppView(apiClient: apiClient, syncManager: syncManager)
                     .environmentObject(authManager)
             } else {
                 LoginView()

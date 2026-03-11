@@ -124,13 +124,13 @@ struct MomentsListView: View {
                                 }
                             }) {
                                 Image(systemName: "arrow.clockwise")
-                                    .font(.system(size: 26, weight: .regular))
+                                    .font(.system(size: 13, weight: .regular))
                                     .foregroundColor(Theme.tertiaryText)
                             }
 
                             NavigationLink(destination: SettingsView()) {
                                 Image(systemName: "gear")
-                                    .font(.system(size: 26, weight: .regular))
+                                    .font(.system(size: 13, weight: .regular))
                                     .foregroundColor(Theme.tertiaryText)
                             }
                         }
@@ -216,13 +216,13 @@ struct MomentsListView: View {
                                 }
                             }) {
                                 Image(systemName: "arrow.clockwise")
-                                    .font(.system(size: 26, weight: .regular))
+                                    .font(.system(size: 13, weight: .regular))
                                     .foregroundColor(Theme.tertiaryText)
                             }
 
                             NavigationLink(destination: SettingsView()) {
                                 Image(systemName: "gear")
-                                    .font(.system(size: 26, weight: .regular))
+                                    .font(.system(size: 13, weight: .regular))
                                     .foregroundColor(Theme.tertiaryText)
                             }
                         }

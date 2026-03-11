@@ -1,6 +1,6 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** March 10, 2026, 7:15 PM
+**Last Updated:** March 10, 2026, 7:25 PM
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -375,21 +375,38 @@
   - Fixed: March 10, 2026
   - Build: ✅ Verified with xcodebuild
 
-- [x] **B-010:** Font sizes too small in moments list ✅ **FIXED**
-  - Issue: From general issues during testing — "size of the font that displays the list of moments is pretty small"
-  - Solution: Doubled font sizes in MomentRow
-    - Moment body: 14pt → 28pt
-    - Date timestamp: 12pt → 24pt
-  - Fixed: March 10, 2026
+- [x] **B-012:** Speech recognition warning prompt doesn't clear after re-enabling ✅ **FIXED**
+  - Issue: After denying speech permission, then re-enabling in Settings, the red warning still appears
+  - Root cause: `requestSpeechRecognitionPermission()` only set error on denial, never cleared it on grant
+  - Solution: Added `errorMessage = nil` in `.authorized` case
+  - When user re-enables permission, error message now clears immediately
+  - Fixed: March 10, 2026 (evening)
   - Build: ✅ Verified with xcodebuild
 
-- [x] **B-011:** Settings and refresh button icons too small ✅ **FIXED**
-  - Issue: From general issues during testing — "Increase the size of the settings button and refresh button by 100%"
-  - Solution: Doubled icon sizes in MomentsListView header
-    - Refresh icon: 13pt → 26pt
-    - Settings icon: 13pt → 26pt
-  - Fixed: March 10, 2026 (same commit as B-010)
+- [x] **B-013:** Offline moments not syncing when coming back online ✅ **FIXED**
+  - Issue: User captures moments offline, comes back online, moments don't sync to server
+  - Root cause: SyncManager was being recreated on every view recomposition (local `let` in body)
+    - Lost all sync state: pending queue, connection monitor, timer
+    - AppView.onAppear → new render → new SyncManager → old state lost
+  - Solution: Made SyncManager a @StateObject at app-level (DwellableApp)
+    - Persists across all view recompositions
+    - Maintains pending queue, connection monitoring, and retry timers
+    - AppView.onAppear now triggers `syncPendingMoments()` to sync offline moments
+  - Impact: CRITICAL — offline capture workflow now fully functional
+  - Fixed: March 10, 2026 (evening)
   - Build: ✅ Verified with xcodebuild
+
+- [x] **B-010 (REVERTED):** Font sizes increase — design feedback
+  - Status: ⚪ **REVERTED** — User feedback: doubled sizes don't work visually
+  - What was done: Doubled MomentRow body 14pt → 28pt, timestamp 12pt → 24pt
+  - Revert action: 28pt → 14pt, 24pt → 12pt (back to original)
+  - Decision: Keep original sizes; user will assess alternative approaches in next testing
+
+- [x] **B-011 (REVERTED):** Button icon sizes increase — design feedback
+  - Status: ⚪ **REVERTED** — User feedback: enlarged buttons don't look good
+  - What was done: Doubled refresh icon 13pt → 26pt, settings icon 13pt → 26pt
+  - Revert action: 26pt → 13pt (back to original)
+  - Decision: Keep original sizes; user will assess alternative approaches in next testing
 
 ### Deployment
 - [ ] **T-026:** Prepare for App Store submission
@@ -439,8 +456,8 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Testing Issues — March 10 | 2 | 2 | 0 | 0 |
 | Bugs — Found During Testing | 3 | 3 | 0 | 0 |
 | Bugs — Found During Live Testing | 2 | 2 | 0 | 0 |
-| Bugs — Multi-Account & UI Sizing | 3 | 3 | 0 | 0 |
-| **TOTAL** | **58** | **42** | **0** | **16** |
+| Bugs — Multi-Account & UI Sizing | 5 | 5 | 0 | 0 |
+| **TOTAL** | **60** | **44** | **0** | **16** |
 
 ---
 

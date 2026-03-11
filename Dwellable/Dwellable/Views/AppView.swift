@@ -3,16 +3,19 @@ import SwiftUI
 struct AppView: View {
     @EnvironmentObject var authManager: AuthManager
     let apiClient: APIClient
+    let syncManager: SyncManager
 
     var body: some View {
         // AppView is only shown when authenticated, so we can safely force-unwrap currentUser
         if let user = authManager.currentUser {
-            // Create SyncManager with userId for proper multi-account isolation
-            let syncManager = SyncManager(apiClient: apiClient, userId: user.id)
             NavigationStack {
                 MomentsListView(apiClient: apiClient, userId: user.id, syncManager: syncManager)
             }
             .environment(\.colorScheme, .dark)
+            .onAppear {
+                // B-013 Fix: Trigger sync when app comes online with pending offline moments
+                syncManager.syncPendingMoments()
+            }
         } else {
             // Fallback if currentUser is nil (shouldn't happen in normal flow)
             ProgressView("Loading...")
@@ -23,6 +26,7 @@ struct AppView: View {
 
 #Preview {
     let apiClient = MockAPIClient()
-    AppView(apiClient: apiClient)
+    let syncManager = SyncManager(apiClient: apiClient, userId: "preview-user")
+    AppView(apiClient: apiClient, syncManager: syncManager)
         .environmentObject(AuthManager(apiClient: apiClient))
 }

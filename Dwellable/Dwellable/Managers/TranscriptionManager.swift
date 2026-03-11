@@ -56,7 +56,8 @@ class TranscriptionManager: NSObject, ObservableObject {
             DispatchQueue.main.async {
                 switch status {
                 case .authorized:
-                    break
+                    // B-012 Fix: Clear error message when permission is granted
+                    self.errorMessage = nil
                 case .denied, .restricted:
                     self.errorMessage = "Speech recognition is disabled. Enable it in Settings to use voice capture."
                 case .notDetermined:

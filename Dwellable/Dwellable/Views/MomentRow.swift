@@ -6,12 +6,12 @@ struct MomentRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(moment.body)
-                .font(.system(size: 28, weight: .regular))
+                .font(.system(size: 14, weight: .regular))
                 .foregroundColor(Theme.text)
                 .lineLimit(2)
 
             Text(moment.createdAt.formatted(date: .abbreviated, time: .shortened))
-                .font(.system(size: 24, weight: .regular))
+                .font(.system(size: 12, weight: .regular))
                 .foregroundColor(Theme.secondaryText)
         }
         .padding(12)
