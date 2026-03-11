@@ -67,6 +67,12 @@ class LocalStorageManager {
         }
     }
 
+    func replaceSyncedMoments(_ moments: [Moment], userId: String) {
+        if let encoded = try? JSONEncoder().encode(moments) {
+            UserDefaults.standard.set(encoded, forKey: syncedMomentsKey(userId: userId))
+        }
+    }
+
     // MARK: - Combined
 
     func getAllLocalMoments(userId: String) -> [Moment] {

@@ -27,10 +27,8 @@ struct MomentsListView: View {
         do {
             let fetchedMoments = try await apiClient.fetchMoments(userId: userId)
 
-            // Cache API-fetched moments to LocalStorageManager for offline access
-            for moment in fetchedMoments {
-                LocalStorageManager.shared.saveSyncedMoment(moment, userId: userId)
-            }
+            // Replace local cache with fresh API data (clears stale moments)
+            LocalStorageManager.shared.replaceSyncedMoments(fetchedMoments, userId: userId)
 
             DispatchQueue.main.async {
                 self.moments = fetchedMoments

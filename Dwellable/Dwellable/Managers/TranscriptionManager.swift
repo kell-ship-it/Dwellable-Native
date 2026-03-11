@@ -17,7 +17,6 @@ class TranscriptionManager: NSObject, ObservableObject {
 
     override init() {
         super.init()
-        requestSpeechRecognitionPermission()
     }
 
     private func isValidAudioFile(url: URL) -> Bool {
@@ -51,41 +50,28 @@ class TranscriptionManager: NSObject, ObservableObject {
         }
     }
 
-    func requestSpeechRecognitionPermission() {
-        SFSpeechRecognizer.requestAuthorization { status in
-            DispatchQueue.main.async {
-                switch status {
-                case .authorized:
-                    // B-012 Fix: Clear error message when permission is granted
-                    self.errorMessage = nil
-                case .denied, .restricted:
-                    self.errorMessage = "Speech recognition is disabled. Enable it in Settings to use voice capture."
-                case .notDetermined:
-                    break
-                @unknown default:
-                    self.errorMessage = "Please check your speech recognition settings."
-                }
-            }
-        }
-    }
-
     func transcribeAudio(from fileURL: URL, completion: @escaping (String?) -> Void) {
         isTranscribing = true
         errorMessage = nil
         transcript = ""
 
-        // Re-check speech permission before each transcription attempt
+        // Fresh permission check via async requestAuthorization (not cached authorizationStatus)
         // Handles case where user re-enables permission in Settings mid-session
-        let authStatus = SFSpeechRecognizer.authorizationStatus()
-        if authStatus == .denied || authStatus == .restricted {
+        SFSpeechRecognizer.requestAuthorization { [weak self] status in
             DispatchQueue.main.async {
-                self.isTranscribing = false
-                self.errorMessage = "Speech recognition is disabled. Enable it in Settings to use voice capture."
-                completion(nil)
+                guard let self = self else { return }
+                if status == .denied || status == .restricted {
+                    self.isTranscribing = false
+                    self.errorMessage = "Speech recognition is disabled. Enable it in Settings to use voice capture."
+                    completion(nil)
+                    return
+                }
+                self.proceedWithTranscription(from: fileURL, completion: completion)
             }
-            return
         }
+    }
 
+    private func proceedWithTranscription(from fileURL: URL, completion: @escaping (String?) -> Void) {
         // VALIDATE AUDIO BEFORE TRANSCRIPTION (B-002 Fix)
         // Prevent crashes from empty or too-short audio files
         if !isValidAudioFile(url: fileURL) {
