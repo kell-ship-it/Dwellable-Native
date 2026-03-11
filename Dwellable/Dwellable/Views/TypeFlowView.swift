@@ -174,6 +174,6 @@ struct TypeFlowView: View {
 #Preview {
     let apiClient = MockAPIClient()
     NavigationStack {
-        TypeFlowView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient), onMomentSaved: nil)
+        TypeFlowView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
     }
 }

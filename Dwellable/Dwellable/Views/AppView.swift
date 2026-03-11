@@ -3,11 +3,12 @@ import SwiftUI
 struct AppView: View {
     @EnvironmentObject var authManager: AuthManager
     let apiClient: APIClient
-    let syncManager: SyncManager
 
     var body: some View {
         // AppView is only shown when authenticated, so we can safely force-unwrap currentUser
         if let user = authManager.currentUser {
+            // Create SyncManager with userId for proper multi-account isolation
+            let syncManager = SyncManager(apiClient: apiClient, userId: user.id)
             NavigationStack {
                 MomentsListView(apiClient: apiClient, userId: user.id, syncManager: syncManager)
             }
@@ -22,7 +23,6 @@ struct AppView: View {
 
 #Preview {
     let apiClient = MockAPIClient()
-    let syncManager = SyncManager(apiClient: apiClient)
-    AppView(apiClient: apiClient, syncManager: syncManager)
+    AppView(apiClient: apiClient)
         .environmentObject(AuthManager(apiClient: apiClient))
 }

@@ -144,6 +144,6 @@ struct CaptureView: View {
 #Preview {
     let apiClient = MockAPIClient()
     NavigationStack {
-        CaptureView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient), onMomentSaved: nil)
+        CaptureView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
     }
 }

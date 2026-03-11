@@ -29,7 +29,7 @@ struct MomentsListView: View {
 
             // Cache API-fetched moments to LocalStorageManager for offline access
             for moment in fetchedMoments {
-                LocalStorageManager.shared.saveSyncedMoment(moment)
+                LocalStorageManager.shared.saveSyncedMoment(moment, userId: userId)
             }
 
             DispatchQueue.main.async {
@@ -38,9 +38,9 @@ struct MomentsListView: View {
                 self.isOffline = false
             }
         } catch {
-            // Network error — load from local storage instead
+            // Network error — load from local storage instead (only for this user)
             print("🔴 Network fetch failed: \(error.localizedDescription)")
-            let localMoments = LocalStorageManager.shared.getAllLocalMoments()
+            let localMoments = LocalStorageManager.shared.getAllLocalMoments(userId: userId)
             DispatchQueue.main.async {
                 self.moments = localMoments
                 self.isLoading = false
@@ -124,13 +124,13 @@ struct MomentsListView: View {
                                 }
                             }) {
                                 Image(systemName: "arrow.clockwise")
-                                    .font(.system(size: 13, weight: .regular))
+                                    .font(.system(size: 26, weight: .regular))
                                     .foregroundColor(Theme.tertiaryText)
                             }
 
                             NavigationLink(destination: SettingsView()) {
                                 Image(systemName: "gear")
-                                    .font(.system(size: 13, weight: .regular))
+                                    .font(.system(size: 26, weight: .regular))
                                     .foregroundColor(Theme.tertiaryText)
                             }
                         }
@@ -216,13 +216,13 @@ struct MomentsListView: View {
                                 }
                             }) {
                                 Image(systemName: "arrow.clockwise")
-                                    .font(.system(size: 13, weight: .regular))
+                                    .font(.system(size: 26, weight: .regular))
                                     .foregroundColor(Theme.tertiaryText)
                             }
 
                             NavigationLink(destination: SettingsView()) {
                                 Image(systemName: "gear")
-                                    .font(.system(size: 13, weight: .regular))
+                                    .font(.system(size: 26, weight: .regular))
                                     .foregroundColor(Theme.tertiaryText)
                             }
                         }
@@ -280,6 +280,6 @@ struct MomentsListView: View {
 
 #Preview {
     let apiClient = MockAPIClient()
-    MomentsListView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient))
+    MomentsListView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"))
         .environmentObject(AuthManager(apiClient: apiClient))
 }

@@ -11,9 +11,11 @@ class SyncManager: ObservableObject {
     private let monitor = NWPathMonitor()
     private var isOnline = true
     private var syncTimer: Timer?
+    private let userId: String
 
-    init(apiClient: APIClient) {
+    init(apiClient: APIClient, userId: String) {
         self.apiClient = apiClient
+        self.userId = userId
         startMonitoringConnectivity()
     }
 
@@ -44,7 +46,7 @@ class SyncManager: ObservableObject {
     // MARK: - Sync Operations
 
     func syncPendingMoments() {
-        let pending = localStorage.getPendingMoments()
+        let pending = localStorage.getPendingMoments(userId: userId)
         guard !pending.isEmpty, !isSyncing, isOnline else {
             return
         }
@@ -56,8 +58,8 @@ class SyncManager: ObservableObject {
             for moment in pending {
                 do {
                     let synced = try await apiClient.saveMoment(moment)
-                    localStorage.removePendingMoment(id: moment.id)
-                    localStorage.saveSyncedMoment(synced)
+                    localStorage.removePendingMoment(id: moment.id, userId: self.userId)
+                    localStorage.saveSyncedMoment(synced, userId: self.userId)
 
                     DispatchQueue.main.async {
                         self.updatePendingStatus()
@@ -79,11 +81,11 @@ class SyncManager: ObservableObject {
     }
 
     func updatePendingStatus() {
-        hasPendingMoments = !localStorage.getPendingMoments().isEmpty
+        hasPendingMoments = !localStorage.getPendingMoments(userId: userId).isEmpty
     }
 
     func markMomentAsPending(_ moment: Moment) {
-        localStorage.savePendingMoment(moment)
+        localStorage.savePendingMoment(moment, userId: userId)
         updatePendingStatus()
 
         // Start periodic retry attempts if not already syncing

@@ -1,6 +1,6 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** March 10, 2026, 6:30 PM
+**Last Updated:** March 10, 2026, 7:15 PM
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -358,6 +358,39 @@
   - Fixed: March 10, 2026 (Commit 49ea0a1)
   - Impact: HIGH — fixes UX regression in offline capture workflow
 
+### Bugs — Multi-Account & UI Sizing (March 10 PM Session)
+- [x] **B-009:** Multi-account data isolation — users seeing other accounts' moments ✅ **FIXED**
+  - Issue: Test 9.3 FAIL — When signing out/in with different accounts on same device:
+    - Online: Shows correct account's moments ✅
+    - Offline: Shows moments from OTHER accounts signed in on that device ❌
+    - Back online: Shows correct account again ✅
+  - Root cause: LocalStorageManager stored all moments globally, not per-user
+    - Keys were "pending_moments" and "synced_moments" (no userId namespace)
+    - When offline, app loaded ALL cached moments from ALL accounts
+  - Solution: Namespace storage keys by userId
+    - Updated LocalStorageManager: keys now "pending_moments_\(userId)" and "synced_moments_\(userId)"
+    - SyncManager initialized with userId, passes it to all storage calls
+    - MomentsListView filters local moments by current userId
+  - Impact: CRITICAL — privacy/security issue. Users cannot safely share device with multiple accounts
+  - Fixed: March 10, 2026
+  - Build: ✅ Verified with xcodebuild
+
+- [x] **B-010:** Font sizes too small in moments list ✅ **FIXED**
+  - Issue: From general issues during testing — "size of the font that displays the list of moments is pretty small"
+  - Solution: Doubled font sizes in MomentRow
+    - Moment body: 14pt → 28pt
+    - Date timestamp: 12pt → 24pt
+  - Fixed: March 10, 2026
+  - Build: ✅ Verified with xcodebuild
+
+- [x] **B-011:** Settings and refresh button icons too small ✅ **FIXED**
+  - Issue: From general issues during testing — "Increase the size of the settings button and refresh button by 100%"
+  - Solution: Doubled icon sizes in MomentsListView header
+    - Refresh icon: 13pt → 26pt
+    - Settings icon: 13pt → 26pt
+  - Fixed: March 10, 2026 (same commit as B-010)
+  - Build: ✅ Verified with xcodebuild
+
 ### Deployment
 - [ ] **T-026:** Prepare for App Store submission
   - Privacy policy, terms of service, screenshots, description, pricing
@@ -406,7 +439,8 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Testing Issues — March 10 | 2 | 2 | 0 | 0 |
 | Bugs — Found During Testing | 3 | 3 | 0 | 0 |
 | Bugs — Found During Live Testing | 2 | 2 | 0 | 0 |
-| **TOTAL** | **55** | **39** | **0** | **16** |
+| Bugs — Multi-Account & UI Sizing | 3 | 3 | 0 | 0 |
+| **TOTAL** | **58** | **42** | **0** | **16** |
 
 ---
 
