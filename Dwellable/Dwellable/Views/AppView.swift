@@ -19,6 +19,15 @@ struct AppView: View {
 
                 // Log app session
                 UsageTracker.shared.logAppOpened(userId: user.id)
+
+                // Sync analytics to backend
+                Task {
+                    do {
+                        try await UsageTracker.shared.syncEventsToBackend(userId: user.id, apiClient: apiClient)
+                    } catch {
+                        print("⚠️ Analytics sync failed: \(error.localizedDescription)")
+                    }
+                }
             }
         } else {
             // Fallback if currentUser is nil (shouldn't happen in normal flow)

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dwellable Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #0f0f0f;
+            color: #ffffff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="email"] {
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            width: 200px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #C9B27C;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .status.connected {
+            color: #4ade80;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: #C9B27C;
+        }
+
+        .stat-detail {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .events-section {
+            margin-top: 40px;
+        }
+
+        .events-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .events-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .event {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .event-type {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #333;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #C9B27C;
+            margin-right: 10px;
+        }
+
+        .event-type.moment_created {
+            background: rgba(201, 178, 124, 0.2);
+        }
+
+        .event-type.app_opened {
+            background: rgba(100, 150, 200, 0.2);
+            color: #6496c8;
+        }
+
+        .event-type.app_closed {
+            background: rgba(150, 100, 100, 0.2);
+            color: #c87d64;
+        }
+
+        .event-moment-type {
+            font-size: 11px;
+            color: #999;
+            padding-left: 5px;
+            border-left: 1px solid #333;
+            margin-left: 5px;
+        }
+
+        .event-timestamp {
+            font-size: 11px;
+            color: #666;
+            flex-shrink: 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .error {
+            background: rgba(220, 100, 100, 0.1);
+            border: 1px solid #dc6464;
+            border-radius: 6px;
+            padding: 12px;
+            color: #dc6464;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: rgba(100, 220, 100, 0.1);
+            border: 1px solid #64dc64;
+            border-radius: 6px;
+            padding: 12px;
+            color: #64dc64;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .auto-refresh input {
+            width: 30px;
+            padding: 4px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Dwellable Analytics</h1>
+            <div class="controls">
+                <input type="email" id="userEmail" placeholder="your@email.com" value="test.normal@example.com">
+                <button onclick="loadAnalytics()">Load Analytics</button>
+                <div class="auto-refresh">
+                    <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()">
+                    <label for="autoRefresh">Auto-refresh (5s)</label>
+                </div>
+                <div class="status" id="status">Disconnected</div>
+            </div>
+        </header>
+
+        <div id="message"></div>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-label">Total Moments</div>
+                <div class="stat-value" id="totalMoments">0</div>
+                <div class="stat-detail" id="momentDetail"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Voice Moments</div>
+                <div class="stat-value" id="voiceMoments">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Text Moments</div>
+                <div class="stat-value" id="textMoments">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">App Sessions</div>
+                <div class="stat-value" id="sessions">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Events</div>
+                <div class="stat-value" id="totalEvents">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Last Activity</div>
+                <div class="stat-value" id="lastActivity" style="font-size: 16px;">--</div>
+            </div>
+        </div>
+
+        <div class="events-section">
+            <h2>Recent Events (Last 50)</h2>
+            <div class="events-list" id="eventsList">
+                <div class="empty-state">No events yet. Use the app to generate events.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://lhcjobrtmbawlhjyodxz.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_Mlu-MF7FXHHb-S1Kb89lZA_zzZ5dltg";
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let autoRefreshInterval = null;
+
+        async function loadAnalytics() {
+            const email = document.getElementById("userEmail").value;
+            if (!email) {
+                showMessage("Please enter your email address.", "error");
+                return;
+            }
+
+            try {
+                // Fetch user ID from users table
+                const { data: users, error: userError } = await supabase
+                    .from("users")
+                    .select("id")
+                    .eq("email", email)
+                    .limit(1);
+
+                if (userError || !users || users.length === 0) {
+                    showMessage("User not found. Check your email address.", "error");
+                    updateStatus("Disconnected");
+                    return;
+                }
+
+                const userId = users[0].id;
+
+                // Fetch usage events
+                const { data: events, error: eventsError } = await supabase
+                    .from("usage_events")
+                    .select("*")
+                    .eq("user_id", userId)
+                    .order("timestamp", { ascending: false })
+                    .limit(50);
+
+                if (eventsError) {
+                    showMessage(`Error loading events: ${eventsError.message}`, "error");
+                    updateStatus("Disconnected");
+                    return;
+                }
+
+                // Calculate stats
+                const momentEvents = events.filter(e => e.event_type === "moment_created");
+                const voiceMoments = momentEvents.filter(e => e.moment_type === "voice").length;
+                const textMoments = momentEvents.filter(e => e.moment_type === "text").length;
+                const sessionEvents = events.filter(e => e.event_type === "app_opened");
+
+                // Update stats
+                document.getElementById("totalMoments").textContent = momentEvents.length;
+                document.getElementById("momentDetail").textContent = `${voiceMoments} voice, ${textMoments} text`;
+                document.getElementById("voiceMoments").textContent = voiceMoments;
+                document.getElementById("textMoments").textContent = textMoments;
+                document.getElementById("sessions").textContent = sessionEvents.length;
+                document.getElementById("totalEvents").textContent = events.length;
+
+                // Last activity
+                if (events.length > 0) {
+                    const lastTime = new Date(events[0].timestamp);
+                    const now = new Date();
+                    const diff = Math.floor((now - lastTime) / 1000);
+                    let timeStr;
+                    if (diff < 60) timeStr = "now";
+                    else if (diff < 3600) timeStr = `${Math.floor(diff / 60)}m ago`;
+                    else if (diff < 86400) timeStr = `${Math.floor(diff / 3600)}h ago`;
+                    else timeStr = `${Math.floor(diff / 86400)}d ago`;
+                    document.getElementById("lastActivity").textContent = timeStr;
+                } else {
+                    document.getElementById("lastActivity").textContent = "Never";
+                }
+
+                // Display events
+                const eventsList = document.getElementById("eventsList");
+                if (events.length === 0) {
+                    eventsList.innerHTML = '<div class="empty-state">No events found.</div>';
+                } else {
+                    eventsList.innerHTML = events.map(event => {
+                        const timestamp = new Date(event.timestamp);
+                        const timeStr = timestamp.toLocaleTimeString();
+                        const dateStr = timestamp.toLocaleDateString();
+                        let eventLabel = event.event_type
+                            .replace("_", " ")
+                            .replace(/\b\w/g, l => l.toUpperCase());
+
+                        let momentType = "";
+                        if (event.moment_type) {
+                            momentType = `<span class="event-moment-type">(${event.moment_type})</span>`;
+                        }
+
+                        return `
+                            <div class="event">
+                                <div>
+                                    <span class="event-type ${event.event_type}">${eventLabel}</span>${momentType}
+                                </div>
+                                <div class="event-timestamp">${dateStr} ${timeStr}</div>
+                            </div>
+                        `;
+                    }).join("");
+                }
+
+                showMessage(`Loaded ${events.length} events for ${email}`, "success");
+                updateStatus("Connected");
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, "error");
+                updateStatus("Disconnected");
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById("message");
+            messageEl.textContent = text;
+            messageEl.className = type;
+            setTimeout(() => {
+                messageEl.textContent = "";
+                messageEl.className = "";
+            }, 5000);
+        }
+
+        function updateStatus(text) {
+            const statusEl = document.getElementById("status");
+            statusEl.textContent = text;
+            statusEl.className = "status " + (text === "Connected" ? "connected" : "");
+        }
+
+        function toggleAutoRefresh() {
+            const checkbox = document.getElementById("autoRefresh");
+            if (checkbox.checked) {
+                autoRefreshInterval = setInterval(() => {
+                    loadAnalytics();
+                }, 5000);
+                showMessage("Auto-refresh enabled", "success");
+            } else {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                showMessage("Auto-refresh disabled", "success");
+            }
+        }
+
+        // Load on page load
+        window.addEventListener("load", () => {
+            loadAnalytics();
+        });
+    </script>
+</body>
+</html>

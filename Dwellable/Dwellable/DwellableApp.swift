@@ -31,9 +31,25 @@ struct DwellableApp: App {
             if authManager.isAuthenticated {
                 AppView(apiClient: apiClient, syncManager: syncManager)
                     .environmentObject(authManager)
+                    .onAppear {
+                        // Sync analytics when app launches
+                        if let userId = authManager.currentUser?.id {
+                            syncAnalytics(userId: userId)
+                        }
+                    }
             } else {
                 LoginView()
                     .environmentObject(authManager)
+            }
+        }
+    }
+
+    private func syncAnalytics(userId: String) {
+        Task {
+            do {
+                try await UsageTracker.shared.syncEventsToBackend(userId: userId, apiClient: apiClient)
+            } catch {
+                print("⚠️ Analytics sync failed: \(error.localizedDescription)")
             }
         }
     }
