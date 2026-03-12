@@ -1,5 +1,53 @@
 # Dwellable Native — Key Learnings
 
+## March 11, 2026 — Doc Migration Oversight: Code vs. Documentation
+
+### The Issue
+
+When migrating from Expo/React Native to native Swift/SwiftUI (March 4–7, 2026), **only the codebase was moved, not the strategic documentation**. The native project had:
+
+✅ **Operational docs:**
+- CLAUDE.md, AGENT_GUIDELINES.md, MEMORY.md, TICKETS.md
+
+❌ **Missing strategic docs:**
+- VISION.md, PRD.md, ARCHITECTURE.md, WORKFLOW.md, DESIGN_SPECS.md (still in legacy repo)
+
+### Why It Happened
+
+1. **Fresh-start approach:** The migration was a code-only bootstrap (new Xcode project from scratch) rather than a full repo copy.
+2. **Assumed reference back:** Early CLAUDE.md and AGENT_GUIDELINES.md didn't reference VISION/PRD/ARCHITECTURE, implying they'd be consulted from the legacy repo if needed.
+3. **Operational focus:** The new project prioritized tickets and session management over strategic context.
+4. **Timing:** By the time the project reached maturity (40+ tickets, TestFlight), it was never corrected.
+
+### The Consequence
+
+As of March 11, the native project is:
+- 45/61 tickets complete (74%)
+- Entering Layer 1 QA/dogfooding phase
+- Analytics system fully integrated and deployed to TestFlight
+
+**But:** New agents and sessions lack the foundational context (product vision, requirements, design principles, workflow) needed to make informed architectural decisions. This creates information silos and slows onboarding.
+
+### The Lesson
+
+**Separating code and documentation during migrations is a false optimization.**
+
+- Strategic docs are as critical as code — they're the "why" behind the "what"
+- When migrating between tech stacks, carry both code AND the decision record
+- Document migrations should happen in parallel with code migrations, not after
+- Once a project reaches production-readiness, embed all foundational docs locally
+
+### What We're Doing About It
+
+Copying VISION.md, PRD.md, ARCHITECTURE.md, WORKFLOW.md to `/Dwellable/docs/` and **updating them to reflect current state** (not legacy Expo context). This ensures:
+- Agents have full context at session startup
+- Product decisions are documented in the active project
+- Onboarding new contributors is faster and more complete
+
+**Estimated effort:** 30–45 min (copy + update for Swift context + verify current state from last 12h)
+
+---
+
 ## March 10, 2026 — Icon & TestFlight Deployment
 
 ### Why It Took So Long: Root Cause Analysis
