@@ -6,20 +6,31 @@
 
 **Before reading anything else, before asking any questions, before touching any code:**
 
-**1. Read `TICKETS.md` and output the full ticket table to Kell right now.**
+### Step 1: Read Strategic Context (In Order)
+1. **`docs/VISION.md`** — Product north star, principles, target users
+2. **`docs/PRD.md`** — Requirements, scope, success metrics, current phase status
+3. **`docs/ARCHITECTURE.md`** — Tech stack, data flow, key decisions
+4. **`docs/WORKFLOW.md`** — Development process, build commands, testing strategy
 
-The table must include EVERY ticket — ✅ Complete, 🔄 In Progress, 🔲 Not Started, and ⚪ Deferred. No partial lists. Use this format:
+### Step 2: Read Current State
+5. **`docs/MEMORY.md`** — Last session notes, blockers, what was done
+6. **`docs/KEY_LEARNINGS.md`** — Critical lessons (build issues, race conditions, etc.)
 
-| # | ID | Title | Epic | Priority | Status |
-|---|---|---|---|---|---|
-| 1 | S-001 | Build LoginView | UI Screens | BLOCKING | ✅ Complete |
-| ... | | | | | |
+### Step 3: Read Tickets & Get Approval
+7. **`TICKETS.md`** — Output the full ticket table to Kell **right now**.
 
-**2. State which ticket is next** (first 🔄 In Progress, or first 🔲 Not Started).
+   The table must include EVERY ticket — ✅ Complete, 🔄 In Progress, 🔲 Not Started, and ⚪ Deferred. No partial lists. Use this format:
 
-**3. Wait for Kell's confirmation before writing any code.**
+   | # | ID | Title | Epic | Priority | Status |
+   |---|---|---|---|---|---|
+   | 1 | S-001 | Build LoginView | UI Screens | BLOCKING | ✅ Complete |
+   | ... | | | | | |
 
-DO NOT skip this. DO NOT ask if you should do it. Just do it.
+8. **State which ticket is next** (first 🔄 In Progress, or first 🔲 Not Started).
+
+9. **Wait for Kell's confirmation before writing any code.**
+
+**DO NOT skip any of this. DO NOT ask if you should do it. Just do it in order.**
 
 ---
 
@@ -43,10 +54,13 @@ Dwellable — Native iOS app built with Swift and SwiftUI.
 
 ## Tech Stack
 
-- **Swift 5** / **SwiftUI**
+- **Swift 5.9** / **SwiftUI** (native iOS, iOS 15+)
 - **Xcode** (native project — no Expo, no React Native, no npm)
 - **AVFoundation** — microphone recording
-- **Supabase** — backend (planned)
+- **Speech Framework** — on-device voice-to-text (offline-capable)
+- **Supabase** — PostgreSQL backend + JWT auth + RLS
+- **Keychain + UserDefaults** — local storage (offline-first architecture)
+- **UsageTracker** — analytics event logging (live in Build 105)
 
 ## Commands
 
@@ -69,11 +83,25 @@ open Dwellable.xcodeproj
 
 ```
 Dwellable/
-  Views/          # SwiftUI screen files
-  Assets.xcassets # Colors, images
-  Info.plist      # App permissions and config
-TICKETS.md        # Full ticket registry (all tickets, all statuses)
-TICKETS.csv       # Spreadsheet version of ticket registry
+├── Dwellable/
+│   ├── Views/               # SwiftUI screen files (LoginView, CaptureView, etc.)
+│   ├── Managers/            # Business logic (AuthManager, SyncManager, APIClient)
+│   ├── Models/              # Data structures (Moment, User, UsageEvent, etc.)
+│   ├── Utilities/           # Helpers (Theme.swift, Extensions, Constants)
+│   ├── Assets.xcassets/     # Colors, images, app icon
+│   └── Info.plist           # App permissions and config
+├── docs/
+│   ├── VISION.md            # Product north star
+│   ├── PRD.md               # Product specification
+│   ├── ARCHITECTURE.md      # System design & tech decisions
+│   ├── WORKFLOW.md          # Development workflow
+│   ├── MEMORY.md            # Session logs
+│   └── KEY_LEARNINGS.md     # Critical lessons
+├── TICKETS.md               # Full ticket registry (all tickets, all statuses)
+├── TICKETS.csv              # Spreadsheet version
+├── CLAUDE.md                # This file
+├── AGENT_GUIDELINES.md      # Session protocol rules
+└── MEMORY.md                # Global project memory
 ```
 
 ## Key Project Info
@@ -83,13 +111,30 @@ TICKETS.csv       # Spreadsheet version of ticket registry
 - **Apple ID:** `kell.golden@outlook.com`
 - **Design prototype:** `file:///Users/kell/dev/dwellable-rn-codex/design-mockups/prototype-v1.html`
 
-## Screens Built (✅ Complete)
+## Core Features (✅ Complete)
 
-1. `LoginView.swift` — Email/password login (stub auth)
-2. `MomentsListView.swift` — Home screen with MomentRow + MomentDetailView (embedded)
-3. `CaptureView.swift` — Voice capture + TranscribingView + TypeFlowView (embedded)
-4. `ReviewView.swift` — Voice review mode with Re-record + Save
-5. `Theme.swift` — Centralized colors and fonts
+### Views
+- `LoginView.swift` — Email/password login (Supabase JWT auth)
+- `MomentsListView.swift` — Home screen with moment list, sorting, empty state
+- `CaptureView.swift` — Voice-first capture with rotating prompts
+- `ReviewView.swift` — Voice review (with Re-record) + text review + save
+- `TypeFlowView.swift` — Text-only moment entry (alternative to voice)
+- `TranscribingView.swift` — Loading state during Speech Framework transcription
+- `MomentDetailView.swift` — Full moment reader with metadata
+- `SettingsView.swift` — User profile, app info, sign-out
+- `Theme.swift` — Centralized colors, fonts, spacing
+
+### Managers
+- `AuthManager.swift` — Session state + Supabase JWT auth + Keychain storage
+- `SyncManager.swift` — Offline-first sync + network monitoring + retry logic
+- `SupabaseAPIClient.swift` — HTTP + Supabase REST API + RLS
+- `LocalStorageManager.swift` — Keychain + UserDefaults operations
+- `UsageTracker.swift` — Analytics event logging (moments created, app sessions)
+
+### Current Status
+- **Build 105** live on TestFlight with full analytics
+- **46/61 tickets complete** (75%)
+- **Phase 1 dogfooding** in progress (Mar 10–17)
 
 ## Conventions
 
