@@ -306,6 +306,18 @@
   - Test keyboard behavior, form validation, empty states, loading indicators
   - See TESTING_CHECKLIST_MASTER.html Phase 8 section
 
+- [ ] **T-047:** Test audio file timing fix — 3x 10-minute transcriptions *(Build 106)*
+  - **Acceptance Criteria:**
+    - ✅ Record 10-minute moment → ReviewView appears with full transcript → Save button enabled → Moment saves
+    - ✅ Record second 10-minute moment → Same result (no state carryover issues)
+    - ✅ Record third 10-minute moment → All three moments appear in Supabase with correct bodies
+  - **Test Device:** iPhone 13 Pro Max
+  - **Build:** 106 (with B-014 audio timing fix)
+  - **Success Metric:** All 3 moments successfully transcribed, saved, and appear in database
+  - **Blocker for TestFlight:** Must pass before Build 107 can be deployed to TestFlight
+  - **Related Bugs:** B-014 (audio file timing race condition)
+  - **Notes:** User taking responsibility for not testing this in Build 105. This test validates the fix works reliably.
+
 ### Testing & QA (Deferred)
 - [ ] **T-021:** Unit tests for AuthManager
 - [ ] **T-022:** Unit tests for StorageManager
@@ -414,6 +426,22 @@
   - Fixed: March 10, 2026 (evening)
   - Build: ✅ Verified with xcodebuild
 
+- [x] **B-014:** Audio file timing race condition — transcription fails silently ✅ **FIXED**
+  - Issue: User records 4-minute moment, sees "Transcribing..." state, but text never populates
+  - Root cause: `AVAudioRecorder.stop()` is asynchronous, but CaptureView navigated to ReviewView immediately
+    - ReviewView.onAppear called transcribeAudio() while audio file was still being written
+    - Speech Framework received incomplete file, returned empty transcript silently
+    - Empty transcript disabled Save button (UI binding working correctly)
+    - No moment saved, no moment_created event fired
+  - Solution: Add 0.2s delay in CaptureView button action before navigating
+    - Ensures audio file is fully flushed to disk before transcription starts
+    - Simple, reliable, no complex state management
+  - Testing requirement: 3 successful 10-minute transcriptions before TestFlight (March 14 session)
+  - Impact: CRITICAL — voice recording completely broken without this fix
+  - Fixed: March 13, 2026 (Commit 44b4237)
+  - Build: ✅ Verified with xcodebuild
+  - Status: ⏳ **TESTING IN PROGRESS** — See T-047
+
 - [x] **B-010 (REVERTED):** Font sizes increase — design feedback
   - Status: ⚪ **REVERTED** — User feedback: doubled sizes don't work visually
   - What was done: Doubled MomentRow body 14pt → 28pt, timestamp 12pt → 24pt
@@ -467,7 +495,7 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | App Icon & TestFlight | 2 | 2 | 0 | 0 |
 | UI Screens — Sub | 4 | 0 | 0 | 4 |
 | Analytics | 3 | 1 | 0 | 2 |
-| Testing & QA (Build 104) | 4 | 0 | 0 | 4 |
+| Testing & QA (Build 104) | 5 | 0 | 0 | 5 |
 | Testing & QA (Deferred) | 5 | 1 | 0 | 4 |
 | Deployment | 3 | 0 | 0 | 3 |
 | Bugs | 3 | 3 | 0 | 0 |
@@ -475,7 +503,8 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Bugs — Found During Testing | 3 | 3 | 0 | 0 |
 | Bugs — Found During Live Testing | 2 | 2 | 0 | 0 |
 | Bugs — Multi-Account & UI Sizing | 5 | 5 | 0 | 0 |
-| **TOTAL** | **61** | **45** | **0** | **16** |
+| Bugs — Audio File Timing (March 13) | 1 | 1 | 0 | 0 |
+| **TOTAL** | **63** | **46** | **0** | **17** |
 
 ---
 
