@@ -1,5 +1,33 @@
 # Dwellable Native — Session Memory
 
+## Session: March 13, 2026 — Voice Recording Audio File Timing Bug Fix
+
+### 🎯 TL;DR
+**VOICE TRANSCRIPTION BUG ROOT CAUSED AND FIXED.** Tester recorded 4-minute moment on Build 105 but text never populated and no moment was saved. Investigation revealed async file-write race condition:
+
+**Root Cause:**
+- `AVAudioRecorder.stop()` was asynchronous; CaptureView navigated to ReviewView before audio file finished writing to disk
+- ReviewView called `transcribeAudio()` on incomplete file; Speech Framework returned empty result silently
+- Empty transcript disabled Save button (UI binding working correctly)
+- No `moment_created` analytics event was ever fired (saveMoment never called)
+
+**The Fix:**
+1. Added 0.2s delay in `AudioRecordingManager.stopRecording()` to ensure file system flush
+2. Added `isAudioReadyForReview` flag tracked via AVAudioRecorderDelegate
+3. Updated CaptureView to wait for flag before navigating (no more premature navigation)
+4. Navigation now only happens when audio file is guaranteed ready
+
+**Debugging Approach:**
+- Queried usage_events table → no `moment_created` event fired
+- Queried moments table → no moment saved at all
+- Traced code flow: CaptureView → ReviewView → TranscriptionManager
+- Found timing issue: file-write async but navigation sync
+- Verified with Supabase: last event was 2026-03-12T03:30:29, no new activity after tester's attempt
+
+**Status:** ✅ COMPLETE. Build passes. Ready to test on device. **1 commit: all fixes included.**
+
+---
+
 ## Session: March 11, 2026 — Analytics Pipeline Fix & TestFlight Build 105
 
 ### 🎯 TL;DR
