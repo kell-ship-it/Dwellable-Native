@@ -48,7 +48,10 @@ struct CaptureView: View {
                     Button(action: {
                         if audioManager.isRecording {
                             audioManager.stopRecording()
-                            // Navigation will happen when isAudioReadyForReview becomes true
+                            // Small delay to ensure audio file is fully written to disk
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                showVoiceReview = true
+                            }
                         } else {
                             audioManager.startRecording()
                         }
@@ -137,12 +140,6 @@ struct CaptureView: View {
             TypeFlowView(apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
                 onMomentSaved?()
             })
-        }
-        .onReceive(audioManager.$isAudioReadyForReview) { isReady in
-            if isReady {
-                showVoiceReview = true
-                audioManager.isAudioReadyForReview = false // Reset for next recording
-            }
         }
     }
 }
