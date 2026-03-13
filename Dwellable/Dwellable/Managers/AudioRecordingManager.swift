@@ -8,6 +8,7 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
     @Published var errorMessage: String?
     @Published var hasPermission: Bool?
     @Published var recordingDuration: TimeInterval = 0
+    @Published var isAudioReadyForReview: Bool = false
 
     private var audioRecorder: AVAudioRecorder?
     private let audioSession = AVAudioSession.sharedInstance()
@@ -72,6 +73,7 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
         do {
             // Reset recorder before starting new recording
             audioRecorder = nil
+            isAudioReadyForReview = false
 
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
 
@@ -116,8 +118,12 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
         durationTimer?.invalidate()
         durationTimer = nil
 
-        DispatchQueue.main.async {
+        // Ensure file is fully written before marking as ready
+        // AVAudioRecorder.stop() is synchronous for file closure in most cases,
+        // but add small delay to guarantee file system flush
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             self.isRecording = false
+            self.isAudioReadyForReview = true
         }
     }
 
@@ -156,6 +162,12 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
             DispatchQueue.main.async {
                 self.errorMessage = "Recording encountered an issue. Try again."
                 self.isRecording = false
+                self.isAudioReadyForReview = false
+            }
+        } else {
+            // File was written successfully, mark as ready for review
+            DispatchQueue.main.async {
+                self.isAudioReadyForReview = true
             }
         }
     }

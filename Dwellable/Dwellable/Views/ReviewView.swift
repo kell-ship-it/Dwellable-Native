@@ -197,6 +197,7 @@ struct ReviewView: View {
             _ = try await apiClient.saveMoment(moment)
             print("✅ ReviewView: save succeeded")
             UsageTracker.shared.logMomentCreated(userId: userId, type: "voice")
+            Task { try? await UsageTracker.shared.syncEventsToBackend(userId: userId, apiClient: apiClient) }
             await MainActor.run {
                 isSaving = false
                 onMomentSaved?()
@@ -206,6 +207,7 @@ struct ReviewView: View {
             // Network error - save locally and mark for sync
             syncManager.markMomentAsPending(moment)
             UsageTracker.shared.logMomentCreated(userId: userId, type: "voice")
+            Task { try? await UsageTracker.shared.syncEventsToBackend(userId: userId, apiClient: apiClient) }
             await MainActor.run {
                 isSyncPending = true
                 isSaving = false

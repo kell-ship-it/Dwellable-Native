@@ -170,11 +170,6 @@
             color: #6496c8;
         }
 
-        .event-type.app_closed {
-            background: rgba(150, 100, 100, 0.2);
-            color: #c87d64;
-        }
-
         .event-moment-type {
             font-size: 11px;
             color: #999;
@@ -189,47 +184,28 @@
             flex-shrink: 0;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
+        .message {
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 20px;
         }
 
-        .error {
+        .message.error {
             background: rgba(220, 100, 100, 0.1);
             border: 1px solid #dc6464;
-            border-radius: 6px;
-            padding: 12px;
             color: #dc6464;
-            margin-bottom: 20px;
         }
 
-        .success {
+        .message.success {
             background: rgba(100, 220, 100, 0.1);
             border: 1px solid #64dc64;
-            border-radius: 6px;
-            padding: 12px;
             color: #64dc64;
-            margin-bottom: 20px;
         }
 
         .empty-state {
             text-align: center;
             padding: 40px 20px;
             color: #666;
-        }
-
-        .auto-refresh {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 12px;
-            color: #666;
-        }
-
-        .auto-refresh input {
-            width: 30px;
-            padding: 4px;
         }
 
         ::-webkit-scrollbar {
@@ -256,12 +232,9 @@
             <h1>📊 Dwellable Analytics</h1>
             <div class="controls">
                 <input type="email" id="userEmail" placeholder="your@email.com" value="pilot2@dwellable.com">
-                <button onclick="loadAnalytics()">Load Analytics</button>
-                <div class="auto-refresh">
-                    <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()">
-                    <label for="autoRefresh">Auto-refresh (5s)</label>
-                </div>
+                <button onclick="window.loadAnalytics()">Refresh</button>
                 <div class="status" id="status">Disconnected</div>
+                <div class="status" id="lastUpdated" style="margin-left:8px;"></div>
             </div>
         </header>
 
@@ -288,7 +261,7 @@
         </div>
 
         <div class="events-section">
-            <h2>Recent Events (Last 50)</h2>
+            <h2>Recent Events</h2>
             <div class="events-list" id="eventsList">
                 <div class="empty-state">No events yet. Use the app to generate events.</div>
             </div>
@@ -297,13 +270,12 @@
 
     <script>
         const SUPABASE_URL = "https://lhcjobrtmbawlhjyodxz.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_Mlu-MF7FXHHb-S1Kb89lZA_zzZ5dltg";
+        const SUPABASE_KEY = "sb_publishable_Mlu-MF7FXHHb-S1Kb89lZA_zzZ5dltg";
 
-        // Initialize Supabase client (use let instead of const to avoid redeclaration issues)
-        let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let autoRefreshInterval = null;
+        // Initialize Supabase on window object
+        window.sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function loadAnalytics() {
+        window.loadAnalytics = async function() {
             const email = document.getElementById("userEmail").value.toLowerCase().trim();
             if (!email) {
                 showMessage("Please enter your email address.", "error");
@@ -315,7 +287,7 @@
 
             try {
                 // Fetch user ID from users table
-                const { data: users, error: userError } = await supabase
+                const { data: users, error: userError } = await window.sbClient
                     .from("users")
                     .select("id, email")
                     .eq("email", email)
@@ -339,15 +311,29 @@
                 const userId = users[0].id;
                 console.log("✅ Found user:", userId);
 
-                // Fetch usage events
-                const { data: events, error: eventsError } = await supabase
+                // Fetch actual moments count (source of truth) — no limit
+                const { data: moments, error: momentsError } = await window.sbClient
+                    .from("moments")
+                    .select("id")
+                    .eq("user_id", userId)
+                    .limit(1000);
+
+                if (momentsError) {
+                    console.error("Moments lookup error:", momentsError);
+                    showMessage(`Error loading moments: ${momentsError.message}`, "error");
+                    updateStatus("Disconnected");
+                    return;
+                }
+
+                // Fetch usage events for voice/text breakdown and sessions — high limit for growth
+                const { data: events, error: eventsError } = await window.sbClient
                     .from("usage_events")
                     .select("*")
                     .eq("user_id", userId)
                     .order("timestamp", { ascending: false })
-                    .limit(50);
+                    .limit(500);
 
-                console.log("📊 Events lookup:", { eventCount: events?.length, eventsError });
+                console.log("📊 Moments:", moments?.length, "Events:", events?.length, eventsError);
 
                 if (eventsError) {
                     console.error("Events lookup error:", eventsError);
@@ -356,20 +342,21 @@
                     return;
                 }
 
-                // Calculate stats - Focus on moments and sessions only
+                // Calculate stats — total from moments table, breakdown from usage_events
+                const totalMoments = moments.length;
                 const momentEvents = events.filter(e => e.event_type === "moment_created");
                 const voiceMoments = momentEvents.filter(e => e.moment_type === "voice").length;
                 const textMoments = momentEvents.filter(e => e.moment_type === "text").length;
                 const sessionEvents = events.filter(e => e.event_type === "app_opened");
 
-                // Update display with 4 key stats
-                document.getElementById("totalMoments").textContent = momentEvents.length;
+                // Update display
+                document.getElementById("totalMoments").textContent = totalMoments;
                 document.getElementById("momentDetail").textContent = `${voiceMoments} voice, ${textMoments} text`;
                 document.getElementById("voiceMoments").textContent = voiceMoments;
                 document.getElementById("textMoments").textContent = textMoments;
                 document.getElementById("sessions").textContent = sessionEvents.length;
 
-                // Display moment and session events only
+                // Display events
                 const relevantEvents = events.filter(e => e.event_type === "moment_created" || e.event_type === "app_opened");
                 const eventsList = document.getElementById("eventsList");
 
@@ -378,10 +365,10 @@
                 } else {
                     eventsList.innerHTML = relevantEvents.map(event => {
                         const timestamp = new Date(event.timestamp);
-                        const timeStr = timestamp.toLocaleTimeString();
-                        const dateStr = timestamp.toLocaleDateString();
+                        const timeStr = timestamp.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+                        const dateStr = timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                         let eventLabel = event.event_type
-                            .replace("_", " ")
+                            .replace(/_/g, " ")
                             .replace(/\b\w/g, l => l.toUpperCase());
 
                         let momentType = "";
@@ -400,27 +387,31 @@
                     }).join("");
                 }
 
-                if (momentEvents.length === 0 && sessionEvents.length === 0) {
+                if (totalMoments === 0 && sessionEvents.length === 0) {
                     showMessage(`No moments or sessions yet for ${email}. Create moments in the app!`, "");
                 } else {
-                    const summary = `✅ ${momentEvents.length} moments (${voiceMoments}V/${textMoments}T) + ${sessionEvents.length} sessions`;
+                    const summary = `✅ ${totalMoments} moments (${voiceMoments}V/${textMoments}T) + ${sessionEvents.length} sessions`;
                     showMessage(summary, "success");
                 }
                 updateStatus("Connected");
+                document.getElementById("lastUpdated").textContent = "Updated " + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
             } catch (error) {
+                console.error("Error:", error);
                 showMessage(`Error: ${error.message}`, "error");
                 updateStatus("Disconnected");
             }
-        }
+        };
 
         function showMessage(text, type) {
             const messageEl = document.getElementById("message");
             messageEl.textContent = text;
-            messageEl.className = type;
-            setTimeout(() => {
-                messageEl.textContent = "";
-                messageEl.className = "";
-            }, 5000);
+            messageEl.className = type ? "message " + type : "message";
+            if (text) {
+                setTimeout(() => {
+                    messageEl.textContent = "";
+                    messageEl.className = "";
+                }, 5000);
+            }
         }
 
         function updateStatus(text) {
@@ -429,23 +420,13 @@
             statusEl.className = "status " + (text === "Connected" ? "connected" : "");
         }
 
-        function toggleAutoRefresh() {
-            const checkbox = document.getElementById("autoRefresh");
-            if (checkbox.checked) {
-                autoRefreshInterval = setInterval(() => {
-                    loadAnalytics();
-                }, 5000);
-                showMessage("Auto-refresh enabled", "success");
-            } else {
-                clearInterval(autoRefreshInterval);
-                autoRefreshInterval = null;
-                showMessage("Auto-refresh disabled", "success");
-            }
-        }
-
-        // Load on page load
+        // Auto-load on page load, then refresh every 15 seconds
         window.addEventListener("load", () => {
-            loadAnalytics();
+            window.loadAnalytics();
+            setInterval(() => {
+                const email = document.getElementById("userEmail").value.toLowerCase().trim();
+                if (email) window.loadAnalytics();
+            }, 15000);
         });
     </script>
 </body>
