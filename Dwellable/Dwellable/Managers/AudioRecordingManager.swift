@@ -8,13 +8,18 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
     @Published var errorMessage: String?
     @Published var hasPermission: Bool?
     @Published var recordingDuration: TimeInterval = 0
+    @Published var isAudioReadyForReview: Bool = false
+    @Published var warningMessage: String? // 9-minute warning
 
     private var audioRecorder: AVAudioRecorder?
     private let audioSession = AVAudioSession.sharedInstance()
     private var durationTimer: Timer?
     private var recordingStartTime: Date?
+    private var onAudioReady: (() -> Void)?
+    private var hasShownWarning = false // Track if we've already shown the 9-minute warning
 
     private static let MAX_RECORDING_DURATION: TimeInterval = 600 // 10 minutes
+    private static let WARNING_THRESHOLD: TimeInterval = 540 // 9 minutes (600 - 60)
 
     override init() {
         super.init()
@@ -98,8 +103,10 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
                 self.isRecording = true
                 self.audioURL = audioURL
                 self.errorMessage = nil
+                self.warningMessage = nil
                 self.recordingStartTime = Date()
                 self.recordingDuration = 0
+                self.hasShownWarning = false
                 self.startDurationTimer()
             }
         } catch {
@@ -111,7 +118,8 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
         }
     }
 
-    func stopRecording() {
+    func stopRecording(onReady: @escaping () -> Void) {
+        onAudioReady = onReady
         audioRecorder?.stop()
         durationTimer?.invalidate()
         durationTimer = nil
@@ -121,6 +129,11 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
         }
     }
 
+    // Legacy method for backward compatibility
+    func stopRecording() {
+        stopRecording(onReady: {})
+    }
+
     private func getTempAudioURL() -> URL {
         let tempDir = FileManager.default.temporaryDirectory
         let fileName = "recording_\(UUID().uuidString).m4a"
@@ -128,15 +141,24 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
     }
 
     private func startDurationTimer() {
+        hasShownWarning = false
         durationTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             guard let self = self, let startTime = self.recordingStartTime else { return }
             let elapsed = Date().timeIntervalSince(startTime)
 
             DispatchQueue.main.async {
+                // Show warning at 9 minutes
+                if elapsed >= Self.WARNING_THRESHOLD && !self.hasShownWarning {
+                    self.hasShownWarning = true
+                    self.warningMessage = "Hey, 60 seconds left in recording. Feel free to add another moment to supplement this."
+                    print("⏱️ [WARNING] Recording approaching 10-minute limit")
+                }
+
                 // Stop recording if max duration reached
                 if elapsed >= Self.MAX_RECORDING_DURATION {
                     self.stopRecording()
                     self.errorMessage = "You've reached the 10-minute capture limit. Start a new moment to continue."
+                    print("⏱️ [LIMIT] Recording stopped at 10-minute limit")
                 } else {
                     self.recordingDuration = elapsed
                 }
@@ -156,6 +178,12 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
             DispatchQueue.main.async {
                 self.errorMessage = "Recording encountered an issue. Try again."
                 self.isRecording = false
+            }
+        } else {
+            // Signal that audio file has been fully written to disk
+            DispatchQueue.main.async {
+                self.isAudioReadyForReview = true
+                self.onAudioReady?()
             }
         }
     }

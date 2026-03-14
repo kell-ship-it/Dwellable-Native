@@ -48,6 +48,7 @@ class AuthManager: ObservableObject {
             _ = keychain.save(authToken.token, forKey: "authToken")
             _ = keychain.save(authToken.userId, forKey: "userId")
             _ = keychain.save(email, forKey: "userEmail")
+            // Note: refreshToken is also saved by APIClient.setTokens() to keychain
 
             let user = AuthUser(id: authToken.userId, email: email, token: authToken.token)
 

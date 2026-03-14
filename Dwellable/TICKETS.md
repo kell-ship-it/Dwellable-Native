@@ -212,7 +212,54 @@
 
 ## 🔄 In Progress
 
-(None — all blocking and high-priority items complete!)
+- [ ] **T-047:** Test WhisperKit integration with long recordings
+  - **Priority:** HIGH — WhisperKit now integrated, needs full testing
+  - **Context:** Replaced Speech Framework with WhisperKit (base model, ~74MB, on-device)
+  - **Acceptance Criteria:**
+    - Record 30 seconds → full transcription captured
+    - Record 2 minutes → full transcription captured
+    - Record 5 minutes → full transcription captured
+    - Record 10 minutes → full transcription captured (no truncation like Speech Framework)
+    - All 4 moments sync to Supabase successfully
+  - **Test Device:** iPhone 13 Pro Max
+  - **Notes:** User to remove cached model from device first to test fresh download overlay
+  - **Related:** T-048, T-049
+
+- [ ] **T-048:** Fix console log HTTP server — real-time dashboard not populating
+  - **Priority:** HIGH — Debugging tool needed for testing
+  - **Context:** LogHTTPServer running on port 8787, serving JSON logs + embedded HTML dashboard
+  - **Issue:** Browser at http://169.254.94.22:8787 shows empty log list, not receiving live updates
+  - **What's working:**
+    - App logs to JSON file (confirmed)
+    - HTTP server starts on port 8787 (confirmed)
+    - Browser connects to server (confirmed)
+  - **What's failing:**
+    - Logs not appearing in dashboard (fetch from `/logs` endpoint returns empty or stale data)
+  - **Debug checklist:**
+    - Verify JSON file is being written in real-time
+    - Verify `/logs` endpoint returns latest data
+    - Check browser console for fetch errors
+    - Verify localStorage persistence of source URL
+  - **Expected outcome:** Open http://169.254.94.22:8787 → record moment → see real-time logs
+
+- [ ] **T-049:** Test WhiskerKit download overlay (Option B) on fresh install
+  - **Priority:** HIGH — Core UX for first-time users
+  - **Context:** Model downloads during first capture, not after login (Option B approach)
+  - **Test steps:**
+    1. Remove WhisperKit model from device (uninstall + reinstall app)
+    2. Build & run latest version (with download overlay)
+    3. Log in successfully
+    4. Tap mic to start recording
+    5. Overlay appears with: spinner + "Downloading voice engine..." + animated progress bar
+    6. Monitor console logs (T-048) to see download progress
+    7. Overlay closes automatically after download completes
+    8. Recording starts automatically (no additional tap needed)
+    9. Record 30 seconds, verify transcription works
+  - **Acceptance Criteria:**
+    - Overlay appears on first mic tap
+    - Progress bar animates smoothly 0→100%
+    - Recording starts automatically after download
+    - Subsequent recordings skip overlay (model cached)
 
 ---
 
@@ -504,7 +551,8 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Bugs — Found During Live Testing | 2 | 2 | 0 | 0 |
 | Bugs — Multi-Account & UI Sizing | 5 | 5 | 0 | 0 |
 | Bugs — Audio File Timing (March 13) | 1 | 1 | 0 | 0 |
-| **TOTAL** | **63** | **46** | **0** | **17** |
+| WhisperKit Integration (March 14) | 3 | 1 | 2 | 0 |
+| **TOTAL** | **66** | **47** | **2** | **17** |
 
 ---
 

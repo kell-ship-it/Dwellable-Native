@@ -1597,6 +1597,257 @@
                 </tr>
             </table>
 
+            <!-- Phase 10: Layer 1 Implementation Testing -->
+            <h2>Phase 10 — Layer 1: 10-Minute Recording & Transcription (6 scenarios)</h2>
+            <div class="plain-english">
+                These six tests verify the Layer 1 features: 10-minute recording limit with 9-minute warning, background protection, mid-transcription dismissal handling, offline support, and temporary file cleanup.
+            </div>
+            <div class="why-matters">
+                <strong>Why this matters:</strong>
+                <ul>
+                    <li>Recording limit prevents massive audio files and transcription timeouts</li>
+                    <li>9-minute warning gives users time to wrap up their thought</li>
+                    <li>Background protection ensures no data loss if user locks device or switches apps</li>
+                    <li>Temp file cleanup prevents disk space issues</li>
+                    <li>Offline handling ensures transcription can continue in background</li>
+                    <li>Mid-dismiss handling prevents transcription from hanging the app</li>
+                </ul>
+            </div>
+            <table>
+                <tr>
+                    <th class="num">#</th>
+                    <th>Scenario</th>
+                    <th>Expected</th>
+                    <th style="width: 80px;">Status</th>
+                    <th style="width: 100px;">Actions</th>
+                </tr>
+
+                <tr id="test-row-10-1">
+                    <td class="num">10.1</td>
+                    <td><strong>9-Minute Warning</strong><br><small>Record for 9+ minutes, watch for warning message</small></td>
+                    <td>Gold-colored message appears: "Hey, 60 seconds left in recording..."</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="10.1"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('10.1')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-10.1" class="test-row-details">
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Open CaptureView (tap to capture)</li>
+                                <li>Start recording (tap mic button)</li>
+                                <li>Let it record until timer reaches 9:00 minutes</li>
+                                <li>Watch for gold warning message at 9:00 mark</li>
+                                <li>Message should say: "Hey, 60 seconds left in recording. Feel free to add another moment to supplement this."</li>
+                            </ol>
+                            <strong>What to check:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Warning appears in gold color (matching theme.gold)</li>
+                                <li>Warning shows only once (no flickering)</li>
+                                <li>Warning appears at 9:00, not before or after</li>
+                                <li>Console shows: "⏱️ [WARNING] Recording approaching 10-minute limit"</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="10.1"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (warning message screenshot):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '10.1')">
+                                <div class="image-preview" id="images-10.1"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-10-2">
+                    <td class="num">10.2</td>
+                    <td><strong>10-Minute Auto-Stop</strong><br><small>Record for exactly 10 minutes</small></td>
+                    <td>Recording auto-stops at 10:00, error message displays, ReviewView appears</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="10.2"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('10.2')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-10.2" class="test-row-details">
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Start recording</li>
+                                <li>Watch timer reach 10:00</li>
+                                <li>Recording should automatically stop</li>
+                                <li>Error message appears in red: "You've reached the 10-minute capture limit. Start a new moment to continue."</li>
+                                <li>ReviewView should appear with loading overlay for transcription</li>
+                            </ol>
+                            <strong>What to check:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Mic button changes from red back to gold (recording stopped)</li>
+                                <li>Timer stops at 10:00</li>
+                                <li>Error message is in red (Theme.error)</li>
+                                <li>ReviewView appears automatically</li>
+                                <li>Transcription starts immediately</li>
+                                <li>Console shows: "⏱️ [LIMIT] Recording stopped at 10-minute limit"</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="10.2"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (error message screenshot):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '10.2')">
+                                <div class="image-preview" id="images-10.2"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-10-3">
+                    <td class="num">10.3</td>
+                    <td><strong>Background During Recording</strong><br><small>Record for a few seconds, then lock device</small></td>
+                    <td>Recording stops when app goes to background, ReviewView appears automatically</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="10.3"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('10.3')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-10.3" class="test-row-details">
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Open CaptureView</li>
+                                <li>Start recording (tap mic)</li>
+                                <li>Let it record for 3-5 seconds</li>
+                                <li>Lock the device (press power button)</li>
+                                <li>Wait 2 seconds, then unlock</li>
+                                <li>Check if ReviewView appears</li>
+                            </ol>
+                            <strong>What to check:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Recording stops immediately when device is locked</li>
+                                <li>ReviewView appears on unlock</li>
+                                <li>Audio file is ready (check console for file size message)</li>
+                                <li>Transcription starts automatically</li>
+                                <li>Console shows: "⚠️ [CAPTURE_BACKGROUND] App backgrounded during recording"</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="10.3"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (ReviewView appearing):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '10.3')">
+                                <div class="image-preview" id="images-10.3"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-10-4">
+                    <td class="num">10.4</td>
+                    <td><strong>Background During Transcription</strong><br><small>Start transcription, lock device, unlock after 5 seconds</small></td>
+                    <td>App continues transcribing in background, partial results display on foreground return</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="10.4"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('10.4')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-10.4" class="test-row-details">
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Record 3-5 minutes of audio</li>
+                                <li>ReviewView appears with "Processing your moment" overlay</li>
+                                <li>Lock device within first 10 seconds of transcription</li>
+                                <li>Wait 5-10 seconds</li>
+                                <li>Unlock device</li>
+                                <li>Check if partial or complete transcript appears</li>
+                            </ol>
+                            <strong>What to check:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Transcription continues in background (no interruption)</li>
+                                <li>When unlocked, partial or complete transcript appears in momentBody field</li>
+                                <li>Processing overlay may disappear if transcription completes</li>
+                                <li>Console shows: "⚠️ [APP_BACKGROUND] App backgrounded during transcription"</li>
+                                <li>Console shows: "✅ [APP_FOREGROUND] App returned to foreground with incomplete transcription"</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="10.4"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (partial transcript displayed):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '10.4')">
+                                <div class="image-preview" id="images-10.4"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-10-5">
+                    <td class="num">10.5</td>
+                    <td><strong>Cancel Mid-Transcription</strong><br><small>Start transcription, immediately go back</small></td>
+                    <td>Transcription cancels cleanly, temp file is deleted, no orphaned files remain</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="10.5"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('10.5')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-10.5" class="test-row-details">
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Record 3-5 minutes of audio</li>
+                                <li>ReviewView appears with processing overlay</li>
+                                <li>Within 5-10 seconds (mid-transcription), tap back button</li>
+                                <li>View navigates back to MomentsListView</li>
+                                <li>Check Xcode console for cleanup message</li>
+                            </ol>
+                            <strong>What to check:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Navigation back succeeds without hanging</li>
+                                <li>Processing overlay disappears</li>
+                                <li>Console shows: "⚠️ [REVIEW_DISMISS] User closed view while transcribing"</li>
+                                <li>Console shows: "✅ [CLEANUP] Temporary audio file deleted: recording_XXXXX.m4a"</li>
+                                <li>No temp files remain in /tmp/recording_*.m4a</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="10.5"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (console showing cleanup):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '10.5')">
+                                <div class="image-preview" id="images-10.5"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-10-6">
+                    <td class="num">10.6</td>
+                    <td><strong>Save Incomplete Transcription</strong><br><small>Let transcription fail/timeout, then save partial text</small></td>
+                    <td>Partial transcription can be edited and saved as a moment</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="10.6"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('10.6')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-10.6" class="test-row-details">
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Record audio that may have recognition issues (soft speech, background noise)</li>
+                                <li>ReviewView appears</li>
+                                <li>If transcription fails or is empty, error message appears</li>
+                                <li>Manually type some text in the moment field (e.g., "Personal notes about this moment")</li>
+                                <li>Tap Save button</li>
+                                <li>Moment should save and navigate back</li>
+                            </ol>
+                            <strong>What to check:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Save button is enabled once text is present (not grayed out)</li>
+                                <li>Text can be edited freely</li>
+                                <li>Save succeeds with partial/manual text</li>
+                                <li>Moment appears in MomentsListView</li>
+                                <li>No errors in console</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="10.6"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (saved moment in list):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '10.6')">
+                                <div class="image-preview" id="images-10.6"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
             <!-- GENERAL ISSUES SECTION -->
             <div class="general-issues-section">
                 <h3>🚨 General Issues (Not Related to Specific Scenarios)</h3>
@@ -1626,7 +1877,7 @@
                 <li>Send the exported file + any images back to Claude</li>
                 <li>Claude will create tickets for all failures and fix them next session</li>
             </ol>
-            <p style="margin-top: 20px; color: #666;">Master Checklist with Image Support — Updated March 9, 2026</p>
+            <p style="margin-top: 20px; color: #666;">Master Checklist with Image Support — Updated March 13, 2026 (Phase 10: Layer 1 Added)</p>
         </div>
     </div>
 

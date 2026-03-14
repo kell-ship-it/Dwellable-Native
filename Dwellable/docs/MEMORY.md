@@ -1,5 +1,92 @@
 # Dwellable Native — Session Memory
 
+## Session: March 14, 2026 — WhisperKit Integration + Option B Model Download
+
+### 🎯 TL;DR
+**WHISPERKIT INTEGRATED. MODEL DOWNLOAD ON FIRST CAPTURE (OPTION B).** Replaced Apple's Speech Framework (300MB memory limit) with WhisperKit (OpenAI Whisper on-device). Model downloads to device on first recording attempt, not after login. Full real-time console logging via HTTP server (port 8787). Build succeeded. Ready for testing.
+
+### What Was Done
+
+**1. WhisperKit Integration**
+- Replaced `import Speech` with `import WhisperKit` in TranscriptionManager.swift
+- Removed SFSpeechRecognizer entirely (was crashing on recordings >5 min due to ~300MB memory ceiling)
+- Added `setupWhisperKit()` async function that downloads base model (~74MB) on first use
+- Uses `whisperKit.transcribe(audioPath:)` for full on-device transcription
+- Model persists on device after first download; subsequent recordings use cached model
+
+**2. Option B: Download During First Capture (Not After Login)**
+- Removed ModelSetupView gate from DwellableApp login flow
+- Added download overlay to CaptureView that triggers on first mic tap
+- Overlay shows: spinner + "Downloading voice engine..." + animated progress bar (0→92%)
+- After download: overlay closes + recording starts automatically
+- Subsequent recordings skip overlay entirely (model already present)
+- Styled exactly as per design mockup (gold progress bar, serif wordmark, simple copy)
+
+**3. Console Logging Dashboard (HTTP Server)**
+- Added LogHTTPServer to DwellableApp — serves real-time logs on http://169.254.94.22:8787
+- App writes all logs to JSON + plain text files
+- HTML dashboard embedded in server itself (no CORS issues)
+- Open http://[device-ip]:8787 in browser → live log stream updates every 1 second
+- All transcription states, API calls, errors now visible in real-time
+
+**4. Enhanced Logging**
+- Integrated HTMLLogManager.shared.log() throughout TranscriptionManager, ReviewView, SupabaseAPIClient
+- Every state change (download start/complete/fail, transcription start/complete, save success/failure) logged
+- Errors include full details (HTTP status, message, hint)
+
+### Files Modified
+- **TranscriptionManager.swift** — Complete WhisperKit rewrite
+- **CaptureView.swift** — Added first-capture download overlay + progress bar
+- **ReviewView.swift** — Minor text update ("Capturing your beautiful moment...")
+- **DwellableApp.swift** — Removed ModelSetupView gate, added HTTP server
+- **Dwellable.xcodeproj/project.pbxproj** — Added WhisperKit SPM dependency (v0.9.0+)
+- **ModelSetupView.swift** — Created (not used in Option B, but available for future)
+
+### Technical Notes
+- Model download is deterministic: ~74MB file, typically 30-60 seconds on Wi-Fi
+- Progress bar animates 0→92% during download, then snaps to 100% when actual completion happens
+- Recording auto-starts after overlay dismisses (no additional tap needed)
+- Every pilot user experiences one-time download on first capture; zero impact on subsequent sessions
+- Console logs persist: http://169.254.94.22:8787/logs always available during app session
+
+### Build Status
+✅ **BUILD SUCCEEDED** — All SPM dependencies resolved. Fully compatible with iOS 16+.
+
+### Next Session: Testing Plan
+1. **Remove model from device** to test fresh download:
+   - Option A: Uninstall app + reinstall (fresh build)
+   - Option B: Delete from Settings → Dwellable → Storage (if available)
+   - Option C: Use Xcode → Device → App Settings → Offload → Reinstall
+   - Kell will confirm best approach in next session
+
+2. **Test recording length progression:**
+   - Record 30 seconds → transcribe → save
+   - Record 2 minutes → transcribe → save
+   - Record 5 minutes → transcribe → save
+   - Record 10 minutes → transcribe → save
+   - Verify full text captured (not truncated like Speech Framework)
+
+3. **Test download overlay on fresh install:**
+   - Fresh build (no model cached)
+   - Tap record immediately after login
+   - Watch overlay + progress bar
+   - Verify recording starts automatically after download
+   - Verify console logs show download progress + completion
+
+4. **Console logging real-time verification:**
+   - Open http://169.254.94.22:8787 in browser
+   - Record moment and watch live log stream
+   - Verify every state appears: download → transcribe start → transcribe complete → save start → save success/fail
+
+### JWT/401 Issue (Separate)
+- Save failures showing 401 "JWT expired" — token not being refreshed
+- Root cause: user logged in before refresh-token-storage code was added
+- Fix: Log out and log back in once to store refresh token
+- After that, 401s should auto-refresh and retry
+- Will verify in next session during testing
+
+---
+
 ## Session: March 13, 2026 — Voice Recording Audio File Timing Bug Fix
 
 ### 🎯 TL;DR

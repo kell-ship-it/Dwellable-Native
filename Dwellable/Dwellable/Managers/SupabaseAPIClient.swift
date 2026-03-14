@@ -1,21 +1,62 @@
 import Foundation
 
+private func hlog(_ msg: String, _ level: String = "INFO") {
+    print("[\(level)] \(msg)")
+    HTMLLogManager.shared.log(msg, level: level)
+}
+
 class SupabaseAPIClient: APIClient {
     private let baseURL: String
     private let anonKey: String
     private let session: URLSession
     private var jwtToken: String?
+    private var refreshToken: String?
+    private let keychain = KeychainManager.shared
 
     init(baseURL: String = Config.supabaseURL, anonKey: String = Config.supabaseAnonKey, jwtToken: String? = nil) {
         self.baseURL = baseURL
         self.anonKey = anonKey
         self.jwtToken = jwtToken
         self.session = URLSession.shared
+
+        // Restore refresh token from keychain
+        if let token = KeychainManager.shared.retrieve(forKey: "refreshToken") {
+            self.refreshToken = token
+        }
     }
 
     // Update JWT token when user authenticates
     func setJWTToken(_ token: String) {
         self.jwtToken = token
+    }
+
+    // Store refresh token and JWT together
+    func setTokens(_ jwt: String, refresh: String) {
+        self.jwtToken = jwt
+        self.refreshToken = refresh
+        // Also save refresh token to keychain for later sessions
+        _ = keychain.save(refresh, forKey: "refreshToken")
+    }
+
+    // Refresh JWT using refresh token
+    private func refreshJWTToken() async throws {
+        guard let refreshToken = refreshToken else {
+            throw APIError.invalidRequest
+        }
+
+        let payload: [String: String] = ["grant_type": "refresh_token", "refresh_token": refreshToken]
+        let endpoint = "/auth/v1/token?grant_type=refresh_token"
+
+        let response = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: AuthResponse.self,
+            requiresAuth: false
+        )
+
+        setTokens(response.access_token, refresh: response.refresh_token)
+        hlog("JWT token refreshed successfully", "SUCCESS")
     }
 
     private func makeRequest<T: Decodable>(
@@ -24,71 +65,53 @@ class SupabaseAPIClient: APIClient {
         body: Encodable? = nil,
         responseType: T.Type,
         requiresAuth: Bool = true,
-        preferHeader: String? = nil
+        preferHeader: String? = nil,
+        isRetry: Bool = false
     ) async throws -> T {
         var urlComponents = URLComponents(string: baseURL)
 
-        // Separate endpoint path from query string
         if let queryIndex = endpoint.firstIndex(of: "?") {
             let pathPart = String(endpoint[..<queryIndex])
             let queryPart = String(endpoint[endpoint.index(after: queryIndex)...])
-
             urlComponents?.path = pathPart
-
-            // Parse query parameters and add them properly
             let queryItems = queryPart.split(separator: "&").map { param in
                 let parts = param.split(separator: "=", maxSplits: 1)
-                let name = String(parts[0])
-                let value = parts.count > 1 ? String(parts[1]) : ""
-                return URLQueryItem(name: name, value: value)
+                return URLQueryItem(name: String(parts[0]), value: parts.count > 1 ? String(parts[1]) : "")
             }
             urlComponents?.queryItems = queryItems
         } else {
             urlComponents?.path = endpoint
         }
 
-        guard let url = urlComponents?.url else {
-            throw APIError.invalidRequest
-        }
+        guard let url = urlComponents?.url else { throw APIError.invalidRequest }
 
-        // Debug: Log the request details
-        print("🔵 API Request: \(method) \(url)")
+        hlog("API \(method) → \(url.path)\(isRetry ? " [retry]" : "")")
 
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue(anonKey, forHTTPHeaderField: "apikey")
         if requiresAuth {
-            // Use JWT token if available (authenticated request), otherwise use anonKey (public request)
-            let authToken = jwtToken ?? anonKey
-            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+            request.setValue("Bearer \(jwtToken ?? anonKey)", forHTTPHeaderField: "Authorization")
         }
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        // Tell Supabase to return the created/updated record in response
         if method == "POST" || method == "PATCH" || method == "PUT" {
             request.setValue(preferHeader ?? "return=representation", forHTTPHeaderField: "Prefer")
         }
-
         if let body = body {
             request.httpBody = try JSONEncoder().encode(body)
         }
 
         do {
             let (data, response) = try await session.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else { throw APIError.networkError }
 
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw APIError.networkError
-            }
-
-            // Debug: Log response
-            if let responseString = String(data: data, encoding: .utf8) {
-                print("🟢 Response (\(httpResponse.statusCode)): \(responseString.prefix(500))")
-            }
+            let responseSnippet = String(data: data, encoding: .utf8).map { String($0.prefix(300)) } ?? ""
+            let isSuccess = (200...299).contains(httpResponse.statusCode)
+            hlog("API response \(httpResponse.statusCode): \(responseSnippet)", isSuccess ? "SUCCESS" : "ERROR")
 
             switch httpResponse.statusCode {
             case 200...299:
                 let decoder = JSONDecoder()
-                // Supabase returns ISO 8601 dates with fractional seconds
                 let formatter = DateFormatter()
                 formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZZZZZ"
                 formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -96,16 +119,22 @@ class SupabaseAPIClient: APIClient {
                 decoder.dateDecodingStrategy = .custom { decoder in
                     let container = try decoder.singleValueContainer()
                     let dateString = try container.decode(String.self)
-                    // Try fractional seconds first, then standard ISO 8601
-                    if let date = formatter.date(from: dateString) {
-                        return date
-                    }
-                    if let date = ISO8601DateFormatter().date(from: dateString) {
-                        return date
-                    }
+                    if let date = formatter.date(from: dateString) { return date }
+                    if let date = ISO8601DateFormatter().date(from: dateString) { return date }
                     throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date: \(dateString)")
                 }
                 return try decoder.decode(T.self, from: data)
+            case 401:
+                // JWT expired — auto-refresh once and retry
+                if !isRetry, refreshToken != nil {
+                    hlog("JWT expired (401) — refreshing token and retrying...", "WARNING")
+                    try await refreshJWTToken()
+                    return try await makeRequest(method: method, endpoint: endpoint, body: body,
+                                                 responseType: responseType, requiresAuth: requiresAuth,
+                                                 preferHeader: preferHeader, isRetry: true)
+                }
+                hlog("JWT refresh failed or no refresh token — user must log in again", "ERROR")
+                throw APIError.unauthorized
             case 404:
                 throw APIError.notFound
             case 400...499:
@@ -118,8 +147,7 @@ class SupabaseAPIClient: APIClient {
         } catch let error as APIError {
             throw error
         } catch {
-            print("🔴 Network Error: \(error.localizedDescription)")
-            print("🔴 Full Error: \(error)")
+            hlog("Network error: \(error.localizedDescription)", "ERROR")
             throw APIError.networkError
         }
     }
@@ -136,48 +164,21 @@ class SupabaseAPIClient: APIClient {
             updated_at: Date().ISO8601Format()
         )
 
-        // Build request manually to avoid decoding the response
-        var urlComponents = URLComponents(string: baseURL)
-        urlComponents?.path = "/rest/v1/moments"
-        urlComponents?.query = "on_conflict=id"
+        return try await performSaveMoment(payload, originalMoment: moment)
+    }
 
-        guard let url = urlComponents?.url else {
-            throw APIError.invalidRequest
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.timeoutInterval = 15 // 15 second timeout
-        request.setValue(anonKey, forHTTPHeaderField: "apikey")
-        // Use JWT token if available (authenticated request), otherwise use anonKey (public request)
-        let authToken = jwtToken ?? anonKey
-        request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("resolution=merge-duplicates,return=minimal", forHTTPHeaderField: "Prefer")
-        request.httpBody = try JSONEncoder().encode(payload)
-
-        print("🔵 API Request: POST \(url)")
-
-        let (data, response) = try await session.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.networkError
-        }
-
-        if let responseString = String(data: data, encoding: .utf8) {
-            print("🟢 Save Response (\(httpResponse.statusCode)): \(responseString.prefix(500))")
-        }
-
-        guard (200...299).contains(httpResponse.statusCode) else {
-            let errorBody = String(data: data, encoding: .utf8) ?? "No response body"
-            print("🔴 Save failed with status: \(httpResponse.statusCode)")
-            print("🔴 Error details: \(errorBody)")
-            throw APIError.serverError
-        }
-
-        // Save succeeded — return the local moment (no need to decode response)
-        print("✅ Moment saved successfully")
-        return moment
+    private func performSaveMoment(_ payload: MomentPayload, originalMoment: Moment) async throws -> Moment {
+        hlog("Saving moment \(originalMoment.id.prefix(8))… body: \"\(String(originalMoment.body.prefix(60)))\"")
+        // Route through makeRequest so JWT auto-refresh applies
+        _ = try await makeRequest(
+            method: "POST",
+            endpoint: "/rest/v1/moments?on_conflict=id",
+            body: payload,
+            responseType: [MomentPayload].self,
+            preferHeader: "resolution=merge-duplicates,return=representation"
+        )
+        hlog("Moment saved to Supabase ✓", "SUCCESS")
+        return originalMoment
     }
 
     func fetchMoments(userId: String) async throws -> [Moment] {
@@ -225,6 +226,9 @@ class SupabaseAPIClient: APIClient {
             responseType: AuthResponse.self,
             requiresAuth: false
         )
+
+        // Store both JWT and refresh token
+        setTokens(response.access_token, refresh: response.refresh_token)
 
         return AuthToken(
             token: response.access_token,
@@ -280,7 +284,7 @@ class SupabaseAPIClient: APIClient {
 
 // MARK: - Payload and Response Models
 
-struct MomentPayload: Encodable {
+struct MomentPayload: Codable {
     let id: String
     let user_id: String
     let body: String
@@ -301,6 +305,7 @@ struct UserPayload: Encodable {
 
 struct AuthResponse: Decodable {
     let access_token: String
+    let refresh_token: String
     let token_type: String
     let expires_in: Int
     let user: UserResponse

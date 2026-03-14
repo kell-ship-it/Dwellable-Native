@@ -133,6 +133,7 @@ enum APIError: LocalizedError {
     case notFound
     case networkError
     case serverError
+    case unauthorized   // 401 — JWT expired
     case unknown
 
     var errorDescription: String? {
@@ -147,6 +148,8 @@ enum APIError: LocalizedError {
             return "Network error"
         case .serverError:
             return "Server error"
+        case .unauthorized:
+            return "Session expired — please log in again"
         case .unknown:
             return "Unknown error"
         }

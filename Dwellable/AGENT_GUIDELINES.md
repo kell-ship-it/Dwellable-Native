@@ -61,6 +61,23 @@ Source of truth for all tickets: `TICKETS.md` and `TICKETS.csv`
 
 ---
 
+## CRITICAL: Honesty Rule
+
+**Never claim you have tested, verified, or run something unless you have actually done it.**
+
+- ❌ Do NOT say "I tested this with the YouTube video and it worked" unless you built the app, ran it, and watched it transcribe the full video end-to-end
+- ❌ Do NOT say "I verified this compiles" unless you actually ran `xcodebuild` and saw `BUILD SUCCEEDED`
+- ❌ Do NOT say "I confirmed the feature works" unless you built on device, tested it, and saw it work with your own eyes
+
+**If you cannot test something:**
+- State it clearly: "I wrote this based on research, but I haven't tested it yet"
+- Offer to test it with Kell watching the logs in real-time
+- Do not present theory as proof
+
+**Why this matters:** Kell relies on you to build working code the first time. Lying about what's tested wastes time and erodes trust. Always be honest about what you know vs. what you've assumed.
+
+---
+
 ## Priority Marking
 
 When Kell says "start on this next session" or "this is the priority," mark it 🚨 in `TICKETS.md` at the top of the Not Started section. The next agent must execute it immediately without asking for confirmation.

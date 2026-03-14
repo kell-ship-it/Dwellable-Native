@@ -1,7 +1,9 @@
 import SwiftUI
+import Combine
 
 struct ReviewView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.scenePhase) var scenePhase
     @StateObject private var transcriptionManager = TranscriptionManager()
     @State private var momentBody: String = ""
     @State private var senseOfLord: String = ""
@@ -20,18 +22,24 @@ struct ReviewView: View {
             Theme.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Back button
+                // Back button (disabled during transcription)
                 HStack(spacing: 4) {
                     Button(action: { dismiss() }) {
                         Text("‹")
                             .font(.system(size: 20))
                             .foregroundColor(Theme.tertiaryText)
                     }
+                    .disabled(transcriptionManager.isTranscribing)
+                    .opacity(transcriptionManager.isTranscribing ? 0.5 : 1)
+
                     Button(action: { dismiss() }) {
                         Text("Moments")
                             .font(.system(size: 14, weight: .regular))
                             .foregroundColor(Theme.tertiaryText)
                     }
+                    .disabled(transcriptionManager.isTranscribing)
+                    .opacity(transcriptionManager.isTranscribing ? 0.5 : 1)
+
                     Spacer()
                 }
                 .padding(.horizontal, 20)
@@ -102,6 +110,8 @@ struct ReviewView: View {
                         .background(Color.clear)
                         .frame(maxWidth: .infinity)
                         .frame(maxHeight: .infinity)
+                        .disabled(transcriptionManager.isTranscribing)
+                        .opacity(transcriptionManager.isTranscribing ? 0.5 : 1.0)
 
                     // Hint text
                     Text("Add where you sensed the Lord, if at all...")
@@ -159,14 +169,28 @@ struct ReviewView: View {
         .navigationBarBackButtonHidden(true)
         .overlay(alignment: .center) {
             if transcriptionManager.isTranscribing {
-                TranscribingView(onComplete: {
-                    transcriptionManager.isTranscribing = false
-                })
-                    .transition(.opacity)
+                ZStack {
+                    Theme.background
+                        .opacity(0.97)
+                        .ignoresSafeArea()
+
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .tint(Theme.gold)
+                            .scaleEffect(1.4)
+
+                        Text("Capturing your beautiful moment...")
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundColor(Theme.text)
+                    }
+                }
+                .transition(.opacity)
             }
         }
         .onAppear {
             if let audioURL = audioURL, momentBody.isEmpty {
+                // Start transcription immediately
+                // AudioRecordingManager delegates already ensure file is fully written before reaching here
                 transcriptionManager.transcribeAudio(from: audioURL) { transcript in
                     if let transcript = transcript, !transcript.isEmpty {
                         momentBody = transcript
@@ -174,6 +198,37 @@ struct ReviewView: View {
                 }
             }
         }
+        .onDisappear {
+            // Handle mid-transcription dismissal
+            if transcriptionManager.isTranscribing {
+                print("⚠️ [REVIEW_DISMISS] User closed view while transcribing")
+                // Mark that this is an incomplete transcription
+                transcriptionManager.isIncompleteTranscription = true
+                // Cancel the ongoing transcription
+                transcriptionManager.cancelTranscription()
+            }
+        }
+        .onReceive(
+            Just(scenePhase)
+                .dropFirst()
+                .eraseToAnyPublisher(),
+            perform: { phase in
+                // Handle app backgrounding during transcription
+                if phase == .background && transcriptionManager.isTranscribing {
+                    print("⚠️ [APP_BACKGROUND] App backgrounded during transcription")
+                    // Mark transcription as incomplete but keep partial results
+                    transcriptionManager.isIncompleteTranscription = true
+                    // Note: Don't cancel transcription - let it continue in the background
+                    // Apple's Speech Framework can continue processing
+                } else if phase == .active && transcriptionManager.isIncompleteTranscription {
+                    print("✅ [APP_FOREGROUND] App returned to foreground with incomplete transcription")
+                    // If we have partial text, show it
+                    if !transcriptionManager.transcript.trimmingCharacters(in: .whitespaces).isEmpty {
+                        momentBody = transcriptionManager.transcript
+                    }
+                }
+            }
+        )
     }
 
     private func saveMoment() async {
@@ -193,9 +248,10 @@ struct ReviewView: View {
             createdAt: Date()
         )
 
+        HTMLLogManager.shared.log("Save tapped — userId: \(userId.prefix(8)), body: \"\(String(momentBody.prefix(60)))\"")
         do {
             _ = try await apiClient.saveMoment(moment)
-            print("✅ ReviewView: save succeeded")
+            HTMLLogManager.shared.log("Save succeeded — moment written to Supabase", level: "SUCCESS")
             UsageTracker.shared.logMomentCreated(userId: userId, type: "voice")
             Task { try? await UsageTracker.shared.syncEventsToBackend(userId: userId, apiClient: apiClient) }
             await MainActor.run {
@@ -203,11 +259,16 @@ struct ReviewView: View {
                 onMomentSaved?()
             }
         } catch {
-            print("🔴 ReviewView: save failed - \(error)")
-            // Network error - save locally and mark for sync
+            HTMLLogManager.shared.log("Save failed — \(error.localizedDescription) — falling back to local queue", level: "ERROR")
             syncManager.markMomentAsPending(moment)
+            HTMLLogManager.shared.log("Moment queued locally for later sync", level: "WARNING")
             UsageTracker.shared.logMomentCreated(userId: userId, type: "voice")
             Task { try? await UsageTracker.shared.syncEventsToBackend(userId: userId, apiClient: apiClient) }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                syncManager.syncPendingMoments()
+            }
+
             await MainActor.run {
                 isSyncPending = true
                 isSaving = false

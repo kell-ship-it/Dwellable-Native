@@ -3,6 +3,8 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var authManager: AuthManager
+    @State private var showDebugDiagnostics = false
+
     var body: some View {
         ZStack {
             Theme.background.ignoresSafeArea()

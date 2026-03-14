@@ -1,80 +1,85 @@
 import Foundation
-import Speech
+import WhisperKit
 import Combine
 import AVFoundation
 
+private func hlog(_ msg: String, _ level: String = "INFO") {
+    print("[\(level)] \(msg)")
+    HTMLLogManager.shared.log(msg, level: level)
+}
+
 class TranscriptionManager: NSObject, ObservableObject {
+    static let shared = TranscriptionManager()
+
     @Published var transcript: String = ""
     @Published var isTranscribing: Bool = false
     @Published var errorMessage: String?
+    @Published var isIncompleteTranscription: Bool = false
+    @Published var transcriptionProgress: String = ""
 
-    private var speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
-    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
-    private var recognitionTask: SFSpeechRecognitionTask?
-    private var transcriptionTimeoutTimer: Timer?
+    private var whisperKit: WhisperKit?
+    private(set) var isModelLoaded: Bool = false
 
-    private static let TRANSCRIPTION_TIMEOUT: TimeInterval = 60 // 60 second safety timeout
+    /// Public read-only flag — true once model is downloaded and loaded
+    var isModelReady: Bool { isModelLoaded && whisperKit != nil }
+    private var transcriptionStartTime: Date?
+    private var temporaryAudioURL: URL?
+    private var currentTask: Task<Void, Never>?
 
     override init() {
         super.init()
     }
 
-    private func isValidAudioFile(url: URL) -> Bool {
+    // MARK: - WhisperKit Setup
+
+    func setupWhisperKit() async {
+        guard whisperKit == nil else {
+            hlog("WhisperKit: already loaded, skipping init")
+            return
+        }
+
         do {
-            // Check file exists and has content (at least 5KB to ensure it's not just a header)
-            let fileManager = FileManager.default
-            guard fileManager.fileExists(atPath: url.path) else {
-                return false
-            }
-
-            let fileAttributes = try fileManager.attributesOfItem(atPath: url.path)
-            let fileSize = fileAttributes[.size] as? NSNumber ?? 0
-
-            // Minimum 5KB to ensure the file has actual audio data
-            guard fileSize.intValue >= 5000 else {
-                return false
-            }
-
-            let asset = AVAsset(url: url)
-            let duration = asset.duration
-
-            // Reject audio shorter than 0.5 seconds to prevent empty audio crashes
-            let durationSeconds = duration.seconds
-
-            // Check for valid audio: minimum 0.5 seconds, not NaN, and finite
-            let isValid = durationSeconds >= 0.5 && !durationSeconds.isNaN && durationSeconds.isFinite
-            return isValid
+            // "base" (~74MB) — fast download, reliable accuracy for voice memos
+            // "small" (~244MB) — higher accuracy if needed in future
+            hlog("WhisperKit: downloading/loading base model (~74MB)...")
+            let config = WhisperKitConfig(model: "base", verbose: false, load: true, download: true)
+            whisperKit = try await WhisperKit(config)
+            isModelLoaded = true
+            hlog("WhisperKit: base model ready ✓", "SUCCESS")
         } catch {
-            // If anything fails (file access error, etc.), treat as invalid audio
-            return false
+            hlog("WhisperKit: failed to initialize — \(error.localizedDescription)", "ERROR")
+            whisperKit = nil
+            isModelLoaded = false
         }
     }
+
+    // MARK: - File Validation
+
+    private func isValidAudioFile(url: URL) -> Bool {
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: url.path) else { return false }
+        let fileAttributes = try? fileManager.attributesOfItem(atPath: url.path)
+        let fileSize = fileAttributes?[.size] as? NSNumber ?? 0
+        return fileSize.intValue >= 5000
+    }
+
+    // MARK: - Public API
 
     func transcribeAudio(from fileURL: URL, completion: @escaping (String?) -> Void) {
         isTranscribing = true
         errorMessage = nil
         transcript = ""
+        transcriptionProgress = ""
+        isIncompleteTranscription = false
+        transcriptionStartTime = Date()
+        temporaryAudioURL = fileURL
 
-        // Fresh permission check via async requestAuthorization (not cached authorizationStatus)
-        // Handles case where user re-enables permission in Settings mid-session
-        SFSpeechRecognizer.requestAuthorization { [weak self] status in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                if status == .denied || status == .restricted {
-                    self.isTranscribing = false
-                    self.errorMessage = "Speech recognition is disabled. Enable it in Settings to use voice capture."
-                    completion(nil)
-                    return
-                }
-                self.proceedWithTranscription(from: fileURL, completion: completion)
-            }
-        }
-    }
+        let fileSize = (try? FileManager.default.attributesOfItem(atPath: fileURL.path))?[.size] as? Int ?? 0
+        let sizeKB = Double(fileSize) / 1024.0
+        hlog("Transcription start — \(fileURL.lastPathComponent), \(String(format: "%.1f", sizeKB)) KB")
 
-    private func proceedWithTranscription(from fileURL: URL, completion: @escaping (String?) -> Void) {
-        // VALIDATE AUDIO BEFORE TRANSCRIPTION (B-002 Fix)
-        // Prevent crashes from empty or too-short audio files
         if !isValidAudioFile(url: fileURL) {
+            hlog("File validation failed — \(String(format: "%.1f", sizeKB)) KB (too small or missing)", "ERROR")
             DispatchQueue.main.async {
                 self.isTranscribing = false
                 self.errorMessage = "That was too quick. Try speaking for a bit longer and we'll catch it."
@@ -83,112 +88,123 @@ class TranscriptionManager: NSObject, ObservableObject {
             return
         }
 
-        // Set up timeout safety net
-        transcriptionTimeoutTimer = Timer.scheduledTimer(withTimeInterval: Self.TRANSCRIPTION_TIMEOUT, repeats: false) { [weak self] _ in
-            DispatchQueue.main.async {
-                if self?.isTranscribing == true {
-                    self?.errorMessage = "That took a moment. Try again with a shorter recording."
-                    self?.isTranscribing = false
-                    self?.recognitionTask?.cancel()
+        hlog("File validation passed")
+
+        currentTask = Task { [weak self] in
+            guard let self = self else { return }
+
+            if !self.isModelLoaded {
+                await MainActor.run { self.transcriptionProgress = "Loading transcription model..." }
+                hlog("WhisperKit: model not ready yet — loading now...", "WARNING")
+                await self.setupWhisperKit()
+            }
+
+            guard self.whisperKit != nil else {
+                hlog("WhisperKit: model still nil after load attempt — aborting", "ERROR")
+                await MainActor.run {
+                    self.isTranscribing = false
+                    self.errorMessage = "Transcription model failed to load. Please restart the app and try again."
+                    completion(nil)
+                }
+                return
+            }
+
+            await MainActor.run { self.transcriptionProgress = "Transcribing your moment..." }
+            hlog("WhisperKit: starting transcription of \(fileURL.lastPathComponent)")
+
+            do {
+                let options = DecodingOptions(verbose: false, task: .transcribe, language: "en")
+                let results = try await self.whisperKit!.transcribe(audioPath: fileURL.path, decodeOptions: options)
+
+                if Task.isCancelled {
+                    hlog("WhisperKit: transcription cancelled mid-flight", "WARNING")
+                    await MainActor.run {
+                        self.isTranscribing = false
+                        self.isIncompleteTranscription = true
+                        completion(nil)
+                    }
+                    return
+                }
+
+                let fullText = results.map { $0.text }.joined(separator: " ").trimmingCharacters(in: .whitespaces)
+                let elapsed = self.transcriptionStartTime.map { Date().timeIntervalSince($0) } ?? 0
+
+                await MainActor.run {
+                    self.isTranscribing = false
+                    self.transcriptionProgress = ""
+                    self.deleteTemporaryAudioFile()
+
+                    if fullText.isEmpty {
+                        hlog("WhisperKit: empty result after \(String(format: "%.1f", elapsed))s", "WARNING")
+                        self.errorMessage = "Dwellable didn't catch that. Feel free to speak again."
+                        completion(nil)
+                    } else {
+                        self.transcript = fullText
+                        hlog("WhisperKit: complete — \(fullText.count) chars in \(String(format: "%.1f", elapsed))s", "SUCCESS")
+                        hlog("Preview: \"\(String(fullText.prefix(120)))\"")
+                        completion(fullText)
+                    }
+                }
+            } catch {
+                let elapsed = self.transcriptionStartTime.map { Date().timeIntervalSince($0) } ?? 0
+                hlog("WhisperKit: error after \(String(format: "%.1f", elapsed))s — \(error.localizedDescription)", "ERROR")
+                await MainActor.run {
+                    self.isTranscribing = false
+                    self.transcriptionProgress = ""
+                    self.deleteTemporaryAudioFile()
+                    self.handleTranscriptionError(error)
                     completion(nil)
                 }
             }
         }
-
-        let audioSession = AVAudioSession.sharedInstance()
-        do {
-            try audioSession.setCategory(.record, mode: .default, options: [])
-            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
-        } catch {
-            DispatchQueue.main.async {
-                self.errorMessage = "Audio setup encountered an issue. Try again in a moment."
-                self.isTranscribing = false
-                self.transcriptionTimeoutTimer?.invalidate()
-                self.transcriptionTimeoutTimer = nil
-                completion(nil)
-            }
-            return
-        }
-
-        let recognitionRequest = SFSpeechURLRecognitionRequest(url: fileURL)
-        recognitionRequest.shouldReportPartialResults = true
-
-        if let speechRecognizer = speechRecognizer, speechRecognizer.isAvailable {
-            recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
-                DispatchQueue.main.async {
-                    if let result = result {
-                        self.transcript = result.bestTranscription.formattedString
-
-                        if result.isFinal {
-                            self.isTranscribing = false
-                            self.transcriptionTimeoutTimer?.invalidate()
-                            self.transcriptionTimeoutTimer = nil
-
-                            // Handle empty transcript
-                            if self.transcript.trimmingCharacters(in: .whitespaces).isEmpty {
-                                self.errorMessage = "Dwellable didn't catch that. Feel free to speak again."
-                                completion(nil)
-                            } else {
-                                completion(self.transcript)
-                            }
-                        }
-                    }
-
-                    if let error = error {
-                        self.isTranscribing = false
-                        self.transcriptionTimeoutTimer?.invalidate()
-                        self.transcriptionTimeoutTimer = nil
-                        self.handleTranscriptionError(error)
-                        completion(nil)
-                    }
-                }
-            }
-        } else {
-            DispatchQueue.main.async {
-                self.errorMessage = "Speech recognition isn't available right now. Check your device settings."
-                self.isTranscribing = false
-                self.transcriptionTimeoutTimer?.invalidate()
-                self.transcriptionTimeoutTimer = nil
-                completion(nil)
-            }
-        }
     }
+
+    // MARK: - Error Handling
 
     private func handleTranscriptionError(_ error: Error) {
-        let nsError = error as NSError
+        let description = error.localizedDescription.lowercased()
 
-        // Map error codes to user-friendly, brand-appropriate messages
-        switch nsError.code {
-        case 216:
-            // SFSpeechRecognitionError.noMatch - No speech detected
-            errorMessage = "Dwellable didn't catch that. Feel free to speak again."
-        case 1101:
-            // Network/connectivity error
-            errorMessage = "Network connection lost. Please check your connection and try again."
-        case -1:
-            // Timeout or operation cancelled
-            errorMessage = "That took a moment. Try again with a shorter recording."
-        default:
-            // Check domain for permission-related errors
-            if nsError.domain == "kLSRightsError" || error.localizedDescription.lowercased().contains("permission") {
-                errorMessage = "Speech recognition is disabled. Enable it in Settings to continue."
-            } else if error.localizedDescription.lowercased().contains("network") {
-                errorMessage = "Can't reach the server. Check your connection and try again."
-            } else if error.localizedDescription.lowercased().contains("timeout") {
-                errorMessage = "That took a moment. Try again with a shorter recording."
-            } else {
-                errorMessage = "Dwellable didn't catch your capture. Feel free to articulate again or speak it once more."
-            }
+        if description.contains("permission") {
+            errorMessage = "Speech recognition is disabled. Enable it in Settings to continue."
+        } else if description.contains("network") || description.contains("connection") {
+            errorMessage = "Can't reach the server. Check your connection and try again."
+        } else if description.contains("memory") {
+            errorMessage = "That recording was too large to process. Try a shorter recording."
+        } else {
+            errorMessage = "Dwellable didn't catch your capture. Feel free to articulate again or speak it once more."
         }
+
+        hlog("Error shown to user: \(errorMessage ?? "unknown")", "ERROR")
     }
 
+    // MARK: - Cancel & Cleanup
+
     func cancelTranscription() {
-        transcriptionTimeoutTimer?.invalidate()
-        transcriptionTimeoutTimer = nil
-        recognitionTask?.cancel()
-        recognitionRequest?.endAudio()
+        currentTask?.cancel()
+        currentTask = nil
         isTranscribing = false
-        transcript = ""
+        transcriptionProgress = ""
+
+        if !transcript.trimmingCharacters(in: .whitespaces).isEmpty {
+            isIncompleteTranscription = true
+            hlog("Transcription cancelled — partial transcript preserved (\(transcript.count) chars)", "WARNING")
+        } else {
+            transcript = ""
+            hlog("Transcription cancelled — no partial content", "WARNING")
+        }
+
         errorMessage = nil
+        deleteTemporaryAudioFile()
+    }
+
+    private func deleteTemporaryAudioFile() {
+        guard let audioURL = temporaryAudioURL else { return }
+        do {
+            try FileManager.default.removeItem(at: audioURL)
+            hlog("Cleanup: deleted \(audioURL.lastPathComponent)", "SUCCESS")
+            temporaryAudioURL = nil
+        } catch {
+            hlog("Cleanup: failed to delete \(audioURL.lastPathComponent) — \(error.localizedDescription)", "WARNING")
+        }
     }
 }

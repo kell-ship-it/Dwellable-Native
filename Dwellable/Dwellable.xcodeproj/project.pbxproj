@@ -26,7 +26,6 @@
 		012e /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012f /* APIClient.swift */; };
 		0132 /* MockAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0133 /* MockAPIClient.swift */; };
 		0134 /* SupabaseAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0135 /* SupabaseAPIClient.swift */; };
-		12c0 /* UsageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12c1 /* UsageTracker.swift */; };
 		0136 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0137 /* KeychainManager.swift */; };
 		013a /* LocalStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013b /* LocalStorageManager.swift */; };
 		013c /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013d /* SyncManager.swift */; };
@@ -34,6 +33,8 @@
 		0144 /* MomentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0145 /* MomentDetailView.swift */; };
 		0146 /* MomentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0147 /* MomentRow.swift */; };
 		0148 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0149 /* SettingsView.swift */; };
+		12c0 /* UsageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12c1 /* UsageTracker.swift */; };
+		A001 /* ModelSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000 /* ModelSetupView.swift */; };
 		23A6B1202F60D59E006F12BD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23A6B11F2F60D59E006F12BD /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -56,7 +57,6 @@
 		0111 /* MomentsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentsListView.swift; sourceTree = "<group>"; };
 		0113 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
 		0115 /* Moment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Moment.swift; sourceTree = "<group>"; };
-		12c1 /* UsageTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageTracker.swift; sourceTree = "<group>"; };
 		0117 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		0119 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		0121 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -77,6 +77,8 @@
 		0145 /* MomentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentDetailView.swift; sourceTree = "<group>"; };
 		0147 /* MomentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentRow.swift; sourceTree = "<group>"; };
 		0149 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A000 /* ModelSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSetupView.swift; sourceTree = "<group>"; };
+		12c1 /* UsageTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageTracker.swift; sourceTree = "<group>"; };
 		23A6B11F2F60D59E006F12BD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		23FB528C2F5F7485001E0468 /* DwellableUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DwellableUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		23FB529B2F5F7935001E0468 /* Dwellable.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Dwellable.xctestplan; sourceTree = "<group>"; };
@@ -135,6 +137,7 @@
 				0145 /* MomentDetailView.swift */,
 				0147 /* MomentRow.swift */,
 				0149 /* SettingsView.swift */,
+				A000 /* ModelSetupView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -218,6 +221,9 @@
 			dependencies = (
 			);
 			name = Dwellable;
+			packageProductDependencies = (
+				AA000002 /* WhisperKit */,
+			);
 			productName = Dwellable;
 			productReference = 0130 /* Dwellable.app */;
 			productType = "com.apple.product-type.application";
@@ -270,6 +276,9 @@
 				Base,
 			);
 			mainGroup = 0180;
+			packageReferences = (
+				AA000001 /* XCRemoteSwiftPackageReference "WhisperKit" */,
+			);
 			productRefGroup = 0170 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -314,6 +323,7 @@
 				0144 /* MomentDetailView.swift in Sources */,
 				0146 /* MomentRow.swift in Sources */,
 				0148 /* SettingsView.swift in Sources */,
+				A001 /* ModelSetupView.swift in Sources */,
 				0112 /* AuthManager.swift in Sources */,
 				0128 /* AudioRecordingManager.swift in Sources */,
 				012a /* TranscriptionManager.swift in Sources */,
@@ -585,6 +595,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AA000001 /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/WhisperKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AA000002 /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA000001 /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = WhisperKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0015 /* Project object */;
 }
