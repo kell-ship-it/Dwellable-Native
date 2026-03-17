@@ -170,6 +170,37 @@ For each scenario, mark Status as:
 
 ---
 
+---
+
+## Phase 10 — Audio Edge Cases & Recording Validation (7 scenarios)
+
+> **Goal:** Verify audio transcription validation properly rejects blank/short recordings and stores audio URLs correctly
+
+| # | Scenario | Steps | Expected | Status | Notes / Questions |
+|---|---|---|---|---|---|
+| 10.1 | Pure silence rejected (blank audio) | 1. MomentsListView 2. Tap mic 3. Record 2-3 seconds of pure silence 4. Tap Stop | Error message shown: **"Dwellable didn't catch that. Feel free to speak again."** No moment created. Log shows: `[WARNING] WhisperKit: rejected — blank audio` | ☐ | |
+| 10.2 | Very short speech rejected (1-2 words) | 1. MomentsListView 2. Tap mic 3. Record 1-2 words quickly ("Hello") 4. Tap Stop | Error message shown. No moment saved. Log shows: `[WARNING] WhisperKit: rejected — too short (1 word)` | ☐ | |
+| 10.3 | Normal speech accepted (3+ words) | 1. MomentsListView 2. Tap mic 3. Record normal sentence: "Hello, this is a test moment" 4. Tap Stop 5. Save | ReviewView displays full transcript. Moment saves successfully. Appears in MomentsListView. | ☐ | |
+| 10.4 | Audio URL stored in database | 1. Create moment with voice (3+ words) 2. Save 3. Open Supabase dashboard → moments table | `audio_url` column shows file path (format: `{userId}/{filename}.m4a`). Example: `43601b86-a80e-4e60-83b9-d22cb0723b5f/moment_ABC123.m4a` | ☐ | |
+| 10.5 | Audio file accessible via Edge Function | 1. Create moment with voice 2. View moment detail 3. Tap "Listen to Audio" button | Audio plays via Edge Function. No 404 errors. File serves securely (user must own it). | ☐ | |
+| 10.6 | Retry after blank audio rejection | 1. Record silence → see error 2. Tap "Retry Transcription" 3. Record valid speech ("Testing now") 4. Save | Error clears. New transcript shows. Moment saves successfully. No "[BLANK_AUDIO]" text appears. | ☐ | |
+| 10.7 | Database contains no blank moments | 1. Complete scenarios 10.1–10.3 2. Open Supabase dashboard → moments table 3. Check most recent moments | No moments with body = `"[BLANK_AUDIO]"` or single-word bodies. All moments have 3+ word transcriptions. | ☐ | |
+
+---
+
+## Phase 11 — Backend Integration (4 scenarios)
+
+> **Goal:** Verify the three critical fixes from this session work end-to-end
+
+| # | Scenario | Steps | Expected | Status | Notes / Questions |
+|---|---|---|---|---|---|
+| 11.1 | Issue #1: Audio URL storage working | 1. Create moment with voice 2. Check Supabase moments table 3. Verify `audio_url` column populated | File path visible in database (not null/empty). File exists in Storage bucket. Format: `{userId}/{filename}.m4a` | ☐ | |
+| 11.2 | Issue #2: Usage events syncing | 1. Open app 2. Check device logs for sync confirmation 3. Open Supabase → usage_events table | Event syncs automatically. Log shows: `✅ Usage events synced to backend successfully (N events)`. Supabase table has entries with user_id + timestamps. | ☐ | |
+| 11.3 | Issue #3: Blank audio validation end-to-end | 1. Record silence → error shown 2. Record 1-2 words → error shown 3. Record valid speech → saves 4. Check database | No blank moments in database. Only valid moments (3+ words) saved. Validation catches bad audio BEFORE upload. | ☐ | |
+| 11.4 | No audio uploaded for rejected transcriptions | 1. Record silence → see rejection 2. Check Supabase Storage bucket 3. Look for orphaned audio files from failed recordings | No audio files in Storage from rejected recordings. Upload is skipped when transcription rejected. Keeps Storage clean. | ☐ | |
+
+---
+
 ## After Testing
 
 1. Share this file back — I'll read every Status + Note and respond to all questions

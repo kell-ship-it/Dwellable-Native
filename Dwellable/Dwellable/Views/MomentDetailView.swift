@@ -45,6 +45,31 @@ struct MomentDetailView: View {
                 }
                 .padding(.horizontal, 20)
 
+                // Audio link
+                if let audioURL = moment.audioURL, !audioURL.isEmpty {
+                    VStack(spacing: 12) {
+                        Divider()
+                            .padding(.vertical, 12)
+
+                        let audioLink = "https://lhcjobrtmbawlhjyodxz.supabase.co/functions/v1/get-moment-audio?path=\(audioURL)"
+                        Link(destination: URL(string: audioLink) ?? URL(fileURLWithPath: "")) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "speaker.wave.2.fill")
+                                    .foregroundColor(Theme.gold)
+                                Text("Listen to Audio")
+                                    .font(.system(size: 14, weight: .regular))
+                                    .foregroundColor(Theme.gold)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Theme.gold.opacity(0.1))
+                            .cornerRadius(8)
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                }
+
                 Spacer()
             }
         }

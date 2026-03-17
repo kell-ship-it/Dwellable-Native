@@ -13,6 +13,7 @@ struct CaptureView: View {
     @State private var downloadProgress: Double = 0.0
     @State private var downloadFailed = false
     @State private var progressTimer: Timer?
+    @State private var spinnerRotation: Double = 0
 
     let apiClient: APIClient
     let userId: String
@@ -184,6 +185,7 @@ struct CaptureView: View {
         } else {
             // Check if model is ready — if not, download first
             if TranscriptionManager.shared.isModelReady || UserDefaults.standard.bool(forKey: "whisperModelReady") {
+                audioManager.onRecordingLimitReached = { showVoiceReview = true }
                 audioManager.startRecording()
             } else {
                 // First time — download the model, then auto-start recording
@@ -220,6 +222,7 @@ struct CaptureView: View {
                     // Brief delay to show completion, then start recording
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                         isDownloadingModel = false
+                        audioManager.onRecordingLimitReached = { showVoiceReview = true }
                         audioManager.startRecording()
                     }
                 } else {
@@ -234,75 +237,98 @@ struct CaptureView: View {
 
     private var modelDownloadOverlay: some View {
         ZStack {
-            Color.black.opacity(0.85).ignoresSafeArea()
+            Color.black.ignoresSafeArea()
 
-            VStack(spacing: 18) {
-                if downloadFailed {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 30))
-                        .foregroundColor(.orange)
+            if downloadFailed {
+                VStack(spacing: 20) {
+                    // Error icon box — no fill, no border
+                    ZStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(.orange)
+                    }
+                    .frame(width: 280, height: 80)
 
                     Text("Download failed.")
-                        .font(.system(size: 15, weight: .medium))
+                        .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(.orange)
 
-                    Text("Check your connection\nand try again.")
-                        .font(.system(size: 13))
-                        .foregroundColor(Theme.tertiaryText)
-                        .multilineTextAlignment(.center)
+                    // Detail box — no fill, no border
+                    ZStack {
+                        VStack(spacing: 8) {
+                            Text("Check your connection and try again.")
+                                .font(.system(size: 13))
+                                .foregroundColor(Theme.tertiaryText)
+                                .multilineTextAlignment(.center)
 
-                    HStack(spacing: 12) {
-                        Button("Try Again") {
-                            startModelDownload()
-                        }
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(Theme.background)
-                        .padding(.horizontal, 32)
-                        .padding(.vertical, 12)
-                        .background(Theme.gold)
-                        .cornerRadius(8)
+                            HStack(spacing: 12) {
+                                Button("Try Again") {
+                                    startModelDownload()
+                                }
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(Theme.background)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 8)
+                                .background(Theme.gold)
+                                .cornerRadius(8)
 
-                        Button("Cancel") {
-                            isDownloadingModel = false
-                            downloadFailed = false
+                                Button("Cancel") {
+                                    isDownloadingModel = false
+                                    downloadFailed = false
+                                }
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Theme.tertiaryText)
+                            }
                         }
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(Theme.tertiaryText)
+                        .padding(.horizontal, 20)
                     }
-                } else {
-                    ProgressView()
-                        .tint(Theme.gold)
-                        .scaleEffect(1.3)
+                    .frame(width: 280, height: 90)
+                }
+            } else {
+                VStack(spacing: 16) {
+                    // Spinner box — custom rotating arc
+                    Circle()
+                        .trim(from: 0, to: 0.75)
+                        .stroke(Theme.gold, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                        .frame(width: 36, height: 36)
+                        .rotationEffect(.degrees(spinnerRotation))
+                        .onAppear {
+                            withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+                                spinnerRotation = 360
+                            }
+                        }
+                        .frame(width: 280, height: 80)
 
-                    Text("Downloading voice engine...")
-                        .font(.system(size: 15, weight: .medium))
+                    Text("Setting up voice capture...")
+                        .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(Theme.text)
 
-                    Text("This only happens once.\nHang tight.")
-                        .font(.system(size: 13))
-                        .foregroundColor(Theme.tertiaryText)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(3)
+                    // Subtitle + progress bar box — no fill, no border
+                    ZStack {
+                        VStack(spacing: 12) {
+                            Text("This only happens once.\nYour recording is safe.")
+                                .font(.system(size: 13))
+                                .foregroundColor(Theme.tertiaryText)
+                                .multilineTextAlignment(.center)
+                                .lineSpacing(3)
 
-                    // Progress bar
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(Color.white.opacity(0.08))
-                                .frame(height: 3)
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(Theme.gold)
-                                .frame(width: geo.size.width * CGFloat(min(downloadProgress, 1.0)), height: 3)
-                                .animation(.linear(duration: 0.05), value: downloadProgress)
+                            // Progress bar
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .fill(Color.white.opacity(0.08))
+                                        .frame(height: 3)
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .fill(Theme.gold)
+                                        .frame(width: geo.size.width * CGFloat(min(downloadProgress, 1.0)), height: 3)
+                                        .animation(.linear(duration: 0.05), value: downloadProgress)
+                                }
+                            }
+                            .frame(height: 3)
                         }
+                        .padding(.horizontal, 24)
                     }
-                    .frame(width: 180, height: 3)
-                    .padding(.top, 4)
-
-                    Text("One-time setup · Never again")
-                        .font(.system(size: 11))
-                        .foregroundColor(Theme.tertiaryText.opacity(0.4))
-                        .padding(.top, 8)
+                    .frame(width: 280, height: 90)
                 }
             }
         }

@@ -161,7 +161,8 @@ class SupabaseAPIClient: APIClient {
             body: moment.body,
             sense_of_lord: moment.senseOfLord,
             created_at: moment.createdAt.ISO8601Format(),
-            updated_at: Date().ISO8601Format()
+            updated_at: Date().ISO8601Format(),
+            audio_url: moment.audioURL
         )
 
         return try await performSaveMoment(payload, originalMoment: moment)
@@ -256,6 +257,119 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    // MARK: - Storage API
+
+    func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String {
+        // Upload to Supabase Storage bucket: moments-audio (PRIVATE bucket)
+        let storagePath = "\(userId)/\(fileName)"
+        let uploadEndpoint = "/storage/v1/object/moments-audio/\(storagePath)"
+
+        // 1. Upload audio file
+        var uploadRequest = URLRequest(url: URL(string: baseURL + uploadEndpoint)!)
+        uploadRequest.httpMethod = "POST"
+        uploadRequest.setValue(anonKey, forHTTPHeaderField: "apikey")
+        uploadRequest.setValue("Bearer \(jwtToken ?? anonKey)", forHTTPHeaderField: "Authorization")
+        uploadRequest.setValue("audio/mp4", forHTTPHeaderField: "Content-Type")
+        uploadRequest.httpBody = audioData
+
+        hlog("Uploading audio to Storage: \(fileName)")
+
+        do {
+            let (_, uploadResponse) = try await session.data(for: uploadRequest)
+            guard let httpResponse = uploadResponse as? HTTPURLResponse else { throw APIError.networkError }
+
+            if (200...299).contains(httpResponse.statusCode) {
+                // 2. Return file path (Edge Function will serve it securely)
+                hlog("Audio uploaded successfully: \(fileName)", "SUCCESS")
+                return storagePath
+            } else {
+                hlog("Upload failed (\(httpResponse.statusCode))", "ERROR")
+                throw APIError.serverError
+            }
+        } catch let error as APIError {
+            throw error
+        } catch {
+            hlog("Upload error: \(error.localizedDescription)", "ERROR")
+            throw APIError.networkError
+        }
+    }
+
+    private func generateSignedURLViaFunction(storagePath: String) async throws -> String {
+        // Call Edge Function to generate signed URL (uses service role, no RLS issues)
+        let endpoint = "/functions/v1/generate-audio-signed-url"
+        var urlComponents = URLComponents(string: baseURL)
+        urlComponents?.path = endpoint
+        guard let url = urlComponents?.url else { throw APIError.invalidRequest }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(jwtToken ?? anonKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let payload = ["filePath": storagePath]
+        request.httpBody = try JSONEncoder().encode(payload)
+
+        do {
+            let (data, response) = try await session.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else { throw APIError.networkError }
+
+            if (200...299).contains(httpResponse.statusCode) {
+                let decoder = JSONDecoder()
+                let result = try decoder.decode(SignedURLResponse.self, from: data)
+                hlog("Signed URL generated via Edge Function", "SUCCESS")
+                return result.signedUrl
+            } else {
+                let errorMsg = String(data: data, encoding: .utf8) ?? "Unknown error"
+                hlog("Edge Function failed (\(httpResponse.statusCode)): \(errorMsg)", "ERROR")
+                throw APIError.serverError
+            }
+        } catch let error as APIError {
+            throw error
+        } catch {
+            hlog("Edge Function error: \(error.localizedDescription)", "ERROR")
+            throw APIError.networkError
+        }
+    }
+
+    private func generateSignedURL(storagePath: String, expiresIn: Int) async throws -> String {
+        // Generate a signed URL using Supabase Storage API
+        let endpoint = "/storage/v1/object/moments-audio/sign-urls"
+
+        let payload = SignedURLRequest(expiresIn: expiresIn, paths: [storagePath])
+
+        var urlComponents = URLComponents(string: baseURL)
+        urlComponents?.path = endpoint
+        guard let url = urlComponents?.url else { throw APIError.invalidRequest }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(jwtToken ?? anonKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(payload)
+
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else { throw APIError.networkError }
+
+        if (200...299).contains(httpResponse.statusCode) {
+            let decoder = JSONDecoder()
+            let signedURLs = try decoder.decode([String: String].self, from: data)
+
+            // The response contains paths as keys and signed URLs as values
+            // Note: Response keys are the storage paths WITHOUT the bucket prefix
+            if let signedURL = signedURLs[storagePath] ?? signedURLs.values.first {
+                hlog("Signed URL generated (expires in \(expiresIn)s)", "SUCCESS")
+                return signedURL
+            } else {
+                throw APIError.serverError
+            }
+        } else {
+            hlog("Failed to generate signed URL (\(httpResponse.statusCode))", "ERROR")
+            throw APIError.serverError
+        }
+    }
+
     // MARK: - Analytics API
 
     func sendUsageEvents(_ events: [UsageEventData], userId: String) async throws {
@@ -291,6 +405,7 @@ struct MomentPayload: Codable {
     let sense_of_lord: String?
     let created_at: String
     let updated_at: String
+    let audio_url: String?
 }
 
 struct LoginPayload: Encodable {
@@ -339,4 +454,13 @@ extension UsageEventPayload: Encodable {
     }
 }
 
+struct SignedURLRequest: Encodable {
+    let expiresIn: Int
+    let paths: [String]
+}
+
 struct EmptyResponse: Decodable {}
+
+struct SignedURLResponse: Decodable {
+    let signedUrl: String
+}

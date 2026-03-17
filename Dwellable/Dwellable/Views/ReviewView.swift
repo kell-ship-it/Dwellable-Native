@@ -4,18 +4,25 @@ import Combine
 struct ReviewView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.scenePhase) var scenePhase
-    @StateObject private var transcriptionManager = TranscriptionManager()
+    @ObservedObject private var transcriptionManager = TranscriptionManager.shared
     @State private var momentBody: String = ""
     @State private var senseOfLord: String = ""
     @State private var isSaving = false
     @State private var saveError: String?
     @State private var isSyncPending = false
+    @State private var spinnerRotation: Double = 0
 
     let audioURL: URL?
     let apiClient: APIClient
     let userId: String
     let syncManager: SyncManager
     var onMomentSaved: (() -> Void)?
+
+    /// Keep loading visible until transcription is complete AND momentBody is populated
+    /// OR until an error occurs
+    private var shouldShowLoading: Bool {
+        transcriptionManager.isTranscribing || (momentBody.isEmpty && transcriptionManager.errorMessage == nil)
+    }
 
     var body: some View {
         ZStack {
@@ -50,8 +57,8 @@ struct ReviewView: View {
                     Spacer()
                         .frame(height: 10)
 
-                    // Transcribing indicator
-                    if transcriptionManager.isTranscribing {
+                    // Transcribing indicator — show while transcribing OR while waiting for momentBody to populate
+                    if shouldShowLoading {
                         HStack(spacing: Theme.Spacing.sm) {
                             ProgressView()
                                 .tint(Theme.gold)
@@ -110,8 +117,8 @@ struct ReviewView: View {
                         .background(Color.clear)
                         .frame(maxWidth: .infinity)
                         .frame(maxHeight: .infinity)
-                        .disabled(transcriptionManager.isTranscribing)
-                        .opacity(transcriptionManager.isTranscribing ? 0.5 : 1.0)
+                        .disabled(shouldShowLoading)
+                        .opacity(shouldShowLoading ? 0.5 : 1.0)
 
                     // Hint text
                     Text("Add where you sensed the Lord, if at all...")
@@ -168,16 +175,21 @@ struct ReviewView: View {
         }
         .navigationBarBackButtonHidden(true)
         .overlay(alignment: .center) {
-            if transcriptionManager.isTranscribing {
+            if shouldShowLoading {
                 ZStack {
-                    Theme.background
-                        .opacity(0.97)
-                        .ignoresSafeArea()
+                    Color.black.ignoresSafeArea()
 
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .tint(Theme.gold)
-                            .scaleEffect(1.4)
+                    VStack(spacing: 20) {
+                        Circle()
+                            .trim(from: 0, to: 0.75)
+                            .stroke(Theme.gold, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                            .frame(width: 36, height: 36)
+                            .rotationEffect(.degrees(spinnerRotation))
+                            .onAppear {
+                                withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+                                    spinnerRotation = 360
+                                }
+                            }
 
                         Text("Capturing your beautiful moment...")
                             .font(.system(size: 17, weight: .medium))
@@ -188,6 +200,9 @@ struct ReviewView: View {
             }
         }
         .onAppear {
+            // Set API client for audio uploads to Supabase Storage
+            transcriptionManager.setAPIClient(apiClient, userId: userId)
+
             if let audioURL = audioURL, momentBody.isEmpty {
                 // Start transcription immediately
                 // AudioRecordingManager delegates already ensure file is fully written before reaching here
@@ -245,7 +260,8 @@ struct ReviewView: View {
             userId: userId,
             body: momentBody,
             senseOfLord: senseOfLord.isEmpty ? nil : senseOfLord,
-            createdAt: Date()
+            createdAt: Date(),
+            audioURL: transcriptionManager.audioURL
         )
 
         HTMLLogManager.shared.log("Save tapped — userId: \(userId.prefix(8)), body: \"\(String(momentBody.prefix(60)))\"")

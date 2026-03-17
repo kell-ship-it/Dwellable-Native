@@ -653,7 +653,7 @@
 
             <div class="section">
                 <h3>What You're Testing</h3>
-                <p>This comprehensive testing checklist covers <strong>43+ test scenarios</strong> across 9 phases:</p>
+                <p>This comprehensive testing checklist covers <strong>52+ test scenarios</strong> across 11 phases:</p>
                 <ul style="margin-left: 20px; margin-top: 15px;">
                     <li><strong>Phase 1: Offline Support</strong> — Can you save moments without WiFi?</li>
                     <li><strong>Phase 2: Authentication</strong> — Does login work correctly?</li>
@@ -664,6 +664,8 @@
                     <li><strong>Phase 7: Performance</strong> — Is the app fast and responsive?</li>
                     <li><strong>Phase 8: UI/UX</strong> — Does the interface feel polished and professional?</li>
                     <li><strong>Phase 9: Bug Fix Verification</strong> — Were recent critical bugs fixed correctly?</li>
+                    <li><strong>Phase 10: Layer 1 Recording Features</strong> — Do 10-min limit and background protection work?</li>
+                    <li><strong>Phase 11: WhisperKit Long Recording</strong> — Does WhisperKit transcribe 30 sec / 5 min / 10 min accurately?</li>
                 </ul>
             </div>
 
@@ -1848,6 +1850,684 @@
                 </tr>
             </table>
 
+            <!-- Phase 11: WhisperKit Long Recording Testing -->
+            <h2>Phase 11 — WhisperKit: Long Recording & Transcription Accuracy (12 scenarios)</h2>
+            <div class="plain-english">
+                These tests validate WhisperKit's ability to transcribe recordings of varying lengths accurately. WhisperKit replaced Apple's Speech Framework (which had a ~300MB memory ceiling causing truncation). Tests cover the first-time download overlay, recording durations of 30 sec / 5 min / 10 min, accuracy comparison against Voice Memos, 9-minute warning, 10-minute auto-stop, and Supabase sync verification.
+            </div>
+            <div class="why-matters">
+                <strong>Why this matters:</strong>
+                <ul>
+                    <li>The core use case is voice capture — if transcription truncates, users lose their moments</li>
+                    <li>WhisperKit must handle 10-minute recordings without truncation (Speech Framework couldn't)</li>
+                    <li>The first-time download overlay must be visually correct and not block the recording</li>
+                    <li>Every recording must sync to Supabase — local-only saves are not a success</li>
+                    <li>Accuracy is the product — a bad transcript means the moment is lost</li>
+                </ul>
+            </div>
+
+            <div class="alert">
+                <strong>Setup Before Testing:</strong><br>
+                1. Delete and reinstall app to clear WhisperKit model cache (tests fresh download on 11.1)<br>
+                2. Open <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">http://169.254.94.22:8787</code> in browser to monitor console logs in real time<br>
+                3. Have Voice Memos app open alongside for accuracy comparison (11.3, 11.5, 11.7)<br>
+                4. Log in as <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">pilot@dwellable.com</code> for all tests in this phase
+            </div>
+
+            <table>
+                <tr>
+                    <th class="num">#</th>
+                    <th>Scenario</th>
+                    <th>Expected</th>
+                    <th style="width: 80px;">Status</th>
+                    <th style="width: 100px;">Actions</th>
+                </tr>
+
+                <tr id="test-row-11-1">
+                    <td class="num">11.1</td>
+                    <td><strong>First-Capture Download Overlay (Option B)</strong><br><small>Fresh install → log in → tap mic for the first time</small></td>
+                    <td>Download overlay appears with gold arc spinner, correct text, dark background, progress bar animates to 100%, recording auto-starts after</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="11.1"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('11.1')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-11.1" class="test-row-details">
+                            <strong>Prerequisites:</strong> App freshly installed (no cached model)<br>
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Open app → log in</li>
+                                <li>Tap "+" to go to CaptureView</li>
+                                <li>Tap mic button for the first time</li>
+                                <li>Download overlay should appear immediately</li>
+                                <li>Watch overlay for 30–60 seconds while model downloads</li>
+                                <li>After download: overlay closes, recording starts automatically (no extra tap)</li>
+                            </ol>
+                            <strong>UI checks (match agreed design):</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Background is pure black (no CaptureView bleeding through)</li>
+                                <li>Spinner is a gold rotating arc (not iOS starburst dots)</li>
+                                <li>Title: "Setting up voice capture..."</li>
+                                <li>Subtitle: "This only happens once. Your recording is safe."</li>
+                                <li>Gold progress bar animates from 0% to 100%</li>
+                                <li>No border boxes around elements</li>
+                            </ul>
+                            <strong>Console to verify:</strong> "First capture — downloading WhisperKit model" → "Model ready — starting first recording"<br>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="11.1"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (overlay screenshot):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '11.1')">
+                                <div class="image-preview" id="images-11.1"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-11-2">
+                    <td class="num">11.2</td>
+                    <td><strong>Post-Capture Transcription UI</strong><br><small>Stop recording → transcription overlay appears</small></td>
+                    <td>Dark black overlay with gold arc spinner and "Capturing your beautiful moment..." — no background bleed</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="11.2"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('11.2')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-11.2" class="test-row-details">
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Record any duration (30 sec is fine)</li>
+                                <li>Tap mic to stop</li>
+                                <li>ReviewView appears — observe the transcription overlay</li>
+                            </ol>
+                            <strong>UI checks (match agreed design):</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Background is pure black (not the app's dark background)</li>
+                                <li>Spinner is gold rotating arc (not iOS starburst dots)</li>
+                                <li>Text: "Capturing your beautiful moment..."</li>
+                                <li>No subtitle text or progress bar (just spinner + text)</li>
+                                <li>Overlay disappears automatically when transcription completes</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="11.2"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (transcription overlay screenshot):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '11.2')">
+                                <div class="image-preview" id="images-11.2"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-11-3">
+                    <td class="num">11.3</td>
+                    <td><strong>30-Second Recording — Full Transcription</strong><br><small>Record 30 sec, verify full capture, save, check Supabase</small></td>
+                    <td>Full transcript captured, moment saves, appears in Supabase with correct body text</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="11.3"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('11.3')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-11.3" class="test-row-details">
+                            <strong>Accuracy method:</strong> Record the same 30 seconds simultaneously in Voice Memos (on a second device or before/after)<br>
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Start Voice Memos recording on another device (or remember what you say)</li>
+                                <li>Record 30 seconds of natural speech in Dwellable</li>
+                                <li>Stop recording → wait for transcription overlay to complete</li>
+                                <li>ReviewView shows transcript — compare to what you said</li>
+                                <li>Tap Save</li>
+                                <li>Check Supabase moments table for the new row</li>
+                            </ol>
+                            <strong>Success criteria:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Transcript captures at least 80% of spoken content</li>
+                                <li>No truncation (last sentences present)</li>
+                                <li>Save button enabled after transcription</li>
+                                <li>Moment saves successfully (check console for "Save succeeded")</li>
+                                <li>Moment appears in Supabase with full body text</li>
+                                <li>Moment appears at top of MomentsListView</li>
+                            </ul>
+                            <strong>Console to verify:</strong> "Save succeeded — moment written to Supabase"<br>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="11.3"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (transcript + Supabase row):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '11.3')">
+                                <div class="image-preview" id="images-11.3"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-11-4">
+                    <td class="num">11.4</td>
+                    <td><strong>Subsequent Recording Skips Download Overlay</strong><br><small>Record a second moment immediately after 11.3</small></td>
+                    <td>Mic tap goes straight to recording — no download overlay (model already cached)</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="11.4"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('11.4')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-11.4" class="test-row-details">
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>After completing 11.3, go back to CaptureView</li>
+                                <li>Tap mic button again</li>
+                                <li>Recording should start immediately — no download overlay</li>
+                                <li>Record a few seconds and stop</li>
+                                <li>Transcription should complete normally</li>
+                            </ol>
+                            <strong>Success criteria:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>No "Setting up voice capture..." overlay appears</li>
+                                <li>Recording starts within 1 second of mic tap</li>
+                                <li>Transcription completes normally</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="11.4"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (optional):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '11.4')">
+                                <div class="image-preview" id="images-11.4"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-11-5">
+                    <td class="num">11.5</td>
+                    <td><strong>5-Minute Recording — Full Transcription</strong><br><small>Record 5 min of continuous speech, verify full capture, save, check Supabase</small></td>
+                    <td>Full 5-minute transcript captured without truncation, saves to Supabase</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="11.5"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('11.5')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-11.5" class="test-row-details">
+                            <strong>This is the key WhisperKit validation test</strong> — Speech Framework truncated at ~2 min<br>
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Optionally record the same speech in Voice Memos first for comparison</li>
+                                <li>Speak continuously for 5 full minutes on any topic (pray, journal, reflect)</li>
+                                <li>Stop recording at ~5:00 on the timer</li>
+                                <li>Wait for transcription (may take 15–30 seconds for 5 min of audio)</li>
+                                <li>Scroll through the full transcript to verify content from start AND end</li>
+                                <li>Save → check Supabase</li>
+                            </ol>
+                            <strong>Success criteria:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Content from the LAST 30 seconds of speech is present (was truncated before)</li>
+                                <li>Content from the FIRST 30 seconds is also present</li>
+                                <li>No "Dwellable didn't catch that" error</li>
+                                <li>Transcript is at least 300–500 words for 5 minutes of natural speech</li>
+                                <li>Saves and syncs to Supabase successfully</li>
+                            </ul>
+                            <strong>Accuracy comparison:</strong> Compare key phrases from Voice Memos to Dwellable transcript — at least 80% match expected<br>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="11.5"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (scroll to end of transcript + Supabase row):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '11.5')">
+                                <div class="image-preview" id="images-11.5"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-11-6">
+                    <td class="num">11.6</td>
+                    <td><strong>9-Minute Warning During Long Recording</strong><br><small>Record continuously, watch for warning at 9:00</small></td>
+                    <td>Gold warning message appears at exactly 9:00: "Hey, 60 seconds left in recording..."</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="11.6"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('11.6')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-11.6" class="test-row-details">
+                            <strong>Best tested during 11.7 (10-minute recording)</strong><br>
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Start recording and let the timer run</li>
+                                <li>At 9:00 on the timer, watch for a gold warning message below the mic button</li>
+                                <li>Message should read: "Hey, 60 seconds left in recording. Feel free to add another moment to supplement this."</li>
+                            </ol>
+                            <strong>Success criteria:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Warning appears in gold color</li>
+                                <li>Appears at 9:00, not before or after</li>
+                                <li>Appears only once (no flickering or repeat)</li>
+                                <li>Recording continues normally after warning</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="11.6"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (warning message visible):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '11.6')">
+                                <div class="image-preview" id="images-11.6"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-11-7">
+                    <td class="num">11.7</td>
+                    <td><strong>10-Minute Recording — Full Transcription + Auto-Stop</strong><br><small>Record for full 10 minutes, verify auto-stop, full transcript, save, Supabase</small></td>
+                    <td>Auto-stops at 10:00, full transcript captured, saves to Supabase with no truncation</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="11.7"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('11.7')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-11.7" class="test-row-details">
+                            <strong>This is the critical regression test for B-014 (audio timing race condition)</strong><br>
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Optionally record same speech in Voice Memos for accuracy comparison</li>
+                                <li>Start recording — speak continuously for 10 full minutes</li>
+                                <li>At 9:00 — 9-minute warning should appear (verify 11.6 passes)</li>
+                                <li>At 10:00 — recording auto-stops (do NOT tap mic manually)</li>
+                                <li>ReviewView appears with "Capturing your beautiful moment..." overlay</li>
+                                <li>Wait for full transcription (may take 30–60 seconds for 10 min audio)</li>
+                                <li>Scroll transcript from top to bottom — verify content from START and END of recording</li>
+                                <li>Tap Save</li>
+                                <li>Check Supabase moments table for new row with full body text</li>
+                            </ol>
+                            <strong>Success criteria:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Auto-stop fires at 10:00 (not before, not after)</li>
+                                <li>ReviewView appears automatically after stop</li>
+                                <li>Content from last 60 seconds of speech is present in transcript</li>
+                                <li>Content from first 60 seconds is also present</li>
+                                <li>Transcript is at least 600–900 words for 10 minutes of natural speech</li>
+                                <li>Saves successfully — no error messages</li>
+                                <li>Moment appears in Supabase with full body</li>
+                                <li>Moment appears at top of MomentsListView</li>
+                            </ul>
+                            <strong>Accuracy comparison:</strong> Compare key phrases said in first and last minute against Voice Memos — at least 80% match expected<br>
+                            <strong>Console to verify:</strong> "Save succeeded — moment written to Supabase"<br>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="11.7"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (full transcript + Supabase row):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '11.7')">
+                                <div class="image-preview" id="images-11.7"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-11-8">
+                    <td class="num">11.8</td>
+                    <td><strong>Console Log Verification (HTTP Server)</strong><br><small>During any recording, monitor http://169.254.94.22:8787 for real-time logs</small></td>
+                    <td>Each state is logged: download → transcribe start → transcribe complete → save start → save success/fail</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="11.8"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('11.8')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-11.8" class="test-row-details">
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Open <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">http://169.254.94.22:8787</code> in your Mac's browser</li>
+                                <li>Record a moment in Dwellable on your iPhone</li>
+                                <li>Watch the browser dashboard for log entries appearing in real time</li>
+                            </ol>
+                            <strong>Expected log sequence:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>"First capture — downloading WhisperKit model" (first recording only)</li>
+                                <li>"Model ready — starting first recording" (first recording only)</li>
+                                <li>"Save tapped — userId: ..." (on save)</li>
+                                <li>"Save succeeded — moment written to Supabase" (on success)</li>
+                            </ul>
+                            <strong>Note:</strong> T-048 tracks a known issue where the live dashboard may not populate. If logs are not appearing, note that here — it is a separate bug.<br>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="11.8"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (browser dashboard screenshot):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '11.8')">
+                                <div class="image-preview" id="images-11.8"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-11-9">
+                    <td class="num">11.9</td>
+                    <td><strong>Supabase Sync Verification (All 3 Recordings)</strong><br><small>After 11.3, 11.5, 11.7 — verify all 3 moments in Supabase</small></td>
+                    <td>3 new moments in Supabase with correct body text, user ID, and timestamps</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="11.9"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('11.9')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-11.9" class="test-row-details">
+                            <strong>How to verify:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>After completing 11.3, 11.5, and 11.7, open Supabase dashboard</li>
+                                <li>Navigate to Table Editor → moments table</li>
+                                <li>Filter by user_id for pilot@dwellable.com</li>
+                                <li>Sort by created_at descending</li>
+                                <li>Confirm 3 new rows exist with full body text</li>
+                            </ol>
+                            <strong>Success criteria:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>3 rows present — one from each recording duration</li>
+                                <li>Body text is complete (not truncated mid-sentence)</li>
+                                <li>created_at timestamps match today's session</li>
+                                <li>user_id matches pilot@dwellable.com's UUID</li>
+                                <li>No duplicate rows from retry logic</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="11.9"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (Supabase table showing 3 rows):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '11.9')">
+                                <div class="image-preview" id="images-11.9"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-11-10">
+                    <td class="num">11.10</td>
+                    <td><strong>30-Second Transcription Accuracy</strong><br><small>Record ~30 sec from a known source → compare to reference transcript</small></td>
+                    <td>Transcription matches reference at ≥95% word accuracy — no major omissions or substitutions</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="11.10"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('11.10')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-11.10" class="test-row-details">
+                            <strong>Pass threshold:</strong> ≥ 95% word accuracy<br>
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Find a YouTube video with auto-generated captions — copy ~30 sec of transcript as your reference</li>
+                                <li>Play that 30-second clip out loud and record it in Dwellable</li>
+                                <li>Save the moment and copy the Dwellable transcript</li>
+                                <li>Paste both into the Transcription Quality Assessment tool below, select "30 seconds", and click Compare</li>
+                                <li>Mark Pass if accuracy ≥ 95%, Fail if below</li>
+                            </ol>
+                            <strong>What to look for:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Proper nouns and names transcribed correctly</li>
+                                <li>No words dropped mid-sentence</li>
+                                <li>No hallucinated words not in the original</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="11.10"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (accuracy comparison screenshot):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '11.10')">
+                                <div class="image-preview" id="images-11.10"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-11-11">
+                    <td class="num">11.11</td>
+                    <td><strong>5-Minute Transcription Accuracy</strong><br><small>Record ~5 min from a known source → compare to reference transcript</small></td>
+                    <td>Transcription matches reference at ≥90% word accuracy — no truncation, no major drift</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="11.11"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('11.11')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-11.11" class="test-row-details">
+                            <strong>Pass threshold:</strong> ≥ 90% word accuracy<br>
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Find a YouTube video with auto-generated captions — copy ~5 min of transcript as your reference</li>
+                                <li>Play that 5-minute clip out loud and record it in Dwellable</li>
+                                <li>Save the moment and copy the Dwellable transcript</li>
+                                <li>Paste both into the Transcription Quality Assessment tool below, select "5 minutes", and click Compare</li>
+                                <li>Mark Pass if accuracy ≥ 90%, Fail if below</li>
+                            </ol>
+                            <strong>What to look for:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Transcript does not cut off before the recording ends</li>
+                                <li>Accuracy doesn't degrade noticeably in the second half</li>
+                                <li>Consistent sentence structure throughout</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="11.11"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (accuracy comparison screenshot):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '11.11')">
+                                <div class="image-preview" id="images-11.11"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr id="test-row-11-12">
+                    <td class="num">11.12</td>
+                    <td><strong>10-Minute Transcription Accuracy</strong><br><small>Record ~10 min from a known source → compare to reference transcript</small></td>
+                    <td>Transcription matches reference at ≥85% word accuracy — full recording transcribed without truncation</td>
+                    <td><input type="text" class="status-input" placeholder="Pass/Fail" data-test="11.12"></td>
+                    <td><button class="expand-btn" onclick="toggleTestDetails('11.12')">Details ▼</button></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div id="details-11.12" class="test-row-details">
+                            <strong>Pass threshold:</strong> ≥ 85% word accuracy<br>
+                            <strong>How to test:</strong>
+                            <ol style="margin: 10px 0; margin-left: 20px;">
+                                <li>Find a YouTube video with auto-generated captions — copy ~10 min of transcript as your reference</li>
+                                <li>Play that 10-minute clip out loud and record it in Dwellable (watch for the 9-min warning and 10-min auto-stop)</li>
+                                <li>Save the moment and copy the Dwellable transcript</li>
+                                <li>Paste both into the Transcription Quality Assessment tool below, select "10 minutes", and click Compare</li>
+                                <li>Mark Pass if accuracy ≥ 85%, Fail if below</li>
+                            </ol>
+                            <strong>What to look for:</strong>
+                            <ul style="margin: 10px 0; margin-left: 20px;">
+                                <li>Transcript covers the full 10 minutes (not cut off at ~5 min like the old Speech Framework)</li>
+                                <li>9-minute warning displayed during recording</li>
+                                <li>Recording auto-stops at 10:00 and immediately begins transcription</li>
+                                <li>Accuracy doesn't fall off dramatically toward the end</li>
+                            </ul>
+                            <strong>Notes:</strong>
+                            <textarea class="notes-input" placeholder="Add your notes here..." data-test="11.12"></textarea>
+                            <div class="image-upload">
+                                <label>📸 Upload Image (accuracy comparison screenshot):</label>
+                                <input type="file" accept="image/*" onchange="handleImageUpload(this, '11.12')">
+                                <div class="image-preview" id="images-11.12"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- TRANSCRIPTION QUALITY ASSESSMENT SECTION -->
+            <div style="margin-top: 40px; padding: 24px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px;">
+                <h2 style="color: #f5c842; margin-bottom: 6px;">📊 Transcription Quality Assessment</h2>
+                <p style="color: #888; margin-bottom: 16px; font-size: 13px;">Paste a reference transcript (e.g. from YouTube auto-captions) alongside the Dwellable transcription to measure accuracy and deviation.</p>
+
+                <!-- Pass/Fail Thresholds Reference -->
+                <div style="margin-bottom: 20px; border: 1px solid #333; border-radius: 6px; overflow: hidden;">
+                    <div style="background: #111; padding: 8px 14px; font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.05em;">Pass / Fail Thresholds by Duration</div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr);">
+                        <div style="padding: 12px 14px; border-right: 1px solid #222; text-align: center;">
+                            <div style="font-size: 13px; font-weight: 700; color: #ccc; margin-bottom: 4px;">30 Seconds</div>
+                            <div style="font-size: 11px; color: #4caf50;">✅ Pass: ≥ 95%</div>
+                            <div style="font-size: 11px; color: #f5c842;">⚠️ Marginal: 85–94%</div>
+                            <div style="font-size: 11px; color: #f44336;">❌ Fail: &lt; 85%</div>
+                        </div>
+                        <div style="padding: 12px 14px; border-right: 1px solid #222; text-align: center;">
+                            <div style="font-size: 13px; font-weight: 700; color: #ccc; margin-bottom: 4px;">5 Minutes</div>
+                            <div style="font-size: 11px; color: #4caf50;">✅ Pass: ≥ 90%</div>
+                            <div style="font-size: 11px; color: #f5c842;">⚠️ Marginal: 80–89%</div>
+                            <div style="font-size: 11px; color: #f44336;">❌ Fail: &lt; 80%</div>
+                        </div>
+                        <div style="padding: 12px 14px; text-align: center;">
+                            <div style="font-size: 13px; font-weight: 700; color: #ccc; margin-bottom: 4px;">10 Minutes</div>
+                            <div style="font-size: 11px; color: #4caf50;">✅ Pass: ≥ 85%</div>
+                            <div style="font-size: 11px; color: #f5c842;">⚠️ Marginal: 75–84%</div>
+                            <div style="font-size: 11px; color: #f44336;">❌ Fail: &lt; 75%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; color: #ccc; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Recording Duration</label>
+                        <select id="tqa-duration" style="background: #111; color: #ccc; border: 1px solid #444; border-radius: 4px; padding: 8px 12px; font-size: 13px; width: 100%;">
+                            <option value="30s">30 seconds</option>
+                            <option value="5min">5 minutes</option>
+                            <option value="10min">10 minutes</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; color: #ccc; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Source / Context</label>
+                        <input id="tqa-source" type="text" placeholder="e.g. YouTube video title or URL" style="background: #111; color: #ccc; border: 1px solid #444; border-radius: 4px; padding: 8px 12px; font-size: 13px; width: 100%; box-sizing: border-box;">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                    <div>
+                        <label style="display: block; color: #ccc; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+                            Reference Transcript
+                            <span id="tqa-ref-count" style="font-weight: 400; color: #888; margin-left: 8px;">0 words</span>
+                        </label>
+                        <textarea id="tqa-reference" oninput="tqaUpdateCount('tqa-reference','tqa-ref-count')" placeholder="Paste YouTube auto-captions or known-good transcript here..." style="width: 100%; height: 220px; background: #111; color: #ddd; border: 1px solid #444; border-radius: 4px; padding: 10px; font-size: 13px; font-family: monospace; resize: vertical; box-sizing: border-box;"></textarea>
+                    </div>
+                    <div>
+                        <label style="display: block; color: #ccc; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+                            Dwellable Transcript
+                            <span id="tqa-dwellable-count" style="font-weight: 400; color: #888; margin-left: 8px;">0 words</span>
+                        </label>
+                        <textarea id="tqa-dwellable" oninput="tqaUpdateCount('tqa-dwellable','tqa-dwellable-count')" placeholder="Paste the transcription output from Dwellable here..." style="width: 100%; height: 220px; background: #111; color: #ddd; border: 1px solid #444; border-radius: 4px; padding: 10px; font-size: 13px; font-family: monospace; resize: vertical; box-sizing: border-box;"></textarea>
+                    </div>
+                </div>
+
+                <button onclick="runTranscriptionComparison()" style="background: #f5c842; color: #111; font-weight: 700; border: none; padding: 10px 28px; border-radius: 4px; font-size: 14px; cursor: pointer; margin-bottom: 20px;">Compare Transcripts</button>
+
+                <div id="tqa-results" style="display: none;">
+                    <div id="tqa-verdict" style="padding: 12px 18px; border-radius: 6px; font-size: 16px; font-weight: 700; margin-bottom: 16px; text-align: center;"></div>
+
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
+                        <div style="background: #111; border: 1px solid #333; border-radius: 6px; padding: 14px; text-align: center;">
+                            <div id="tqa-accuracy" style="font-size: 28px; font-weight: 700; color: #f5c842;">—</div>
+                            <div style="font-size: 11px; color: #888; margin-top: 4px;">Accuracy</div>
+                        </div>
+                        <div style="background: #111; border: 1px solid #333; border-radius: 6px; padding: 14px; text-align: center;">
+                            <div id="tqa-deviation" style="font-size: 28px; font-weight: 700; color: #f5c842;">—</div>
+                            <div style="font-size: 11px; color: #888; margin-top: 4px;">Deviation</div>
+                        </div>
+                        <div style="background: #111; border: 1px solid #333; border-radius: 6px; padding: 14px; text-align: center;">
+                            <div id="tqa-ref-words" style="font-size: 28px; font-weight: 700; color: #ccc;">—</div>
+                            <div style="font-size: 11px; color: #888; margin-top: 4px;">Reference Words</div>
+                        </div>
+                        <div style="background: #111; border: 1px solid #333; border-radius: 6px; padding: 14px; text-align: center;">
+                            <div id="tqa-dwellable-words" style="font-size: 28px; font-weight: 700; color: #ccc;">—</div>
+                            <div style="font-size: 11px; color: #888; margin-top: 4px;">Dwellable Words</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; color: #ccc; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Missed / Substituted Words</label>
+                        <div id="tqa-missed-words" style="background: #111; border: 1px solid #333; border-radius: 4px; padding: 12px; min-height: 48px; font-family: monospace; font-size: 12px; color: #ff6b6b; line-height: 1.8; word-break: break-all;"></div>
+                    </div>
+
+                    <div>
+                        <label style="display: block; color: #ccc; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Assessment Notes</label>
+                        <textarea id="tqa-notes" placeholder="Qualitative observations — hesitations, proper nouns, punctuation accuracy, speaking style, etc." style="width: 100%; height: 100px; background: #111; color: #ddd; border: 1px solid #444; border-radius: 4px; padding: 10px; font-size: 13px; resize: vertical; box-sizing: border-box;"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            function tqaUpdateCount(textareaId, countId) {
+                const text = document.getElementById(textareaId).value.trim();
+                const count = text ? text.split(/\s+/).length : 0;
+                document.getElementById(countId).textContent = count + ' words';
+            }
+
+            function tqaNormalize(text) {
+                return text.toLowerCase()
+                    .replace(/[^a-z0-9\s']/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim()
+                    .split(' ')
+                    .filter(w => w.length > 0);
+            }
+
+            function runTranscriptionComparison() {
+                const refText = document.getElementById('tqa-reference').value;
+                const dwellText = document.getElementById('tqa-dwellable').value;
+
+                if (!refText.trim() || !dwellText.trim()) {
+                    alert('Please paste both transcripts before comparing.');
+                    return;
+                }
+
+                const refWords = tqaNormalize(refText);
+                const dwellWords = tqaNormalize(dwellText);
+
+                const refSet = new Set(refWords);
+                const dwellSet = new Set(dwellWords);
+
+                // Word-level accuracy: how many reference words appear in Dwellable output
+                let matched = 0;
+                const missed = [];
+                for (const word of refWords) {
+                    if (dwellSet.has(word)) {
+                        matched++;
+                    } else {
+                        missed.push(word);
+                    }
+                }
+
+                const accuracy = refWords.length > 0 ? (matched / refWords.length * 100) : 0;
+                const deviation = 100 - accuracy;
+
+                // Show results
+                document.getElementById('tqa-results').style.display = 'block';
+                document.getElementById('tqa-accuracy').textContent = accuracy.toFixed(1) + '%';
+                document.getElementById('tqa-deviation').textContent = deviation.toFixed(1) + '%';
+                document.getElementById('tqa-ref-words').textContent = refWords.length;
+                document.getElementById('tqa-dwellable-words').textContent = dwellWords.length;
+
+                // Missed words — deduplicate and sort
+                const uniqueMissed = [...new Set(missed)].sort();
+                document.getElementById('tqa-missed-words').textContent = uniqueMissed.length > 0
+                    ? uniqueMissed.join(', ')
+                    : '✅ No missed words detected';
+
+                // Duration-specific pass/fail thresholds
+                const duration = document.getElementById('tqa-duration').value;
+                const thresholds = {
+                    '30s':   { pass: 95, marginal: 85, label: '30 sec' },
+                    '5min':  { pass: 90, marginal: 80, label: '5 min' },
+                    '10min': { pass: 85, marginal: 75, label: '10 min' },
+                    'custom': { pass: 90, marginal: 75, label: 'custom' }
+                };
+                const t = thresholds[duration] || thresholds['custom'];
+
+                const verdictEl = document.getElementById('tqa-verdict');
+                if (accuracy >= t.pass) {
+                    verdictEl.style.background = '#1a3a1a';
+                    verdictEl.style.color = '#4caf50';
+                    verdictEl.style.border = '1px solid #4caf50';
+                    verdictEl.textContent = `✅ PASS — ${accuracy.toFixed(1)}% accuracy meets the ${t.label} threshold (≥${t.pass}%)`;
+                } else if (accuracy >= t.marginal) {
+                    verdictEl.style.background = '#2a2a0a';
+                    verdictEl.style.color = '#f5c842';
+                    verdictEl.style.border = '1px solid #f5c842';
+                    verdictEl.textContent = `⚠️ MARGINAL — ${accuracy.toFixed(1)}% is below the ${t.label} pass target (${t.marginal}–${t.pass - 1}%)`;
+                } else {
+                    verdictEl.style.background = '#3a1a1a';
+                    verdictEl.style.color = '#f44336';
+                    verdictEl.style.border = '1px solid #f44336';
+                    verdictEl.textContent = `❌ FAIL — ${accuracy.toFixed(1)}% accuracy is below the ${t.label} minimum (<${t.marginal}%)`;
+                }
+
+                verdictEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            </script>
+
             <!-- GENERAL ISSUES SECTION -->
             <div class="general-issues-section">
                 <h3>🚨 General Issues (Not Related to Specific Scenarios)</h3>
@@ -1877,7 +2557,7 @@
                 <li>Send the exported file + any images back to Claude</li>
                 <li>Claude will create tickets for all failures and fix them next session</li>
             </ol>
-            <p style="margin-top: 20px; color: #666;">Master Checklist with Image Support — Updated March 13, 2026 (Phase 10: Layer 1 Added)</p>
+            <p style="margin-top: 20px; color: #666;">Master Checklist with Image Support — Updated March 14, 2026 (Phase 11: WhisperKit Long Recording Added)</p>
         </div>
     </div>
 

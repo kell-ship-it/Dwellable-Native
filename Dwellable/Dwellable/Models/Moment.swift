@@ -7,6 +7,7 @@ struct Moment: Identifiable, Codable {
     let senseOfLord: String?
     let createdAt: Date
     var syncedAt: Date?
+    let audioURL: String?  // Local filename for original audio (e.g., "moment_12345.m4a")
 
     init(
         id: String = UUID().uuidString,
@@ -14,7 +15,8 @@ struct Moment: Identifiable, Codable {
         body: String,
         senseOfLord: String? = nil,
         createdAt: Date = Date(),
-        syncedAt: Date? = nil
+        syncedAt: Date? = nil,
+        audioURL: String? = nil
     ) {
         self.id = id
         self.userId = userId
@@ -22,6 +24,7 @@ struct Moment: Identifiable, Codable {
         self.senseOfLord = senseOfLord
         self.createdAt = createdAt
         self.syncedAt = syncedAt
+        self.audioURL = audioURL
     }
 
     enum CodingKeys: String, CodingKey {
@@ -31,5 +34,6 @@ struct Moment: Identifiable, Codable {
         case senseOfLord = "sense_of_lord"
         case createdAt = "created_at"
         case syncedAt = "synced_at"
+        case audioURL = "audio_url"
     }
 }

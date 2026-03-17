@@ -12,6 +12,9 @@ protocol APIClient {
     func logout() async throws
     func ensureUserExists(userId: String, email: String) async throws
 
+    // Storage endpoints
+    func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String
+
     // Analytics endpoints
     func sendUsageEvents(_ events: [UsageEventData], userId: String) async throws
 
