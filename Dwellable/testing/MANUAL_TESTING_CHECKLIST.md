@@ -201,6 +201,60 @@ For each scenario, mark Status as:
 
 ---
 
+## Phase 12 — Audio Recording Duration (5 scenarios)
+
+> **Goal:** Verify audio capture works correctly across different recording lengths
+
+| # | Scenario | Steps | Expected | Status | Notes / Questions |
+|---|---|---|---|---|---|
+| 12.1 | Short recording (5 seconds) | 1. MomentsListView 2. Tap mic 3. Record for ~5 seconds ("This is a short test") 4. Stop & Save | Full text captured. Moment saved. No truncation. | ☐ | |
+| 12.2 | Medium recording (1-2 minutes) | 1. Record for ~1-2 minutes (read a paragraph or list items) 2. Stop & Save | Full transcript captured. No gaps or dropouts. Quality good. | ☐ | |
+| 12.3 | Long recording (5 minutes) | 1. Record for ~5 minutes (sustained speech, normal conversation) 2. Stop & Save | Complete transcript with no loss. Transcription time reasonable (~10-15s). | ☐ | |
+| 12.4 | Extended recording (10 minutes) | 1. Record full 10-minute duration (will hit auto-stop at 10:00) 2. ReviewView should open with full transcript | Full 10-minute audio transcribed. No truncation at time limit. Transcript complete. | ☐ | |
+| 12.5 | Multiple long sessions (3x 10-min recordings) | 1. Record 10-minute session, save 2. Wait 5 seconds 3. Record another 10-minute, save 4. Repeat once more (3 total) | All 3 moments saved successfully. No database or upload conflicts. Timestamps differ correctly. | ☐ | |
+
+---
+
+## Phase 13 — Recording Environment & Network Variations (6 scenarios)
+
+> **Goal:** Verify audio capture quality and sync work correctly in different environments and network conditions
+
+| # | Scenario | Steps | Expected | Status | Notes / Questions |
+|---|---|---|---|---|---|
+| 13.1 | Quiet environment | 1. Record in silent room (office, home, quiet space) 2. Normal speech volume 3. Save | Clear transcript, no ambient noise artifacts. Moment saves cleanly. | ☐ | |
+| 13.2 | Moderate background noise | 1. Record with TV/music playing softly in background 2. Speak clearly, normal volume 3. Save | Transcript captures speech clearly, minimizes background noise. Readable and saveable. | ☐ | |
+| 13.3 | Long recording on WiFi | 1. Connected to WiFi 2. Record 10-minute moment 3. Transcribe & Save | No interruptions. Fast sync to Supabase. Audio URL stored correctly. | ☐ | |
+| 13.4 | Long recording online (cellular) | 1. On cellular data 2. Record 10-minute moment 3. Transcribe & Save | Transcription happens locally (offline-first). Syncs when complete. No disconnects. | ☐ | |
+| 13.5 | Network change mid-transcription | 1. Record 5-minute moment online 2. Immediately disable WiFi mid-transcription 3. Let transcription complete | WhisperKit completes transcription (offline). Moment saves when trying to sync. No errors. | ☐ | |
+| 13.6 | Battery drain during long recording | 1. Plug in device or check battery % 2. Record full 10-minute session 3. Check battery after | Battery usage reasonable (<5% for 10-min recording + transcription). No excessive heat. | ☐ | |
+
+---
+
+## Phase 14 — Recording Duration Reference Transcripts
+
+> **Goal:** Compare actual transcripts from device testing to verify accuracy across different recording lengths
+
+**Before testing:** Record reference audio clips at each duration level and document expected transcript for comparison.
+
+| Duration | Reference Transcript | Device Transcript | Match | Notes |
+|----------|-------------------|------------------|-------|-------|
+| 5 seconds | "This is a short test" | | ☐ | |
+| 1 minute | [Prepared 1-min speech, 100+ words] | | ☐ | Compare word count & accuracy |
+| 5 minutes | [Prepared 5-min speech, 500+ words] | | ☐ | Check for truncation or gaps |
+| 10 minutes | [Prepared 10-min speech, 1000+ words] | | ☐ | Full capture before auto-stop? |
+| 10min Session 1 | [First 10-min recording] | | ☐ | Consistent quality vs. previous? |
+| 10min Session 2 | [Second 10-min recording] | | ☐ | Any performance degradation? |
+| 10min Session 3 | [Third 10-min recording] | | ☐ | Sustained performance over time? |
+
+**How to use this section:**
+1. Before testing, prepare reference audio (or use prepared scripts)
+2. For each duration, record and transcribe on device
+3. Copy the transcript from ReviewView into "Device Transcript" column
+4. Compare word-for-word with reference — mark "Match" ☐ if 95%+ accurate
+5. Note any issues: truncation, quality loss, timing problems, etc.
+
+---
+
 ## After Testing
 
 1. Share this file back — I'll read every Status + Note and respond to all questions
