@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
 **Last Updated:** March 17, 2026 (Evening)
-**Status:** 58/69 tickets complete (84%) — Build 106 on TestFlight, security hardening complete, pre-TestFlight testing phase
+**Status:** 58/70 tickets complete (83%) — Build 106 on TestFlight, security hardening complete, pre-TestFlight testing phase
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -535,6 +535,21 @@
   - Decision: Keep original sizes; user will assess alternative approaches in next testing
 
 ### Deployment
+- [ ] **T-051:** Implement Phase 1 Autonomous Vulnerability Monitoring *(Layer 2 — Q2 2026)*
+  - **Priority:** MEDIUM — App is secure without this, but recommended for ongoing protection
+  - **Setup Time:** 30 minutes + 1 hour/month maintenance
+  - **Cost:** FREE (Dependabot + CodeQL + NVD feed)
+  - **Tasks:**
+    1. Subscribe to NVD CVE RSS feed: https://nvd.nist.gov/feeds/json/cve/1.1
+    2. Create #security-alerts Slack channel
+    3. Integrate Dependabot with Slack notifications
+    4. Integrate CodeQL with Slack notifications
+    5. Add "Monthly Security Review" (1st of month, 1 hour) to team calendar
+    6. Create runbook: How to triage and fix security alerts
+  - **What it monitors:** New library vulnerabilities, code security flaws, emerging CVEs
+  - **Expected outcome:** Early warning system that catches new threats within 24 hours
+  - **See also:** AUTONOMOUS_VULNERABILITY_MONITORING.md for full details
+
 - [ ] **T-026:** Prepare for App Store submission
   - Privacy policy, terms of service, screenshots, description, pricing
 
@@ -587,7 +602,8 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | WhisperKit Integration & Testing (March 15) | 5 | 4 | 1 | 0 |
 | Bugs — Offline & Auto-stop (March 15) | 2 | 2 | 0 | 0 |
 | Security Implementation (March 17) | 1 | 1 | 0 | 0 |
-| **TOTAL** | **69** | **58** | **1** | **16** |
+| Autonomous Monitoring (Layer 2) | 1 | 0 | 0 | 1 |
+| **TOTAL** | **70** | **58** | **1** | **17** |
 
 ---
 
