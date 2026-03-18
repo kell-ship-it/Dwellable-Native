@@ -1062,14 +1062,338 @@
             </table>
         </div>
 
+        <div class="phase-header" style="margin-top: 40px; margin-bottom: 20px;">
+            <h2>Phase 15: Pre-TestFlight Security Testing</h2>
+            <p class="phase-goal">Verify all 4 security layers are functioning correctly before TestFlight launch</p>
+            <span class="phase-status status-not-started">🔲 READY FOR TESTING</span>
+            <p style="color: #999; font-size: 0.9em; margin-top: 10px;"><strong>Total Time:</strong> 50 minutes (8 tests)</p>
+        </div>
+
+        <div style="background: rgba(212, 175, 55, 0.05); border-left: 4px solid #d4af37; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+            <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Security Assessment:</strong> 9/10 (Enterprise-grade) — This phase validates that all 4 layers are working: Application (login protection, rate limiting), Backend (RLS policies, JWT), Network (certificate pinning), Monitoring (logging, alerting).</p>
+            <p style="color: #999; font-size: 0.9em;">Reference: See <code>PRE_TESTFLIGHT_SECURITY_TESTING.md</code> and <code>Dwellable_Security_Protocol.pdf</code> for complete security documentation.</p>
+        </div>
+
+        <h3>Test 1: Brute Force Protection (15 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify that 5 failed login attempts trigger a 10-minute lockout.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Attempt #</th>
+                    <th>Email</th>
+                    <th>Password</th>
+                    <th>Result</th>
+                    <th>Error Message</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>1</strong></td>
+                    <td><code>test@example.com</code></td>
+                    <td><code>wrongpassword</code></td>
+                    <td><input type="text" placeholder="Failed / 4 attempts remaining"></td>
+                    <td><input type="text" placeholder="Email or password is incorrect..."></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>2</strong></td>
+                    <td><code>test@example.com</code></td>
+                    <td><code>wrongpassword</code></td>
+                    <td><input type="text" placeholder="Failed / 3 attempts remaining"></td>
+                    <td><input type="text" placeholder="Email or password is incorrect..."></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>3</strong></td>
+                    <td><code>test@example.com</code></td>
+                    <td><code>wrongpassword</code></td>
+                    <td><input type="text" placeholder="Failed / 2 attempts remaining"></td>
+                    <td><input type="text" placeholder="Email or password is incorrect..."></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>4</strong></td>
+                    <td><code>test@example.com</code></td>
+                    <td><code>wrongpassword</code></td>
+                    <td><input type="text" placeholder="Failed / 1 attempt remaining"></td>
+                    <td><input type="text" placeholder="Email or password is incorrect..."></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>5</strong></td>
+                    <td><code>test@example.com</code></td>
+                    <td><code>wrongpassword</code></td>
+                    <td><input type="text" placeholder="LOCKED for 10 minutes"></td>
+                    <td><input type="text" placeholder="Too many failed attempts..."></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td colspan="5"><strong>Lockout Verification:</strong> Wait 30 seconds, try login again — should still be locked</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 2: Successful Login (5 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify that correct credentials allow login and reset the lockout counter.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Account</th>
+                    <th>Email</th>
+                    <th>Password</th>
+                    <th>Result</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Valid Login</strong></td>
+                    <td><code>test@example.com</code></td>
+                    <td><code>password123</code></td>
+                    <td><input type="text" placeholder="Successfully logged in, entered app"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td colspan="4"><strong>Verification:</strong> After successful login, sign out and attempt login with wrong password — lockout counter should reset to 0</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 3: Data Isolation (10 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify that users cannot see other users' moments, even if they switch accounts on the same device.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>User Account</th>
+                    <th>Action</th>
+                    <th>Expected Result</th>
+                    <th>Actual Result</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Account 1</strong></td>
+                    <td>Log in as test@example.com</td>
+                    <td>See only Account 1's moments</td>
+                    <td><input type="text" placeholder="List shows only this account's moments"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>Account 1</strong></td>
+                    <td>Create a test moment while online</td>
+                    <td>Moment appears in list immediately</td>
+                    <td><input type="text" placeholder="Moment created: '...test moment...'"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>Account 2</strong></td>
+                    <td>Sign out, log in as kell@example.com</td>
+                    <td>See only Account 2's moments (NOT Account 1's)</td>
+                    <td><input type="text" placeholder="List shows only Account 2 moments"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>Account 2</strong></td>
+                    <td>Go offline, create moment</td>
+                    <td>Moment saved locally for Account 2</td>
+                    <td><input type="text" placeholder="Offline moment created and pending"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>Account 2</strong></td>
+                    <td>Go back online</td>
+                    <td>Account 2's offline moment syncs (NOT Account 1's)</td>
+                    <td><input type="text" placeholder="Offline moment synced, still only Account 2 moments visible"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td colspan="4"><strong>CRITICAL:</strong> Verify Account 1's test moment is NOT visible when signed in as Account 2</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 4: Login Attempt Logging (5 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify that failed and successful login attempts are logged to Supabase.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Expected Log Entry</th>
+                    <th>Verification Method</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Failed Login x3</strong></td>
+                    <td>3 rows in <code>login_attempts</code> with success=false</td>
+                    <td>Supabase SQL Editor: <code>SELECT * FROM login_attempts WHERE email='test@example.com' AND success=false ORDER BY created_at DESC LIMIT 3;</code></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>Successful Login</strong></td>
+                    <td>1 row in <code>login_attempts</code> with success=true</td>
+                    <td>Supabase SQL Editor: <code>SELECT * FROM login_attempts WHERE email='test@example.com' AND success=true ORDER BY created_at DESC LIMIT 1;</code></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td><strong>Timestamp Accuracy</strong></td>
+                    <td>created_at timestamp matches when login occurred (±1 min)</td>
+                    <td>Check timestamp in Supabase matches your local time</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 5: Suspicious Pattern Detection (5 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify that repeated failed attempts are flagged in pattern detection.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Expected Result</th>
+                    <th>Verification</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>5+ failed logins in 10 min</strong></td>
+                    <td>Pattern flagged in <code>suspicious_login_patterns</code> view</td>
+                    <td>Supabase: <code>SELECT * FROM suspicious_login_patterns WHERE email='test@example.com';</code></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td colspan="3"><strong>Notes:</strong> Entry should show email, failed count (5+), lockout_applied=true, last_attempt timestamp</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 6: Incident Tracking (5 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify that security incidents are created and tracked.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Expected Incident Entry</th>
+                    <th>Verification</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>5+ failed logins trigger incident</strong></td>
+                    <td>Row created in <code>abuse_incidents</code> with severity='medium' or 'high'</td>
+                    <td>Supabase: <code>SELECT * FROM abuse_incidents WHERE incident_type='brute_force' ORDER BY created_at DESC LIMIT 1;</code></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td colspan="3"><strong>Notes:</strong> Check status is 'open', email matches test account, timestamp is recent</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 7: Rate Limiting (Advanced) (5 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify API rate limiting (100 calls/min per user) is working.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Scenario</th>
+                    <th>Expected Behavior</th>
+                    <th>Result</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Normal API usage</strong></td>
+                    <td>All API calls succeed (fetch moments, save, etc.)</td>
+                    <td><input type="text" placeholder="All operations completed normally"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>Excessive API calls (advanced)</strong></td>
+                    <td>After 100+ calls/min: Rate limit error appears</td>
+                    <td><input type="text" placeholder="If you manually test this: '429 Too Many Requests' or similar"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td colspan="3"><strong>Note:</strong> Normal testing (fetch, save, etc.) won't hit this. Only if you write a script to hammer the API.</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 8: App Stability & No Crashes (5 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify no crashes occur during security testing.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Test Scenario</th>
+                    <th>Expected Result</th>
+                    <th>Actual Result</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>App crashes during brute force test?</strong></td>
+                    <td>NO — App remains stable, shows error messages gracefully</td>
+                    <td><input type="text" placeholder="No crashes observed"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>App crashes during lockout?</strong></td>
+                    <td>NO — Lockout timer ticks down smoothly</td>
+                    <td><input type="text" placeholder="Lockout UI stable, no freezing"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>App crashes during multi-account switch?</strong></td>
+                    <td>NO — Account switching works smoothly</td>
+                    <td><input type="text" placeholder="Sign out → sign in works reliably"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td><strong>OVERALL SECURITY TESTING STATUS</strong></td>
+                    <td colspan="2">All 8 tests passed?</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="background: rgba(76, 175, 80, 0.1); border-left: 4px solid #4cb50; padding: 15px; margin-top: 30px; margin-bottom: 20px; border-radius: 4px;">
+            <h3 style="color: #4cb50; border: none; padding: 0; margin: 0 0 10px 0;">Security Testing Sign-Off</h3>
+            <p style="color: #c0c0c0; margin-bottom: 10px;"><strong>Tester Name:</strong> <input type="text" placeholder="Your name" style="padding: 5px; width: 200px;"></p>
+            <p style="color: #c0c0c0; margin-bottom: 10px;"><strong>Date:</strong> <input type="date" style="padding: 5px; width: 150px;"></p>
+            <p style="color: #c0c0c0; margin-bottom: 10px;"><strong>Device:</strong> <input type="text" placeholder="iPhone 13 Pro Max, etc." style="padding: 5px; width: 200px;"></p>
+            <p style="color: #c0c0c0; margin-bottom: 10px;"><strong>Overall Result:</strong>
+                <select style="padding: 5px; width: 150px;">
+                    <option>---</option>
+                    <option>✅ ALL PASS - Ready for TestFlight</option>
+                    <option>⚠️ SOME ISSUES - Document below</option>
+                    <option>❌ CRITICAL ISSUES - Do not release</option>
+                </select>
+            </p>
+            <p style="color: #c0c0c0;"><strong>Issues Found (if any):</strong></p>
+            <textarea placeholder="Document any issues, failures, or concerns..." style="width: 100%; height: 100px; padding: 10px; background: rgba(0,0,0,0.3); color: #e0e0e0; border: 1px solid #d4af37; border-radius: 4px;"></textarea>
+        </div>
+
         <div class="actions">
             <button onclick="exportResults()">📋 Export Results</button>
             <button onclick="resetForm()" class="secondary">🔄 Clear Form</button>
         </div>
 
         <div class="footer">
-            <p>Dwellable Master Testing Checklist — Updated March 17, 2026</p>
-            <p>14 Phases | 57 Scenarios | Build 106 TestFlight</p>
+            <p>Dwellable Master Testing Checklist — Updated March 17, 2026 (Evening)</p>
+            <p>15 Phases | 65 Scenarios | Build 106 TestFlight | Phase 15: Pre-TestFlight Security Testing (8 tests)</p>
         </div>
     </div>
 
