@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** March 15, 2026
-**Status:** 57/68 tickets complete (84%) — Build 106 on TestFlight, ticket cleanup complete
+**Last Updated:** March 17, 2026
+**Status:** 57/68 tickets complete (84%) — Build 106 on TestFlight, T-049 added for Layer 2 (text editor UX)
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -277,6 +277,16 @@
 
 - [ ] **T-013:** Build ArchiveView / CollectionsView *(deferred — v2)*
   - Organize moments into collections, archive old moments
+
+### UI Polish — Layer 2
+- [ ] **T-049:** Fix TypeFlowView text editor layout jumping *(Layer 2 — UX Polish)*
+  - Issue: Text jumps between lines unpredictably as user types in moment body field (Journey 7 — Phase 1 testing)
+  - Root cause: SwiftUI TextEditor has layout recalculation issues when text is added
+  - Affects: Journey 7 Phase 1 testing — unnatural, disorienting user experience
+  - Attempted solutions: minHeight constraints, custom UITextView wrapper (made it worse)
+  - Status: Known SwiftUI limitation — deferred to Layer 2 for deeper investigation
+  - Possible future approaches: Custom text input component, investigate Xcode 16+ TextEditor fixes
+  - Notes: Text functionality is correct; only the visual positioning shifts during typing
 
 ### Analytics & Observability
 - [x] **T-018:** Add basic analytics ✅ **COMPLETE**

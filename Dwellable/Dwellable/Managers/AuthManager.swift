@@ -1,6 +1,57 @@
 import Foundation
 import Combine
 
+// MARK: - Login Attempt Tracker
+
+class LoginAttemptTracker {
+    private let maxFailedAttempts = 5
+    private let lockoutDuration: TimeInterval = 10 * 60 // 10 minutes
+
+    private var failedAttempts: [Date] = []
+    private var lockoutUntil: Date?
+
+    func recordFailedAttempt() {
+        failedAttempts.append(Date())
+
+        let cutoffTime = Date().addingTimeInterval(-lockoutDuration)
+        failedAttempts.removeAll { $0 < cutoffTime }
+
+        if failedAttempts.count >= maxFailedAttempts {
+            lockoutUntil = Date().addingTimeInterval(lockoutDuration)
+        }
+    }
+
+    func recordSuccessfulLogin() {
+        failedAttempts.removeAll()
+        lockoutUntil = nil
+    }
+
+    func isLockedOut() -> Bool {
+        guard let lockoutTime = lockoutUntil else { return false }
+
+        if Date() >= lockoutTime {
+            lockoutUntil = nil
+            failedAttempts.removeAll()
+            return false
+        }
+
+        return true
+    }
+
+    func secondsUntilUnlock() -> Int {
+        guard let lockoutTime = lockoutUntil else { return 0 }
+
+        let remaining = lockoutTime.timeIntervalSince(Date())
+        return max(0, Int(ceil(remaining)))
+    }
+
+    func currentAttemptCount() -> Int {
+        return failedAttempts.count
+    }
+}
+
+// MARK: - Auth Manager
+
 class AuthManager: ObservableObject {
     @Published var isAuthenticated = false
     @Published var currentUser: AuthUser?
@@ -9,6 +60,7 @@ class AuthManager: ObservableObject {
 
     private let apiClient: APIClient
     private let keychain = KeychainManager.shared
+    private let loginAttemptTracker = LoginAttemptTracker()
 
     init(apiClient: APIClient) {
         self.apiClient = apiClient
@@ -25,6 +77,17 @@ class AuthManager: ObservableObject {
     }
 
     func signIn(email: String, password: String) async {
+        // Check if account is locked out
+        if loginAttemptTracker.isLockedOut() {
+            let secondsRemaining = loginAttemptTracker.secondsUntilUnlock()
+            let minutesRemaining = (secondsRemaining + 59) / 60
+            DispatchQueue.main.async {
+                self.errorMessage = "Too many failed login attempts. Try again in \(minutesRemaining) minute\(minutesRemaining == 1 ? "" : "s")."
+                self.isLoading = false
+            }
+            return
+        }
+
         DispatchQueue.main.async {
             self.isLoading = true
             self.errorMessage = nil
@@ -52,14 +115,33 @@ class AuthManager: ObservableObject {
 
             let user = AuthUser(id: authToken.userId, email: email, token: authToken.token)
 
+            // Record successful login
+            loginAttemptTracker.recordSuccessfulLogin()
+
+            // Log successful login attempt to monitoring system (async, non-blocking)
+            await apiClient.logLoginAttempt(email: email, success: true)
+
             DispatchQueue.main.async {
                 self.currentUser = user
                 self.isAuthenticated = true
                 self.isLoading = false
             }
         } catch {
+            // Record failed attempt
+            loginAttemptTracker.recordFailedAttempt()
+            let attemptsRemaining = 5 - loginAttemptTracker.currentAttemptCount()
+
+            // Log failed login attempt to monitoring system (async, non-blocking)
+            await apiClient.logLoginAttempt(email: email, success: false)
+
             DispatchQueue.main.async {
-                self.errorMessage = "Sign in failed: \(error.localizedDescription)"
+                if attemptsRemaining > 0 {
+                    self.errorMessage = "Sign in failed: \(error.localizedDescription). \(attemptsRemaining) attempt\(attemptsRemaining == 1 ? "" : "s") remaining."
+                } else {
+                    let secondsRemaining = self.loginAttemptTracker.secondsUntilUnlock()
+                    let minutesRemaining = (secondsRemaining + 59) / 60
+                    self.errorMessage = "Too many failed attempts. Account locked for \(minutesRemaining) minute\(minutesRemaining == 1 ? "" : "s")."
+                }
                 self.isLoading = false
             }
         }

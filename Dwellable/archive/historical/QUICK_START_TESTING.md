@@ -1,4 +1,12 @@
-# Quick Start: Layer 1 Testing
+# ⚠️ ARCHIVED — See TESTING_CHECKLIST_MASTER.html Instead
+
+**This document is from Layer 1 implementation (March 2026) and is preserved for historical reference.**
+
+**For current testing:** Use `testing/TESTING_CHECKLIST_MASTER.html` (interactive checklist with all 57 scenarios)
+
+---
+
+# Quick Start: Layer 1 Testing (Historical Reference)
 
 ## Pre-Testing Setup
 

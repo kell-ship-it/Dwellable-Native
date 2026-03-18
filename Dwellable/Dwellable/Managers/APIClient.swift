@@ -11,6 +11,7 @@ protocol APIClient {
     func login(email: String, password: String) async throws -> AuthToken
     func logout() async throws
     func ensureUserExists(userId: String, email: String) async throws
+    func logLoginAttempt(email: String, success: Bool) async
 
     // Storage endpoints
     func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String

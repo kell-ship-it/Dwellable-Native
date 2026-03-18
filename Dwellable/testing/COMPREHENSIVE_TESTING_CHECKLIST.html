@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dwellable — Comprehensive Testing Checklist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0e11 0%, #1a1823 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #d4af37;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #999;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+        }
+
+        .status-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+
+        .status-item {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 12px;
+            border-left: 3px solid #d4af37;
+            border-radius: 4px;
+        }
+
+        .status-item strong {
+            color: #d4af37;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: transparent;
+            color: #999;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: #d4af37;
+        }
+
+        .tab-btn.active {
+            color: #d4af37;
+            border-bottom-color: #d4af37;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h2 {
+            color: #d4af37;
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            border-left: 4px solid #d4af37;
+            padding-left: 15px;
+        }
+
+        h3 {
+            color: #d4af37;
+            font-size: 1.3em;
+            margin-top: 20px;
+            margin-bottom: 12px;
+        }
+
+        .phase-header {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #d4af37;
+            border-radius: 4px;
+        }
+
+        .phase-goal {
+            font-style: italic;
+            color: #c0c0c0;
+            margin: 10px 0;
+        }
+
+        .phase-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        .status-completed {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4cb50;
+            border: 1px solid #4cb50;
+        }
+
+        .status-in-progress {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+
+        .status-not-started {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            font-size: 0.9em;
+        }
+
+        th {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .num {
+            color: #d4af37;
+            font-weight: 600;
+            width: 40px;
+            text-align: center;
+        }
+
+        .status-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            width: 120px;
+        }
+
+        .status-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.15);
+        }
+
+        .notes-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: #e0e0e0;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .notes-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.08);
+        }
+
+        .section-badge {
+            display: inline-block;
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .automated-section {
+            background: rgba(100, 150, 200, 0.1);
+            padding: 20px;
+            border-left: 4px solid #6496c8;
+            border-radius: 4px;
+            margin: 30px 0;
+        }
+
+        .automated-section h3 {
+            color: #6496c8;
+            border-left-color: #6496c8;
+        }
+
+        .scenario-list {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .scenario-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(100, 150, 200, 0.2);
+            color: #c0c0c0;
+        }
+
+        .scenario-list li strong {
+            color: #6496c8;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        button {
+            background: linear-gradient(135deg, #d4af37, #e8c547);
+            color: #0f0e11;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 15px 5px 0 0;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+        }
+
+        .actions {
+            text-align: center;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dwellable — Comprehensive Testing Checklist</h1>
+            <p class="subtitle">Manual testing scenarios (zero redundancy) + Automated test opportunities</p>
+
+            <div class="status-overview">
+                <div class="status-item">
+                    <strong>📋 Manual Tests</strong>
+                    14 Phases / 54 Scenarios
+                </div>
+                <div class="status-item">
+                    <strong>⚙️ Automated Tests</strong>
+                    6 Categories / ~40 Scenarios
+                </div>
+                <div class="status-item">
+                    <strong>🎯 Total Coverage</strong>
+                    ~94 Test Scenarios
+                </div>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'manual')">📱 Manual Testing (You)</button>
+            <button class="tab-btn" onclick="switchTab(event, 'automated')">⚙️ Automated Testing (Claude)</button>
+        </div>
+
+        <!-- MANUAL TESTING TAB -->
+        <div id="manual" class="tab-content active">
+            <div class="phase-header">
+                <h3>PHASE 1: Authentication & Login (3 scenarios)</h3>
+                <p class="phase-goal">Verify sign-up, login, and session persistence</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">1.1</td>
+                        <td><strong>Sign up with valid email</strong> — Create new account with valid email, verify no errors</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">1.2</td>
+                        <td><strong>Login with correct credentials</strong> — Log in successfully, verify access to moments list</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">1.3</td>
+                        <td><strong>Session persistence</strong> — Close app, reopen, verify still logged in without re-entering credentials</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 2: Navigation & Screen Flow (4 scenarios)</h3>
+                <p class="phase-goal">Verify navigation between all screens works smoothly</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">2.1</td>
+                        <td><strong>Navigate to Capture from home</strong> — From MomentsListView, tap record button, verify CaptureView opens</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">2.2</td>
+                        <td><strong>Back navigation from all screens</strong> — Use back button from CaptureView, ReviewView, MomentDetailView, verify navigation correct</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">2.3</td>
+                        <td><strong>Navigate to moment detail from list</strong> — Tap moment in list, verify detail view opens with correct content</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">2.4</td>
+                        <td><strong>Switch between Capture tabs</strong> — Verify Voice and Type tabs switch correctly, preserve state when switching back</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 3: Audio Recording & Capture (5 scenarios)</h3>
+                <p class="phase-goal">Verify basic recording functionality, durations, and timer behavior</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">3.1</td>
+                        <td><strong>Start recording 5 seconds</strong> — Tap record, speak naturally, stop at ~5 sec, verify file created</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">3.2</td>
+                        <td><strong>9-minute warning display</strong> — Record continuously, verify gold warning appears at 9:00 with "60 seconds left" message</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">3.3</td>
+                        <td><strong>Auto-stop at 10 minutes</strong> — Record full 10 minutes, verify recording stops automatically without user action</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">3.4</td>
+                        <td><strong>Cancel recording mid-stream</strong> — Record 2-3 seconds, tap cancel, verify file is deleted and ReviewView doesn't open</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">3.5</td>
+                        <td><strong>Recording stops when app backgrounds</strong> — Start recording, background the app (home button), verify recording halts</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 4: Transcription & Review (5 scenarios)</h3>
+                <p class="phase-goal">Verify transcription accuracy, UI state, and editing functionality</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">4.1</td>
+                        <td><strong>Quick transcription (5 sec)</strong> — Record 5 seconds, verify transcript appears in ReviewView with no blank state delay</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">4.2</td>
+                        <td><strong>Edit transcript before save</strong> — Navigate to ReviewView, edit transcript text, verify changes take effect</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">4.3</td>
+                        <td><strong>Reject blank/silent audio</strong> — Record 2 seconds of complete silence, verify error message (not blank moment saved)</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">4.4</td>
+                        <td><strong>Cancel mid-transcription</strong> — Record 5 sec, dismiss ReviewView during transcription, verify transcription stops and file cleaned up</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">4.5</td>
+                        <td><strong>Retry transcription after error</strong> — If transcription fails, tap "Retry", verify transcription restarts and completes</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 5: Saving & Syncing (4 scenarios)</h3>
+                <p class="phase-goal">Verify moments save to database and sync to backend</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">5.1</td>
+                        <td><strong>Save moment while online</strong> — Record moment (on WiFi/cellular), tap Save, verify moment appears in list immediately</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">5.2</td>
+                        <td><strong>Save moment while offline</strong> — Disable WiFi/Cellular, save moment, verify moment saves to local queue (visible in list)</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">5.3</td>
+                        <td><strong>Auto-sync after going online</strong> — Save moment while offline, re-enable network, verify moment syncs to Supabase within 5 sec</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">5.4</td>
+                        <td><strong>Save moment with empty "sense of Lord" field</strong> — Leave optional field blank, save moment, verify saves correctly</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 6: Viewing & Listing Moments (3 scenarios)</h3>
+                <p class="phase-goal">Verify moments display correctly in list and detail views</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">6.1</td>
+                        <td><strong>Moments appear in list</strong> — Save 2-3 moments, refresh list, verify all moments appear with date/preview</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">6.2</td>
+                        <td><strong>Moment detail view shows full content</strong> — Tap moment in list, verify detail view shows full transcript and metadata</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">6.3</td>
+                        <td><strong>Scroll through large list</strong> — With 10+ moments in list, scroll smoothly without lag or crashes</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 7: Text Entry / Type Flow (3 scenarios)</h3>
+                <p class="phase-goal">Verify text-based moment creation works correctly</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">7.1</td>
+                        <td><strong>Type short moment (< 100 words)</strong> — Switch to Type tab, enter text, save, verify saves correctly</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">7.2</td>
+                        <td><strong>Type long moment (> 500 words)</strong> — Enter long-form text, verify scrolling works and save succeeds</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">7.3</td>
+                        <td><strong>Type with special characters</strong> — Include emojis, quotes, dashes, parentheses, verify save preserves formatting</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 8: Audio Playback (3 scenarios)</h3>
+                <p class="phase-goal">Verify moment audio plays correctly and controls work</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">8.1</td>
+                        <td><strong>Play moment audio from detail view</strong> — Open moment detail, tap play button, verify audio plays without errors</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">8.2</td>
+                        <td><strong>Audio playback with different outputs</strong> — Play audio with speaker, wired headphones, and Bluetooth headphones, verify audio works in all scenarios</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">8.3</td>
+                        <td><strong>Pause and resume playback</strong> — Play audio, tap pause, tap resume, verify playback continues from pause point</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 9: Long Recording Sessions & Device Conditions (5 scenarios)</h3>
+                <p class="phase-goal">Verify 10-minute recordings work across different network & device states (consolidated, no redundancy)</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">9.1</td>
+                        <td><strong>10-minute recording on WiFi with battery monitoring</strong> — Record full 10 minutes on WiFi. Monitor: (1) warning at 9:00, (2) auto-stop at 10:00, (3) battery drain ~20-30%, (4) device warmth (not hot), (5) transcription completes &lt;30 sec</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">9.2</td>
+                        <td><strong>10-minute recording on cellular</strong> — Record 10 minutes on cellular data instead of WiFi, verify same battery/heat behavior, same transcription timing</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">9.3</td>
+                        <td><strong>10-minute recording on Airplane Mode (offline transcription)</strong> — Enable Airplane Mode, record full 10 minutes, verify transcription starts immediately without network, completes in 20-45 sec, and syncs after re-enabling network</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">9.4</td>
+                        <td><strong>Multiple sequential 10-minute recordings</strong> — Back-to-back: Record 10 min, save, record another 10 min, save again. Verify device heat doesn't accumulate, transcription quality consistent</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">9.5</td>
+                        <td><strong>Network switch during transcription</strong> — Record 5 min, disable WiFi during transcription. Verify offline transcription completes despite network loss</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 10: Audio Environment & Output (4 scenarios)</h3>
+                <p class="phase-goal">Verify recording quality across different audio environments and output devices</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">10.1</td>
+                        <td><strong>Quiet environment recording</strong> — Record 2-3 min in silent room, verify clear transcription with no background noise</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">10.2</td>
+                        <td><strong>Moderate background noise</strong> — Record 2-3 min with TV/music playing softly, verify app captures speech clearly despite noise</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">10.3</td>
+                        <td><strong>Audio input isolation with audio output devices</strong> — Record 2 min with: (A) wired headphones connected, (B) car Bluetooth connected, (C) no Bluetooth. Verify microphone input is clean in all three scenarios (no speaker feedback)</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">10.4</td>
+                        <td><strong>Transcription accuracy across recording durations</strong> — Record and transcribe: (A) 1-minute moment, (B) 5-minute moment, verify transcript is accurate and similar quality in both</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 11: Data Persistence & Recovery (4 scenarios)</h3>
+                <p class="phase-goal">Verify data survives app crashes and device restarts</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">11.1</td>
+                        <td><strong>Force-quit app and reopen</strong> — Save moment, force-quit app (swipe from recents), reopen app, verify moment still appears</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">11.2</td>
+                        <td><strong>Device restart persistence</strong> — Save moment while offline, restart device, verify moment still exists and syncs when network returns</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">11.3</td>
+                        <td><strong>Offline sync queue doesn't duplicate</strong> — Save 3 moments while offline, re-enable network, verify moments sync once each (no duplicates)</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">11.4</td>
+                        <td><strong>App backgrounding during sync</strong> — Save moment, background app while sync is happening, reopen app, verify moment synced correctly</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 12: UI/UX & Layout (4 scenarios)</h3>
+                <p class="phase-goal">Verify app layout and interactions work as designed</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">12.1</td>
+                        <td><strong>Portrait/landscape orientation</strong> — Rotate device during recording/review, verify layout adapts correctly, no data loss</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">12.2</td>
+                        <td><strong>Buttons are responsive and accessible</strong> — Tap all buttons (record, save, edit, delete), verify they work with reliable touch response, no UI lag</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">12.3</td>
+                        <td><strong>Text formatting and readability</strong> — View moments with varying text lengths (short, medium, 500+ word), verify text is readable, no truncation issues</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">12.4</td>
+                        <td><strong>Empty state handling</strong> — On fresh install, verify "no moments" message displays correctly and record button is visible</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 13: Edge Cases & Boundaries (4 scenarios)</h3>
+                <p class="phase-goal">Verify app handles unusual but valid inputs</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">13.1</td>
+                        <td><strong>Type moment with only spaces</strong> — Enter spaces only, try to save, verify rejected or handled gracefully</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">13.2</td>
+                        <td><strong>Type moment with special Unicode/emoji</strong> — Include emojis, international characters (Chinese, Arabic, etc), verify save and display work correctly</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">13.3</td>
+                        <td><strong>Rapid save/delete cycles</strong> — Save moment, delete it, save another, delete, repeat 3x quickly, verify no data corruption</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">13.4</td>
+                        <td><strong>Back-to-back recording with minimal pause</strong> — Record 2 min, immediately record another 2 min, save both, verify both save correctly without interference</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header">
+                <h3>PHASE 14: Reference Transcripts (Multi-Session Verification)</h3>
+                <p class="phase-goal">Compare actual device transcripts to reference for accuracy validation</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <p style="color: #c0c0c0; margin-bottom: 20px; font-style: italic;">Record each duration below and compare the resulting transcript. No need to match word-for-word, but verify the app captures the essential content accurately.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Duration</th>
+                        <th>Your Spoken Moment</th>
+                        <th>Device Transcript</th>
+                        <th>Accuracy Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1 minute</strong></td>
+                        <td><textarea class="notes-input" placeholder="What you say..."></textarea></td>
+                        <td><textarea class="notes-input" placeholder="What app transcribes..."></textarea></td>
+                        <td><textarea class="notes-input" placeholder="Matches? Any issues?"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><strong>5 minutes</strong></td>
+                        <td><textarea class="notes-input" placeholder="What you say..."></textarea></td>
+                        <td><textarea class="notes-input" placeholder="What app transcribes..."></textarea></td>
+                        <td><textarea class="notes-input" placeholder="Matches? Any issues?"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><strong>10 minutes</strong></td>
+                        <td><textarea class="notes-input" placeholder="What you say..."></textarea></td>
+                        <td><textarea class="notes-input" placeholder="What app transcribes..."></textarea></td>
+                        <td><textarea class="notes-input" placeholder="Matches? Any issues?"></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="actions">
+                <button onclick="exportResults()">📋 Export Results</button>
+                <button onclick="resetForm()">🔄 Reset Form</button>
+            </div>
+        </div>
+
+        <!-- AUTOMATED TESTING TAB -->
+        <div id="automated" class="tab-content">
+            <h2>Automated Testing Scenarios (I can write these as code tests)</h2>
+            <p style="color: #c0c0c0; margin-bottom: 20px;">These are scenarios that are better tested programmatically via XCUI tests, unit tests, or API integration tests. I can write these tests to run automatically and verify app behavior consistently.</p>
+
+            <div class="automated-section">
+                <h3>CATEGORY A: API & Backend Integration (8 scenarios)</h3>
+                <p class="phase-goal">Verify API contracts, database operations, and Supabase integration</p>
+                <ul class="scenario-list">
+                    <li><strong>A.1 User registration API</strong> — POST /auth/signup with valid/invalid emails, verify responses and token generation</li>
+                    <li><strong>A.2 Moment save API</strong> — POST /moments with various payloads, verify Supabase table receives data correctly</li>
+                    <li><strong>A.3 Moment fetch API</strong> — GET /moments?userId={id}, verify returns correct moments in correct order</li>
+                    <li><strong>A.4 Audio upload API</strong> — Upload .m4a file to Supabase Storage, verify file path stored in database</li>
+                    <li><strong>A.5 Audio retrieval API</strong> — GET /moments/{id}/audio, verify returns correct audio file with proper MIME type</li>
+                    <li><strong>A.6 Delete moment API</strong> — DELETE /moments/{id}, verify moment removed from database and audio deleted from storage</li>
+                    <li><strong>A.7 Batch sync API</strong> — POST /sync with multiple pending moments, verify all sync in one request</li>
+                    <li><strong>A.8 JWT token refresh</strong> — Verify expired token automatically refreshes, request continues without interruption</li>
+                </ul>
+            </div>
+
+            <div class="automated-section">
+                <h3>CATEGORY B: Database & RLS Policies (6 scenarios)</h3>
+                <p class="phase-goal">Verify database structure, Row-Level Security, and data isolation</p>
+                <ul class="scenario-list">
+                    <li><strong>B.1 RLS: User can only read own moments</strong> — Create user A with moments, verify user B cannot read user A's data even with direct DB query</li>
+                    <li><strong>B.2 RLS: User can only write to own moments</strong> — Verify user cannot insert moment with another user's ID</li>
+                    <li><strong>B.3 Cascade delete: Audio files</strong> — When moment is deleted, verify audio file is also deleted from storage</li>
+                    <li><strong>B.4 Data validation: Timestamps</strong> — Verify created_at and updated_at timestamps are correct, updated on save</li>
+                    <li><strong>B.5 Data validation: Text encoding</strong> — Insert moments with UTF-8, emoji, special chars, verify database stores and retrieves correctly</li>
+                    <li><strong>B.6 Null handling: Optional fields</strong> — Verify optional fields (sense_of_lord, audio_url) can be null without errors</li>
+                </ul>
+            </div>
+
+            <div class="automated-section">
+                <h3>CATEGORY C: Offline Sync & Concurrency (6 scenarios)</h3>
+                <p class="phase-goal">Verify offline queue logic, sync deduplication, and concurrent operations</p>
+                <ul class="scenario-list">
+                    <li><strong>C.1 Offline queue enqueue</strong> — Add moment to sync queue, verify stored in UserDefaults/local storage</li>
+                    <li><strong>C.2 Offline queue dequeue</strong> — Trigger sync, verify queue is emptied after successful sync</li>
+                    <li><strong>C.3 No duplicate syncs</strong> — Add moment to queue twice, trigger sync, verify moment only synced once (not duplicated)</li>
+                    <li><strong>C.4 Sync order preservation</strong> — Queue 3 moments (A, B, C), trigger sync, verify all sync in order added</li>
+                    <li><strong>C.5 Concurrent writes (different moments)</strong> — Save 2 different moments in quick succession, verify both save without errors</li>
+                    <li><strong>C.6 Concurrent edit + sync</strong> — Edit moment while sync is happening, verify no data corruption</li>
+                </ul>
+            </div>
+
+            <div class="automated-section">
+                <h3>CATEGORY D: Error Handling & Recovery (7 scenarios)</h3>
+                <p class="phase-goal">Verify app handles failures gracefully and recovers cleanly</p>
+                <ul class="scenario-list">
+                    <li><strong>D.1 Network timeout during save</strong> — Simulate network timeout, verify moment goes to offline queue, not lost</li>
+                    <li><strong>D.2 Invalid response from API</strong> — Return malformed JSON from API, verify app handles error and doesn't crash</li>
+                    <li><strong>D.3 Storage full during audio upload</strong> — Simulate out-of-storage error, verify graceful error message to user</li>
+                    <li><strong>D.4 Transcription model load failure</strong> — WhisperKit fails to load, verify user sees error and can retry</li>
+                    <li><strong>D.5 Corrupted audio file</strong> — Feed invalid .m4a file to transcriber, verify rejects with error (no crash)</li>
+                    <li><strong>D.6 Database connection loss</strong> — Lose Supabase connection mid-sync, verify graceful fallback to offline queue</li>
+                    <li><strong>D.7 Transcription timeout</strong> — If transcription takes > 5 minutes, verify timeout error is shown</li>
+                </ul>
+            </div>
+
+            <div class="automated-section">
+                <h3>CATEGORY E: Edge Cases & Data Integrity (7 scenarios)</h3>
+                <p class="phase-goal">Verify app handles unusual inputs and preserves data integrity</p>
+                <ul class="scenario-list">
+                    <li><strong>E.1 Empty transcription (0 words)</strong> — WhisperKit returns empty result, verify rejected with error message</li>
+                    <li><strong>E.2 Single-word transcription</strong> — Very short phrase ("yes"), verify rejected (min 2 words)</li>
+                    <li><strong>E.3 Transcription with [BLANK_AUDIO] marker</strong> — WhisperKit returns text + [BLANK_AUDIO], verify marker stripped cleanly</li>
+                    <li><strong>E.4 Unicode/emoji in transcript</strong> — Transcription includes emoji or international chars, verify database stores and retrieves correctly</li>
+                    <li><strong>E.5 Very long transcript (10,000+ chars)</strong> — Save moment with very long text, verify no truncation or corruption</li>
+                    <li><strong>E.6 Null/empty optional fields</strong> — Save moment with sense_of_lord = null/empty, verify saves without error</li>
+                    <li><strong>E.7 Duplicate save (same content twice)</strong> — User saves same moment twice, verify second save treated as new moment (not overwrite)</li>
+                </ul>
+            </div>
+
+            <div class="automated-section">
+                <h3>CATEGORY F: Performance & Resource Management (6 scenarios)</h3>
+                <p class="phase-goal">Verify app performs efficiently and doesn't leak resources</p>
+                <ul class="scenario-list">
+                    <li><strong>F.1 Memory usage during 10-min recording</strong> — Monitor memory during 10-minute recording, verify no memory leak, peak under 200MB</li>
+                    <li><strong>F.2 CPU usage during transcription</strong> — Monitor CPU during WhisperKit transcription, verify efficient (not pegging at 100% for extended periods)</li>
+                    <li><strong>F.3 List performance with 100+ moments</strong> — Create 100+ moments in database, verify list scrolls smoothly without lag</li>
+                    <li><strong>F.4 Sync performance with large queue</strong> — Queue 20 moments for sync, verify all sync in under 30 seconds</li>
+                    <li><strong>F.5 Audio file cleanup after sync</strong> — After successful sync, verify temporary audio files are deleted from device storage</li>
+                    <li><strong>F.6 Local storage bloat prevention</strong> — After syncing offline moments, verify local queue is cleared to prevent bloat</li>
+                </ul>
+            </div>
+
+            <div style="margin-top: 40px; padding: 20px; background: rgba(212, 175, 55, 0.1); border-radius: 4px;">
+                <h3 style="color: #d4af37;">💡 How This Works</h3>
+                <p style="color: #c0c0c0; margin-top: 10px;">Once you finish manual testing (Phase 1-14), I can write XCUI tests (UI automation) and unit tests (backend logic) for these automated scenarios. These tests run on every build to catch regressions. You just provide a "working" moment from manual testing, and the tests verify the app continues to work correctly.</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Dwellable Comprehensive Testing Checklist — Updated March 17, 2026</p>
+            <p>54 Manual Scenarios | 40 Automated Scenarios | ~94 Total Test Cases</p>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(e, tabName) {
+            e.preventDefault();
+
+            // Hide all tabs
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // Remove active from all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function exportResults() {
+            alert('Export feature coming soon! For now, screenshot or copy your test results manually.');
+        }
+
+        function resetForm() {
+            if (confirm('Clear all test results? This cannot be undone.')) {
+                document.querySelectorAll('.status-input, .notes-input').forEach(input => {
+                    input.value = '';
+                });
+            }
+        }
+    </script>
+</body>
+</html>

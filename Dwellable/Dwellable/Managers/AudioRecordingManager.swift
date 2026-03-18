@@ -28,6 +28,7 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
         super.init()
         setupAudioSession()
         setupInterruptionObserver()
+        setupAudioRouteObserver()
     }
 
     private func setupInterruptionObserver() {
@@ -37,6 +38,42 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
             name: AVAudioSession.interruptionNotification,
             object: nil
         )
+    }
+
+    private func setupAudioRouteObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioRouteChange),
+            name: AVAudioSession.routeChangeNotification,
+            object: nil
+        )
+    }
+
+    @objc private func handleAudioRouteChange(_ notification: Notification) {
+        guard let info = notification.userInfo,
+              let reasonValue = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
+              let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
+
+        // Check if recording is active and audio route changed (speaker/headphones took over)
+        if isRecording && reason == .routeConfigurationChange {
+            let currentOutputs = audioSession.currentRoute.outputs
+
+            // Check if audio output has changed to speaker or headphones (indicating other audio is playing)
+            for port in currentOutputs {
+                if port.portType == .builtInSpeaker || port.portType == .headphones {
+                    print("⚠️ [AUDIO ROUTE] Audio output activated during recording — stopping")
+                    onAudioReady = onRecordingLimitReached
+                    audioRecorder?.stop()
+                    durationTimer?.invalidate()
+                    durationTimer = nil
+                    DispatchQueue.main.async {
+                        self.isRecording = false
+                        self.errorMessage = "Recording stopped — speaker output was activated (YouTube, Music, etc.)"
+                    }
+                    return
+                }
+            }
+        }
     }
 
     @objc private func handleAudioInterruption(_ notification: Notification) {

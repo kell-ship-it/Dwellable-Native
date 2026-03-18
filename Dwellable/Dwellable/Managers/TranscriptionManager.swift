@@ -173,11 +173,38 @@ class TranscriptionManager: NSObject, ObservableObject {
 
                 let fullText = results.map { $0.text }.joined(separator: " ").trimmingCharacters(in: .whitespaces)
 
-                // Strip any [BLANK_AUDIO] markers that WhisperKit appends to valid transcriptions
+                // Strip WhisperKit non-speech markers: [APPLAUSE], [LAUGHTER], [SILENCE], [MUSIC], [COUGH], [BREATH], etc.
+                // These are recognized non-speech sounds that should be removed from clean transcript text
+                // Handle both uppercase and lowercase variants (e.g., [SILENCE] and [silence])
                 let cleanedText = fullText
-                    .replacingOccurrences(of: " [BLANK_AUDIO]", with: "")
-                    .replacingOccurrences(of: "[BLANK_AUDIO] ", with: "")
-                    .replacingOccurrences(of: "[BLANK_AUDIO]", with: "")
+                    // Speech markers (remove both cases)
+                    .replacingOccurrences(of: " [BLANK_AUDIO]", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[BLANK_AUDIO] ", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[BLANK_AUDIO]", with: "", options: .caseInsensitive)
+                    // Applause/cheering (both cases)
+                    .replacingOccurrences(of: " [APPLAUSE]", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[APPLAUSE] ", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[APPLAUSE]", with: "", options: .caseInsensitive)
+                    // Laughter (both cases)
+                    .replacingOccurrences(of: " [LAUGHTER]", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[LAUGHTER] ", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[LAUGHTER]", with: "", options: .caseInsensitive)
+                    // Silence/pause (both cases)
+                    .replacingOccurrences(of: " [SILENCE]", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[SILENCE] ", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[SILENCE]", with: "", options: .caseInsensitive)
+                    // Music (both cases)
+                    .replacingOccurrences(of: " [MUSIC]", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[MUSIC] ", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[MUSIC]", with: "", options: .caseInsensitive)
+                    // Coughing (both cases)
+                    .replacingOccurrences(of: " [COUGH]", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[COUGH] ", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[COUGH]", with: "", options: .caseInsensitive)
+                    // Breathing (both cases)
+                    .replacingOccurrences(of: " [BREATH]", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[BREATH] ", with: "", options: .caseInsensitive)
+                    .replacingOccurrences(of: "[BREATH]", with: "", options: .caseInsensitive)
                     .trimmingCharacters(in: .whitespaces)
 
                 let elapsed = self.transcriptionStartTime.map { Date().timeIntervalSince($0) } ?? 0

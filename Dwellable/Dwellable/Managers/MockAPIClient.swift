@@ -112,6 +112,11 @@ class MockAPIClient: APIClient {
         // Mock implementation - just succeeds (in real app, this creates user in DB)
     }
 
+    func logLoginAttempt(email: String, success: Bool) async {
+        // Mock implementation - just logs locally
+        print("Mock: Login attempt logged — email: \(email), success: \(success)")
+    }
+
     // MARK: - Storage API
 
     func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String {

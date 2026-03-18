@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 1: Critical Path Testing — Dwellable</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #1a1a2e;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1em;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .timer {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .overview {
+            background: #f9f9f9;
+            border-left: 4px solid #d4af37;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .overview h3 {
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #eee;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .journey {
+            background: white;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .journey-header {
+            background: #f5f5f5;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .journey-header:hover {
+            background: #efefef;
+        }
+
+        .journey-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            flex: 1;
+        }
+
+        .journey-number {
+            background: #d4af37;
+            color: #1a1a2e;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .journey-status {
+            display: flex;
+            gap: 10px;
+            margin-left: 20px;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid #ddd;
+            background: white;
+        }
+
+        .status-badge:hover {
+            transform: scale(1.05);
+        }
+
+        .status-badge.pass {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+
+        .status-badge.fail {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+        }
+
+        .journey-content {
+            display: none;
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .journey-content.open {
+            display: block;
+        }
+
+        .steps {
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .step-text {
+            flex: 1;
+        }
+
+        .step-label {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .step-detail {
+            font-size: 0.9em;
+            color: #666;
+            margin-left: 2px;
+        }
+
+        .notes-section {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        .notes-section h4 {
+            color: #ff9800;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.95em;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .expected {
+            color: #4caf50;
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-top: 8px;
+        }
+
+        .summary {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 30px;
+            border: 2px solid #eee;
+        }
+
+        .summary h3 {
+            color: #d4af37;
+            margin-bottom: 15px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+            align-items: center;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-status {
+            font-weight: bold;
+            padding: 5px 12px;
+            border-radius: 4px;
+            background: #eee;
+        }
+
+        .summary-status.pass {
+            background: #4caf50;
+            color: white;
+        }
+
+        .summary-status.fail {
+            background: #f44336;
+            color: white;
+        }
+
+        .final-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .final-result.ready {
+            background: #c8e6c9;
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+
+        .final-result.not-ready {
+            background: #ffcdd2;
+            color: #c62828;
+            border: 2px solid #f44336;
+        }
+
+        footer {
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+        }
+
+        .arrow {
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+
+        .journey-header.open .arrow {
+            transform: rotate(180deg);
+        }
+
+        .time-estimate {
+            font-size: 0.85em;
+            color: #666;
+            margin-left: auto;
+            padding: 5px 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .screenshot-section {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+
+        .screenshot-section h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .screenshot-input {
+            display: none;
+        }
+
+        .screenshot-upload {
+            display: inline-block;
+            padding: 10px 15px;
+            background: #4caf50;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .screenshot-upload:hover {
+            background: #45a049;
+        }
+
+        .screenshot-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .screenshot-item {
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+            background: white;
+            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .screenshot-item:hover {
+            border-color: #4caf50;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        .screenshot-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .screenshot-item-delete {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(244, 67, 54, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .screenshot-item-delete:hover {
+            background: rgba(244, 67, 54, 1);
+        }
+
+        .screenshot-item-info {
+            padding: 8px;
+            background: #f5f5f5;
+            font-size: 0.8em;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .export-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border: 2px solid #2196f3;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+        }
+
+        .export-section h3 {
+            color: #1565c0;
+            margin-bottom: 15px;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .export-btn:hover {
+            background: #1976d2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        .export-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Phase 1: Critical Path Testing</h1>
+            <p>11 Essential Tests — 65 Minutes — Regression Prevention + Background Audio + Edge Cases</p>
+            <div class="timer">⏱️ Estimated Time: 65 minutes</div>
+        </header>
+
+        <div class="content">
+            <div class="overview">
+                <h3>✅ What You're Testing Today</h3>
+                <p><strong>Purpose:</strong> Verify Layer 1 recording works in background, phone can lock during recording, and system interactions are handled correctly</p>
+                <p><strong>Requirement:</strong> ALL 11 tests must PASS before proceeding to Phase 2</p>
+                <p><strong>Layer 1 Focus:</strong> Background audio recording enabled — phone can sleep/lock while recording continues</p>
+                <p style="margin-top: 10px;"><strong>If any test FAILS:</strong> Report the issue immediately. Do NOT proceed.</p>
+            </div>
+
+            <div class="overview">
+                <h3>📊 Progress</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar" style="width: 0%">0%</div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #666; margin-top: 10px;">
+                    <span id="completedCount">0</span><span> / 7 journeys complete</span>
+                </div>
+            </div>
+
+            <!-- JOURNEY 1 -->
+            <div class="journey">
+                <div class="journey-header" onclick="toggleJourney(this)">
+                    <div class="journey-title">
+                        <div class="journey-number">1</div>
+                        <span>Capture → Review → Save → View</span>
+                    </div>
+                    <div class="time-estimate">2-3 min</div>
+                    <div class="journey-status">
+                        <button class="status-badge" onclick="setStatus(event, 'journey1', 'pass')">✓ PASS</button>
+                        <button class="status-badge" onclick="setStatus(event, 'journey1', 'fail')">✗ FAIL</button>
+                    </div>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="journey-content" id="journey1">
+                    <div class="steps">
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">1. Open app → Login</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">2. Tap record button</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">3. Speak for 5 seconds</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">4. Review transcript</div>
+                                <div class="step-detail">Verify: No blank state before text appears</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">5. Tap Save</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">6. Moment appears in list</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">7. Tap moment → View detail</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notes-section">
+                        <h4>📝 Transcript & Notes</h4>
+                        <textarea id="journey1-transcript" placeholder="What did you say? Paste the transcript here to verify accuracy..."></textarea>
+                        <textarea id="journey1-notes" placeholder="Any issues? Note them here..." style="margin-top: 10px;"></textarea>
+                    </div>
+                    <div class="screenshot-section">
+                        <h4>📸 Screenshots (If Issue Found)</h4>
+                        <label for="journey1-screenshots" class="screenshot-upload">
+                            <span>+ Add Screenshot</span>
+                        </label>
+                        <input type="file" id="journey1-screenshots" class="screenshot-input" accept="image/*" onchange="handleScreenshotUpload(event, 'journey1')" multiple>
+                        <div id="journey1-screenshot-gallery" class="screenshot-gallery"></div>
+                    </div>
+                    <div class="expected">✓ Expected: Moment saved with accurate transcript, no blank state delay</div>
+                </div>
+            </div>
+
+            <!-- JOURNEY 2 -->
+            <div class="journey">
+                <div class="journey-header" onclick="toggleJourney(this)">
+                    <div class="journey-title">
+                        <div class="journey-number">2</div>
+                        <span>Offline Capture → Sync</span>
+                    </div>
+                    <div class="time-estimate">3-4 min</div>
+                    <div class="journey-status">
+                        <button class="status-badge" onclick="setStatus(event, 'journey2', 'pass')">✓ PASS</button>
+                        <button class="status-badge" onclick="setStatus(event, 'journey2', 'fail')">✗ FAIL</button>
+                    </div>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="journey-content" id="journey2">
+                    <div class="steps">
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">1. Enable Airplane mode</div>
+                                <div class="step-detail">Settings → Airplane Mode → ON</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">2. Record 5 seconds</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">3. Save moment</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">4. Verify moment in list (still visible offline)</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">5. Disable Airplane mode</div>
+                                <div class="step-detail">Settings → Airplane Mode → OFF</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">6. Verify moment syncs</div>
+                                <div class="step-detail">Check list for sync confirmation</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notes-section">
+                        <h4>📝 Transcript & Notes</h4>
+                        <textarea id="journey2-transcript" placeholder="What did you say? Paste the transcript here..."></textarea>
+                        <textarea id="journey2-notes" placeholder="Any issues? Note them here..." style="margin-top: 10px;"></textarea>
+                    </div>
+                    <div class="screenshot-section">
+                        <h4>📸 Screenshots (If Issue Found)</h4>
+                        <label for="journey2-screenshots" class="screenshot-upload">
+                            <span>+ Add Screenshot</span>
+                        </label>
+                        <input type="file" id="journey2-screenshots" class="screenshot-input" accept="image/*" onchange="handleScreenshotUpload(event, 'journey2')" multiple>
+                        <div id="journey2-screenshot-gallery" class="screenshot-gallery"></div>
+                    </div>
+                    <div class="expected">✓ Expected: Moment saved offline, syncs when network returns</div>
+                </div>
+            </div>
+
+            <!-- JOURNEY 3 -->
+            <div class="journey">
+                <div class="journey-header" onclick="toggleJourney(this)">
+                    <div class="journey-title">
+                        <div class="journey-number">3</div>
+                        <span>10-Minute Recording</span>
+                    </div>
+                    <div class="time-estimate">10+ min</div>
+                    <div class="journey-status">
+                        <button class="status-badge" onclick="setStatus(event, 'journey3', 'pass')">✓ PASS</button>
+                        <button class="status-badge" onclick="setStatus(event, 'journey3', 'fail')">✗ FAIL</button>
+                    </div>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="journey-content" id="journey3">
+                    <div class="steps">
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">1. Start recording</div>
+                                <div class="step-detail">Tap record button, begin speaking continuously</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">2. Record continuously for 10 minutes</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">3. At 9:00 — Verify warning appears</div>
+                                <div class="step-detail">Look for gold-colored message: "60 seconds left in recording"</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">4. At 10:00 — Verify auto-stop</div>
+                                <div class="step-detail">Recording should stop automatically, not allow 10:01, 10:02, etc.</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">5. Review transcript</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">6. Save moment</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notes-section">
+                        <h4>📝 Transcript & Notes</h4>
+                        <textarea id="journey3-transcript" placeholder="Paste the full 10-minute transcript here to verify accuracy..."></textarea>
+                        <textarea id="journey3-notes" placeholder="Did the 9-min warning appear? Did it auto-stop at 10:00? Any issues?" style="margin-top: 10px;"></textarea>
+                    </div>
+                    <div class="screenshot-section">
+                        <h4>📸 Screenshots (If Issue Found)</h4>
+                        <label for="journey3-screenshots" class="screenshot-upload">
+                            <span>+ Add Screenshot</span>
+                        </label>
+                        <input type="file" id="journey3-screenshots" class="screenshot-input" accept="image/*" onchange="handleScreenshotUpload(event, 'journey3')" multiple>
+                        <div id="journey3-screenshot-gallery" class="screenshot-gallery"></div>
+                    </div>
+                    <div class="expected">✓ Expected: Warning at 9:00, auto-stop at 10:00, transcript accurate</div>
+                </div>
+            </div>
+
+            <!-- JOURNEY 4 -->
+            <div class="journey">
+                <div class="journey-header" onclick="toggleJourney(this)">
+                    <div class="journey-title">
+                        <div class="journey-number">4</div>
+                        <span>Transcription Error → Retry</span>
+                    </div>
+                    <div class="time-estimate">2 min</div>
+                    <div class="journey-status">
+                        <button class="status-badge" onclick="setStatus(event, 'journey4', 'pass')">✓ PASS</button>
+                        <button class="status-badge" onclick="setStatus(event, 'journey4', 'fail')">✗ FAIL</button>
+                    </div>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="journey-content" id="journey4">
+                    <div class="steps">
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">1. Record 2 seconds of complete silence</div>
+                                <div class="step-detail">Don't say anything, just silence</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">2. Verify error message appears</div>
+                                <div class="step-detail">Should say something like "Unable to transcribe" or "No speech detected"</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">3. Tap "Retry Transcription"</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">4. Record valid speech (5+ seconds)</div>
+                                <div class="step-detail">Say something audible</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">5. Verify transcription completes</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">6. Save moment</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notes-section">
+                        <h4>📝 Transcript & Notes</h4>
+                        <textarea id="journey4-transcript" placeholder="What did you say in the retry? Paste transcript here..."></textarea>
+                        <textarea id="journey4-notes" placeholder="Did the error message appear? Did retry work?" style="margin-top: 10px;"></textarea>
+                    </div>
+                    <div class="screenshot-section">
+                        <h4>📸 Screenshots (If Issue Found)</h4>
+                        <label for="journey4-screenshots" class="screenshot-upload">
+                            <span>+ Add Screenshot</span>
+                        </label>
+                        <input type="file" id="journey4-screenshots" class="screenshot-input" accept="image/*" onchange="handleScreenshotUpload(event, 'journey4')" multiple>
+                        <div id="journey4-screenshot-gallery" class="screenshot-gallery"></div>
+                    </div>
+                    <div class="expected">✓ Expected: Error on silence, retry works with valid speech</div>
+                </div>
+            </div>
+
+            <!-- JOURNEY 5 -->
+            <div class="journey">
+                <div class="journey-header" onclick="toggleJourney(this)">
+                    <div class="journey-title">
+                        <div class="journey-number">5</div>
+                        <span>App Backgrounding</span>
+                    </div>
+                    <div class="time-estimate">2 min</div>
+                    <div class="journey-status">
+                        <button class="status-badge" onclick="setStatus(event, 'journey5', 'pass')">✓ PASS</button>
+                        <button class="status-badge" onclick="setStatus(event, 'journey5', 'fail')">✗ FAIL</button>
+                    </div>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="journey-content" id="journey5">
+                    <div class="steps">
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">1. Start recording</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">2. Record 3 seconds</div>
+                                <div class="step-detail">Say a few words</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">3. Press home button (background app)</div>
+                                <div class="step-detail">While recording is active</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">4. Verify recording stopped</div>
+                                <div class="step-detail">App backgrounded, recording should stop automatically</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">5. Reopen app</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">6. Verify you're at home screen (not ReviewView)</div>
+                                <div class="step-detail">Not in review screen of the partial recording</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notes-section">
+                        <h4>📝 Notes</h4>
+                        <textarea id="journey5-notes" placeholder="Did recording stop when app backgrounded? Where did you end up?" style="min-height: 60px;"></textarea>
+                    </div>
+                    <div class="screenshot-section">
+                        <h4>📸 Screenshots (If Issue Found)</h4>
+                        <label for="journey5-screenshots" class="screenshot-upload">
+                            <span>+ Add Screenshot</span>
+                        </label>
+                        <input type="file" id="journey5-screenshots" class="screenshot-input" accept="image/*" onchange="handleScreenshotUpload(event, 'journey5')" multiple>
+                        <div id="journey5-screenshot-gallery" class="screenshot-gallery"></div>
+                    </div>
+                    <div class="expected">✓ Expected: Recording stops on background, app returns to home screen</div>
+                </div>
+            </div>
+
+            <!-- JOURNEY 6 -->
+            <div class="journey">
+                <div class="journey-header" onclick="toggleJourney(this)">
+                    <div class="journey-title">
+                        <div class="journey-number">6</div>
+                        <span>Sync Queue Recovery (Force-Quit)</span>
+                    </div>
+                    <div class="time-estimate">2 min</div>
+                    <div class="journey-status">
+                        <button class="status-badge" onclick="setStatus(event, 'journey6', 'pass')">✓ PASS</button>
+                        <button class="status-badge" onclick="setStatus(event, 'journey6', 'fail')">✗ FAIL</button>
+                    </div>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="journey-content" id="journey6">
+                    <div class="steps">
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">1. Enable Airplane mode (disable network)</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">2. Record 3 seconds</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">3. Save moment</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">4. Swipe app from recents (force-quit)</div>
+                                <div class="step-detail">App switcher → Swipe Dwellable up</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">5. Reopen app</div>
+                                <div class="step-detail">Tap Dwellable icon on home screen</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">6. Verify moment still there</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">7. Disable Airplane mode (enable network)</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">8. Verify moment syncs to Supabase</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notes-section">
+                        <h4>📝 Notes</h4>
+                        <textarea id="journey6-notes" placeholder="Was the moment still there after force-quit? Did it sync?" style="min-height: 60px;"></textarea>
+                    </div>
+                    <div class="screenshot-section">
+                        <h4>📸 Screenshots (If Issue Found)</h4>
+                        <label for="journey6-screenshots" class="screenshot-upload">
+                            <span>+ Add Screenshot</span>
+                        </label>
+                        <input type="file" id="journey6-screenshots" class="screenshot-input" accept="image/*" onchange="handleScreenshotUpload(event, 'journey6')" multiple>
+                        <div id="journey6-screenshot-gallery" class="screenshot-gallery"></div>
+                    </div>
+                    <div class="expected">✓ Expected: Moment persists after force-quit, syncs when network returns</div>
+                </div>
+            </div>
+
+            <!-- JOURNEY 7 -->
+            <div class="journey">
+                <div class="journey-header" onclick="toggleJourney(this)">
+                    <div class="journey-title">
+                        <div class="journey-number">7</div>
+                        <span>Text Entry (TypeFlow)</span>
+                    </div>
+                    <div class="time-estimate">2 min</div>
+                    <div class="journey-status">
+                        <button class="status-badge" onclick="setStatus(event, 'journey7', 'pass')">✓ PASS</button>
+                        <button class="status-badge" onclick="setStatus(event, 'journey7', 'fail')">✗ FAIL</button>
+                    </div>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="journey-content" id="journey7">
+                    <div class="steps">
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">1. In Capture screen, tap "Type" tab</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">2. Type 200+ words</div>
+                                <div class="step-detail">Can be random text, just need 200+ characters</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">3. Save moment</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">4. Verify appears in list</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">5. Tap moment → View detail</div>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                            <div class="step-text">
+                                <div class="step-label">6. Verify full text displays completely</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notes-section">
+                        <h4>📝 Text Sample & Notes</h4>
+                        <textarea id="journey7-text" placeholder="Paste the 200+ words you typed here..."></textarea>
+                        <textarea id="journey7-notes" placeholder="Any issues with text display or saving?" style="margin-top: 10px;"></textarea>
+                    </div>
+                    <div class="screenshot-section">
+                        <h4>📸 Screenshots (If Issue Found)</h4>
+                        <label for="journey7-screenshots" class="screenshot-upload">
+                            <span>+ Add Screenshot</span>
+                        </label>
+                        <input type="file" id="journey7-screenshots" class="screenshot-input" accept="image/*" onchange="handleScreenshotUpload(event, 'journey7')" multiple>
+                        <div id="journey7-screenshot-gallery" class="screenshot-gallery"></div>
+                    </div>
+                    <div class="expected">✓ Expected: Text saves and displays fully without truncation</div>
+                </div>
+
+                <!-- JOURNEY 8: Phone Call Interruption -->
+                <div class="journey-item">
+                    <div class="journey-header" onclick="toggleJourney(this)">
+                        <div class="journey-title">
+                            <span class="journey-number">8</span>
+                            <span>Phone Call Interruption</span>
+                            <span class="time-estimate">3 min</span>
+                        </div>
+                    </div>
+                    <div class="journey-content">
+                        <div class="steps">
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Start recording</strong> — Tap record button and start speaking</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Receive phone call</strong> — Have someone call your iPhone during recording, or simulate by pressing a button</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Accept or reject call</strong> — What happens to the recording?</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Return to app</strong> — After call ends, where are you?</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Check recording status</strong> — Did it stop? Continue? Lose audio?</span>
+                            </div>
+                        </div>
+                        <div class="notes-section">
+                            <h4>📝 Notes & Observations</h4>
+                            <textarea id="journey8-notes" placeholder="What happened when the call came in? Did recording pause/stop? Any audio loss? Any UI issues?" style="min-height: 100px;"></textarea>
+                        </div>
+                        <div class="screenshot-section">
+                            <h4>📸 Screenshots (If Issue Found)</h4>
+                            <label for="journey8-screenshots" class="screenshot-upload">
+                                <span>+ Add Screenshot</span>
+                            </label>
+                            <input type="file" id="journey8-screenshots" class="screenshot-input" accept="image/*" onchange="handleScreenshotUpload(event, 'journey8')" multiple>
+                            <div id="journey8-screenshot-gallery" class="screenshot-gallery"></div>
+                        </div>
+                        <div class="status-buttons">
+                            <button onclick="setStatus(event, 'journey8', 'pass')" class="btn pass-btn">✅ PASS</button>
+                            <button onclick="setStatus(event, 'journey8', 'fail')" class="btn fail-btn">❌ FAIL</button>
+                        </div>
+                        <div class="expected">✓ Expected: Recording either pauses gracefully or stops cleanly, no data loss, clear UI state after call</div>
+                    </div>
+                </div>
+
+                <!-- JOURNEY 9: Phone Locked During Recording (Background Audio) -->
+                <div class="journey-item">
+                    <div class="journey-header" onclick="toggleJourney(this)">
+                        <div class="journey-title">
+                            <span class="journey-number">9</span>
+                            <span>Phone Locked During Recording (Background Audio)</span>
+                            <span class="time-estimate">2 min</span>
+                        </div>
+                    </div>
+                    <div class="journey-content">
+                        <div class="steps">
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Start recording</strong> — Tap record and start speaking</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Lock phone</strong> — Press the lock button while recording (screen goes dark)</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Keep speaking</strong> — Continue speaking for 10+ seconds while screen is locked</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Unlock phone</strong> — Press home or face ID to unlock</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Return to Dwellable</strong> — Check if recording continued while locked</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Check transcript</strong> — Verify all speech captured (including what was said while locked)</span>
+                            </div>
+                        </div>
+                        <div class="notes-section">
+                            <h4>📝 Transcript & Notes</h4>
+                            <textarea id="journey9-transcript" placeholder="Paste the transcript here. Did it capture all the speech, including while phone was locked?" style="min-height: 80px;"></textarea>
+                            <textarea id="journey9-notes" placeholder="Did recording continue while phone was locked? Any audio quality issues?" style="margin-top: 10px;"></textarea>
+                        </div>
+                        <div class="screenshot-section">
+                            <h4>📸 Screenshots (If Issue Found)</h4>
+                            <label for="journey9-screenshots" class="screenshot-upload">
+                                <span>+ Add Screenshot</span>
+                            </label>
+                            <input type="file" id="journey9-screenshots" class="screenshot-input" accept="image/*" onchange="handleScreenshotUpload(event, 'journey9')" multiple>
+                            <div id="journey9-screenshot-gallery" class="screenshot-gallery"></div>
+                        </div>
+                        <div class="status-buttons">
+                            <button onclick="setStatus(event, 'journey9', 'pass')" class="btn pass-btn">✅ PASS</button>
+                            <button onclick="setStatus(event, 'journey9', 'fail')" class="btn fail-btn">❌ FAIL</button>
+                        </div>
+                        <div class="expected">✓ Expected: Recording continues while phone locked, all speech captured, no quality loss</div>
+                    </div>
+                </div>
+
+                <!-- JOURNEY 10: Another App Uses Microphone -->
+                <div class="journey-item">
+                    <div class="journey-header" onclick="toggleJourney(this)">
+                        <div class="journey-title">
+                            <span class="journey-number">10</span>
+                            <span>Another App Uses Microphone</span>
+                            <span class="time-estimate">3 min</span>
+                        </div>
+                    </div>
+                    <div class="journey-content">
+                        <div class="steps">
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Start recording</strong> — Tap record and start speaking</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Activate another app's microphone</strong> — Invoke Siri (hold home), or open Maps and use voice directions, or open Voice Memos</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>What happens to recording?</strong> — Does it stop? Error message?</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Return to Dwellable</strong> — Go back to the app</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Check transcript</strong> — What text was captured before the other app took over?</span>
+                            </div>
+                        </div>
+                        <div class="notes-section">
+                            <h4>📝 Transcript & Notes</h4>
+                            <textarea id="journey10-transcript" placeholder="Paste the transcript of what was captured before the other app took the microphone..." style="min-height: 80px;"></textarea>
+                            <textarea id="journey10-notes" placeholder="Which app took the microphone? Did recording stop gracefully? Any error message?" style="margin-top: 10px;"></textarea>
+                        </div>
+                        <div class="screenshot-section">
+                            <h4>📸 Screenshots (If Issue Found)</h4>
+                            <label for="journey10-screenshots" class="screenshot-upload">
+                                <span>+ Add Screenshot</span>
+                            </label>
+                            <input type="file" id="journey10-screenshots" class="screenshot-input" accept="image/*" onchange="handleScreenshotUpload(event, 'journey10')" multiple>
+                            <div id="journey10-screenshot-gallery" class="screenshot-gallery"></div>
+                        </div>
+                        <div class="status-buttons">
+                            <button onclick="setStatus(event, 'journey10', 'pass')" class="btn pass-btn">✅ PASS</button>
+                            <button onclick="setStatus(event, 'journey10', 'fail')" class="btn fail-btn">❌ FAIL</button>
+                        </div>
+                        <div class="expected">✓ Expected: Recording stops gracefully, shows transcript of what was captured, no crash</div>
+                    </div>
+                </div>
+
+                <!-- JOURNEY 11: Speaker Activated During Recording -->
+                <div class="journey-item">
+                    <div class="journey-header" onclick="toggleJourney(this)">
+                        <div class="journey-title">
+                            <span class="journey-number">11</span>
+                            <span>Speaker Activated During Recording</span>
+                            <span class="time-estimate">3 min</span>
+                        </div>
+                    </div>
+                    <div class="journey-content">
+                        <div class="steps">
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Start recording</strong> — Tap record and start speaking</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Activate speaker output</strong> — Open YouTube, Music, or Safari and start playing audio through speaker</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Observe what happens</strong> — Does recording stop? Continue? Show error?</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Return to Dwellable</strong> — Go back to the app</span>
+                            </div>
+                            <div class="step">
+                                <input type="checkbox" class="step-checkbox" onchange="updateProgress()">
+                                <span><strong>Check transcript</strong> — What text was captured before speaker took over?</span>
+                            </div>
+                        </div>
+                        <div class="notes-section">
+                            <h4>📝 Transcript & Notes</h4>
+                            <textarea id="journey11-transcript" placeholder="Paste the transcript of what was captured before speaker output started..." style="min-height: 80px;"></textarea>
+                            <textarea id="journey11-notes" placeholder="What app was playing through speaker? Did recording stop? Any background noise captured?" style="margin-top: 10px;"></textarea>
+                        </div>
+                        <div class="screenshot-section">
+                            <h4>📸 Screenshots (If Issue Found)</h4>
+                            <label for="journey11-screenshots" class="screenshot-upload">
+                                <span>+ Add Screenshot</span>
+                            </label>
+                            <input type="file" id="journey11-screenshots" class="screenshot-input" accept="image/*" onchange="handleScreenshotUpload(event, 'journey11')" multiple>
+                            <div id="journey11-screenshot-gallery" class="screenshot-gallery"></div>
+                        </div>
+                        <div class="status-buttons">
+                            <button onclick="setStatus(event, 'journey11', 'pass')" class="btn pass-btn">✅ PASS</button>
+                            <button onclick="setStatus(event, 'journey11', 'fail')" class="btn fail-btn">❌ FAIL</button>
+                        </div>
+                        <div class="expected">✓ Expected: Recording stops gracefully when speaker output activates, shows transcript, no crash</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUMMARY -->
+            <div class="summary">
+                <h3>📊 Test Summary</h3>
+                <div class="summary-item">
+                    <span>Journey 1: Capture → Review → Save → View</span>
+                    <div class="summary-status" id="status1">—</div>
+                </div>
+                <div class="summary-item">
+                    <span>Journey 2: Offline Capture → Sync</span>
+                    <div class="summary-status" id="status2">—</div>
+                </div>
+                <div class="summary-item">
+                    <span>Journey 3: 10-Minute Recording</span>
+                    <div class="summary-status" id="status3">—</div>
+                </div>
+                <div class="summary-item">
+                    <span>Journey 4: Error Recovery</span>
+                    <div class="summary-status" id="status4">—</div>
+                </div>
+                <div class="summary-item">
+                    <span>Journey 5: App Backgrounding</span>
+                    <div class="summary-status" id="status5">—</div>
+                </div>
+                <div class="summary-item">
+                    <span>Journey 6: Force-Quit Recovery</span>
+                    <div class="summary-status" id="status6">—</div>
+                </div>
+                <div class="summary-item">
+                    <span>Journey 7: Text Entry</span>
+                    <div class="summary-status" id="status7">—</div>
+                </div>
+                <div class="summary-item">
+                    <span>Journey 8: Phone Call Interruption</span>
+                    <div class="summary-status" id="status8">—</div>
+                </div>
+                <div class="summary-item">
+                    <span>Journey 9: Phone Locked During Recording</span>
+                    <div class="summary-status" id="status9">—</div>
+                </div>
+                <div class="summary-item">
+                    <span>Journey 10: Another App Uses Microphone</span>
+                    <div class="summary-status" id="status10">—</div>
+                </div>
+                <div class="summary-item">
+                    <span>Journey 11: Speaker Activated During Recording</span>
+                    <div class="summary-status" id="status11">—</div>
+                </div>
+
+                <div class="final-result" id="finalResult">
+                    ⏳ Testing in progress...
+                </div>
+
+                <div class="export-section">
+                    <h3>📥 Export Results</h3>
+                    <div class="export-buttons">
+                        <button onclick="exportAsJSON()" class="btn export-btn">📄 Export as JSON</button>
+                        <button onclick="exportAsText()" class="btn export-btn">📋 Export as Text Report</button>
+                        <button onclick="copyToClipboard()" class="btn export-btn">📋 Copy Report to Clipboard</button>
+                    </div>
+                    <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Export includes: test status, all notes, transcripts, and timestamps</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>📖 <strong>Phase 1: 11 Critical Path Tests</strong> — Background audio enabled. Phone can lock while recording continues.</p>
+            <p>Keep transcripts and screenshots for accuracy verification. All 11 tests must PASS before Phase 2. Journeys 9-11 validate Layer 1 background audio feature.</p>
+        </footer>
+    </div>
+
+    <script>
+        function toggleJourney(header) {
+            const content = header.nextElementSibling;
+            const isOpen = content.classList.contains('open');
+
+            // Close all other journeys
+            document.querySelectorAll('.journey-content.open').forEach(el => {
+                if (el !== content) {
+                    el.classList.remove('open');
+                    el.previousElementSibling.classList.remove('open');
+                }
+            });
+
+            // Toggle current journey
+            content.classList.toggle('open');
+            header.classList.toggle('open');
+        }
+
+        function setStatus(event, journeyId, status) {
+            event.stopPropagation();
+            const journeyNum = journeyId.replace('journey', '');
+            const statusElement = document.getElementById(`status${journeyNum}`);
+
+            if (status === 'pass') {
+                statusElement.textContent = '✅ PASS';
+                statusElement.className = 'summary-status pass';
+            } else {
+                statusElement.textContent = '❌ FAIL';
+                statusElement.className = 'summary-status fail';
+            }
+
+            updateFinalResult();
+        }
+
+        function updateProgress() {
+            const totalCheckboxes = document.querySelectorAll('.step-checkbox').length;
+            const checkedCheckboxes = document.querySelectorAll('.step-checkbox:checked').length;
+            const percentage = Math.round((checkedCheckboxes / totalCheckboxes) * 100);
+
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('progressBar').textContent = percentage + '%';
+
+            const completedJourneys = document.querySelectorAll('.summary-status.pass').length +
+                                     document.querySelectorAll('.summary-status.fail').length;
+            document.getElementById('completedCount').textContent = completedJourneys;
+        }
+
+        function updateFinalResult() {
+            const passCount = document.querySelectorAll('.summary-status.pass').length;
+            const failCount = document.querySelectorAll('.summary-status.fail').length;
+            const totalDone = passCount + failCount;
+
+            const resultElement = document.getElementById('finalResult');
+
+            if (totalDone < 11) {
+                resultElement.textContent = '⏳ Testing in progress...';
+                resultElement.className = 'final-result';
+            } else if (failCount === 0) {
+                resultElement.textContent = '✅ ALL 11 TESTS PASS — Ready for Phase 2!';
+                resultElement.className = 'final-result ready';
+            } else {
+                resultElement.textContent = `❌ ${failCount} TEST(S) FAILED — DO NOT PROCEED. Report issues immediately.`;
+                resultElement.className = 'final-result not-ready';
+            }
+        }
+
+        function handleScreenshotUpload(event, journeyId) {
+            const files = event.target.files;
+            const gallery = document.getElementById(journeyId + '-screenshot-gallery');
+
+            for (let file of files) {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        // Create screenshot item
+                        const screenshotItem = document.createElement('div');
+                        screenshotItem.className = 'screenshot-item';
+
+                        // Create image
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+
+                        // Create info
+                        const info = document.createElement('div');
+                        info.className = 'screenshot-item-info';
+                        info.textContent = file.name;
+
+                        // Create delete button
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'screenshot-item-delete';
+                        deleteBtn.textContent = '×';
+                        deleteBtn.onclick = function() {
+                            screenshotItem.remove();
+                        };
+
+                        // Append to item
+                        screenshotItem.appendChild(img);
+                        screenshotItem.appendChild(info);
+                        screenshotItem.appendChild(deleteBtn);
+
+                        // Append to gallery
+                        gallery.appendChild(screenshotItem);
+                    };
+
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // Reset input
+            event.target.value = '';
+        }
+
+        function collectTestResults() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                testDate: new Date().toLocaleString(),
+                journeys: []
+            };
+
+            for (let i = 1; i <= 11; i++) {
+                const journeyId = `journey${i}`;
+                const statusElement = document.getElementById(`status${i}`);
+                const status = statusElement.textContent.includes('PASS') ? 'PASS' :
+                               statusElement.textContent.includes('FAIL') ? 'FAIL' : 'NOT_STARTED';
+
+                const journey = {
+                    number: i,
+                    status: status,
+                    notes: document.getElementById(journeyId + '-notes')?.value || '',
+                    transcript: document.getElementById(journeyId + '-transcript')?.value || '',
+                    text: document.getElementById(journeyId + '-text')?.value || ''
+                };
+
+                results.journeys.push(journey);
+            }
+
+            // Calculate summary
+            const passCount = results.journeys.filter(j => j.status === 'PASS').length;
+            const failCount = results.journeys.filter(j => j.status === 'FAIL').length;
+            const notStartedCount = results.journeys.filter(j => j.status === 'NOT_STARTED').length;
+
+            results.summary = {
+                totalTests: 11,
+                passed: passCount,
+                failed: failCount,
+                notStarted: notStartedCount,
+                allTestsPass: failCount === 0 && passCount === 11,
+                readyForPhase2: failCount === 0 && passCount === 11
+            };
+
+            return results;
+        }
+
+        function exportAsJSON() {
+            const results = collectTestResults();
+            const json = JSON.stringify(results, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Phase1_Results_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('✅ Results exported as JSON');
+        }
+
+        function generateTextReport() {
+            const results = collectTestResults();
+            let report = '';
+
+            report += '╔════════════════════════════════════════════════════════════╗\n';
+            report += '║         PHASE 1: CRITICAL PATH TESTING RESULTS              ║\n';
+            report += '╚════════════════════════════════════════════════════════════╝\n\n';
+
+            report += `📅 Test Date: ${results.testDate}\n`;
+            report += `⏰ Timestamp: ${results.timestamp}\n\n`;
+
+            report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+            report += 'SUMMARY\n';
+            report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+
+            report += `Total Tests:        ${results.summary.totalTests}\n`;
+            report += `✅ Passed:          ${results.summary.passed}\n`;
+            report += `❌ Failed:          ${results.summary.failed}\n`;
+            report += `⏳ Not Started:      ${results.summary.notStarted}\n\n`;
+
+            if (results.summary.allTestsPass) {
+                report += '🎉 RESULT: ALL TESTS PASS — Ready for Phase 2!\n\n';
+            } else if (results.summary.failed > 0) {
+                report += `⚠️  RESULT: ${results.summary.failed} TEST(S) FAILED — DO NOT PROCEED\n\n`;
+            } else {
+                report += '⏳ RESULT: Testing in progress...\n\n';
+            }
+
+            report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+            report += 'DETAILED RESULTS\n';
+            report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+
+            const journeyNames = [
+                'Capture → Review → Save → View',
+                'Offline Capture → Sync',
+                '10-Minute Recording',
+                'Transcription Error → Retry',
+                'App Backgrounding',
+                'Sync Queue Recovery (Force-Quit)',
+                'Text Entry',
+                'Phone Call Interruption',
+                'Phone Locked During Recording (Background Audio)',
+                'Another App Uses Microphone',
+                'Speaker Activated During Recording'
+            ];
+
+            results.journeys.forEach((journey, index) => {
+                const journeyNum = index + 1;
+                const journeyName = journeyNames[index];
+                const statusIcon = journey.status === 'PASS' ? '✅' : journey.status === 'FAIL' ? '❌' : '⏳';
+
+                report += `\n${statusIcon} JOURNEY ${journeyNum}: ${journeyName}\n`;
+                report += `   Status: ${journey.status}\n`;
+
+                if (journey.notes) {
+                    report += `   Notes: ${journey.notes}\n`;
+                }
+
+                if (journey.transcript) {
+                    report += `   Transcript: ${journey.transcript.substring(0, 100)}${journey.transcript.length > 100 ? '...' : ''}\n`;
+                }
+
+                if (journey.text) {
+                    report += `   Text: ${journey.text.substring(0, 100)}${journey.text.length > 100 ? '...' : ''}\n`;
+                }
+            });
+
+            report += '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+            report += 'END OF REPORT\n';
+            report += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+
+            return report;
+        }
+
+        function exportAsText() {
+            const report = generateTextReport();
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Phase1_Results_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('✅ Results exported as Text Report');
+        }
+
+        function copyToClipboard() {
+            const report = generateTextReport();
+            navigator.clipboard.writeText(report).then(() => {
+                alert('✅ Report copied to clipboard! You can now paste it into an email or document.');
+            }).catch(err => {
+                alert('❌ Failed to copy to clipboard. Try exporting as file instead.');
+            });
+        }
+    </script>
+</body>
+</html>

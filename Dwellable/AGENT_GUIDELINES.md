@@ -101,6 +101,83 @@ Extract exact values from the prototype — do not approximate colors, font size
 
 ---
 
+## Code Change Protocol
+
+**When writing code, follow the Change Management Framework before committing.**
+
+See: `CHANGE_MANAGEMENT_FRAMEWORK.md` (detailed reference)
+
+**Quick workflow before every commit:**
+
+1. **Impact Analysis** — What files change? What concepts are affected?
+2. **Consistency Check** — Does this concept appear elsewhere? Update all instances.
+3. **Manual Testing** — Run 7 Critical Path tests on device (30 min). All must pass.
+4. **Pre-commit Checklist** — No debug code, error handling present, docs updated.
+5. **Commit Message** — Include WHAT changed and WHY.
+
+**If any test fails: FIX and RETRY. Do not commit broken code.**
+
+See: `CHANGE_CHECKLIST_QUICK_REFERENCE.txt` (print this, keep visible while coding)
+
+---
+
+## Testing Protocol
+
+**Two testing contexts for Dwellable:**
+
+### 7 Critical Path Tests (for bug fixes & code changes)
+- **When:** Before every commit when I fix a bug or change code
+- **Purpose:** Regression prevention — ensure I didn't break existing flows
+- **Duration:** 30 minutes
+- **Question:** "Did my change break core functionality?"
+- **Who runs:** You (manually on physical device)
+
+**The 7 journeys:**
+1. Capture → Review → Save → View
+2. Offline Capture → Sync
+3. 10-Minute Recording
+4. Transcription Error → Retry
+5. App Backgrounding
+6. Sync Queue Recovery (force-quit)
+7. Text Entry
+
+**All 7 must PASS before I commit code.**
+
+---
+
+### 57 Comprehensive Scenarios (for TestFlight validation)
+- **When:** After major features are built, before TestFlight release
+- **Purpose:** Feature validation — test new features in all conditions
+- **Duration:** 4-5 hours
+- **Question:** "Does the feature work in ALL environments?"
+- **Who runs:** You (manually on physical device)
+
+**Scenario categories:**
+- Auth & Login (6 scenarios)
+- Navigation (5 scenarios)
+- Recording (8 scenarios)
+- Review & Save (7 scenarios)
+- Listing & Viewing (6 scenarios)
+- Text Entry (5 scenarios)
+- Offline & Sync (6 scenarios)
+- Audio Playback (5 scenarios)
+- 10-Minute Recordings (8 scenarios)
+- Network Variations (6 scenarios)
+- Audio Outputs & Inputs (8 scenarios)
+- Data Persistence (5 scenarios)
+
+See: `testing/TESTING_CHECKLIST_MASTER.html` (interactive checklist with all 57 scenarios)
+
+---
+
+### Automated Tests (what I write)
+- **Reliable automated tests:** 10-15 (pure logic + schema verification)
+- **Tests I cannot write reliably:** Integration tests, real network tests, UI tests, audio tests
+- **Why:** App is device-first (audio, sensors, real network). Manual testing is more valuable.
+- **Approach:** Unit tests catch obvious logic errors. You validate real behavior on device.
+
+---
+
 ## Stack Reference
 
 | Layer | Technology |

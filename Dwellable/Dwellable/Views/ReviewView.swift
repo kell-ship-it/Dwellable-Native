@@ -213,6 +213,12 @@ struct ReviewView: View {
                 }
             }
         }
+        .onChange(of: transcriptionManager.transcript) { newTranscript in
+            // Sync transcript as it updates (handles app returning from background during transcription)
+            if !newTranscript.trimmingCharacters(in: .whitespaces).isEmpty && momentBody.isEmpty {
+                momentBody = newTranscript
+            }
+        }
         .onDisappear {
             // Handle mid-transcription dismissal
             if transcriptionManager.isTranscribing {

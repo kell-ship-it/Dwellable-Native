@@ -1,4 +1,12 @@
-# Dwellable Testing Guide — Plain English Edition
+# ⚠️ ARCHIVED — See TESTING_CHECKLIST_MASTER.html Instead
+
+**This document is from March 2026 and is preserved for historical reference.**
+
+**For current testing:** Use `testing/TESTING_CHECKLIST_MASTER.html` (interactive checklist with all 57 scenarios in plain language)
+
+---
+
+# Dwellable Testing Guide — Plain English Edition (Historical Reference)
 
 **Goal:** Make sure the app works reliably before we release it. You'll test real-world scenarios on your iPhone 13.
 

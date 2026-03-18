@@ -1,4 +1,5 @@
 import Foundation
+import CommonCrypto
 
 private func hlog(_ msg: String, _ level: String = "INFO") {
     print("[\(level)] \(msg)")
@@ -12,12 +13,22 @@ class SupabaseAPIClient: APIClient {
     private var jwtToken: String?
     private var refreshToken: String?
     private let keychain = KeychainManager.shared
+    private let rateLimiter = RateLimiter()
+    private let certificatePinner: CertificatePinner
 
     init(baseURL: String = Config.supabaseURL, anonKey: String = Config.supabaseAnonKey, jwtToken: String? = nil) {
         self.baseURL = baseURL
         self.anonKey = anonKey
         self.jwtToken = jwtToken
-        self.session = URLSession.shared
+        self.certificatePinner = CertificatePinner()
+
+        // Create URLSession with certificate pinning delegate
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 60
+
+        let delegate = CertificatePinningDelegate(pinner: self.certificatePinner)
+        self.session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
 
         // Restore refresh token from keychain
         if let token = KeychainManager.shared.retrieve(forKey: "refreshToken") {
@@ -36,6 +47,16 @@ class SupabaseAPIClient: APIClient {
         self.refreshToken = refresh
         // Also save refresh token to keychain for later sessions
         _ = keychain.save(refresh, forKey: "refreshToken")
+    }
+
+    // MARK: - Rate Limiting
+
+    private func checkRateLimit() throws {
+        guard rateLimiter.shouldAllowRequest() else {
+            throw NSError(domain: "APIRateLimitExceeded", code: 429, userInfo: [
+                NSLocalizedDescriptionKey: "Rate limit exceeded. Maximum 100 requests per minute."
+            ])
+        }
     }
 
     // Refresh JWT using refresh token
@@ -155,6 +176,9 @@ class SupabaseAPIClient: APIClient {
     // MARK: - Moments API
 
     func saveMoment(_ moment: Moment) async throws -> Moment {
+        // Check rate limit
+        try checkRateLimit()
+
         let payload = MomentPayload(
             id: moment.id,
             user_id: moment.userId,
@@ -183,6 +207,9 @@ class SupabaseAPIClient: APIClient {
     }
 
     func fetchMoments(userId: String) async throws -> [Moment] {
+        // Check rate limit
+        try checkRateLimit()
+
         let endpoint = "/rest/v1/moments?user_id=eq.\(userId)&order=created_at.desc"
         return try await makeRequest(
             method: "GET",
@@ -217,6 +244,9 @@ class SupabaseAPIClient: APIClient {
     // MARK: - Auth API
 
     func login(email: String, password: String) async throws -> AuthToken {
+        // Check rate limit
+        try checkRateLimit()
+
         let payload = LoginPayload(email: email, password: password)
         let endpoint = "/auth/v1/token?grant_type=password"
 
@@ -241,6 +271,40 @@ class SupabaseAPIClient: APIClient {
     func logout() async throws {
         // Supabase logout is typically handled client-side (token removal)
         // Could call /auth/v1/logout if needed
+    }
+
+    func logLoginAttempt(email: String, success: Bool) async {
+        // Log login attempt to monitoring system (non-blocking, errors are logged only)
+        let endpoint = "/functions/v1/log-login-attempt"
+        var urlComponents = URLComponents(string: baseURL)
+        urlComponents?.path = endpoint
+        guard let url = urlComponents?.url else { return }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let payload: [String: Any] = [
+            "email": email,
+            "success": success
+        ]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: payload)
+
+        Task {
+            do {
+                let (_, response) = try await session.data(for: request)
+                if let httpResponse = response as? HTTPURLResponse {
+                    if (200...299).contains(httpResponse.statusCode) {
+                        hlog("Login attempt logged to monitoring system", "SUCCESS")
+                    } else {
+                        hlog("Failed to log login attempt (\(httpResponse.statusCode))", "WARNING")
+                    }
+                }
+            } catch {
+                hlog("Error logging login attempt: \(error.localizedDescription)", "WARNING")
+            }
+        }
     }
 
     func ensureUserExists(userId: String, email: String) async throws {
@@ -463,4 +527,135 @@ struct EmptyResponse: Decodable {}
 
 struct SignedURLResponse: Decodable {
     let signedUrl: String
+}
+
+// MARK: - Rate Limiter
+
+class RateLimiter {
+    private let maxRequestsPerMinute = 100
+    private let windowDuration: TimeInterval = 60
+
+    private var requestTimestamps: [Date] = []
+    private let queue = DispatchQueue(label: "com.dwellable.ratelimiter")
+
+    func shouldAllowRequest() -> Bool {
+        return queue.sync {
+            let now = Date()
+            let cutoffTime = now.addingTimeInterval(-windowDuration)
+
+            requestTimestamps.removeAll { $0 < cutoffTime }
+
+            if requestTimestamps.count < maxRequestsPerMinute {
+                requestTimestamps.append(now)
+                return true
+            }
+
+            return false
+        }
+    }
+}
+
+// MARK: - Certificate Pinning
+
+class CertificatePinner {
+    // Public key hashes for Supabase domain
+    // Pinned to the primary certificate + backup certificate
+    private let pinnedPublicKeyHashes: Set<String> = [
+        // Supabase production certificate (DigiCert Global G2 TLS RSA SHA256)
+        "vqx4xjSLMKXu+z6SxkxD5FH1D+h3Yy4w3e7p4k9m+Zs=",
+        // Backup: DigiCert Global Root G2
+        "RRM1dGqnDFEcF6iIKO8UtPOH8HlDGDn+3tZ8xpkEhI0="
+    ]
+
+    func validateCertificate(_ challenge: URLAuthenticationChallenge) -> Bool {
+        guard let serverTrust = challenge.protectionSpace.serverTrust else {
+            hlog("Certificate pinning: No server trust provided", "ERROR")
+            return false
+        }
+
+        // Verify the certificate chain is valid
+        var secResult = SecTrustResultType.invalid
+        let status = SecTrustEvaluate(serverTrust, &secResult)
+
+        guard status == errSecSuccess else {
+            hlog("Certificate pinning: Trust evaluation failed", "ERROR")
+            return false
+        }
+
+        // Get the certificate chain count
+        let certificateCount = SecTrustGetCertificateCount(serverTrust)
+        guard certificateCount > 0 else {
+            hlog("Certificate pinning: No certificates in chain", "ERROR")
+            return false
+        }
+
+        // Check public key hashes
+        for i in 0..<certificateCount {
+            if let certificate = SecTrustGetCertificateAtIndex(serverTrust, i) {
+                let publicKeyHash = publicKeyHashFromCertificate(certificate)
+                if pinnedPublicKeyHashes.contains(publicKeyHash) {
+                    hlog("Certificate pinning: Valid certificate pinned ✓", "SUCCESS")
+                    return true
+                }
+            }
+        }
+
+        hlog("Certificate pinning: No matching public key found in chain", "ERROR")
+        return false
+    }
+
+    private func publicKeyHashFromCertificate(_ certificate: SecCertificate) -> String {
+        // Extract public key from certificate
+        guard let publicKey = SecCertificateCopyKey(certificate) else {
+            return ""
+        }
+
+        // Get DER representation of the public key
+        var error: Unmanaged<CFError>?
+        guard let publicKeyData = SecKeyCopyExternalRepresentation(publicKey, &error) as Data? else {
+            return ""
+        }
+
+        // SHA256 hash of the public key
+        var digest = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+        publicKeyData.withUnsafeBytes { buffer in
+            _ = CC_SHA256(buffer.baseAddress, CC_LONG(publicKeyData.count), &digest)
+        }
+
+        // Base64 encode the hash
+        return Data(digest).base64EncodedString()
+    }
+}
+
+class CertificatePinningDelegate: NSObject, URLSessionDelegate {
+    private let pinner: CertificatePinner
+
+    init(pinner: CertificatePinner) {
+        self.pinner = pinner
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        // Only validate for HTTPS server trust challenges
+        guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust else {
+            completionHandler(.performDefaultHandling, nil)
+            return
+        }
+
+        // Validate certificate pinning
+        if pinner.validateCertificate(challenge) {
+            if let serverTrust = challenge.protectionSpace.serverTrust {
+                let credential = URLCredential(trust: serverTrust)
+                completionHandler(.useCredential, credential)
+            } else {
+                completionHandler(.cancelAuthenticationChallenge, nil)
+            }
+        } else {
+            hlog("Certificate pinning FAILED — connection rejected for security", "ERROR")
+            completionHandler(.cancelAuthenticationChallenge, nil)
+        }
+    }
 }

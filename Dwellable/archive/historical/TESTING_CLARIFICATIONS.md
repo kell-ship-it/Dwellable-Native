@@ -1,3 +1,10 @@
+# ⚠️ HISTORICAL REFERENCE — March 10 Session
+
+**This document captures clarifications from the March 10 testing session.**
+**Current testing uses:** `testing/TESTING_CHECKLIST_MASTER.html`
+
+---
+
 # Testing Clarifications — March 10 Session
 
 This document clarifies the MAYBE tests and ambiguous test descriptions from the March 10 testing session.
