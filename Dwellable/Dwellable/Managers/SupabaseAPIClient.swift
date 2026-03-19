@@ -559,10 +559,14 @@ class RateLimiter {
 
 class CertificatePinner {
     // Public key hashes for Supabase domain
-    // Updated: March 19, 2026 with current Supabase certificate
+    // Updated: March 19, 2026 with actual certificate chain from device
     private let pinnedPublicKeyHashes: Set<String> = [
-        // Supabase current certificate (lhcjobrtmbawlhjyodxz.supabase.co)
-        "GU2W4j1P24T3sqlI+o6YTnidzz0PI8fB/Gvd2ITfSZE="
+        // Leaf certificate (primary)
+        "M4FlSvpxk5vEw3n70qj3t4y7QuYUHuzwkh9Earv1FNQ=",
+        // Intermediate certificate (backup for chain validation)
+        "H7AMYAvicN2+UcFPBz3kJXCDmGrTItZh4ujUBK8hoWg=",
+        // Root certificate (backup for chain validation)
+        "YSoUL4CBzo5aJ/ES9gSZTsavsgtHsiLLnTG+BKUdork="
     ]
 
     func validateCertificate(_ challenge: URLAuthenticationChallenge) -> Bool {
