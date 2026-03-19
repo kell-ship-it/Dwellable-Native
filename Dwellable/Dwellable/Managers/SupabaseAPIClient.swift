@@ -559,12 +559,10 @@ class RateLimiter {
 
 class CertificatePinner {
     // Public key hashes for Supabase domain
-    // Pinned to the primary certificate + backup certificate
+    // Updated: March 19, 2026 with current Supabase certificate
     private let pinnedPublicKeyHashes: Set<String> = [
-        // Supabase production certificate (DigiCert Global G2 TLS RSA SHA256)
-        "vqx4xjSLMKXu+z6SxkxD5FH1D+h3Yy4w3e7p4k9m+Zs=",
-        // Backup: DigiCert Global Root G2
-        "RRM1dGqnDFEcF6iIKO8UtPOH8HlDGDn+3tZ8xpkEhI0="
+        // Supabase current certificate (lhcjobrtmbawlhjyodxz.supabase.co)
+        "GU2W4j1P24T3sqlI+o6YTnidzz0PI8fB/Gvd2ITfSZE="
     ]
 
     func validateCertificate(_ challenge: URLAuthenticationChallenge) -> Bool {

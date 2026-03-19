@@ -550,6 +550,21 @@
   - **Expected outcome:** Early warning system that catches new threats within 24 hours
   - **See also:** AUTONOMOUS_VULNERABILITY_MONITORING.md for full details
 
+- [ ] **T-052:** Enable HaveIBeenPwned Password Breach Detection in Supabase Auth *(Layer 2 — Post-Beta)*
+  - **Priority:** HIGH — Required before public App Store release with real user passwords
+  - **Cost:** $25/month (Supabase Pro Plan)
+  - **Setup Time:** 5 minutes (toggle in Supabase dashboard)
+  - **When to Enable:** Just before App Store launch when users are creating their own passwords
+  - **What it does:** Prevents users from using compromised passwords detected by HaveIBeenPwned.org
+  - **Why deferred to Layer 2:** Beta testing uses provided credentials; real user passwords only at App Store launch
+  - **Implementation:**
+    1. Upgrade Supabase project to Pro Plan ($25/month)
+    2. Navigate to Auth → Providers → Email → Password strength
+    3. Toggle "Prevent use of leaked passwords" to ON
+    4. Test with a known compromised password to verify it's blocked
+  - **Related:** https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+  - **Status:** Waiting for App Store readiness decision
+
 - [ ] **T-026:** Prepare for App Store submission
   - Privacy policy, terms of service, screenshots, description, pricing
 
@@ -603,7 +618,8 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Bugs — Offline & Auto-stop (March 15) | 2 | 2 | 0 | 0 |
 | Security Implementation (March 17) | 1 | 1 | 0 | 0 |
 | Autonomous Monitoring (Layer 2) | 1 | 0 | 0 | 1 |
-| **TOTAL** | **70** | **58** | **1** | **17** |
+| Auth Security (Layer 2) | 1 | 0 | 0 | 1 |
+| **TOTAL** | **71** | **58** | **1** | **18** |
 
 ---
 
