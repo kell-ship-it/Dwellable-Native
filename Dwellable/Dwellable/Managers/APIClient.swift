@@ -14,7 +14,7 @@ protocol APIClient {
     func logLoginAttempt(email: String, success: Bool) async
 
     // Storage endpoints
-    func uploadAudio(_ audioData: Data, fileName: String, userId: String, userEmail: String) async throws -> String
+    func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String
 
     // Analytics endpoints
     func sendUsageEvents(_ events: [UsageEventData], userId: String) async throws

@@ -9,7 +9,7 @@ struct AppView: View {
         // AppView is only shown when authenticated, so we can safely force-unwrap currentUser
         if let user = authManager.currentUser {
             NavigationStack {
-                MomentsListView(apiClient: apiClient, userId: user.id, userEmail: user.email, syncManager: syncManager)
+                MomentsListView(apiClient: apiClient, userId: user.id, syncManager: syncManager)
             }
             .environment(\.colorScheme, .dark)
             .onAppear {

@@ -313,28 +313,19 @@ class SupabaseAPIClient: APIClient {
         let payload = UserPayload(id: userId, email: email)
         let endpoint = "/rest/v1/users?on_conflict=id"
 
-        hlog("Creating user record: \(email) (\(userId.prefix(8)))")
-
-        do {
-            _ = try await makeRequest(
-                method: "POST",
-                endpoint: endpoint,
-                body: payload,
-                responseType: UserResponse.self
-            )
-            hlog("User record created/verified successfully", "SUCCESS")
-        } catch {
-            hlog("Failed to create user record: \(error.localizedDescription)", "ERROR")
-            throw error
-        }
+        _ = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: UserResponse.self
+        )
     }
 
     // MARK: - Storage API
 
-    func uploadAudio(_ audioData: Data, fileName: String, userId: String, userEmail: String) async throws -> String {
+    func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String {
         // Upload to Supabase Storage bucket: moments-audio (PRIVATE bucket)
-        // Path format: {userId}_{userEmail}/{fileName} — immutable ID + human-readable email
-        let storagePath = "\(userId)_\(userEmail)/\(fileName)"
+        let storagePath = "\(userId)/\(fileName)"
         let uploadEndpoint = "/storage/v1/object/moments-audio/\(storagePath)"
 
         // 1. Upload audio file
