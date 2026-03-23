@@ -323,15 +323,9 @@ class SupabaseAPIClient: APIClient {
 
     // MARK: - Storage API
 
-    func uploadAudio(_ audioData: Data, fileName: String, userId: String, userEmail: String?) async throws -> String {
+    func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String {
         // Upload to Supabase Storage bucket: moments-audio (PRIVATE bucket)
-        // Path format: {userId}_{userEmail}/{fileName} if email available, else {userId}/{fileName}
-        let storagePath: String
-        if let email = userEmail {
-            storagePath = "\(userId)_\(email)/\(fileName)"
-        } else {
-            storagePath = "\(userId)/\(fileName)"
-        }
+        let storagePath = "\(userId)/\(fileName)"
         let uploadEndpoint = "/storage/v1/object/moments-audio/\(storagePath)"
 
         // 1. Upload audio file

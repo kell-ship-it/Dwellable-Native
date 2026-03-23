@@ -15,7 +15,6 @@ struct ReviewView: View {
     let audioURL: URL?
     let apiClient: APIClient
     let userId: String
-    let userEmail: String?
     let syncManager: SyncManager
     var onMomentSaved: (() -> Void)?
 
@@ -202,7 +201,7 @@ struct ReviewView: View {
         }
         .onAppear {
             // Set API client for audio uploads to Supabase Storage
-            transcriptionManager.setAPIClient(apiClient, userId: userId, userEmail: userEmail)
+            transcriptionManager.setAPIClient(apiClient, userId: userId)
 
             if let audioURL = audioURL, momentBody.isEmpty {
                 // Start transcription immediately
@@ -304,6 +303,6 @@ struct ReviewView: View {
 #Preview {
     let apiClient = MockAPIClient()
     NavigationStack {
-        ReviewView(audioURL: nil, apiClient: apiClient, userId: "preview-user", userEmail: "preview@example.com", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
+        ReviewView(audioURL: nil, apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
     }
 }
