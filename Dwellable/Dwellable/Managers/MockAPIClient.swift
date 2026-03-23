@@ -119,13 +119,19 @@ class MockAPIClient: APIClient {
 
     // MARK: - Storage API
 
-    func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String {
+    func uploadAudio(_ audioData: Data, fileName: String, userId: String, userEmail: String?) async throws -> String {
         // Simulate network delay
         try await Task.sleep(nanoseconds: 500_000_000) // 0.5 second
 
         // Mock implementation - return a fake signed URL (valid for 7 days)
         let token = UUID().uuidString.replacingOccurrences(of: "-", with: "")
-        let mockSignedURL = "https://lhcjobrtmbawlhjyodxz.supabase.co/storage/v1/object/signed/moments-audio/\(userId)/\(fileName)?token=\(token)&t=\(Int(Date().timeIntervalSince1970))"
+        let storagePath: String
+        if let email = userEmail {
+            storagePath = "\(userId)_\(email)/\(fileName)"
+        } else {
+            storagePath = "\(userId)/\(fileName)"
+        }
+        let mockSignedURL = "https://lhcjobrtmbawlhjyodxz.supabase.co/storage/v1/object/signed/moments-audio/\(storagePath)?token=\(token)&t=\(Int(Date().timeIntervalSince1970))"
         print("Mock: Uploaded audio \(fileName) — signed URL generated")
         return mockSignedURL
     }

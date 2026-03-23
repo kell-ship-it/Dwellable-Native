@@ -30,15 +30,17 @@ class TranscriptionManager: NSObject, ObservableObject {
     // Dependencies for audio upload
     var apiClient: APIClient?
     var userId: String?
+    var userEmail: String?  // Optional — used for storage path organization
 
     override init() {
         super.init()
     }
 
-    /// Set the API client and user ID for audio uploads
-    func setAPIClient(_ client: APIClient, userId: String) {
+    /// Set the API client, user ID, and optional email for audio uploads
+    func setAPIClient(_ client: APIClient, userId: String, userEmail: String? = nil) {
         self.apiClient = client
         self.userId = userId
+        self.userEmail = userEmail
     }
 
     // MARK: - WhisperKit Setup
@@ -248,7 +250,7 @@ class TranscriptionManager: NSObject, ObservableObject {
                         do {
                             let audioData = try Data(contentsOf: tempURL)
                             let fileName = "moment_\(UUID().uuidString).m4a"
-                            let publicURL = try await apiClient.uploadAudio(audioData, fileName: fileName, userId: userId)
+                            let publicURL = try await apiClient.uploadAudio(audioData, fileName: fileName, userId: userId, userEmail: self.userEmail)
                             await MainActor.run {
                                 self.audioURL = publicURL
                                 hlog("Audio uploaded to Storage: \(fileName)", "SUCCESS")
