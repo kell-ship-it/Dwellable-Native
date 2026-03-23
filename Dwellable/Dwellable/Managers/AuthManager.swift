@@ -104,7 +104,9 @@ class AuthManager: ObservableObject {
                 try await apiClient.ensureUserExists(userId: authToken.userId, email: email)
             } catch {
                 // Log but don't fail auth if user creation fails
-                print("Warning: Could not create user record: \(error.localizedDescription)")
+                let errorMsg = "⚠️ [AUTH] Could not create user record for \(email): \(error.localizedDescription)"
+                print(errorMsg)
+                HTMLLogManager.shared.log(errorMsg, level: "ERROR")
             }
 
             // Store token, userId, and email in Keychain

@@ -17,6 +17,7 @@ struct CaptureView: View {
 
     let apiClient: APIClient
     let userId: String
+    let userEmail: String
     let syncManager: SyncManager
     var onMomentSaved: (() -> Void)?
 
@@ -151,7 +152,7 @@ struct CaptureView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $showVoiceReview) {
-            ReviewView(audioURL: audioManager.audioURL, apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
+            ReviewView(audioURL: audioManager.audioURL, apiClient: apiClient, userId: userId, userEmail: userEmail, syncManager: syncManager, onMomentSaved: {
                 onMomentSaved?()
             })
         }
@@ -338,6 +339,6 @@ struct CaptureView: View {
 #Preview {
     let apiClient = MockAPIClient()
     NavigationStack {
-        CaptureView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
+        CaptureView(apiClient: apiClient, userId: "preview-user", userEmail: "preview@example.com", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
     }
 }

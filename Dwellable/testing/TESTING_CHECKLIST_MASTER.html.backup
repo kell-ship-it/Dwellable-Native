@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dwellable Master Testing Checklist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0e11 0%, #1a1823 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #d4af37;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #999;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+        }
+
+        .status-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+
+        .status-item {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 12px;
+            border-left: 3px solid #d4af37;
+            border-radius: 4px;
+        }
+
+        .status-item strong {
+            color: #d4af37;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: transparent;
+            color: #999;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: #d4af37;
+        }
+
+        .tab-btn.active {
+            color: #d4af37;
+            border-bottom-color: #d4af37;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h2 {
+            color: #d4af37;
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            border-left: 4px solid #d4af37;
+            padding-left: 15px;
+        }
+
+        h3 {
+            color: #d4af37;
+            font-size: 1.3em;
+            margin-top: 20px;
+            margin-bottom: 12px;
+        }
+
+        .phase-header {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #d4af37;
+            border-radius: 4px;
+        }
+
+        .phase-goal {
+            font-style: italic;
+            color: #c0c0c0;
+            margin: 10px 0;
+        }
+
+        .phase-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        .status-completed {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4cb50;
+            border: 1px solid #4cb50;
+        }
+
+        .status-in-progress {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+
+        .status-not-started {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            font-size: 0.9em;
+        }
+
+        th {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .num {
+            color: #d4af37;
+            font-weight: 600;
+            width: 40px;
+            text-align: center;
+        }
+
+        .scenario-details {
+            display: none;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            margin-top: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #d4af37;
+        }
+
+        .scenario-details.show {
+            display: block;
+        }
+
+        .details-label {
+            color: #d4af37;
+            font-weight: 600;
+            margin-top: 12px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .details-text {
+            color: #c0c0c0;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .status-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            width: 120px;
+        }
+
+        .status-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.15);
+        }
+
+        .notes-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: #e0e0e0;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .notes-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.08);
+        }
+
+        .expand-btn {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            border: 1px solid #d4af37;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .expand-btn:hover {
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        .quick-path {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 20px;
+            border-radius: 4px;
+            border-left: 4px solid #d4af37;
+            margin: 20px 0;
+        }
+
+        .quick-path strong {
+            color: #d4af37;
+        }
+
+        .quick-path ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .quick-path li {
+            margin: 8px 0;
+        }
+
+        .actions {
+            text-align: center;
+            margin: 40px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(135deg, #d4af37, #e8c547);
+            color: #0f0e11;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .reference-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.2);
+            font-size: 0.9em;
+        }
+
+        .reference-table th {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        .reference-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .reference-table input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #e0e0e0;
+            padding: 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .reference-table input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.08);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dwellable Native — Master Testing Checklist</h1>
+            <p class="subtitle">Complete testing suite for voice-capturing journaling app</p>
+
+            <div class="status-overview">
+                <div class="status-item">
+                    <strong>✅ Completed</strong>
+                    9 Phases / 39 Scenarios
+                </div>
+                <div class="status-item">
+                    <strong>🔄 In Progress</strong>
+                    1 Phase / 5 Scenarios
+                </div>
+                <div class="status-item">
+                    <strong>🔲 Not Started</strong>
+                    4 Phases / 13 Scenarios
+                </div>
+                <div class="status-item">
+                    <strong>📊 Total</strong>
+                    14 Phases / 57 Scenarios
+                </div>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'overview')">Overview</button>
+            <button class="tab-btn" onclick="switchTab(event, 'phase1')">Phase 1-5</button>
+            <button class="tab-btn" onclick="switchTab(event, 'phase6')">Phase 6-8</button>
+            <button class="tab-btn" onclick="switchTab(event, 'phase9')">Phase 9-11</button>
+            <button class="tab-btn" onclick="switchTab(event, 'phase12')">Phase 12-14</button>
+            <button class="tab-btn" onclick="switchTab(event, 'quick')">Quick Test</button>
+        </div>
+
+        <!-- OVERVIEW TAB -->
+        <div id="overview" class="tab-content active">
+            <h2>Testing Overview</h2>
+
+            <div class="phase-header">
+                <h3>📋 What to Test</h3>
+                <p class="phase-goal">This comprehensive checklist covers all major app features and edge cases:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li><strong>Phases 1-5:</strong> Core functionality — offline, auth, CRUD, network, persistence</li>
+                    <li><strong>Phases 6-8:</strong> Quality assurance — error handling, performance, UI/UX</li>
+                    <li><strong>Phases 9-11:</strong> Bug verification — critical fixes from March 2026 session</li>
+                    <li><strong>Phases 12-14:</strong> Audio optimization — recording duration, environments, accuracy</li>
+                </ul>
+            </div>
+
+            <div class="phase-header">
+                <h3>⏱️ Time Estimates</h3>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li><strong>Quick Test (16 scenarios):</strong> 30 minutes — smoke test for critical paths</li>
+                    <li><strong>Standard Test (39 completed scenarios):</strong> 2-3 hours</li>
+                    <li><strong>Full Suite (53 scenarios):</strong> 4-5 hours including all phases</li>
+                </ul>
+            </div>
+
+            <div class="phase-header">
+                <h3>🎯 Test Priorities</h3>
+                <p class="phase-goal">Start with these for fastest validation:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Phase 1.1, 1.3 — Offline capture and sync</li>
+                    <li>Phase 3.1 — Voice recording to save</li>
+                    <li>Phase 9.1, 9.2, 9.3 — Critical bug fixes</li>
+                    <li>Phase 10.1-10.3 — Audio validation</li>
+                    <li>Phase 12.1, 12.5 — Recording duration edge cases</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PHASE 1-5 TAB -->
+        <div id="phase1" class="tab-content">
+            <h2>Phases 1-5: Core Functionality</h2>
+
+            <!-- PHASE 1 -->
+            <div class="phase-header">
+                <h3>Phase 1: Offline Support (5 scenarios)</h3>
+                <p class="phase-goal">Verify moments save locally when network is unavailable</p>
+                <span class="phase-status status-completed">✅ COMPLETED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                        <th width="100">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">1.1</td>
+                        <td><strong>Create moment offline (voice)</strong><br><small>Capture voice moment while WiFi disabled</small></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. Disable WiFi & cellular 2. Open app 3. Tap mic, record "Test moment" 4. Tap Save</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">Moment saved, "pending sync" message appears, dismisses after 1.5s</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">1.2</td>
+                        <td><strong>Create moment offline (text)</strong><br><small>Capture text moment while offline</small></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. Disable WiFi & cellular 2. Open app 3. Tap "Type instead" 4. Enter text, Save</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">Moment saved locally, "pending sync" message appears</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">1.3</td>
+                        <td><strong>Sync queue waits for network</strong><br><small>Offline moment auto-syncs when connection restored</small></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. Create moment while offline 2. Wait 30 seconds 3. Enable WiFi</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">Moment syncs automatically, appears in list (no manual refresh needed)</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">1.4</td>
+                        <td><strong>Multiple offline moments sync</strong><br><small>Multiple moments sync without duplication</small></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. Disable WiFi 2. Create 3 moments (mix voice/text) 3. Enable WiFi 4. Wait 10s</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">All 3 moments appear in list, none duplicated</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">1.5</td>
+                        <td><strong>Offline moment persists after restart</strong><br><small>Pending moments survive app restart</small></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. Disable WiFi 2. Create moment 3. Force-quit app 4. Relaunch 5. Enable WiFi</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">Moment still in app, syncs on network restore</div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- PHASE 2 -->
+            <div class="phase-header" style="margin-top: 40px;">
+                <h3>Phase 2: Authentication (6 scenarios)</h3>
+                <p class="phase-goal">Verify login, logout, and session persistence work correctly</p>
+                <span class="phase-status status-completed">✅ COMPLETED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                        <th width="100">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">2.1</td>
+                        <td><strong>Valid login</strong></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. Open LoginView 2. Enter: test@example.com / password123 3. Tap Login</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">App shows MomentsListView, displays user's moments</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">2.2</td>
+                        <td><strong>Invalid email</strong></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. LoginView 2. Enter: invalid / password123 3. Tap Login</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">Error message displayed, still on LoginView</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">2.3</td>
+                        <td><strong>Invalid password</strong></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. LoginView 2. Enter: test@example.com / wrongpassword 3. Tap Login</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">Error message displayed, still on LoginView</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">2.4</td>
+                        <td><strong>Session persists on restart</strong></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. Log in 2. Go to MomentsListView 3. Kill app 4. Relaunch</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">Still logged in, MomentsListView displays (no LoginView)</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">2.5</td>
+                        <td><strong>Logout clears session</strong></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. Log in 2. Tap sign out button 3. Confirm logout</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">LoginView appears, token removed from Keychain</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">2.6</td>
+                        <td><strong>Empty fields validation</strong></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. LoginView 2. Leave email/password empty 3. Tap Login</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">Error message, login rejected</div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p style="text-align: center; color: #999; margin-top: 40px; font-size: 0.9em;">Phases 3-5 available in phase1 tab — scroll for more scenarios</p>
+        </div>
+
+        <!-- QUICK TEST TAB -->
+        <div id="quick" class="tab-content">
+            <h2>Quick Test Path (30 Minutes)</h2>
+
+            <div class="quick-path">
+                <strong>⚡ Fast-Track Validation for Critical Paths</strong>
+                <p style="margin-top: 10px; color: #c0c0c0;">Test these 16 key scenarios first to validate core functionality:</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Phase</th>
+                        <th>Scenarios</th>
+                        <th width="150">Status</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Phase 1 — Offline</strong></td>
+                        <td>1.1, 1.3</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 2 — Auth</strong></td>
+                        <td>2.1, 2.4</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 3 — CRUD</strong></td>
+                        <td>3.1, 3.4</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 4 — Network</strong></td>
+                        <td>4.1, 4.2</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 5 — Persistence</strong></td>
+                        <td>5.1, 5.3</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 9 — Bugs</strong></td>
+                        <td>9.1, 9.2, 9.3</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 10 — Audio</strong></td>
+                        <td>10.1, 10.3, 10.7</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Phase 12 — Duration</strong></td>
+                        <td>12.1, 12.5</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header" style="margin-top: 40px;">
+                <h3>What This Quick Test Covers</h3>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>✅ Offline moment capture & sync</li>
+                    <li>✅ Login/session persistence</li>
+                    <li>✅ Voice recording to save</li>
+                    <li>✅ Moments list display</li>
+                    <li>✅ Network resilience</li>
+                    <li>✅ Critical bug fixes (March 2026)</li>
+                    <li>✅ Audio validation (blank/short rejection)</li>
+                    <li>✅ Recording duration edge cases</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PHASE 12-14 TAB -->
+        <div id="phase12" class="tab-content">
+            <h2>Phases 12-14: Audio Optimization</h2>
+
+            <div class="phase-header">
+                <h3>Phase 12: Audio Recording Duration (5 scenarios)</h3>
+                <p class="phase-goal">Verify audio capture works correctly across different recording lengths</p>
+                <span class="phase-status status-in-progress">🔄 IN PROGRESS</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                        <th width="100">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">12.1</td>
+                        <td><strong>Short recording (5 seconds)</strong></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. MomentsListView 2. Tap mic 3. Record for ~5 seconds ("This is a short test") 4. Stop & Save</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">Full text captured. Moment saved. No truncation.</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">12.2</td>
+                        <td><strong>Medium recording (1-2 minutes)</strong></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. Record for ~1-2 minutes (read a paragraph or list items) 2. Stop & Save</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">Full transcript captured. No gaps or dropouts. Quality good.</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">12.3</td>
+                        <td><strong>Long recording (5 minutes)</strong></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. Record for ~5 minutes (sustained speech, normal conversation) 2. Stop & Save</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">Complete transcript with no loss. Transcription time reasonable (~10-15s).</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">12.4</td>
+                        <td><strong>Extended recording (10 minutes)</strong></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. Record full 10-minute duration (will hit auto-stop at 10:00) 2. ReviewView should open with full transcript</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">Full 10-minute audio transcribed. No truncation at time limit. Transcript complete.</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="num">12.5</td>
+                        <td><strong>Multiple long sessions (3x 10-min recordings)</strong></td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        <td><button class="expand-btn" onclick="toggleDetails(this)">Details</button></td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="scenario-details">
+                                <div class="details-label">Steps:</div>
+                                <div class="details-text">1. Record 10-minute session, save 2. Wait 5 seconds 3. Record another 10-minute, save 4. Repeat once more (3 total)</div>
+                                <div class="details-label">Expected:</div>
+                                <div class="details-text">All 3 moments saved successfully. No database or upload conflicts. Timestamps differ correctly.</div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="phase-header" style="margin-top: 40px;">
+                <h3>Phase 13: Recording Environment & Network Variations (10 scenarios)</h3>
+                <p class="phase-goal">Verify audio capture quality, sync, device heat, and audio output compatibility in different environments and conditions</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Scenario</th>
+                        <th width="150">Status</th>
+                        <th width="200">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="num">13.1</td>
+                        <td><strong>Quiet environment</strong> — Record in silent room with normal speech volume</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">13.2</td>
+                        <td><strong>Moderate background noise</strong> — Record with TV/music playing softly, speak clearly</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">13.3</td>
+                        <td><strong>Long recording on WiFi</strong> — 10-minute moment on WiFi connection</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">13.4</td>
+                        <td><strong>Long recording on cellular</strong> — 10-minute moment on cellular data</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">13.5</td>
+                        <td><strong>Network change mid-transcription</strong> — Record 5-min, disable WiFi during transcription</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">13.6</td>
+                        <td><strong>Battery heat during long recording</strong> — Monitor battery drain & device heat during 10-min session</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">13.7</td>
+                        <td><strong>Audio output: Wired headphones</strong> — Record 2-min with wired headphones connected, verify audio isolation</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">13.8</td>
+                        <td><strong>Audio output: Car Bluetooth</strong> — Record 2-min with car audio/Bluetooth system connected</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">13.9</td>
+                        <td><strong>Audio output: No Bluetooth</strong> — Record 2-min with no Bluetooth connected (speaker only, no AirPods/car)</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="num">13.10</td>
+                        <td><strong>Airplane mode: Long recording</strong> — Enable airplane mode, record 10-minute moment, verify offline transcription</td>
+                        <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                        <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="scenario-details" id="details-13-6" style="margin-top: 20px; display: block;">
+                <div class="details-label">📍 Scenario 13.6 — Battery Heat Assessment (Detailed Guide)</div>
+                <div class="details-text">
+                    <strong>Why this matters:</strong> Long recording sessions (10 minutes) tax the CPU (Speech Framework) + microphone processing. Excessive heat can trigger thermal throttling or battery drain.
+                </div>
+                <div class="details-text">
+                    <strong>How to assess battery heat:</strong>
+                    <ol style="margin-left: 20px; color: #c0c0c0;">
+                        <li><strong>Before recording:</strong> Note device temperature by touch (back of phone, near camera). Check Settings > Battery > Battery Health (should be 90%+ health).</li>
+                        <li><strong>During recording:</strong> Record 10-minute moment continuously. Monitor battery % — should drop ~2-3% per minute (normal for active app). Speech Framework runs on neural engine, not main CPU.</li>
+                        <li><strong>After recording:</strong> Immediately assess:
+                            <ul style="margin-top: 8px; margin-left: 20px;">
+                                <li>Device temperature — feel back of phone. Should be warm (not hot). Anything above normal hand warmth = concern.</li>
+                                <li>Check Settings > Battery to see Dwellable energy impact</li>
+                                <li>Allow 2 minutes cooldown, then feel again — temperature should drop</li>
+                            </ul>
+                        </li>
+                        <li><strong>Quality check:</strong> After recording, transcription should complete quickly (WhisperKit runs on-device). If device is too hot, transcription may be slower.</li>
+                    </ol>
+                </div>
+                <div class="details-text">
+                    <strong>Pass criteria:</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>Device becomes warm but not hot (comfortable to hold)</li>
+                        <li>Battery drains 20-30% over 10 minutes (expected for active recording)</li>
+                        <li>Temperature returns to normal within 2-3 minutes after recording stops</li>
+                        <li>Transcription completes in &lt; 30 seconds (no thermal throttling)</li>
+                    </ul>
+                </div>
+                <div class="details-text">
+                    <strong>Red flags (report as bug):</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>Device becomes hot to touch (too uncomfortable to hold to ear)</li>
+                        <li>Excessive battery drain (&gt; 50% in 10 minutes)</li>
+                        <li>Transcription takes &gt; 60 seconds (suggests thermal throttling)</li>
+                        <li>Device thermal shutdown warning appears</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="phase-header" style="margin-top: 40px;">
+                <h3>Phase 14: Recording Duration Reference Transcripts</h3>
+                <p class="phase-goal">Compare actual transcripts from device testing to verify accuracy across recording lengths</p>
+                <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+            </div>
+
+            <p style="color: #c0c0c0; margin-bottom: 20px; font-style: italic;">Before testing: Prepare reference audio clips at each duration level. During testing, record on device and copy the transcript into the table for comparison.</p>
+
+            <table class="reference-table">
+                <thead>
+                    <tr>
+                        <th>Duration</th>
+                        <th>Reference Transcript</th>
+                        <th>Device Transcript</th>
+                        <th width="80">Match %</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>5 seconds</strong></td>
+                        <td><input type="text" placeholder="Reference text..."></td>
+                        <td><input type="text" placeholder="Device text..."></td>
+                        <td><input type="text" placeholder="95%"></td>
+                        <td><input type="text" placeholder="Notes..."></td>
+                    </tr>
+                    <tr>
+                        <td><strong>1 minute</strong></td>
+                        <td><input type="text" placeholder="100+ words..."></td>
+                        <td><input type="text" placeholder="Device text..."></td>
+                        <td><input type="text" placeholder="95%"></td>
+                        <td><input type="text" placeholder="Word count & accuracy..."></td>
+                    </tr>
+                    <tr>
+                        <td><strong>5 minutes</strong></td>
+                        <td><input type="text" placeholder="500+ words..."></td>
+                        <td><input type="text" placeholder="Device text..."></td>
+                        <td><input type="text" placeholder="95%"></td>
+                        <td><input type="text" placeholder="Check for truncation/gaps..."></td>
+                    </tr>
+                    <tr>
+                        <td><strong>10 minutes</strong></td>
+                        <td><input type="text" placeholder="1000+ words..."></td>
+                        <td><input type="text" placeholder="Device text..."></td>
+                        <td><input type="text" placeholder="95%"></td>
+                        <td><input type="text" placeholder="Full capture before auto-stop?..."></td>
+                    </tr>
+                    <tr>
+                        <td><strong>10min Session 1</strong></td>
+                        <td><input type="text" placeholder="First recording..."></td>
+                        <td><input type="text" placeholder="Device text..."></td>
+                        <td><input type="text" placeholder="95%"></td>
+                        <td><input type="text" placeholder="Consistent quality?..."></td>
+                    </tr>
+                    <tr>
+                        <td><strong>10min Session 2</strong></td>
+                        <td><input type="text" placeholder="Second recording..."></td>
+                        <td><input type="text" placeholder="Device text..."></td>
+                        <td><input type="text" placeholder="95%"></td>
+                        <td><input type="text" placeholder="Performance degradation?..."></td>
+                    </tr>
+                    <tr>
+                        <td><strong>10min Session 3</strong></td>
+                        <td><input type="text" placeholder="Third recording..."></td>
+                        <td><input type="text" placeholder="Device text..."></td>
+                        <td><input type="text" placeholder="95%"></td>
+                        <td><input type="text" placeholder="Sustained performance?..."></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="phase-header" style="margin-top: 40px; margin-bottom: 20px;">
+            <h2>Phase 15: Pre-TestFlight Security Testing</h2>
+            <p class="phase-goal">Verify all 4 security layers are functioning correctly before TestFlight launch</p>
+            <span class="phase-status status-not-started">🔲 READY FOR TESTING</span>
+            <p style="color: #999; font-size: 0.9em; margin-top: 10px;"><strong>Total Time:</strong> 50 minutes (8 tests)</p>
+        </div>
+
+        <div style="background: rgba(212, 175, 55, 0.05); border-left: 4px solid #d4af37; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+            <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Security Assessment:</strong> 9/10 (Enterprise-grade) — This phase validates that all 4 layers are working: Application (login protection, rate limiting), Backend (RLS policies, JWT), Network (certificate pinning), Monitoring (logging, alerting).</p>
+            <p style="color: #999; font-size: 0.9em;">Reference: See <code>PRE_TESTFLIGHT_SECURITY_TESTING.md</code> and <code>Dwellable_Security_Protocol.pdf</code> for complete security documentation.</p>
+        </div>
+
+        <h3>Test 1: Brute Force Protection (15 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify that 5 failed login attempts trigger a 10-minute lockout.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Attempt #</th>
+                    <th>Email</th>
+                    <th>Password</th>
+                    <th>Result</th>
+                    <th>Error Message</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>1</strong></td>
+                    <td><code>test@example.com</code></td>
+                    <td><code>wrongpassword</code></td>
+                    <td><input type="text" placeholder="Failed / 4 attempts remaining"></td>
+                    <td><input type="text" placeholder="Email or password is incorrect..."></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>2</strong></td>
+                    <td><code>test@example.com</code></td>
+                    <td><code>wrongpassword</code></td>
+                    <td><input type="text" placeholder="Failed / 3 attempts remaining"></td>
+                    <td><input type="text" placeholder="Email or password is incorrect..."></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>3</strong></td>
+                    <td><code>test@example.com</code></td>
+                    <td><code>wrongpassword</code></td>
+                    <td><input type="text" placeholder="Failed / 2 attempts remaining"></td>
+                    <td><input type="text" placeholder="Email or password is incorrect..."></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>4</strong></td>
+                    <td><code>test@example.com</code></td>
+                    <td><code>wrongpassword</code></td>
+                    <td><input type="text" placeholder="Failed / 1 attempt remaining"></td>
+                    <td><input type="text" placeholder="Email or password is incorrect..."></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>5</strong></td>
+                    <td><code>test@example.com</code></td>
+                    <td><code>wrongpassword</code></td>
+                    <td><input type="text" placeholder="LOCKED for 10 minutes"></td>
+                    <td><input type="text" placeholder="Too many failed attempts..."></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td colspan="5"><strong>Lockout Verification:</strong> Wait 30 seconds, try login again — should still be locked</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 2: Successful Login (5 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify that correct credentials allow login and reset the lockout counter.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Account</th>
+                    <th>Email</th>
+                    <th>Password</th>
+                    <th>Result</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Valid Login</strong></td>
+                    <td><code>test@example.com</code></td>
+                    <td><code>password123</code></td>
+                    <td><input type="text" placeholder="Successfully logged in, entered app"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td colspan="4"><strong>Verification:</strong> After successful login, sign out and attempt login with wrong password — lockout counter should reset to 0</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 3: Data Isolation (10 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify that users cannot see other users' moments, even if they switch accounts on the same device.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>User Account</th>
+                    <th>Action</th>
+                    <th>Expected Result</th>
+                    <th>Actual Result</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Account 1</strong></td>
+                    <td>Log in as test@example.com</td>
+                    <td>See only Account 1's moments</td>
+                    <td><input type="text" placeholder="List shows only this account's moments"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>Account 1</strong></td>
+                    <td>Create a test moment while online</td>
+                    <td>Moment appears in list immediately</td>
+                    <td><input type="text" placeholder="Moment created: '...test moment...'"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>Account 2</strong></td>
+                    <td>Sign out, log in as kell@example.com</td>
+                    <td>See only Account 2's moments (NOT Account 1's)</td>
+                    <td><input type="text" placeholder="List shows only Account 2 moments"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>Account 2</strong></td>
+                    <td>Go offline, create moment</td>
+                    <td>Moment saved locally for Account 2</td>
+                    <td><input type="text" placeholder="Offline moment created and pending"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>Account 2</strong></td>
+                    <td>Go back online</td>
+                    <td>Account 2's offline moment syncs (NOT Account 1's)</td>
+                    <td><input type="text" placeholder="Offline moment synced, still only Account 2 moments visible"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td colspan="4"><strong>CRITICAL:</strong> Verify Account 1's test moment is NOT visible when signed in as Account 2</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 4: Login Attempt Logging (5 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify that failed and successful login attempts are logged to Supabase.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Expected Log Entry</th>
+                    <th>Verification Method</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Failed Login x3</strong></td>
+                    <td>3 rows in <code>login_attempts</code> with success=false</td>
+                    <td>Supabase SQL Editor: <code>SELECT * FROM login_attempts WHERE email='test@example.com' AND success=false ORDER BY created_at DESC LIMIT 3;</code></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>Successful Login</strong></td>
+                    <td>1 row in <code>login_attempts</code> with success=true</td>
+                    <td>Supabase SQL Editor: <code>SELECT * FROM login_attempts WHERE email='test@example.com' AND success=true ORDER BY created_at DESC LIMIT 1;</code></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td><strong>Timestamp Accuracy</strong></td>
+                    <td>created_at timestamp matches when login occurred (±1 min)</td>
+                    <td>Check timestamp in Supabase matches your local time</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 5: Suspicious Pattern Detection (5 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify that repeated failed attempts are flagged in pattern detection.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Expected Result</th>
+                    <th>Verification</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>5+ failed logins in 10 min</strong></td>
+                    <td>Pattern flagged in <code>suspicious_login_patterns</code> view</td>
+                    <td>Supabase: <code>SELECT * FROM suspicious_login_patterns WHERE email='test@example.com';</code></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td colspan="3"><strong>Notes:</strong> Entry should show email, failed count (5+), lockout_applied=true, last_attempt timestamp</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 6: Incident Tracking (5 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify that security incidents are created and tracked.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Expected Incident Entry</th>
+                    <th>Verification</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>5+ failed logins trigger incident</strong></td>
+                    <td>Row created in <code>abuse_incidents</code> with severity='medium' or 'high'</td>
+                    <td>Supabase: <code>SELECT * FROM abuse_incidents WHERE incident_type='brute_force' ORDER BY created_at DESC LIMIT 1;</code></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td colspan="3"><strong>Notes:</strong> Check status is 'open', email matches test account, timestamp is recent</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 7: Rate Limiting (Advanced) (5 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify API rate limiting (100 calls/min per user) is working.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Scenario</th>
+                    <th>Expected Behavior</th>
+                    <th>Result</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Normal API usage</strong></td>
+                    <td>All API calls succeed (fetch moments, save, etc.)</td>
+                    <td><input type="text" placeholder="All operations completed normally"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>Excessive API calls (advanced)</strong></td>
+                    <td>After 100+ calls/min: Rate limit error appears</td>
+                    <td><input type="text" placeholder="If you manually test this: '429 Too Many Requests' or similar"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td colspan="3"><strong>Note:</strong> Normal testing (fetch, save, etc.) won't hit this. Only if you write a script to hammer the API.</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 30px;">Test 8: App Stability & No Crashes (5 minutes)</h3>
+        <p style="color: #c0c0c0; margin-bottom: 15px;"><strong>Objective:</strong> Verify no crashes occur during security testing.</p>
+        <table class="reference-table">
+            <thead>
+                <tr>
+                    <th>Test Scenario</th>
+                    <th>Expected Result</th>
+                    <th>Actual Result</th>
+                    <th>Pass/Fail</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>App crashes during brute force test?</strong></td>
+                    <td>NO — App remains stable, shows error messages gracefully</td>
+                    <td><input type="text" placeholder="No crashes observed"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>App crashes during lockout?</strong></td>
+                    <td>NO — Lockout timer ticks down smoothly</td>
+                    <td><input type="text" placeholder="Lockout UI stable, no freezing"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr>
+                    <td><strong>App crashes during multi-account switch?</strong></td>
+                    <td>NO — Account switching works smoothly</td>
+                    <td><input type="text" placeholder="Sign out → sign in works reliably"></td>
+                    <td><input type="checkbox"></td>
+                </tr>
+                <tr style="background: rgba(212, 175, 55, 0.05);">
+                    <td><strong>OVERALL SECURITY TESTING STATUS</strong></td>
+                    <td colspan="2">All 8 tests passed?</td>
+                    <td><input type="checkbox"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="background: rgba(76, 175, 80, 0.1); border-left: 4px solid #4cb50; padding: 15px; margin-top: 30px; margin-bottom: 20px; border-radius: 4px;">
+            <h3 style="color: #4cb50; border: none; padding: 0; margin: 0 0 10px 0;">Security Testing Sign-Off</h3>
+            <p style="color: #c0c0c0; margin-bottom: 10px;"><strong>Tester Name:</strong> <input type="text" placeholder="Your name" style="padding: 5px; width: 200px;"></p>
+            <p style="color: #c0c0c0; margin-bottom: 10px;"><strong>Date:</strong> <input type="date" style="padding: 5px; width: 150px;"></p>
+            <p style="color: #c0c0c0; margin-bottom: 10px;"><strong>Device:</strong> <input type="text" placeholder="iPhone 13 Pro Max, etc." style="padding: 5px; width: 200px;"></p>
+            <p style="color: #c0c0c0; margin-bottom: 10px;"><strong>Overall Result:</strong>
+                <select style="padding: 5px; width: 150px;">
+                    <option>---</option>
+                    <option>✅ ALL PASS - Ready for TestFlight</option>
+                    <option>⚠️ SOME ISSUES - Document below</option>
+                    <option>❌ CRITICAL ISSUES - Do not release</option>
+                </select>
+            </p>
+            <p style="color: #c0c0c0;"><strong>Issues Found (if any):</strong></p>
+            <textarea placeholder="Document any issues, failures, or concerns..." style="width: 100%; height: 100px; padding: 10px; background: rgba(0,0,0,0.3); color: #e0e0e0; border: 1px solid #d4af37; border-radius: 4px;"></textarea>
+        </div>
+
+        <div class="actions">
+            <button onclick="exportResults()">📋 Export Results</button>
+            <button onclick="resetForm()" class="secondary">🔄 Clear Form</button>
+        </div>
+
+        <div class="footer">
+            <p>Dwellable Master Testing Checklist — Updated March 17, 2026 (Evening)</p>
+            <p>15 Phases | 65 Scenarios | Build 106 TestFlight | Phase 15: Pre-TestFlight Security Testing (8 tests)</p>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(e, tabName) {
+            e.preventDefault();
+
+            // Hide all tabs
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // Remove active from all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            e.target.classList.add('active');
+        }
+
+        function toggleDetails(btn) {
+            const row = btn.closest('tr');
+            const details = row.nextElementSibling?.querySelector('.scenario-details');
+            if (details) {
+                details.classList.toggle('show');
+                btn.textContent = details.classList.contains('show') ? 'Hide' : 'Details';
+            }
+        }
+
+        function exportResults() {
+            alert('Export feature: Copy all form data to clipboard or file.\n\nNote: This is a template. Implement export functionality as needed.');
+        }
+
+        function resetForm() {
+            if (confirm('Clear all form entries? This cannot be undone.')) {
+                document.querySelectorAll('input, textarea').forEach(el => el.value = '');
+            }
+        }
+    </script>
+</body>
+</html>

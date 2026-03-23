@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** March 17, 2026 (Evening)
-**Status:** 58/70 tickets complete (83%) — Build 106 on TestFlight, security hardening complete, pre-TestFlight testing phase
+**Last Updated:** March 23, 2026
+**Status:** 59/72 tickets complete (82%) — Phase 1 pilot ready: survey form complete, privacy deferred to Phase 2
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -564,6 +564,50 @@
     4. Test with a known compromised password to verify it's blocked
   - **Related:** https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
   - **Status:** Waiting for App Store readiness decision
+
+### Pilot Testing — Privacy & Feedback
+- [ ] **T-053:** Implement Participant Data Privacy for Pilot Testing *(Phase 2 — Post-Beta)*
+  - **Priority:** HIGH — Implement after Phase 1 pilot feedback collection
+  - **Scope:** Pilot testers should not have their moment data visible to admin (Kell)
+  - **Current State:** RLS policies allow admin to query all moments; pilot data is exposed
+  - **Desired State:** Admin cannot read/view pilot participant moment content (text, transcripts, timestamps)
+  - **Implementation Approach:**
+    - Option A: **RLS Policy Modification** (Recommended for privacy)
+      - Add `auth.uid() = user_id` check to moments table read policy
+      - Admin can only see moments they created themselves
+      - Pilot participants can only see their own moments
+      - This creates complete data isolation by user ID
+    - Option B: **Role-Based Access Control** (RLS with roles)
+      - Add `is_admin` boolean to auth.users
+      - Create admin_moments view that filters by role
+      - Requires more setup but allows future admin features
+  - **Database Changes:**
+    - Modify moments table RLS policies:
+      - `SELECT`: `auth.uid() = user_id` (users can only read their own)
+      - `INSERT`: `auth.uid() = user_id` (users can only insert for themselves)
+      - `UPDATE`: `auth.uid() = user_id` (users can only update their own)
+      - `DELETE`: `auth.uid() = user_id` (users can only delete their own)
+    - Apply same policy to usage_events table
+  - **Testing:**
+    - Sign in as admin (kell@example.com) → verify no pilot moments visible
+    - Sign in as pilot (test@example.com) → verify can see own moments only
+    - Create moments as pilot → verify not visible in admin account
+    - Test cross-account isolation on same device
+  - **Impact:** Ensures pilot testers have full privacy; admin cannot access their data
+  - **Timeline:** Required before TestFlight distribution
+  - **Notes:** Participant trust is critical for accurate feedback; privacy builds confidence
+
+- [x] **T-054:** Fix Airtable Survey Form Field Visibility ✅ **COMPLETE**
+  - **Status:** DONE — Form visibility fixed and tested
+  - **What Was Done:**
+    - Fixed "Anything you wish was better or different?" field visibility
+    - Now correctly appears ONLY after user selects from "Where are you right now?" dropdown
+  - **Tested Pathways:**
+    - ✅ "Just captured a moment" → shows rating + text field + feedback field
+    - ✅ "About to capture" → shows hesitation field + feedback field
+    - ✅ "Something else" → shows 2 text fields + feedback field
+  - **Impact:** Form now provides optimal UX for pilot feedback collection
+  - **Ready for:** Pilot tester distribution
 
 - [ ] **T-026:** Prepare for App Store submission
   - Privacy policy, terms of service, screenshots, description, pricing

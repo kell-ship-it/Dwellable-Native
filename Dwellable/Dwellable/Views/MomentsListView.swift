@@ -12,11 +12,13 @@ struct MomentsListView: View {
 
     let apiClient: APIClient
     let userId: String
+    let userEmail: String
     @ObservedObject var syncManager: SyncManager
 
-    init(apiClient: APIClient, userId: String, syncManager: SyncManager) {
+    init(apiClient: APIClient, userId: String, userEmail: String, syncManager: SyncManager) {
         self.apiClient = apiClient
         self.userId = userId
+        self.userEmail = userEmail
         self.syncManager = syncManager
     }
 
@@ -263,7 +265,7 @@ struct MomentsListView: View {
             }
         }
         .navigationDestination(isPresented: $showCapture) {
-            CaptureView(apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
+            CaptureView(apiClient: apiClient, userId: userId, userEmail: userEmail, syncManager: syncManager, onMomentSaved: {
                 var transaction = Transaction()
                 transaction.disablesAnimations = true
                 withTransaction(transaction) {
@@ -286,6 +288,6 @@ struct MomentsListView: View {
 
 #Preview {
     let apiClient = MockAPIClient()
-    MomentsListView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"))
+    MomentsListView(apiClient: apiClient, userId: "preview-user", userEmail: "preview@example.com", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"))
         .environmentObject(AuthManager(apiClient: apiClient))
 }
