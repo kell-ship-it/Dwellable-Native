@@ -18,7 +18,7 @@ struct AppView: View {
                 syncManager.syncPendingMoments()
 
                 // Log app session
-                UsageTracker.shared.logAppOpened(userId: user.id)
+                UsageTracker.shared.logAppOpened(userId: user.id, userEmail: user.email)
 
                 // Sync analytics to backend
                 Task {

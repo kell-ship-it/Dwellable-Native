@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dwellable Unified Testing Checklist</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0e11 0%, #1a1823 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #d4af37;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #999;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+        }
+
+        .status-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+
+        .status-item {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 12px;
+            border-left: 3px solid #d4af37;
+            border-radius: 4px;
+        }
+
+        .status-item strong {
+            color: #d4af37;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* PROGRESS TRACKING */
+        .progress-section {
+            background: rgba(212, 175, 55, 0.05);
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .progress-label {
+            color: #d4af37;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-percentage {
+            color: #4caf50;
+            font-size: 1.2em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f0e11;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        /* COLLAPSIBLE SECTIONS */
+        .phase-section {
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .phase-toggle {
+            width: 100%;
+            background: rgba(212, 175, 55, 0.1);
+            color: #d4af37;
+            border: none;
+            padding: 18px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .phase-toggle:hover {
+            background: rgba(212, 175, 55, 0.15);
+            padding-left: 22px;
+        }
+
+        .phase-toggle.active {
+            background: rgba(212, 175, 55, 0.2);
+            border-bottom-color: #d4af37;
+        }
+
+        .phase-toggle-icon {
+            font-size: 1.3em;
+            transition: transform 0.3s ease;
+        }
+
+        .phase-toggle.active .phase-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .phase-content {
+            display: none;
+            padding: 20px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .phase-content.open {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .phase-header {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #d4af37;
+            border-radius: 4px;
+        }
+
+        .phase-goal {
+            font-style: italic;
+            color: #c0c0c0;
+            margin: 8px 0;
+        }
+
+        .phase-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+
+        .status-completed {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+
+        .status-in-progress {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+
+        .status-not-started {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        h2 {
+            color: #d4af37;
+            font-size: 1.6em;
+            margin-bottom: 20px;
+            margin-top: 0;
+            border-left: 4px solid #d4af37;
+            padding-left: 15px;
+        }
+
+        h3 {
+            color: #d4af37;
+            font-size: 1.1em;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            font-size: 0.9em;
+        }
+
+        th {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .num {
+            color: #d4af37;
+            font-weight: 600;
+            width: 40px;
+            text-align: center;
+        }
+
+        .scenario-details {
+            display: none;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            margin-top: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #d4af37;
+        }
+
+        .scenario-details.show {
+            display: block;
+        }
+
+        .details-label {
+            color: #d4af37;
+            font-weight: 600;
+            margin-top: 12px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .details-text {
+            color: #c0c0c0;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .status-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            width: 120px;
+        }
+
+        .status-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.15);
+        }
+
+        .notes-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: #e0e0e0;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .notes-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.08);
+        }
+
+        .expand-btn {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            border: 1px solid #d4af37;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .expand-btn:hover {
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        /* IMAGE UPLOAD */
+        .image-upload-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .image-upload-btn {
+            background: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            border: 1px dashed #d4af37;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        .image-upload-btn:hover {
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        .file-input-hidden {
+            display: none;
+        }
+
+        .screenshot-container {
+            margin-top: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 4px;
+            padding: 10px;
+            display: none;
+            position: relative;
+        }
+
+        .screenshot-container.has-image {
+            display: block;
+        }
+
+        .screenshot-img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 3px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .remove-img-btn {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid #f44336;
+            padding: 4px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.2s;
+        }
+
+        .remove-img-btn:hover {
+            background: rgba(244, 67, 54, 0.3);
+        }
+
+        .image-label {
+            color: #999;
+            font-size: 0.85em;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .actions {
+            text-align: center;
+            margin: 40px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button.action-btn {
+            background: linear-gradient(135deg, #d4af37, #e8c547);
+            color: #0f0e11;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button.action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .quick-summary {
+            background: rgba(212, 175, 55, 0.1);
+            border-left: 4px solid #d4af37;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .quick-summary strong {
+            color: #d4af37;
+        }
+
+        .retest-badge {
+            background: #ff9800;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.75em;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dwellable Unified Testing Checklist</h1>
+            <p class="subtitle">Combined Phase 1 Quick Test + Comprehensive Testing Suite</p>
+
+            <div class="status-overview">
+                <div class="status-item">
+                    <strong>✅ Completed</strong>
+                    <span id="completed-count">0</span> Scenarios
+                </div>
+                <div class="status-item">
+                    <strong>🔄 In Progress</strong>
+                    <span id="inprogress-count">0</span> Scenarios
+                </div>
+                <div class="status-item">
+                    <strong>🔲 Not Started</strong>
+                    <span id="notstarted-count">0</span> Scenarios
+                </div>
+                <div class="status-item">
+                    <strong>📊 Total</strong>
+                    <span id="total-count">0</span> Scenarios
+                </div>
+            </div>
+        </header>
+
+        <!-- PROGRESS TRACKING -->
+        <div class="progress-section">
+            <div class="progress-label">
+                <span>Overall Testing Progress</span>
+                <span class="progress-percentage"><span id="progress-percent">0</span>%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%">
+                    <span id="progress-text"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUICK REFERENCE -->
+        <div class="phase-section">
+            <button class="phase-toggle active" onclick="togglePhase(this)">
+                <span>⚡ Quick Reference & Instructions</span>
+                <span class="phase-toggle-icon">▼</span>
+            </button>
+            <div class="phase-content open">
+                <div class="quick-summary">
+                    <strong>📌 How to Use This Checklist:</strong>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong>Phase 1:</strong> 11 Quick Journeys — Run first for 30-min smoke test</li>
+                        <li><strong>Phases 2+:</strong> Comprehensive scenarios — Re-test completed ones, expand as needed</li>
+                        <li><strong>Image Upload:</strong> Each scenario supports screenshot capture</li>
+                        <li><strong>Progress Tracking:</strong> Fill "Pass/Fail/Bug" to auto-calculate progress</li>
+                    </ul>
+                </div>
+
+                <h2>Test Workflow</h2>
+                <div class="phase-header">
+                    <p class="phase-goal">Recommended approach:</p>
+                    <ol style="margin-left: 20px; margin-top: 10px;">
+                        <li>Start with <strong>Phase 1 (11 journeys)</strong> — takes ~30 minutes</li>
+                        <li>If all pass → proceed to <strong>Phases 2-15</strong></li>
+                        <li>Re-test <strong>any marked COMPLETED</strong> to ensure quality</li>
+                        <li>Add screenshots for any failures or edge cases</li>
+                        <li>Download results when done</li>
+                    </ol>
+                </div>
+
+                <h2>Priority Tests (Re-test These First) <span class="retest-badge">RE-TEST</span></h2>
+                <div class="phase-header">
+                    <p class="phase-goal">Scenarios marked as COMPLETED — verify they still work:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong>Phase 1:</strong> All 11 journeys (critical path)</li>
+                        <li><strong>Phase 1.1, 1.3:</strong> Offline capture and sync</li>
+                        <li><strong>Phase 3.1:</strong> Voice recording to save</li>
+                        <li><strong>Phase 9.1-9.3:</strong> Critical bug fixes (JWT auth, text jumping)</li>
+                        <li><strong>Phase 10.1-10.3:</strong> Audio validation</li>
+                        <li><strong>Phase 12.1, 12.5:</strong> Recording duration edge cases</li>
+                        <li><strong>Phase 15:</strong> Security testing</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PHASE 1: CRITICAL PATH (11 JOURNEYS) ===== -->
+        <div class="phase-section">
+            <button class="phase-toggle" onclick="togglePhase(this)">
+                <span>🔥 Phase 1: Quick Critical Path (11 journeys) — 30 min</span>
+                <span class="phase-toggle-icon">▼</span>
+            </button>
+            <div class="phase-content">
+                <div class="phase-header">
+                    <p class="phase-goal">Smoke test for core functionality — run these first</p>
+                    <span class="phase-status status-completed">✅ COMPLETED (RE-TEST)</span>
+                </div>
+
+                <h3>Journey 1: Login with Test Account</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Step</th>
+                            <th width="120">Status</th>
+                            <th width="150">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="num">1.1</td>
+                            <td><strong>Login with test account</strong><br><small>Authenticate and access home screen</small></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div class="scenario-details">
+                                    <div class="details-label">Steps:</div>
+                                    <div class="details-text">1. Launch app 2. Tap "Sign In" 3. Enter test@example.com / password123 4. Tap "Sign In"</div>
+                                    <div class="details-label">Expected:</div>
+                                    <div class="details-text">Login succeeds, MomentsListView appears with previous moments (if any)</div>
+                                    <div class="details-label">Test Account:</div>
+                                    <div class="details-text">Email: test@example.com | Password: password123</div>
+                                    <div class="image-upload-section">
+                                        <button class="image-upload-btn" onclick="triggerImageUpload(event)">📸 Add Screenshot</button>
+                                        <input type="file" accept="image/*" class="file-input-hidden" onchange="handleImageUpload(event)">
+                                        <div class="screenshot-container">
+                                            <span class="image-label">Screenshot:</span>
+                                            <img class="screenshot-img" src="" alt="Test screenshot">
+                                            <button class="remove-img-btn" onclick="removeImage(event)">Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Journey 2: Record Voice Moment</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Step</th>
+                            <th width="120">Status</th>
+                            <th width="150">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="num">1.2</td>
+                            <td><strong>Record voice moment</strong><br><small>Tap mic, record audio, save</small></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div class="scenario-details">
+                                    <div class="details-label">Steps:</div>
+                                    <div class="details-text">1. Tap "+" → Capture 2. Tap mic button 3. Speak "This is my first moment" 4. Tap Stop 5. Tap Save</div>
+                                    <div class="details-label">Expected:</div>
+                                    <div class="details-text">Audio recorded, transcription appears, moment saves to list with timestamp</div>
+                                    <div class="image-upload-section">
+                                        <button class="image-upload-btn" onclick="triggerImageUpload(event)">📸 Add Screenshot</button>
+                                        <input type="file" accept="image/*" class="file-input-hidden" onchange="handleImageUpload(event)">
+                                        <div class="screenshot-container">
+                                            <span class="image-label">Screenshot:</span>
+                                            <img class="screenshot-img" src="" alt="Test screenshot">
+                                            <button class="remove-img-btn" onclick="removeImage(event)">Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Journey 3: View Moment Detail</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Step</th>
+                            <th width="120">Status</th>
+                            <th width="150">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="num">1.3</td>
+                            <td><strong>View saved moment</strong><br><small>Tap on moment in list to see details</small></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                                <div class="scenario-details">
+                                    <div class="details-label">Steps:</div>
+                                    <div class="details-text">1. From MomentsListView, tap saved moment 2. View detail page</div>
+                                    <div class="details-label">Expected:</div>
+                                    <div class="details-text">Moment detail shows transcript, timestamp, audio playback option</div>
+                                    <div class="image-upload-section">
+                                        <button class="image-upload-btn" onclick="triggerImageUpload(event)">📸 Add Screenshot</button>
+                                        <input type="file" accept="image/*" class="file-input-hidden" onchange="handleImageUpload(event)">
+                                        <div class="screenshot-container">
+                                            <span class="image-label">Screenshot:</span>
+                                            <img class="screenshot-img" src="" alt="Test screenshot">
+                                            <button class="remove-img-btn" onclick="removeImage(event)">Remove</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Journey 4-11: Additional Smoke Tests</h3>
+                <div class="phase-header">
+                    <p style="color: #c0c0c0;">Journeys 4-11 covering: Type moment, Edit moment, Delete moment, Offline capture, Sync verification, Multi-moment creation, Background recording, Settings view</p>
+                    <p style="color: #999; margin-top: 10px; font-size: 0.9em;">📌 <strong>Format:</strong> Same as Journey 1-3 above — each has status input, notes textarea, and image upload capability</p>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Journey</th>
+                            <th width="120">Status</th>
+                            <th width="150">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="num">1.4</td>
+                            <td><strong>Type text moment</strong><br><small>Create moment by typing instead of voice</small></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">1.5</td>
+                            <td><strong>Edit moment</strong><br><small>Modify transcript or text after save</small></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">1.6</td>
+                            <td><strong>Delete moment</strong><br><small>Remove moment from list</small></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">1.7</td>
+                            <td><strong>Offline moment creation</strong><br><small>Create moment without network</small></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">1.8</td>
+                            <td><strong>Auto-sync after reconnect</strong><br><small>Verify offline moment syncs when online</small></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">1.9</td>
+                            <td><strong>Multiple moment creation</strong><br><small>Create 3+ moments in sequence</small></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">1.10</td>
+                            <td><strong>Background recording</strong><br><small>App continues recording if backgrounded</small></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">1.11</td>
+                            <td><strong>Settings access</strong><br><small>Navigate to settings, return to home</small></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== PHASE 2: AUTHENTICATION ===== -->
+        <div class="phase-section">
+            <button class="phase-toggle" onclick="togglePhase(this)">
+                <span>Phase 2: Authentication (6 scenarios) ✅ <span class="retest-badge">RE-TEST</span></span>
+                <span class="phase-toggle-icon">▼</span>
+            </button>
+            <div class="phase-content">
+                <div class="phase-header">
+                    <p class="phase-goal">Verify login, signup, session persistence, token refresh</p>
+                    <span class="phase-status status-completed">✅ COMPLETED</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Scenario</th>
+                            <th width="120">Status</th>
+                            <th width="150">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="num">2.1</td>
+                            <td><strong>Login with valid credentials</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">2.2</td>
+                            <td><strong>Login fails with invalid email</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">2.3</td>
+                            <td><strong>Login fails with wrong password</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">2.4</td>
+                            <td><strong>Session persists on app restart</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">2.5</td>
+                            <td><strong>Logout clears session</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">2.6</td>
+                            <td><strong>JWT token refreshes automatically</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== PHASES 3-5: CORE FUNCTIONALITY ===== -->
+        <div class="phase-section">
+            <button class="phase-toggle" onclick="togglePhase(this)">
+                <span>Phases 3-5: Core Functionality (18 scenarios) ✅ <span class="retest-badge">RE-TEST</span></span>
+                <span class="phase-toggle-icon">▼</span>
+            </button>
+            <div class="phase-content">
+                <div class="phase-header">
+                    <p class="phase-goal">CRUD operations, network handling, persistence</p>
+                    <span class="phase-status status-completed">✅ COMPLETED</span>
+                </div>
+                <p style="color: #999; padding: 10px;">📌 All 18 scenarios for Phases 3-5 — Create moment, Update moment, Delete moment, Fetch moments, Network retry, Sync queue management, Local storage, Data persistence, Error recovery</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Scenario</th>
+                            <th width="120">Status</th>
+                            <th width="150">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="num">3.1</td>
+                            <td><strong>Voice recording to save (end-to-end)</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">3.2</td>
+                            <td><strong>Text moment save (end-to-end)</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">3.3</td>
+                            <td><strong>Fetch moments list from Supabase</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">4.1</td>
+                            <td><strong>Update moment content</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">4.2</td>
+                            <td><strong>Delete moment from list</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">5.1</td>
+                            <td><strong>Network request retry on failure</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">5.2</td>
+                            <td><strong>Local storage persistence</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">5.3</td>
+                            <td><strong>Sync queue management</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== PHASES 6-8: QA ===== -->
+        <div class="phase-section">
+            <button class="phase-toggle" onclick="togglePhase(this)">
+                <span>Phases 6-8: Quality Assurance (13 scenarios) ✅ <span class="retest-badge">RE-TEST</span></span>
+                <span class="phase-toggle-icon">▼</span>
+            </button>
+            <div class="phase-content">
+                <div class="phase-header">
+                    <p class="phase-goal">Error handling, performance, UI/UX edge cases</p>
+                    <span class="phase-status status-completed">✅ COMPLETED</span>
+                </div>
+                <p style="color: #999; padding: 10px;">📌 Error messages, timeout handling, memory optimization, UI responsiveness, keyboard interactions</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Scenario</th>
+                            <th width="120">Status</th>
+                            <th width="150">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="num">6.1</td>
+                            <td><strong>Error message display</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">6.2</td>
+                            <td><strong>Network timeout handling</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">7.1</td>
+                            <td><strong>UI responsiveness with large moment lists</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">7.2</td>
+                            <td><strong>Memory usage with background audio</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">8.1</td>
+                            <td><strong>Keyboard interactions (text input)</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== PHASES 9-11: BUG VERIFICATION ===== -->
+        <div class="phase-section">
+            <button class="phase-toggle" onclick="togglePhase(this)">
+                <span>Phases 9-11: Critical Bug Verification (11 scenarios) ✅ <span class="retest-badge">RE-TEST</span></span>
+                <span class="phase-toggle-icon">▼</span>
+            </button>
+            <div class="phase-content">
+                <div class="phase-header">
+                    <p class="phase-goal">Critical fixes from March 2026 — JWT auth, text jumping, offline handling</p>
+                    <span class="phase-status status-completed">✅ COMPLETED</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Scenario</th>
+                            <th width="120">Status</th>
+                            <th width="150">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="num">9.1</td>
+                            <td><strong>JWT token properly sent in requests</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">9.2</td>
+                            <td><strong>Token refresh on 401 response</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">9.3</td>
+                            <td><strong>User record created in Supabase on signup</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">10.1</td>
+                            <td><strong>Text doesn't jump while typing</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">10.2</td>
+                            <td><strong>Transcription displays in ReviewView</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">10.3</td>
+                            <td><strong>Audio files upload to Storage bucket</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">11.1</td>
+                            <td><strong>Offline moments show "pending sync" indicator</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">11.2</td>
+                            <td><strong>Offline moments auto-sync when online</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== PHASES 12-14: AUDIO OPTIMIZATION ===== -->
+        <div class="phase-section">
+            <button class="phase-toggle" onclick="togglePhase(this)">
+                <span>Phases 12-14: Audio Optimization (25 scenarios) 🔲</span>
+                <span class="phase-toggle-icon">▼</span>
+            </button>
+            <div class="phase-content">
+                <div class="phase-header">
+                    <p class="phase-goal">Recording duration, environment variation, transcription accuracy</p>
+                    <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Scenario</th>
+                            <th width="120">Status</th>
+                            <th width="150">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="num">12.1</td>
+                            <td><strong>Recording limit: Auto-stop at 10 minutes</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">12.2</td>
+                            <td><strong>9-minute warning message</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">12.3</td>
+                            <td><strong>Close ReviewView during transcription</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">12.4</td>
+                            <td><strong>Partial transcription displayed offline</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">12.5</td>
+                            <td><strong>Save incomplete transcription</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">13.1</td>
+                            <td><strong>Quiet room recording</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">13.2</td>
+                            <td><strong>Noisy environment recording</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">13.3</td>
+                            <td><strong>Background noise filtering</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">14.1</td>
+                            <td><strong>Short recording (< 30 sec)</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">14.2</td>
+                            <td><strong>Long recording (5+ min)</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== PHASE 15: SECURITY ===== -->
+        <div class="phase-section">
+            <button class="phase-toggle" onclick="togglePhase(this)">
+                <span>Phase 15: Pre-TestFlight Security Testing (8 tests) 🔲</span>
+                <span class="phase-toggle-icon">▼</span>
+            </button>
+            <div class="phase-content">
+                <div class="phase-header">
+                    <p class="phase-goal">Brute force protection, RLS policies, SQL injection, rate limiting</p>
+                    <span class="phase-status status-not-started">🔲 NOT STARTED</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Test</th>
+                            <th width="120">Status</th>
+                            <th width="150">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="num">15.1</td>
+                            <td><strong>Brute force protection: 5 failed login attempts</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">15.2</td>
+                            <td><strong>10-minute lockout after failed attempts</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">15.3</td>
+                            <td><strong>RLS: User can only see their own moments</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">15.4</td>
+                            <td><strong>RLS: User cannot modify other user's moment</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">15.5</td>
+                            <td><strong>Rate limiting: 100 requests/minute per user</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">15.6</td>
+                            <td><strong>SQL injection attempt in moment text (rejected)</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">15.7</td>
+                            <td><strong>Certificate pinning verified</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td class="num">15.8</td>
+                            <td><strong>HTTPS enforced (no HTTP allowed)</strong></td>
+                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
+                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="actions">
+            <button class="action-btn" onclick="expandAll()">Expand All Phases</button>
+            <button class="action-btn" onclick="collapseAll()">Collapse All Phases</button>
+            <button class="action-btn" onclick="downloadProgress()">Download Results</button>
+        </div>
+
+        <div class="footer">
+            <p>Build 107+ TestFlight | Unified Testing Suite | Phase 1 (11 journeys) + Comprehensive Phases 2-15 | Last updated: March 2026</p>
+            <p style="margin-top: 10px; color: #666;">💡 Start with Phase 1 Quick Test, then re-test marked COMPLETED scenarios to ensure quality</p>
+        </div>
+    </div>
+
+    <script>
+        function togglePhase(button) {
+            const content = button.nextElementSibling;
+            button.classList.toggle('active');
+            content.classList.toggle('open');
+        }
+
+        function toggleDetails(button) {
+            const details = button.closest('tr').nextElementSibling.querySelector('.scenario-details');
+            if (details) {
+                details.classList.toggle('show');
+                button.textContent = details.classList.contains('show') ? 'Hide' : 'Details';
+            }
+        }
+
+        function expandAll() {
+            document.querySelectorAll('.phase-toggle').forEach(btn => {
+                if (!btn.classList.contains('active')) {
+                    btn.click();
+                }
+            });
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.phase-toggle').forEach(btn => {
+                if (btn.classList.contains('active')) {
+                    btn.click();
+                }
+            });
+        }
+
+        function updateProgress() {
+            const inputs = document.querySelectorAll('.status-input');
+            const pass = Array.from(inputs).filter(i => i.value.toLowerCase().includes('pass')).length;
+            const fail = Array.from(inputs).filter(i => i.value.toLowerCase().includes('fail')).length;
+            const bug = Array.from(inputs).filter(i => i.value.toLowerCase().includes('bug')).length;
+            const total = inputs.length;
+
+            const completed = pass;
+            const inProgress = bug;
+            const notStarted = total - completed - inProgress;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('completed-count').textContent = completed;
+            document.getElementById('inprogress-count').textContent = inProgress;
+            document.getElementById('notstarted-count').textContent = notStarted;
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('progress-percent').textContent = percentage;
+            document.getElementById('progress-fill').style.width = percentage + '%';
+            document.getElementById('progress-text').textContent = completed + '/' + total;
+        }
+
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('status-input')) {
+                updateProgress();
+            }
+        });
+
+        updateProgress();
+
+        // IMAGE UPLOAD FUNCTIONS
+        function triggerImageUpload(event) {
+            event.preventDefault();
+            const btn = event.target;
+            const fileInput = btn.closest('.image-upload-section').querySelector('.file-input-hidden');
+            fileInput.click();
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const uploadSection = event.target.closest('.image-upload-section');
+                const container = uploadSection.querySelector('.screenshot-container');
+                const img = container.querySelector('.screenshot-img');
+
+                img.src = e.target.result;
+                container.classList.add('has-image');
+                container.dataset.imageData = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage(event) {
+            event.preventDefault();
+            const container = event.target.closest('.screenshot-container');
+            const img = container.querySelector('.screenshot-img');
+
+            img.src = '';
+            container.classList.remove('has-image');
+            delete container.dataset.imageData;
+
+            const uploadSection = container.closest('.image-upload-section');
+            const fileInput = uploadSection.querySelector('.file-input-hidden');
+            fileInput.value = '';
+        }
+
+        function downloadProgress() {
+            alert('Download feature coming soon — for now, use browser DevTools to inspect form data or screenshot the results');
+        }
+    </script>
+</body>
+</html>

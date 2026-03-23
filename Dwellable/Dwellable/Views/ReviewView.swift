@@ -15,6 +15,7 @@ struct ReviewView: View {
     let audioURL: URL?
     let apiClient: APIClient
     let userId: String
+    let userEmail: String?
     let syncManager: SyncManager
     var onMomentSaved: (() -> Void)?
 
@@ -274,7 +275,7 @@ struct ReviewView: View {
         do {
             _ = try await apiClient.saveMoment(moment)
             HTMLLogManager.shared.log("Save succeeded — moment written to Supabase", level: "SUCCESS")
-            UsageTracker.shared.logMomentCreated(userId: userId, type: "voice")
+            UsageTracker.shared.logMomentCreated(userId: userId, userEmail: userEmail, type: "voice")
             Task { try? await UsageTracker.shared.syncEventsToBackend(userId: userId, apiClient: apiClient) }
             await MainActor.run {
                 isSaving = false
@@ -284,7 +285,7 @@ struct ReviewView: View {
             HTMLLogManager.shared.log("Save failed — \(error.localizedDescription) — falling back to local queue", level: "ERROR")
             syncManager.markMomentAsPending(moment)
             HTMLLogManager.shared.log("Moment queued locally for later sync", level: "WARNING")
-            UsageTracker.shared.logMomentCreated(userId: userId, type: "voice")
+            UsageTracker.shared.logMomentCreated(userId: userId, userEmail: userEmail, type: "voice")
             Task { try? await UsageTracker.shared.syncEventsToBackend(userId: userId, apiClient: apiClient) }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -303,6 +304,6 @@ struct ReviewView: View {
 #Preview {
     let apiClient = MockAPIClient()
     NavigationStack {
-        ReviewView(audioURL: nil, apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
+        ReviewView(audioURL: nil, apiClient: apiClient, userId: "preview-user", userEmail: "preview@example.com", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
     }
 }

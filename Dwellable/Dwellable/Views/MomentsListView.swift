@@ -263,7 +263,7 @@ struct MomentsListView: View {
             }
         }
         .navigationDestination(isPresented: $showCapture) {
-            CaptureView(apiClient: apiClient, userId: userId, syncManager: syncManager, onMomentSaved: {
+            CaptureView(apiClient: apiClient, userId: userId, userEmail: authManager.currentUser?.email, syncManager: syncManager, onMomentSaved: {
                 var transaction = Transaction()
                 transaction.disablesAnimations = true
                 withTransaction(transaction) {

@@ -8,6 +8,7 @@ class UsageTracker {
     struct UsageEvent: Codable {
         let id: String
         let userId: String
+        let userEmail: String?
         let eventType: String // "moment_created", "app_opened", "app_closed"
         let momentType: String? // "voice" or "text" (only for moment_created)
         let timestamp: Date
@@ -15,10 +16,11 @@ class UsageTracker {
 
     // MARK: - Event Logging
 
-    func logMomentCreated(userId: String, type: String) {
+    func logMomentCreated(userId: String, userEmail: String?, type: String) {
         let event = UsageEvent(
             id: UUID().uuidString,
             userId: userId,
+            userEmail: userEmail,
             eventType: "moment_created",
             momentType: type, // "voice" or "text"
             timestamp: Date()
@@ -26,10 +28,11 @@ class UsageTracker {
         saveEvent(event, userId: userId)
     }
 
-    func logAppOpened(userId: String) {
+    func logAppOpened(userId: String, userEmail: String?) {
         let event = UsageEvent(
             id: UUID().uuidString,
             userId: userId,
+            userEmail: userEmail,
             eventType: "app_opened",
             momentType: nil,
             timestamp: Date()
@@ -37,10 +40,11 @@ class UsageTracker {
         saveEvent(event, userId: userId)
     }
 
-    func logAppClosed(userId: String) {
+    func logAppClosed(userId: String, userEmail: String?) {
         let event = UsageEvent(
             id: UUID().uuidString,
             userId: userId,
+            userEmail: userEmail,
             eventType: "app_closed",
             momentType: nil,
             timestamp: Date()
@@ -117,6 +121,7 @@ class UsageTracker {
                 UsageEventData(
                     id: event.id,
                     userId: userId,
+                    userEmail: event.userEmail,
                     eventType: event.eventType,
                     momentType: event.momentType,
                     timestamp: event.timestamp

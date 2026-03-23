@@ -32,6 +32,7 @@ struct AuthToken: Codable {
 struct UsageEventData: Codable {
     let id: String
     let userId: String
+    let userEmail: String?
     let eventType: String
     let momentType: String?
     let timestamp: Date

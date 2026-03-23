@@ -10,6 +10,7 @@ struct TypeFlowView: View {
 
     let apiClient: APIClient
     let userId: String
+    let userEmail: String?
     let syncManager: SyncManager
     var onMomentSaved: (() -> Void)?
 
@@ -155,7 +156,7 @@ struct TypeFlowView: View {
         do {
             _ = try await apiClient.saveMoment(moment)
             print("✅ TypeFlowView: save succeeded")
-            UsageTracker.shared.logMomentCreated(userId: userId, type: "text")
+            UsageTracker.shared.logMomentCreated(userId: userId, userEmail: userEmail, type: "text")
             Task { try? await UsageTracker.shared.syncEventsToBackend(userId: userId, apiClient: apiClient) }
             await MainActor.run {
                 isSaving = false
@@ -164,7 +165,7 @@ struct TypeFlowView: View {
         } catch {
             print("🔴 TypeFlowView: save failed - \(error)")
             syncManager.markMomentAsPending(moment)
-            UsageTracker.shared.logMomentCreated(userId: userId, type: "text")
+            UsageTracker.shared.logMomentCreated(userId: userId, userEmail: userEmail, type: "text")
             Task { try? await UsageTracker.shared.syncEventsToBackend(userId: userId, apiClient: apiClient) }
             await MainActor.run {
                 isSyncPending = true
@@ -178,6 +179,6 @@ struct TypeFlowView: View {
 #Preview {
     let apiClient = MockAPIClient()
     NavigationStack {
-        TypeFlowView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
+        TypeFlowView(apiClient: apiClient, userId: "preview-user", userEmail: "preview@example.com", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
     }
 }
