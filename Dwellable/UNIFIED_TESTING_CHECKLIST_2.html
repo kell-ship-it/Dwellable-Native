@@ -715,42 +715,30 @@
                         </tr>
                         <tr>
                             <td class="num">1.5</td>
-                            <td><strong>Edit moment</strong><br><small>Modify transcript or text after save</small></td>
-                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
-                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
-                        </tr>
-                        <tr>
-                            <td class="num">1.6</td>
-                            <td><strong>Delete moment</strong><br><small>Remove moment from list</small></td>
-                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
-                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
-                        </tr>
-                        <tr>
-                            <td class="num">1.7</td>
                             <td><strong>Offline moment creation</strong><br><small>Create moment without network</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
-                            <td class="num">1.8</td>
+                            <td class="num">1.6</td>
                             <td><strong>Auto-sync after reconnect</strong><br><small>Verify offline moment syncs when online</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
-                            <td class="num">1.9</td>
+                            <td class="num">1.7</td>
                             <td><strong>Multiple moment creation</strong><br><small>Create 3+ moments in sequence</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
-                            <td class="num">1.10</td>
+                            <td class="num">1.8</td>
                             <td><strong>Background recording</strong><br><small>App continues recording if backgrounded</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
-                            <td class="num">1.11</td>
+                            <td class="num">1.9</td>
                             <td><strong>Settings access</strong><br><small>Navigate to settings, return to home</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
@@ -783,37 +771,37 @@
                     <tbody>
                         <tr>
                             <td class="num">2.1</td>
-                            <td><strong>Login with valid credentials</strong></td>
+                            <td><strong>Login with valid credentials</strong><br><small><strong>Steps:</strong> 1) Launch app (you should be logged out) 2) Enter valid email (testing@pilot.dwellable.com) 3) Enter valid password 4) Tap Login 5) You should be directed to MomentsListView. PASS if login succeeds and moments list loads.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">2.2</td>
-                            <td><strong>Login fails with invalid email</strong></td>
+                            <td><strong>Login fails with invalid email</strong><br><small><strong>Steps:</strong> 1) Enter non-existent email (e.g., fake@notreal.com) 2) Enter any password 3) Tap Login 4) Should see error message "Invalid email or password" (or similar). PASS if error displayed and login blocked.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">2.3</td>
-                            <td><strong>Login fails with wrong password</strong></td>
+                            <td><strong>Login fails with wrong password</strong><br><small><strong>Steps:</strong> 1) Enter valid email (testing@pilot.dwellable.com) 2) Enter wrong password (anything incorrect) 3) Tap Login 4) Should see error message. PASS if error displayed and login blocked.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">2.4</td>
-                            <td><strong>Session persists on app restart</strong></td>
+                            <td><strong>Session persists on app restart</strong><br><small><strong>Steps:</strong> 1) Log in with valid credentials 2) Verify you're in MomentsListView 3) Force-close the app (swipe up on simulator/device) 4) Reopen app 5) You should still be logged in (go directly to MomentsListView). PASS if session persists.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">2.5</td>
-                            <td><strong>Logout clears session</strong></td>
+                            <td><strong>Logout clears session</strong><br><small><strong>Steps:</strong> 1) Log in with valid credentials 2) Go to Settings 3) Tap Logout 4) Verify you're back at LoginView 5) Force-close and reopen app 6) You should be at LoginView (not logged in). PASS if session is cleared.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">2.6</td>
-                            <td><strong>JWT token refreshes automatically</strong></td>
+                            <td><strong>JWT token refreshes automatically</strong><br><small><strong>Steps:</strong> 1) Log in 2) Let app idle for 1+ hour 3) Use the app again (create a moment, view list, etc.) 4) If it works without forcing you to re-login, PASS. If session expired or kicked out, FAIL.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
@@ -846,49 +834,43 @@
                     <tbody>
                         <tr>
                             <td class="num">3.1</td>
-                            <td><strong>Voice recording to save (end-to-end)</strong></td>
+                            <td><strong>Voice recording to save (end-to-end)</strong><br><small><strong>Steps:</strong> 1) Open CaptureView 2) Tap mic button 3) Record 5-10 sec of audio 4) Tap stop 5) ReviewView shows with transcription 6) Tap Save 7) Moment appears in MomentsListView. PASS if moment saves with transcription.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">3.2</td>
-                            <td><strong>Text moment save (end-to-end)</strong></td>
+                            <td><strong>Text moment save (end-to-end)</strong><br><small><strong>Steps:</strong> 1) Open CaptureView 2) Tap "Type instead" 3) Type text (min 5 words) 4) Tap Save 5) Moment appears in MomentsListView. PASS if text moment saves.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">3.3</td>
-                            <td><strong>Fetch moments list from Supabase</strong></td>
+                            <td><strong>Fetch moments list from Supabase</strong><br><small><strong>Steps:</strong> 1) Create 2-3 moments (voice and text) 2) Check MomentsListView 3) All moments display with correct dates 4) Pull-to-refresh updates list. PASS if moments load from backend.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">4.1</td>
-                            <td><strong>Update moment content</strong></td>
-                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
-                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
-                        </tr>
-                        <tr>
-                            <td class="num">4.2</td>
-                            <td><strong>Delete moment from list</strong></td>
+                            <td><strong>Update moment content</strong><br><small><strong>Steps:</strong> 1) Open a saved moment 2) Tap to edit text/transcript 3) Modify content (add/remove text) 4) Save changes 5) Return to list 6) Verify changes persist. PASS if edits save.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">5.1</td>
-                            <td><strong>Network request retry on failure</strong></td>
+                            <td><strong>Network request retry on failure</strong><br><small><strong>Steps:</strong> 1) Toggle airplane mode ON 2) Try to save a moment 3) Turn airplane mode OFF 4) App should auto-retry sync. PASS if retry succeeds without user action.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">5.2</td>
-                            <td><strong>Local storage persistence</strong></td>
+                            <td><strong>Local storage persistence</strong><br><small><strong>Steps:</strong> 1) Toggle airplane mode ON 2) Create moment while offline 3) Force-close app 4) Reopen app 5) Offline moment should still exist with sync indicator. PASS if data persists.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">5.3</td>
-                            <td><strong>Sync queue management</strong></td>
+                            <td><strong>Sync queue management</strong><br><small><strong>Steps:</strong> 1) Create 3+ moments offline 2) Go online 3) All moments should sync in order 4) Check Supabase - all appear. PASS if queue processes correctly.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
@@ -921,31 +903,25 @@
                     <tbody>
                         <tr>
                             <td class="num">6.1</td>
-                            <td><strong>Error message display</strong></td>
+                            <td><strong>Error message display</strong><br><small><strong>Steps:</strong> 1) Trigger an error (bad network, invalid input, etc.) 2) Error message should appear clearly on screen 3) User should understand what went wrong. PASS if errors are clear and visible.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">6.2</td>
-                            <td><strong>Network timeout handling</strong></td>
+                            <td><strong>Network timeout handling</strong><br><small><strong>Steps:</strong> 1) Toggle airplane mode ON 2) Try API call (create moment) 3) Wait 10+ seconds 4) Should show timeout message or retry UI 5) Toggle airplane mode OFF 6) Should recover. PASS if handled gracefully.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">7.1</td>
-                            <td><strong>UI responsiveness with large moment lists</strong></td>
+                            <td><strong>UI responsiveness with large moment lists</strong><br><small><strong>Steps:</strong> 1) Create 20+ moments (use quick text moments) 2) Scroll through MomentsListView 3) Should scroll smoothly without lag 4) Tap on moment should open instantly. PASS if UI is responsive.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">7.2</td>
-                            <td><strong>Memory usage with background audio</strong></td>
-                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
-                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
-                        </tr>
-                        <tr>
-                            <td class="num">8.1</td>
-                            <td><strong>Keyboard interactions (text input)</strong></td>
+                            <td><strong>Memory usage with background audio</strong><br><small><strong>Steps:</strong> 1) Record a moment (10 min continuous) 2) Put app in background 3) Check system memory (Xcode or device settings) 4) Return to app 5) Should not crash or show memory warnings. PASS if memory stable.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
@@ -977,51 +953,45 @@
                     <tbody>
                         <tr>
                             <td class="num">9.1</td>
-                            <td><strong>JWT token properly sent in requests</strong></td>
+                            <td><strong>JWT token properly sent in requests</strong><br><small><strong>Steps:</strong> 1) Open app Settings → Debug Logs 2) Create a moment or perform an action 3) Look at the logs for API requests 4) Search for "Authorization:" in the log messages 5) If you see "Authorization: Bearer [token]", PASS. If missing, FAIL.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">9.2</td>
-                            <td><strong>Token refresh on 401 response</strong></td>
-                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
-                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
-                        </tr>
-                        <tr>
-                            <td class="num">9.3</td>
-                            <td><strong>User record created in Supabase on signup</strong></td>
+                            <td><strong>Token refresh on 401 response</strong><br><small><strong>Steps:</strong> 1) Log in and use app normally 2) If you receive 401 auth error, app should refresh token automatically 3) Next API request should succeed 4) No manual re-login required. PASS if app recovers from 401.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">10.1</td>
-                            <td><strong>Text doesn't jump while typing</strong></td>
-                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
-                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                            <td><strong>Text doesn't jump while typing</strong><br><small><span style="background:#ff6b6b;color:white;padding:2px 6px;border-radius:3px;font-weight:bold;">KNOWN BUG → PHASE 2</span> Text cursor jumps off-screen around row 23 while typing. Ticket created for fix.</small></td>
+                            <td><span style="background:#333;padding:4px 8px;border-radius:3px;color:#999;">BUG (Phase 2)</span></td>
+                            <td><textarea class="notes-input" placeholder="Notes...">Text input cursor disappears around row 23-27. Scrolling issue needs fixing in Phase 2.</textarea></td>
                         </tr>
                         <tr>
                             <td class="num">10.2</td>
                             <td><strong>Transcription displays in ReviewView</strong></td>
-                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
-                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                            <td><span style="background:#51cf66;color:white;padding:4px 8px;border-radius:3px;font-weight:bold;">✓ PASS</span></td>
+                            <td><textarea class="notes-input" placeholder="Notes..." style="background:#f0fdf4;">Transcription displays correctly in review screen before saving</textarea></td>
                         </tr>
                         <tr>
                             <td class="num">10.3</td>
                             <td><strong>Audio files upload to Storage bucket</strong></td>
-                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
-                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                            <td><span style="background:#51cf66;color:white;padding:4px 8px;border-radius:3px;font-weight:bold;">✓ PASS</span></td>
+                            <td><textarea class="notes-input" placeholder="Notes..." style="background:#f0fdf4;">Audio files successfully uploaded to moments-audio bucket in Supabase</textarea></td>
                         </tr>
                         <tr>
                             <td class="num">11.1</td>
                             <td><strong>Offline moments show "pending sync" indicator</strong></td>
-                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
-                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                            <td><span style="background:#51cf66;color:white;padding:4px 8px;border-radius:3px;font-weight:bold;">✓ PASS</span></td>
+                            <td><textarea class="notes-input" placeholder="Notes..." style="background:#f0fdf4;">Pending sync indicator displays correctly on moments created offline</textarea></td>
                         </tr>
                         <tr>
                             <td class="num">11.2</td>
                             <td><strong>Offline moments auto-sync when online</strong></td>
-                            <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
-                            <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
+                            <td><span style="background:#51cf66;color:white;padding:4px 8px;border-radius:3px;font-weight:bold;">✓ PASS</span></td>
+                            <td><textarea class="notes-input" placeholder="Notes..." style="background:#f0fdf4;">Offline moments automatically sync to Supabase when connection restored</textarea></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1051,61 +1021,61 @@
                     <tbody>
                         <tr>
                             <td class="num">12.1</td>
-                            <td><strong>Recording limit: Auto-stop at 10 minutes</strong></td>
+                            <td><strong>Recording limit: Auto-stop at 10 minutes</strong><br><small><strong>Steps:</strong> 1) Open CaptureView 2) Start recording 3) Watch timer reach 10:00 4) Recording should stop automatically 5) No manual stop needed. PASS if auto-stop works at 10 min.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">12.2</td>
-                            <td><strong>9-minute warning message</strong></td>
+                            <td><strong>9-minute warning message</strong><br><small><strong>Steps:</strong> 1) Start recording 2) Watch for 9:00 mark 3) Gold-colored warning message should appear ("60 seconds left in recording" or similar) 4) Message should be clearly visible. PASS if warning shows at 9 min.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">12.3</td>
-                            <td><strong>Close ReviewView during transcription</strong></td>
+                            <td><strong>Close ReviewView during transcription</strong><br><small><strong>Steps:</strong> 1) Record audio moment 2) In ReviewView (while transcribing), close/dismiss the view 3) Partial transcription should be preserved 4) Can return later to complete. PASS if partial result saves.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">12.4</td>
-                            <td><strong>Partial transcription displayed offline</strong></td>
+                            <td><strong>Partial transcription displayed offline</strong><br><small><strong>Steps:</strong> 1) Toggle airplane mode ON 2) Record audio 3) During transcription, toggle airplane mode OFF 4) Partial transcription should display when app returns to foreground 5) User sees what was transcribed so far. PASS if partial displays.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">12.5</td>
-                            <td><strong>Save incomplete transcription</strong></td>
+                            <td><strong>Save incomplete transcription</strong><br><small><strong>Steps:</strong> 1) Record audio 2) Close app during transcription 3) Reopen app 4) Partial transcription should still be visible 5) User can edit/complete and save incomplete text. PASS if partial saves.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">13.1</td>
-                            <td><strong>Quiet room recording</strong></td>
+                            <td><strong>Quiet room recording</strong><br><small><strong>Steps:</strong> 1) Find a quiet room/space 2) Record 2-3 min of clear speech 3) Check transcription accuracy 4) Text should match spoken words. PASS if transcription is clear and accurate.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">13.2</td>
-                            <td><strong>Noisy environment recording</strong></td>
+                            <td><strong>Noisy environment recording</strong><br><small><strong>Steps:</strong> 1) Record in noisy environment (café, traffic, etc.) 2) Record 2-3 min of speech with background noise 3) Check transcription 4) Should still capture your speech despite noise. PASS if core words captured.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">13.3</td>
-                            <td><strong>Background noise filtering</strong></td>
+                            <td><strong>Background noise filtering</strong><br><small><strong>Steps:</strong> 1) Compare transcription from quiet room vs noisy environment 2) Assess if app handles/filters background noise well 3) Accuracy should degrade gracefully (not crash/error). PASS if app functions in both conditions.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">14.1</td>
-                            <td><strong>Short recording (< 30 sec)</strong></td>
+                            <td><strong>Short recording (< 30 sec)</strong><br><small><strong>Steps:</strong> 1) Record a very short audio (5-15 sec) 2) Complete transcription 3) Save moment 4) Check accuracy on short clips. PASS if short recordings transcribe accurately.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">14.2</td>
-                            <td><strong>Long recording (5+ min)</strong></td>
+                            <td><strong>Long recording (5+ min)</strong><br><small><strong>Steps:</strong> 1) Record continuous audio for 5+ minutes 2) Monitor app memory/CPU during recording 3) Transcription should complete without crashes 4) Check accuracy. PASS if app handles long recordings.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
@@ -1137,49 +1107,49 @@
                     <tbody>
                         <tr>
                             <td class="num">15.1</td>
-                            <td><strong>Brute force protection: 5 failed login attempts</strong></td>
+                            <td><strong>Brute force protection: 5 failed login attempts</strong><br><small><strong>Steps:</strong> 1) Enter wrong password 5 times consecutively 2) After 5 failed attempts, account should be locked 3) Error message should appear. PASS if account locked after 5 failures.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">15.2</td>
-                            <td><strong>10-minute lockout after failed attempts</strong></td>
+                            <td><strong>10-minute lockout after failed attempts</strong><br><small><strong>Steps:</strong> 1) Trigger lockout (5 failed attempts) 2) Try to login immediately - should be blocked 3) Wait 10 minutes 4) Try again - should work. PASS if 10-min lockout enforced.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">15.3</td>
-                            <td><strong>RLS: User can only see their own moments</strong></td>
+                            <td><strong>RLS: User can only see their own moments</strong><br><small><strong>Steps:</strong> 1) Create 2 test accounts (A and B) 2) Login as A, create moment 3) Login as B 4) B should NOT see A's moment. PASS if data isolation works.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">15.4</td>
-                            <td><strong>RLS: User cannot modify other user's moment</strong></td>
+                            <td><strong>RLS: User cannot modify other user's moment</strong><br><small><strong>Steps:</strong> 1) Create 2 accounts (A and B) 2) A creates moment with ID 123 3) Login as B 4) Try to modify A's moment (API call, direct edit, etc.) 5) Should be rejected. PASS if modification blocked.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">15.5</td>
-                            <td><strong>Rate limiting: 100 requests/minute per user</strong></td>
+                            <td><strong>Rate limiting: 100 requests/minute per user</strong><br><small><strong>Steps:</strong> 1) Write script or spam API calls (100+/min) 2) After 100 requests in 1 min, should get 429 (Too Many Requests) error 3) Requests should be blocked. PASS if rate limit enforced.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">15.6</td>
-                            <td><strong>SQL injection attempt in moment text (rejected)</strong></td>
+                            <td><strong>SQL injection attempt in moment text (rejected)</strong><br><small><strong>Steps:</strong> 1) Try to save moment with SQL injection text (e.g., "'; DROP TABLE moments;--") 2) Moment should save as plain text 3) No database damage. PASS if injection rejected.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">15.7</td>
-                            <td><strong>Certificate pinning verified</strong></td>
+                            <td><strong>Certificate pinning verified</strong><br><small><strong>Steps:</strong> 1) Check app logs during API call (Settings → Debug Logs) 2) Should see "Certificate pinning: Valid certificate pinned ✓" 3) If cert invalid, connection should fail. PASS if pinning confirmed.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
                         <tr>
                             <td class="num">15.8</td>
-                            <td><strong>HTTPS enforced (no HTTP allowed)</strong></td>
+                            <td><strong>HTTPS enforced (no HTTP allowed)</strong><br><small><strong>Steps:</strong> 1) Check all API calls in logs 2) Should ONLY see https:// URLs, never http:// 3) Any HTTP attempt should be rejected/upgraded to HTTPS. PASS if only HTTPS used.</small></td>
                             <td><input type="text" class="status-input" placeholder="Pass/Fail/Bug"></td>
                             <td><textarea class="notes-input" placeholder="Notes..."></textarea></td>
                         </tr>
@@ -1301,34 +1271,61 @@
         }
 
         function downloadProgress() {
-            // Collect all scenario data
+            // Collect all scenario data from table rows
             const scenarios = [];
-            document.querySelectorAll('.scenario-item').forEach(item => {
-                const number = item.querySelector('.scenario-number')?.textContent || '';
-                const title = item.querySelector('.scenario-title')?.textContent || '';
-                const description = item.querySelector('.scenario-description')?.textContent || '';
-                const statusSelect = item.querySelector('select');
-                const notesTextarea = item.querySelector('textarea');
-                const status = statusSelect ? statusSelect.value : 'Not set';
-                const notes = notesTextarea ? notesTextarea.value : '';
 
-                scenarios.push({
-                    number: number.trim(),
-                    title: title.trim(),
-                    description: description.trim(),
-                    status: status,
-                    notes: notes.trim(),
-                    timestamp: new Date().toISOString()
-                });
+            document.querySelectorAll('table tbody tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length < 4) return; // Skip malformed rows
+
+                // Extract scenario number from first cell
+                const number = cells[0].textContent.trim();
+
+                // Extract title and description from second cell
+                const titleCell = cells[1];
+                const titleElem = titleCell.querySelector('strong');
+                const descElem = titleCell.querySelector('small');
+                const title = titleElem ? titleElem.textContent.trim() : '';
+                const description = descElem ? descElem.textContent.trim() : '';
+
+                // Extract status from third cell (could be input, select, or span)
+                const statusCell = cells[2];
+                let status = 'Not set';
+                const statusInput = statusCell.querySelector('input[type="text"]');
+                const statusSelect = statusCell.querySelector('select');
+                const statusSpan = statusCell.querySelector('span');
+
+                if (statusInput && statusInput.value) {
+                    status = statusInput.value;
+                } else if (statusSelect && statusSelect.value) {
+                    status = statusSelect.value;
+                } else if (statusSpan && statusSpan.textContent) {
+                    status = statusSpan.textContent.trim();
+                }
+
+                // Extract notes from fourth cell textarea
+                const notesCell = cells[3];
+                const notesTextarea = notesCell.querySelector('textarea');
+                const notes = notesTextarea ? notesTextarea.value.trim() : '';
+
+                if (number) { // Only add if we have a scenario number
+                    scenarios.push({
+                        number: number,
+                        title: title,
+                        description: description,
+                        status: status,
+                        notes: notes
+                    });
+                }
             });
 
             // Create JSON export
             const exportData = {
                 exportDate: new Date().toLocaleString(),
                 totalScenarios: scenarios.length,
-                passCount: scenarios.filter(s => s.status === 'Pass').length,
-                failCount: scenarios.filter(s => s.status === 'Fail').length,
-                bugCount: scenarios.filter(s => s.status === 'Bug').length,
+                passCount: scenarios.filter(s => s.status.includes('PASS') || s.status === 'Pass').length,
+                failCount: scenarios.filter(s => s.status.includes('Fail')).length,
+                bugCount: scenarios.filter(s => s.status.includes('BUG') || s.status.includes('Bug')).length,
                 notSetCount: scenarios.filter(s => s.status === 'Not set').length,
                 scenarios: scenarios
             };

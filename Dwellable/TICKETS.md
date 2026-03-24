@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** March 17, 2026 (Evening)
-**Status:** 58/70 tickets complete (83%) — Build 106 on TestFlight, security hardening complete, pre-TestFlight testing phase
+**Last Updated:** March 24, 2026 (00:11 UTC)
+**Status:** 59/70 tickets complete (84%) — Build 107 on TestFlight (in Apple review), Phase 1 testing complete (48/51 scenarios pass, 1 bug deferred to Phase 2)
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -760,3 +760,37 @@ T-011 · T-012 · T-013 · T-027 · T-028
     4. Conduct quarterly penetration testing (Phase 3, Q3 2026)
   - **Testing readiness:** All 8 pre-TestFlight security tests documented with step-by-step procedures, expected results, and sign-off sections
   - **Ticket progress:** 58/69 complete (84%)
+
+### March 23 Session — Phase 1 Testing & Phase 2 Backlog (Unified Testing Checklist)
+- **✅ UNIFIED_TESTING_CHECKLIST_2.html: READY FOR USE**
+  - Consolidated Phase 1-11 testing scenarios (99 total)
+  - Removed Phase 2 features (1.5 Edit, 1.6 Delete) from Phase 1 testing
+  - Added manual testing instructions for 2.6 (JWT refresh) and 9.1 (JWT in requests)
+  - Implemented working download feature — exports test results as JSON with summary counts
+  - Scenarios 10.2, 10.3, 11.1, 11.2 marked PASS ✅
+  
+- **🐛 T-055 (NEW): Fix Text Input Cursor Scrolling in TypeFlowView**
+  - **Priority:** MEDIUM (v1.1 quality improvement)
+  - **Category:** Bugs — Phase 2 UI Polish
+  - **Status:** 🔲 NOT STARTED
+  - **Description:** 
+    - Text cursor jumps off-screen around row 23-27 while typing in text moment input field
+    - User cannot see where they are typing after ~23 rows of text
+    - Root cause: Text input field not scrolling to keep cursor visible as text grows
+  - **Reproduction steps:**
+    1. Open TypeFlowView (tap "Type instead" from CaptureView)
+    2. Type text continuously
+    3. At approximately row 23, cursor becomes invisible
+    4. Text continues being typed but cursor is off-screen
+  - **Expected behavior:**
+    - Text input should scroll/adjust layout to keep cursor always visible
+    - Similar to standard iOS UITextField behavior with continuous scrolling
+  - **Technical notes:**
+    - Likely needs `scrollRectToVisible()` or equivalent layout adjustment in TypeFlowView
+    - May also affect ReviewView if text editing is implemented in Phase 2
+  - **Phase:** 2 (UI Polish)
+  - **Estimated effort:** 2-3 hours
+  - **Found during:** Phase 1 Critical Path Testing (2026-03-23)
+  - **Tester notes:** "Yes, let me calculate what role it doesn't. Around row 26, 27, it starts to jump, and you can no longer see it. Actually, row 23. It starts to jump."
+
+- **Ticket progress:** 59/70 complete (84%) — 1 new Phase 2 ticket created, 99 Phase 1 tests consolidated

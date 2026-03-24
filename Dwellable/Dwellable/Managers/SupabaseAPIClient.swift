@@ -112,7 +112,9 @@ class SupabaseAPIClient: APIClient {
         request.httpMethod = method
         request.setValue(anonKey, forHTTPHeaderField: "apikey")
         if requiresAuth {
-            request.setValue("Bearer \(jwtToken ?? anonKey)", forHTTPHeaderField: "Authorization")
+            let authHeader = "Bearer \(jwtToken ?? anonKey)"
+            hlog("🔑 Authorization: \(authHeader)", "INFO")
+            request.setValue(authHeader, forHTTPHeaderField: "Authorization")
         }
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if method == "POST" || method == "PATCH" || method == "PUT" {
@@ -332,7 +334,9 @@ class SupabaseAPIClient: APIClient {
         var uploadRequest = URLRequest(url: URL(string: baseURL + uploadEndpoint)!)
         uploadRequest.httpMethod = "POST"
         uploadRequest.setValue(anonKey, forHTTPHeaderField: "apikey")
-        uploadRequest.setValue("Bearer \(jwtToken ?? anonKey)", forHTTPHeaderField: "Authorization")
+        let uploadAuthHeader = "Bearer \(jwtToken ?? anonKey)"
+        hlog("🔑 Authorization (Storage): \(uploadAuthHeader)", "INFO")
+        uploadRequest.setValue(uploadAuthHeader, forHTTPHeaderField: "Authorization")
         uploadRequest.setValue("audio/mp4", forHTTPHeaderField: "Content-Type")
         uploadRequest.httpBody = audioData
 
@@ -368,7 +372,9 @@ class SupabaseAPIClient: APIClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue(anonKey, forHTTPHeaderField: "apikey")
-        request.setValue("Bearer \(jwtToken ?? anonKey)", forHTTPHeaderField: "Authorization")
+        let signAuthHeader = "Bearer \(jwtToken ?? anonKey)"
+        hlog("🔑 Authorization (Sign URLs): \(signAuthHeader)", "INFO")
+        request.setValue(signAuthHeader, forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let payload = ["filePath": storagePath]
@@ -409,7 +415,9 @@ class SupabaseAPIClient: APIClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue(anonKey, forHTTPHeaderField: "apikey")
-        request.setValue("Bearer \(jwtToken ?? anonKey)", forHTTPHeaderField: "Authorization")
+        let signedURLAuthHeader = "Bearer \(jwtToken ?? anonKey)"
+        hlog("🔑 Authorization (Signed URLs): \(signedURLAuthHeader)", "INFO")
+        request.setValue(signedURLAuthHeader, forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(payload)
 
@@ -442,6 +450,7 @@ class SupabaseAPIClient: APIClient {
             UsageEventPayload(
                 id: event.id,
                 user_id: userId,
+                user_email: event.userEmail,
                 event_type: event.eventType,
                 moment_type: event.momentType,
                 timestamp: event.timestamp.ISO8601Format()
@@ -498,6 +507,7 @@ struct UserResponse: Decodable {
 struct UsageEventPayload: Decodable {
     let id: String
     let user_id: String
+    let user_email: String?
     let event_type: String
     let moment_type: String?
     let timestamp: String
@@ -508,13 +518,14 @@ extension UsageEventPayload: Encodable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(user_id, forKey: .user_id)
+        try container.encodeIfPresent(user_email, forKey: .user_email)
         try container.encode(event_type, forKey: .event_type)
-        try container.encode(moment_type, forKey: .moment_type)
+        try container.encodeIfPresent(moment_type, forKey: .moment_type)
         try container.encode(timestamp, forKey: .timestamp)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, user_id, event_type, moment_type, timestamp
+        case id, user_id, user_email, event_type, moment_type, timestamp
     }
 }
 

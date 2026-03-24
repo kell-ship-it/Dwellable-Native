@@ -29,6 +29,7 @@ class UsageTracker {
     }
 
     func logAppOpened(userId: String, userEmail: String?) {
+        print("📊 UsageTracker.logAppOpened — userId: \(userId.prefix(8)), userEmail: \(userEmail ?? "NIL")")
         let event = UsageEvent(
             id: UUID().uuidString,
             userId: userId,
@@ -38,6 +39,7 @@ class UsageTracker {
             timestamp: Date()
         )
         saveEvent(event, userId: userId)
+        print("✅ Event saved locally with email: \(userEmail ?? "NIL")")
     }
 
     func logAppClosed(userId: String, userEmail: String?) {
@@ -127,7 +129,10 @@ class UsageTracker {
                     timestamp: event.timestamp
                 )
             }
-            print("📊 Event data being sent: \(eventData.map { "\($0.eventType)" }.joined(separator: ", "))")
+            print("📊 Event data being sent:")
+            for data in eventData {
+                print("  - \(data.eventType): userEmail = \(data.userEmail ?? "NIL")")
+            }
             try await apiClient.sendUsageEvents(eventData, userId: userId)
             // Clear local events after successful sync
             clearEvents(userId: userId)
