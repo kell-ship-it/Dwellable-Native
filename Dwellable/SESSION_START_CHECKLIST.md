@@ -17,11 +17,18 @@ pwd
 
 ---
 
-## Step 2: Check Blocking Items 🚨
+## Step 2: Fetch Latest & Check Blocking Items 🚨
 
 **CRITICAL: Do this FIRST — before reading anything else.**
 
-Read `NEXT_SESSION.md` and act on any blocking items:
+### 2A: Fetch Latest from Main
+```bash
+git pull origin main
+```
+**Why:** Ensures you have the latest files from the main branch. Previous session may have updated MEMORY.md, TICKETS.md, or protocols. Always get fresh data.
+
+### 2B: Check Blocking Items
+Read top of `MEMORY.md` (🚨 **Blocking Items** section) and act on any blocking items:
 - If a 🚨 **blocking item** exists → resolve it IMMEDIATELY before proceeding
 - If no blocking items → proceed to Step 3
 

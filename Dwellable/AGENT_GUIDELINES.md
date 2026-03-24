@@ -30,6 +30,7 @@ Confirm you are in `/Users/kell/Projects/Dwellable-Native/Dwellable/` and not in
 | 3 | **Present full ticket table** — ALL tickets, all statuses; mark the next session opener clearly |
 | 4 | **MEMORY draft** — summarize decisions made, what was built, open blockers; present for Kell's approval before writing |
 | 5 | **Next session opener** — single most important first action, specific enough that next agent needs no clarification |
+| 5.5 | **Update MEMORY.md blocking items** — Add 🚨 section at top with current blockers (Build approvals, waiting items, etc.) |
 
 ### Automated Commit & Push (Step 6 — CRITICAL)
 
@@ -75,6 +76,24 @@ git log --oneline origin/main -1
 - No manual sync needed between sessions
 
 **Failure to push = next session starts blind with outdated tickets**
+
+### Session Viewer Update (Part of Step 6)
+
+Before committing, the session-viewer.html at `/Users/kell/session-viewer.html` MUST be updated with today's session data:
+
+```bash
+# Session viewer is automatically updated with this session's transcript
+# The viewer consolidates ALL sessions (dwellable-rn + Dwellable-Native)
+# and displays them in one searchable HTML file.
+
+# When committing, session-viewer.html is included in git add -A
+# This ensures the viewer is always current with the latest sessions
+```
+
+**Why this matters:**
+- Session viewer is the only place to see continuity between sessions
+- If not updated → next agent cannot debug what was closed vs. what was opened
+- Viewer must be updated at every session close to maintain chronological record
 
 ---
 

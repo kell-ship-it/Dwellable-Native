@@ -1,5 +1,24 @@
 # Session Memory - Dwellable Native (Swift/SwiftUI)
 
+---
+
+## 🚨 BLOCKING ITEMS (Check This First at Session Start)
+
+### Build 107 TestFlight Approval Status
+**Status:** Submitted for Apple review (2026-03-24 00:11 UTC)
+**Delivery UUID:** e5d2465b-b4b8-49a6-a666-419a11c83b1f
+**Action Required:** Check App Store Connect → Dwellable → TestFlight → Builds → Build 107
+
+**Possible outcomes:**
+- ✅ **If Approved:** Invite external beta testers to "Dwellable Pilot Members" group immediately
+- ❌ **If Rejected:** Review Apple feedback, fix issues, re-submit Build 108
+- ⏳ **If Still In Review:** Wait and check again next session (typically 24-48 hours)
+
+**Why this blocks:** Cannot invite testers or collect Phase 1 feedback until Build 107 is approved.
+**Do not start T-048 or other work** until Build 107 status is clear.
+
+---
+
 ## Current Status
 - **Build 107** uploaded to TestFlight (2026-03-24 00:11:03)
 - **Delivery UUID**: e5d2465b-b4b8-49a6-a666-419a11c83b1f
