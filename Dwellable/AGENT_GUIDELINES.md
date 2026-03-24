@@ -19,7 +19,9 @@ Confirm you are in `/Users/kell/Projects/Dwellable-Native/Dwellable/` and not in
 
 ## Session End Protocol
 
-Run these steps in order before closing every session:
+**MANDATORY:** Run these steps in order before closing every session. The next session depends on this.
+
+### Pre-Commit Verification (Steps 1–5)
 
 | Step | Action |
 |------|--------|
@@ -28,7 +30,51 @@ Run these steps in order before closing every session:
 | 3 | **Present full ticket table** — ALL tickets, all statuses; mark the next session opener clearly |
 | 4 | **MEMORY draft** — summarize decisions made, what was built, open blockers; present for Kell's approval before writing |
 | 5 | **Next session opener** — single most important first action, specific enough that next agent needs no clarification |
-| 6 | **Clean close** — no uncommitted changes, no background tasks, all files saved and pushed |
+
+### Automated Commit & Push (Step 6 — CRITICAL)
+
+**Step 6 — Commit and push to main branch (automatic):**
+
+```bash
+# 1. Update TICKETS.md header with current state
+# (Line 3-4: Last Updated date, build #, phase completion %, status)
+
+# Example:
+# **Last Updated:** March 24, 2026 (00:15 UTC)
+# **Status:** 59/70 tickets complete (84%) — Build 107 on TestFlight, Phase 1 testing complete
+
+# 2. Stage all changes
+git add -A
+
+# 3. Commit with structured message (template below)
+git commit -m "Session close: [TITLE]
+
+[SUMMARY OF WORK]
+- ✅ [accomplishment 1]
+- ✅ [accomplishment 2]
+- ⏳ [pending item]
+
+Status:
+- Build: [#]
+- Phase: [X]% complete
+- Next: [next action]
+
+Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>"
+
+# 4. Push to origin/main
+git push origin main
+
+# 5. Verify push succeeded
+git log --oneline origin/main -1
+```
+
+**Why this matters:**
+- Next session reads TICKETS.md from main branch
+- Stale files = outdated information = wasted time repeating work
+- Automatic commit ensures **every session's work is captured**
+- No manual sync needed between sessions
+
+**Failure to push = next session starts blind with outdated tickets**
 
 ---
 
