@@ -17,7 +17,19 @@ pwd
 
 ---
 
-## Step 2: Read Project Guidelines 📖
+## Step 2: Check Blocking Items 🚨
+
+**CRITICAL: Do this FIRST — before reading anything else.**
+
+Read `NEXT_SESSION.md` and act on any blocking items:
+- If a 🚨 **blocking item** exists → resolve it IMMEDIATELY before proceeding
+- If no blocking items → proceed to Step 3
+
+**Why:** Blocking items are external dependencies (Build approvals, waiting for user feedback, etc.) that gate all other work. Starting work on regular tickets while a blocker exists wastes time.
+
+---
+
+## Step 3: Read Project Guidelines 📖
 
 Read these files **in this order** to understand the current state:
 
@@ -38,7 +50,7 @@ After reading, you should be able to answer:
 
 ---
 
-## Step 3: Present Ticket Table 📋
+## Step 4: Present Ticket Table 📋
 
 Read `TICKETS.md` and present the full ticket table to you before doing anything else.
 
@@ -52,7 +64,7 @@ Read `TICKETS.md` and present the full ticket table to you before doing anything
 
 ---
 
-## Step 4: Review Testing Protocols 🧪
+## Step 5: Review Testing Protocols 🧪
 
 Understand the two testing contexts:
 
@@ -67,7 +79,7 @@ Understand the two testing contexts:
 
 ---
 
-## Step 5: Confirm Active Ticket 🎯
+## Step 6: Confirm Active Ticket 🎯
 
 State which ticket is next:
 - If any ticket is 🔄 In Progress → confirm continuing it
@@ -76,7 +88,7 @@ State which ticket is next:
 
 ---
 
-## Step 6: Ready to Code ✍️
+## Step 7: Ready to Code ✍️
 
 Once all above steps complete, I'm ready to:
 1. Write code
