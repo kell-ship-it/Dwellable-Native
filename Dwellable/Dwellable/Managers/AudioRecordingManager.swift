@@ -24,11 +24,20 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
     private static let MAX_RECORDING_DURATION: TimeInterval = 600 // 10 minutes
     private static let WARNING_THRESHOLD: TimeInterval = 540 // 9 minutes (600 - 60)
 
+    private var isAudioSessionReady = false
+
     override init() {
         super.init()
-        setupAudioSession()
+        // NOTE: Audio session setup is now LAZY — only runs when startRecording() is called.
+        // This prevents crashes on iPad when CaptureView loads but user wants text-only input.
         setupInterruptionObserver()
         setupAudioRouteObserver()
+    }
+
+    /// Call this before any recording. Safe to call multiple times.
+    func ensureAudioSessionReady() {
+        guard !isAudioSessionReady else { return }
+        setupAudioSession()
     }
 
     private func setupInterruptionObserver() {
@@ -102,11 +111,18 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
     private func setupAudioSession() {
         DispatchQueue.global(qos: .userInitiated).async {
             do {
-                try self.audioSession.setCategory(.record, mode: .default, options: [])
+                // .allowBluetooth: Required for iPad compatibility — iPads commonly use
+                // Bluetooth keyboards/AirPods as audio route. Without this, iOS can fail
+                // to configure the audio session when Bluetooth is the primary route.
+                try self.audioSession.setCategory(.record, mode: .default, options: [.allowBluetooth])
                 try self.audioSession.setActive(true)
+                DispatchQueue.main.async {
+                    self.isAudioSessionReady = true
+                }
             } catch {
                 DispatchQueue.main.async {
                     self.errorMessage = "Audio setup encountered an issue. Try again in a moment."
+                    print("❌ [AUDIO] setupAudioSession failed: \(error.localizedDescription)")
                 }
             }
         }
@@ -125,6 +141,9 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
     }
 
     func startRecording() {
+        // Ensure audio session is configured (lazy init for iPad compatibility)
+        ensureAudioSessionReady()
+
         // Check for active phone call or FaceTime first
         if isOnActiveCall() {
             DispatchQueue.main.async {

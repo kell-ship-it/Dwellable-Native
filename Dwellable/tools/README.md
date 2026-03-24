@@ -51,9 +51,9 @@ chmod +x SERVE.sh
 
 ### Credentials in Dashboard
 
-⚠️ **Security Note:** The dashboard contains a Supabase publishable key in plain JavaScript:
+⚠️ **Security Note:** The dashboard requires a Supabase publishable key. Set it in the HTML file:
 ```javascript
-const SUPABASE_KEY = "sb_publishable_Mlu-MF7FXHHb-S1Kb89lZA_zzZ5dltg";
+const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
 ```
 
 This is intentional:

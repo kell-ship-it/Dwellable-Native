@@ -18,9 +18,13 @@ Podfile.lock
 # Carthage
 Carthage/Build
 
-# Environment
+# Environment & Secrets
 .env
 .env.local
+Dwellable/Config.swift
+
+# Exported IPA (build artifacts)
+exportedIPA/
 
 # IDE
 .vscode/
