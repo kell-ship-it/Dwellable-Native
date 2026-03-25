@@ -12,8 +12,8 @@ struct ReviewView: View {
     @State private var isSyncPending = false
     @State private var spinnerRotation: Double = 0
 
+    @Environment(\.apiClient) private var apiClient
     let audioURL: URL?
-    let apiClient: APIClient
     let userId: String
     let userEmail: String?
     let syncManager: SyncManager
@@ -304,6 +304,7 @@ struct ReviewView: View {
 #Preview {
     let apiClient = MockAPIClient()
     NavigationStack {
-        ReviewView(audioURL: nil, apiClient: apiClient, userId: "preview-user", userEmail: "preview@example.com", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
+        ReviewView(audioURL: nil, userId: "preview-user", userEmail: "preview@example.com", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
     }
+    .environment(\.apiClient, apiClient)
 }

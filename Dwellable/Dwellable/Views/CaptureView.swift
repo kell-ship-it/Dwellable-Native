@@ -15,7 +15,7 @@ struct CaptureView: View {
     @State private var progressTimer: Timer?
     @State private var spinnerRotation: Double = 0
 
-    let apiClient: APIClient
+    @Environment(\.apiClient) private var apiClient
     let userId: String
     let userEmail: String?
     let syncManager: SyncManager
@@ -152,12 +152,12 @@ struct CaptureView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $showVoiceReview) {
-            ReviewView(audioURL: audioManager.audioURL, apiClient: apiClient, userId: userId, userEmail: userEmail, syncManager: syncManager, onMomentSaved: {
+            ReviewView(audioURL: audioManager.audioURL, userId: userId, userEmail: userEmail, syncManager: syncManager, onMomentSaved: {
                 onMomentSaved?()
             })
         }
         .navigationDestination(isPresented: $showTypeFlow) {
-            TypeFlowView(apiClient: apiClient, userId: userId, userEmail: userEmail, syncManager: syncManager, onMomentSaved: {
+            TypeFlowView(userId: userId, userEmail: userEmail, syncManager: syncManager, onMomentSaved: {
                 onMomentSaved?()
             })
         }
@@ -339,6 +339,7 @@ struct CaptureView: View {
 #Preview {
     let apiClient = MockAPIClient()
     NavigationStack {
-        CaptureView(apiClient: apiClient, userId: "preview-user", userEmail: "preview@example.com", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
+        CaptureView(userId: "preview-user", userEmail: "preview@example.com", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
     }
+    .environment(\.apiClient, apiClient)
 }

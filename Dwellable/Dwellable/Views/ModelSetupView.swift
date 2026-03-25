@@ -3,7 +3,7 @@ import SwiftUI
 /// Shown once after login — downloads WhisperKit model before user ever hits record.
 /// Styled to match the setup-screen-preview.html mockup exactly.
 struct ModelSetupView: View {
-    let apiClient: APIClient
+    @Environment(\.apiClient) private var apiClient
     let syncManager: SyncManager
 
     @EnvironmentObject var authManager: AuthManager

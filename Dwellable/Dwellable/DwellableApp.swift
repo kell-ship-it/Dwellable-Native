@@ -258,8 +258,9 @@ struct DwellableApp: App {
         WindowGroup {
             if authManager.isAuthenticated {
                 // Go straight to app — model download happens on first capture if needed
-                AppView(apiClient: apiClient, syncManager: syncManager)
+                AppView(syncManager: syncManager)
                     .environmentObject(authManager)
+                    .environment(\.apiClient, apiClient)
                     .task {
                         // Pre-load model silently if already downloaded
                         if UserDefaults.standard.bool(forKey: "whisperModelReady") {

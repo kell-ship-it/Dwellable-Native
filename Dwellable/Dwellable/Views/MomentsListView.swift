@@ -10,15 +10,9 @@ struct MomentsListView: View {
     @State private var showSettings = false
     @State private var wasLoadedOffline = false
 
-    let apiClient: APIClient
+    @Environment(\.apiClient) private var apiClient
     let userId: String
     @ObservedObject var syncManager: SyncManager
-
-    init(apiClient: APIClient, userId: String, syncManager: SyncManager) {
-        self.apiClient = apiClient
-        self.userId = userId
-        self.syncManager = syncManager
-    }
 
     private func fetchMoments() async {
         isLoading = true
@@ -263,7 +257,7 @@ struct MomentsListView: View {
             }
         }
         .navigationDestination(isPresented: $showCapture) {
-            CaptureView(apiClient: apiClient, userId: userId, userEmail: authManager.currentUser?.email, syncManager: syncManager, onMomentSaved: {
+            CaptureView(userId: userId, userEmail: authManager.currentUser?.email, syncManager: syncManager, onMomentSaved: {
                 var transaction = Transaction()
                 transaction.disablesAnimations = true
                 withTransaction(transaction) {
@@ -286,6 +280,7 @@ struct MomentsListView: View {
 
 #Preview {
     let apiClient = MockAPIClient()
-    MomentsListView(apiClient: apiClient, userId: "preview-user", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"))
+    MomentsListView(userId: "preview-user", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"))
         .environmentObject(AuthManager(apiClient: apiClient))
+        .environment(\.apiClient, apiClient)
 }

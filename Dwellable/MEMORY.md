@@ -4,29 +4,29 @@
 
 ## 🚨 BLOCKING ITEMS (Check This First at Session Start)
 
-### Build 107 TestFlight Approval Status
-**Status:** Submitted for Apple review (2026-03-24 00:11 UTC)
-**Delivery UUID:** e5d2465b-b4b8-49a6-a666-419a11c83b1f
-**Action Required:** Check App Store Connect → Dwellable → TestFlight → Builds → Build 107
+### Build 110 on TestFlight — Awaiting iPhone Testing
+**Status:** Build 110 uploaded to TestFlight (2026-03-24 ~18:01 UTC)
+**Action Required:** Kell is testing Build 110 on his iPhone (not iPad) using the testing Apple account. Check with Kell for results.
 
-**Possible outcomes:**
-- ✅ **If Approved:** Invite external beta testers to "Dwellable Pilot Members" group immediately
-- ❌ **If Rejected:** Review Apple feedback, fix issues, re-submit Build 108
-- ⏳ **If Still In Review:** Wait and check again next session (typically 24-48 hours)
+**What's in Build 110:**
+- ✅ GitGuardian secret remediation (Config.swift removed from source control)
+- ✅ iPad navigation crash fix (APIClient moved to SwiftUI Environment — architecture fix)
+- ✅ Audio session lazy init + .allowBluetooth (AudioRecordingManager)
 
-**Why this blocks:** Cannot invite testers or collect Phase 1 feedback until Build 107 is approved.
-**Do not start T-048 or other work** until Build 107 status is clear.
+**iPad status:** iPad Pro 3rd gen (A12X) has TWO crashes: (1) SwiftUI navigation type resolution — FIXED in Build 110, (2) WhisperKit Metal residency sets not supported on A12X — NOT FIXED, intentionally deferred. Kell decided iPad is not a target device; focus on iPhone only.
+
+**Why this blocks:** Need iPhone test results before inviting external beta testers.
 
 ---
 
 ## Current Status
-- **Build 107** uploaded to TestFlight (2026-03-24 00:11:03)
-- **Delivery UUID**: e5d2465b-b4b8-49a6-a666-419a11c83b1f
+- **Build 110** uploaded to TestFlight (2026-03-24 ~18:01 UTC)
 - **Version**: 1.0
-- **Testing Status**: Phase 1 Complete
+- **Testing Status**: Phase 1 Complete + iPad crash fixes
   - 48/51 scenarios PASS
   - 1 BUG deferred to Phase 2 (scenario 10.1 - text cursor jump around row 23)
   - 0 failures
+  - Build 107→108→109→110 progression (secret fix, audio fix, navigation fix)
 
 ## Phase 1 Testing Completed
 All critical user journeys verified:
@@ -77,7 +77,8 @@ File: `/Users/kell/Downloads/dwellable-testing-results-2026-03-24 (2).json`
 ## TestFlight Beta Testers
 Current builds available for testing:
 - Build 105: Previous stable build
-- Build 107: Latest (Phase 1 complete, all security tests pass)
+- Build 107: Phase 1 complete, all security tests pass
+- Build 110: Latest — GitGuardian fix + APIClient environment refactor + audio lazy init
 
 ## Next Steps
 1. Monitor TestFlight feedback and crash reports
@@ -94,7 +95,7 @@ Current builds available for testing:
 - Bundle ID: `com.kellgolden.Dwell`
 - Team ID: `38X95M6CUB`
 - Apple ID: `kell.golden@outlook.com`
-- Current Build: 107
+- Current Build: 110
 - Marketing Version: 1.0
 - Min iOS Deployment: 16.0
 
@@ -106,26 +107,35 @@ Current builds available for testing:
 - IPA: `/Users/kell/Desktop/Dwellable-Native/Dwellable/exportedIPA/Dwellable.ipa`
 
 ---
-*Last updated: 2026-03-24 00:11:03 UTC*
+*Last updated: 2026-03-24 23:00 UTC*
 
-## Session Notes (2026-03-24)
-- ✅ Build 107 created and uploaded to TestFlight
-- ✅ Build number incremented from 106 to 107
-- ✅ Archive successfully created after resolving code signing issues
-- ✅ IPA exported and uploaded to TestFlight (Delivery UUID: e5d2465b-b4b8-49a6-a666-419a11c83b1f)
-- ✅ App encryption documentation completed (selected: "None of proprietary/non-standard algorithms")
-- ✅ Internal testing group "Dwellable Pilot Members" created
-- ✅ User (kell.golden@outlook.com) added as tester
-- ⏳ Build 107 currently in Apple review (approval pending, typically 24-48 hours)
+## Session Notes (2026-03-24, Session 2)
 
-### Feedback for Next Session
-- TestFlight review process adds 24-48 hour delay before testers can access builds
-- Consider this when planning beta release timeline
-- Once approved, testing can begin immediately
+### Completed This Session
+- ✅ **GitGuardian secret remediation** — Supabase anon key removed from source control
+  - Config.swift added to .gitignore, removed from git tracking (`git rm --cached`)
+  - Config.swift.example template created for new developers
+  - Hardcoded keys scrubbed from tools/README.md and tools/analytics-dashboard.html
+  - Committed as bb98bbd, pushed to origin/main
+- ✅ **iPad crash diagnosed** — Two separate issues found:
+  1. SwiftUI navigation crash (`swift_getAssociatedTypeWitnessSlowImpl`) — caused by `APIClient` protocol existential stored in view structs across 3-level nested `.navigationDestination` chain. iPad uses eager transition resolution, iPhone uses lazy.
+  2. WhisperKit Metal crash (`MTLDebugDevice newResidencySetWithDescriptor`) — A12X chip doesn't support Metal residency sets. Deferred; iPad not target device.
+- ✅ **APIClient refactored to SwiftUI Environment** — All 6 views (AppView, MomentsListView, CaptureView, ReviewView, TypeFlowView, ModelSetupView) now use `@Environment(\.apiClient)` instead of `let apiClient: APIClient`. New file: `Environment/APIClientEnvironment.swift`
+- ✅ **Audio session lazy init** — `setupAudioSession()` moved from `init()` to `startRecording()` in AudioRecordingManager. Added `.allowBluetooth` option for iPad Bluetooth routing.
+- ✅ **Build 110 uploaded to TestFlight** — Includes all fixes above
+- ✅ **Session viewer script fixed** — Reads TICKETS.md as source of truth for ticket status, calendar view restored
+- ✅ **Session continuity protocol updated** — git pull added to session start, session viewer regeneration documented
+
+### Learnings
+- iPad Pro 3rd gen (A12X, iPad8,11) is incompatible with WhisperKit's default Metal GPU compute — requires CPU-only fallback
+- Protocol existentials (`any APIClient`) stored as view properties cause SwiftUI type resolution crashes on iPad during eager navigation transitions — use Environment instead
+- `swift_getAssociatedTypeWitnessSlowImpl` crash = Swift runtime can't resolve associated type metadata at runtime. Almost always a nested generics / protocol existential problem.
+- Session viewer script: TICKETS.md uses format `**T-001:**` (colon INSIDE asterisks)
 
 ### Next Actions
-1. Wait for Build 107 approval from Apple (check TestFlight Builds tab)
-2. Once approved: invite external beta testers via TestFlight invite links
-3. Monitor crash reports and feedback from testers
-4. Proceed with Phase 2 work once Phase 1 feedback is collected
+1. Get iPhone test results from Kell on Build 110
+2. If iPhone works: invite external beta testers
+3. If iPhone crashes: get crash log from iPhone and diagnose
+4. Session viewer: add session viewer regeneration to closeout protocol
+5. Proceed with Phase 2 work once Phase 1 feedback collected
 

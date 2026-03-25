@@ -8,7 +8,7 @@ struct TypeFlowView: View {
     @State private var saveError: String?
     @State private var isSyncPending = false
 
-    let apiClient: APIClient
+    @Environment(\.apiClient) private var apiClient
     let userId: String
     let userEmail: String?
     let syncManager: SyncManager
@@ -179,6 +179,7 @@ struct TypeFlowView: View {
 #Preview {
     let apiClient = MockAPIClient()
     NavigationStack {
-        TypeFlowView(apiClient: apiClient, userId: "preview-user", userEmail: "preview@example.com", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
+        TypeFlowView(userId: "preview-user", userEmail: "preview@example.com", syncManager: SyncManager(apiClient: apiClient, userId: "preview-user"), onMomentSaved: nil)
     }
+    .environment(\.apiClient, apiClient)
 }
