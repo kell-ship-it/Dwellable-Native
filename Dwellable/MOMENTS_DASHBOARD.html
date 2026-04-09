@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dwellable Pilot Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #ffffff;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+        h1 { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+        .subtitle { font-size: 13px; color: #666; }
+        .header-right { text-align: right; }
+        .status {
+            font-size: 13px;
+            color: #999;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+        .status.connected { color: #4ade80; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+        .refresh-time { font-size: 11px; color: #555; margin-top: 4px; }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .metric-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .metric-card.gold { border-color: #C9B27C; }
+        .metric-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; font-weight: 600; }
+        .metric-value { font-size: 40px; font-weight: 700; color: #C9B27C; line-height: 1; margin-bottom: 6px; }
+        .metric-sub { font-size: 12px; color: #555; }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .chart-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .chart-title { font-size: 13px; font-weight: 600; margin-bottom: 20px; color: #ccc; }
+        .chart-wrap { position: relative; height: 260px; }
+        .table-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+        .table-header { padding: 20px 24px; border-bottom: 1px solid #2a2a2a; }
+        .table-header h2 { font-size: 14px; font-weight: 600; color: #ccc; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #111; padding: 14px 24px; text-align: left; font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
+        td { padding: 16px 24px; border-top: 1px solid #1f1f1f; font-size: 13px; }
+        tr:hover td { background: #141414; }
+        .email { color: #C9B27C; font-weight: 500; }
+        .badge {
+            display: inline-block; padding: 3px 8px; border-radius: 4px;
+            font-size: 11px; font-weight: 600;
+        }
+        .badge.voice { background: rgba(201,178,124,0.12); color: #C9B27C; }
+        .badge.text { background: rgba(100,200,255,0.1); color: #64c8ff; }
+        .badge.session { background: rgba(160,130,200,0.1); color: #a082c8; }
+        .empty { text-align: center; padding: 48px; color: #444; font-size: 14px; }
+        .error-banner {
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 8px;
+            padding: 14px 18px;
+            color: #fca5a5;
+            font-size: 13px;
+            margin-bottom: 24px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div>
+            <h1>Dwellable Pilot</h1>
+            <p class="subtitle">Layer 1 — Phase 1 engagement metrics</p>
+        </div>
+        <div class="header-right">
+            <div class="status" id="conn-status"><span class="dot"></span> Connecting...</div>
+            <div class="refresh-time">Updated: <span id="updated-at">—</span></div>
+        </div>
+    </header>
+
+    <div class="error-banner" id="error-banner"></div>
+
+    <div class="metrics-grid" id="metrics-grid">
+        <div class="metric-card"><div class="metric-label">Total Moments</div><div class="metric-value" id="m-total">—</div><div class="metric-sub" id="m-total-sub"></div></div>
+        <div class="metric-card gold"><div class="metric-label">Active Users</div><div class="metric-value" id="m-users">—</div><div class="metric-sub" id="m-users-sub"></div></div>
+        <div class="metric-card"><div class="metric-label">App Sessions</div><div class="metric-value" id="m-sessions">—</div><div class="metric-sub" id="m-sessions-sub"></div></div>
+        <div class="metric-card"><div class="metric-label">Voice Adoption</div><div class="metric-value" id="m-voice">—</div><div class="metric-sub">of total captures</div></div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-card">
+            <div class="chart-title">Capture Method</div>
+            <div class="chart-wrap"><canvas id="chart-type"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">Daily Activity</div>
+            <div class="chart-wrap"><canvas id="chart-daily"></canvas></div>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <div class="table-header"><h2>Participants</h2></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Moments</th>
+                    <th>Voice</th>
+                    <th>Text</th>
+                    <th>Sessions</th>
+                    <th>First Capture</th>
+                    <th>Last Active</th>
+                </tr>
+            </thead>
+            <tbody id="participants-tbody">
+                <tr><td colspan="7" class="empty">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://lhcjobrtmbawlhjyodxz.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoY2pvYnJ0bWJhd2xoanlvZHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTQ5NzgsImV4cCI6MjA4ODQ5MDk3OH0.j40evNUmKBMBAtebcOPy2koLWfzGfSY9Zj228wfYRy0';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let chartType = null, chartDaily = null;
+
+    async function load() {
+        try {
+            const [{ data: moments, error: e1 }, { data: events, error: e2 }, { data: users, error: e3 }] = await Promise.all([
+                sb.from('moments').select('id, user_id, created_at').limit(2000),
+                sb.from('usage_events').select('id, user_id, event_type, moment_type, timestamp').order('timestamp', { ascending: false }).limit(2000),
+                sb.from('users').select('id, email')
+            ]);
+
+            if (e1 || e2 || e3) throw new Error((e1 || e2 || e3).message);
+
+            renderMetrics(moments, events, users);
+            renderCharts(moments, events);
+            renderParticipants(moments, events, users);
+
+            setStatus(true);
+            document.getElementById('updated-at').textContent = new Date().toLocaleTimeString();
+            hideError();
+        } catch (err) {
+            setStatus(false);
+            showError(err.message);
+        }
+    }
+
+    function renderMetrics(moments, events, users) {
+        const voice = events.filter(e => e.event_type === 'moment_created' && e.moment_type === 'voice').length;
+        const text = events.filter(e => e.event_type === 'moment_created' && e.moment_type === 'text').length;
+        const sessions = events.filter(e => e.event_type === 'app_opened').length;
+        const activeUsers = new Set(moments.map(m => m.user_id)).size;
+        const voicePct = moments.length ? Math.round((voice / moments.length) * 100) : 0;
+
+        document.getElementById('m-total').textContent = moments.length;
+        document.getElementById('m-total-sub').textContent = `${voice} voice · ${text} text`;
+        document.getElementById('m-users').textContent = activeUsers;
+        document.getElementById('m-users-sub').textContent = `of ${users.length} invited`;
+        document.getElementById('m-sessions').textContent = sessions;
+        document.getElementById('m-sessions-sub').textContent = activeUsers ? `avg ${(sessions / activeUsers).toFixed(1)} per user` : '';
+        document.getElementById('m-voice').textContent = voicePct + '%';
+    }
+
+    function renderCharts(moments, events) {
+        const voice = events.filter(e => e.moment_type === 'voice').length;
+        const text = events.filter(e => e.moment_type === 'text').length;
+
+        if (chartType) chartType.destroy();
+        chartType = new Chart(document.getElementById('chart-type').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Voice', 'Text'],
+                datasets: [{ data: [voice, text], backgroundColor: ['#C9B27C', '#64c8ff'], borderColor: '#1a1a1a', borderWidth: 3 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#aaa', font: { size: 13 } } } } }
+        });
+
+        const daily = {};
+        events.forEach(e => {
+            const d = new Date(e.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            daily[d] = (daily[d] || 0) + 1;
+        });
+        const labels = Object.keys(daily).slice(-14);
+        const data = labels.map(l => daily[l]);
+
+        if (chartDaily) chartDaily.destroy();
+        chartDaily = new Chart(document.getElementById('chart-daily').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{ label: 'Events', data, backgroundColor: 'rgba(201,178,124,0.5)', borderColor: '#C9B27C', borderWidth: 1, borderRadius: 4 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { ticks: { color: '#555' }, grid: { color: '#222' } },
+                    x: { ticks: { color: '#555' }, grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    function renderParticipants(moments, events, users) {
+        const tbody = document.getElementById('participants-tbody');
+        if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No participants yet.</td></tr>'; return; }
+
+        const rows = users.map(u => {
+            const uMoments = moments.filter(m => m.user_id === u.id);
+            const uEvents = events.filter(e => e.user_id === u.id);
+            const voice = uEvents.filter(e => e.moment_type === 'voice').length;
+            const text = uEvents.filter(e => e.moment_type === 'text').length;
+            const sessions = uEvents.filter(e => e.event_type === 'app_opened').length;
+            const dates = uMoments.map(m => new Date(m.created_at));
+            const first = dates.length ? new Date(Math.min(...dates)).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+            const allDates = uEvents.map(e => new Date(e.timestamp));
+            const last = allDates.length ? new Date(Math.max(...allDates)).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+            return { email: u.email, total: uMoments.length, voice, text, sessions, first, last };
+        }).sort((a, b) => b.total - a.total);
+
+        tbody.innerHTML = rows.map(r => `
+            <tr>
+                <td class="email">${r.email}</td>
+                <td><strong>${r.total}</strong></td>
+                <td><span class="badge voice">${r.voice}</span></td>
+                <td><span class="badge text">${r.text}</span></td>
+                <td><span class="badge session">${r.sessions}</span></td>
+                <td>${r.first}</td>
+                <td>${r.last}</td>
+            </tr>`).join('');
+    }
+
+    function setStatus(ok) {
+        const el = document.getElementById('conn-status');
+        el.innerHTML = `<span class="dot"></span> ${ok ? 'Connected' : 'Disconnected'}`;
+        el.className = 'status' + (ok ? ' connected' : '');
+    }
+
+    function showError(msg) {
+        const el = document.getElementById('error-banner');
+        el.textContent = 'Error: ' + msg;
+        el.style.display = 'block';
+    }
+
+    function hideError() { document.getElementById('error-banner').style.display = 'none'; }
+
+    load();
+    setInterval(load, 30000);
+</script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dwellable Session Viewer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            padding: 40px 20px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { margin-bottom: 40px; border-bottom: 1px solid #222; padding-bottom: 24px; }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+        .subtitle { font-size: 13px; color: #555; }
+        .controls {
+            display: flex; gap: 10px; align-items: center; margin-bottom: 32px; flex-wrap: wrap;
+        }
+        input[type="text"] {
+            padding: 8px 14px; background: #1a1a1a; border: 1px solid #2a2a2a;
+            border-radius: 6px; color: #fff; font-size: 13px; width: 280px;
+        }
+        input[type="text"]:focus { outline: none; border-color: #C9B27C; }
+        .filter-btn {
+            padding: 7px 14px; background: #1a1a1a; border: 1px solid #2a2a2a;
+            border-radius: 6px; color: #999; font-size: 12px; cursor: pointer;
+        }
+        .filter-btn.active { background: rgba(201,178,124,0.15); border-color: #C9B27C; color: #C9B27C; }
+        .session-count { font-size: 12px; color: #444; margin-left: auto; }
+        .session {
+            background: #1a1a1a; border: 1px solid #222; border-radius: 12px;
+            padding: 24px; margin-bottom: 16px; transition: border-color 0.15s;
+        }
+        .session:hover { border-color: #333; }
+        .session-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .session-date { font-size: 12px; color: #555; font-weight: 500; }
+        .session-build {
+            font-size: 11px; padding: 3px 8px; background: rgba(201,178,124,0.1);
+            color: #C9B27C; border-radius: 4px; font-weight: 600;
+        }
+        .session-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; color: #eee; }
+        .session-items { list-style: none; }
+        .session-items li {
+            font-size: 13px; color: #888; padding: 3px 0;
+            padding-left: 16px; position: relative;
+        }
+        .session-items li::before { content: '•'; position: absolute; left: 4px; color: #444; }
+        .session-items li.done { color: #4ade80; }
+        .session-items li.done::before { content: '✓'; color: #4ade80; }
+        .session-items li.pending { color: #facc15; }
+        .session-items li.pending::before { content: '⏳'; left: 0; }
+        .tag {
+            display: inline-block; font-size: 10px; padding: 2px 6px;
+            border-radius: 3px; margin-right: 4px; font-weight: 600;
+        }
+        .tag.fix { background: rgba(239,68,68,0.1); color: #f87171; }
+        .tag.feat { background: rgba(74,222,128,0.1); color: #4ade80; }
+        .tag.test { background: rgba(100,200,255,0.1); color: #64c8ff; }
+        .tag.deploy { background: rgba(201,178,124,0.1); color: #C9B27C; }
+        .no-results { text-align: center; padding: 60px; color: #444; }
+        .stats-bar {
+            display: flex; gap: 24px; margin-bottom: 32px;
+            background: #1a1a1a; border: 1px solid #222;
+            border-radius: 10px; padding: 16px 24px;
+        }
+        .stat { text-align: center; }
+        .stat-num { font-size: 24px; font-weight: 700; color: #C9B27C; }
+        .stat-label { font-size: 11px; color: #555; margin-top: 2px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Session Viewer</h1>
+        <p class="subtitle">Dwellable Native — all Claude Code sessions</p>
+    </header>
+
+    <div class="stats-bar">
+        <div class="stat"><div class="stat-num" id="stat-sessions">0</div><div class="stat-label">Sessions</div></div>
+        <div class="stat"><div class="stat-num" id="stat-builds">0</div><div class="stat-label">Builds</div></div>
+        <div class="stat"><div class="stat-num" id="stat-fixes">0</div><div class="stat-label">Bug Fixes</div></div>
+        <div class="stat"><div class="stat-num" id="stat-feats">0</div><div class="stat-label">Features</div></div>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="search" placeholder="Search sessions..." oninput="render()">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+        <button class="filter-btn" data-filter="fix" onclick="setFilter('fix')">Fixes</button>
+        <button class="filter-btn" data-filter="feat" onclick="setFilter('feat')">Features</button>
+        <button class="filter-btn" data-filter="deploy" onclick="setFilter('deploy')">Deploys</button>
+        <span class="session-count" id="session-count"></span>
+    </div>
+
+    <div id="sessions-list"></div>
+</div>
+
+<script>
+const SESSIONS = [
+  {
+    date: 'Mar 24, 2026', build: 'Build 110', title: 'APIClient Environment Refactor + iPad Crash Fix',
+    tags: ['fix', 'deploy'],
+    items: [
+      { text: 'GitGuardian secret remediation — Config.swift removed from source control', done: true },
+      { text: 'iPad crash diagnosed: SwiftUI navigation type resolution crash fixed', done: true },
+      { text: 'APIClient refactored to SwiftUI Environment pattern across all 6 views', done: true },
+      { text: 'Audio session lazy init + .allowBluetooth added to AudioRecordingManager', done: true },
+      { text: 'Build 110 uploaded to TestFlight', done: true },
+      { text: 'Session viewer script fixed — reads TICKETS.md as source of truth', done: true },
+    ]
+  },
+  {
+    date: 'Mar 16–17, 2026', build: 'Build 108–109', title: 'Audio URL Storage + Usage Events Fix + Blank Audio Rejection',
+    tags: ['fix'],
+    items: [
+      { text: 'Audio URLs now store as file paths ({userId}/{filename}.m4a) in database', done: true },
+      { text: 'get-moment-audio Edge Function created for secure audio serving', done: true },
+      { text: 'Usage events RLS policy fixed: role changed from public to authenticated', done: true },
+      { text: 'Blank audio rejection: [BLANK_AUDIO] marker + 2-word minimum enforced', done: true },
+      { text: 'MANUAL_TESTING_CHECKLIST.md updated with Phases 10–11', done: true },
+    ]
+  },
+  {
+    date: 'Mar 15, 2026', build: 'Build 106–107', title: 'WhisperKit Testing Complete + Offline & Auto-stop Bug Fixes',
+    tags: ['fix', 'test'],
+    items: [
+      { text: 'WhisperKit testing T-047: 36/37 scenarios passed', done: true },
+      { text: 'B-015: Offline recording freeze fixed — audio session moved to background thread', done: true },
+      { text: 'B-016: 10-min auto-stop now triggers transcription correctly', done: true },
+      { text: 'Build 107 pushed to TestFlight — Phase 1 complete (48/51 scenarios)', done: true },
+    ]
+  },
+  {
+    date: 'Mar 14, 2026', build: 'Build 105', title: 'WhisperKit Integration + Option B Model Download + HTTP Logging',
+    tags: ['feat', 'deploy'],
+    items: [
+      { text: 'WhisperKit replaced Apple Speech Framework (no more 5-min limit)', done: true },
+      { text: 'Option B: model downloads on first capture, not after login', done: true },
+      { text: 'Download overlay with animated progress bar added to CaptureView', done: true },
+      { text: 'LogHTTPServer added — real-time logs at http://[device-ip]:8787', done: true },
+      { text: 'Build succeeded, WhisperKit SPM dependency added', done: true },
+    ]
+  },
+  {
+    date: 'Mar 13, 2026', build: 'Build 104', title: 'Audio File Timing Race Condition Fix',
+    tags: ['fix'],
+    items: [
+      { text: 'B-014: 0.2s delay added before navigation ensures audio file fully written', done: true },
+      { text: 'Root cause: AVAudioRecorder.stop() is async — CaptureView navigated too early', done: true },
+      { text: 'Fix verified — transcription now receives complete file', done: true },
+    ]
+  },
+  {
+    date: 'Mar 17, 2026', build: 'Build 107', title: '4-Layer Security Hardening',
+    tags: ['feat', 'deploy'],
+    items: [
+      { text: 'LoginAttemptTracker: 5 failed attempts → 10-minute lockout', done: true },
+      { text: 'RLS policies on moments + usage_events (auth.uid() = user_id)', done: true },
+      { text: 'Certificate pinning: DigiCert Global G2 TLS pinned in SupabaseAPIClient', done: true },
+      { text: 'Abuse incident tracking table + edge functions for alerting', done: true },
+      { text: 'Security score: 9/10 (Enterprise-grade)', done: true },
+    ]
+  },
+  {
+    date: 'Mar 10–11, 2026', build: 'Build 104', title: 'App Icon + TestFlight + Multi-Account Fixes',
+    tags: ['fix', 'deploy'],
+    items: [
+      { text: 'T-031: App icon created (gold D, Helvetica Bold) — all required sizes', done: true },
+      { text: 'T-032: Build 104 pushed to TestFlight — zero validation errors', done: true },
+      { text: 'B-009: Multi-account data isolation — storage keys namespaced by userId', done: true },
+      { text: 'B-013: SyncManager promoted to @StateObject — offline sync now persists', done: true },
+      { text: 'Build typo fixed: ASETCATALOG → ASSETCATALOG_COMPILER_APPICON_NAME', done: true },
+    ]
+  },
+  {
+    date: 'Mar 9, 2026', build: 'Build 103', title: 'JWT Bug Fix + Physical Device Testing',
+    tags: ['fix', 'test'],
+    items: [
+      { text: 'Critical JWT bug: token was never passed to API client (using static anonKey)', done: true },
+      { text: 'SupabaseAPIClient now accepts and stores JWT token from AuthManager', done: true },
+      { text: 'All 7 manual device tests passing on iPhone 13', done: true },
+      { text: 'T-020 XCUI test infrastructure complete', done: true },
+    ]
+  },
+  {
+    date: 'Mar 8, 2026', build: 'Build 102', title: 'Supabase Integration + Offline Architecture',
+    tags: ['feat'],
+    items: [
+      { text: 'Supabase backend connected — moments persisting to PostgreSQL', done: true },
+      { text: 'Offline-first architecture: LocalStorageManager + SyncManager', done: true },
+      { text: 'MomentPayload fixed: id and sense_of_lord fields added', done: true },
+      { text: 'MomentsListView loads from local cache on network error', done: true },
+    ]
+  }
+];
+
+let activeFilter = 'all';
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === f);
+  });
+  render();
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const list = document.getElementById('sessions-list');
+
+  const filtered = SESSIONS.filter(s => {
+    const matchFilter = activeFilter === 'all' || s.tags.includes(activeFilter);
+    const matchSearch = !q || s.title.toLowerCase().includes(q) ||
+      s.date.toLowerCase().includes(q) ||
+      s.items.some(i => i.text.toLowerCase().includes(q));
+    return matchFilter && matchSearch;
+  });
+
+  document.getElementById('session-count').textContent = `${filtered.length} session${filtered.length !== 1 ? 's' : ''}`;
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="no-results">No sessions match your search.</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(s => `
+    <div class="session">
+      <div class="session-header">
+        <span class="session-date">${s.date}</span>
+        <span class="session-build">${s.build}</span>
+      </div>
+      <div class="session-title">
+        ${s.tags.map(t => `<span class="tag ${t}">${t}</span>`).join('')}
+        ${s.title}
+      </div>
+      <ul class="session-items">
+        ${s.items.map(i => `<li class="${i.done ? 'done' : 'pending'}">${i.text}</li>`).join('')}
+      </ul>
+    </div>
+  `).join('');
+}
+
+// Stats
+document.getElementById('stat-sessions').textContent = SESSIONS.length;
+document.getElementById('stat-builds').textContent = new Set(SESSIONS.map(s => s.build)).size;
+document.getElementById('stat-fixes').textContent = SESSIONS.filter(s => s.tags.includes('fix')).length;
+document.getElementById('stat-feats').textContent = SESSIONS.filter(s => s.tags.includes('feat')).length;
+
+render();
+</script>
+</body>
+</html>
