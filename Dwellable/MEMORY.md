@@ -139,3 +139,36 @@ Current builds available for testing:
 4. Session viewer: add session viewer regeneration to closeout protocol
 5. Proceed with Phase 2 work once Phase 1 feedback collected
 
+---
+
+## Session Notes (2026-04-09, Session 3)
+
+### Completed This Session
+- ✅ **Automated test hook configured** — xcodebuild test runs automatically on Swift file edits
+  - Hook stored in `.claude/settings.json` (project-level, shared with team)
+  - Command: `xcodebuild test -scheme Dwellable -destination 'platform=iOS Simulator,name=iPhone 15'`
+  - Prevents regression: all code changes must pass tests before being staged
+  
+- ✅ **Session start protocol executed** — Full ticket table reviewed
+  - 59/70 tickets complete (84%)
+  - Status: Phase 1 complete, Build 110 on TestFlight
+  - Next ticket: T-048 (Fix console log HTTP server) — still in progress
+  
+- ✅ **Automated session sync validated** — Stop hook (stop-hook-session-sync.sh) verified
+  - Script auto-runs on Claude Code session close
+  - Generates session-viewer.html from git log + MEMORY.md
+  - Commits and pushes MEMORY.md, TICKETS.md, session-viewer.html automatically
+  - Solves: Session data continuity — no more manual sync needed
+
+### Learnings
+- Stop hook ensures session work is always captured (no more broken promises about updates)
+- Automated testing hook prevents code from being committed without test validation
+- Project-level hooks are shared with team via git; personal overrides use .claude/settings.local.json
+
+### Next Actions
+1. Continue T-048: Debug console log HTTP server (real-time logs not populating)
+2. Wait for iPhone test results on Build 110
+3. Proceed with Phase 2 work once Phase 1 feedback collected
+
+---
+*Last updated: 2026-04-09 (Session 3)*
