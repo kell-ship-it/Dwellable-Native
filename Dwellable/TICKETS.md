@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** March 24, 2026 (01:15 UTC) — Session Close
-**Status:** 59/70 tickets complete (84%) — Build 107 on TestFlight (in Apple review), Phase 1 testing complete (48/51 scenarios pass, 1 bug deferred to Phase 2)
+**Last Updated:** April 20, 2026 — T-060 added (Phase 2 themes 1-pager due tomorrow)
+**Status:** 60/75 tickets complete (80%), 0 in progress — Build 107 approved on TestFlight, Phase 1 complete, security hardening complete, analytics dashboard fixed and verified live
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -186,7 +186,8 @@
   - Build 104 assigned to "Dwellable Pilot Members" internal testing group
   - TestFlight app on iPhone 13 Pro Max: Build 104 ready to install with gold "D" icon
   - Test group has 1 tester (Kell Golden) with 199 sessions, 80 crashes on previous build
-  - **Status:** Ready for user testing on real device
+  - **Build 107 Approved:** TestFlight beta submission approved (March 26, 2026) ✅
+  - **Status:** TestFlight beta live — ready for Phase 1 user testing
 
 ### Backend Integration (Complete)
 - [x] **T-001:** Set up backend API
@@ -212,27 +213,70 @@
 
 ## 🔄 In Progress
 
-- [ ] **T-048:** Fix console log HTTP server — real-time dashboard not populating
-  - **Priority:** HIGH — Debugging tool needed for testing
-  - **Context:** LogHTTPServer running on port 8787, serving JSON logs + embedded HTML dashboard
-  - **Issue:** Browser at http://169.254.94.22:8787 shows empty log list, not receiving live updates
-  - **What's working:**
-    - App logs to JSON file (confirmed)
-    - HTTP server starts on port 8787 (confirmed)
-    - Browser connects to server (confirmed)
-  - **What's failing:**
-    - Logs not appearing in dashboard (fetch from `/logs` endpoint returns empty or stale data)
-  - **Debug checklist:**
-    - Verify JSON file is being written in real-time
-    - Verify `/logs` endpoint returns latest data
-    - Check browser console for fetch errors
-    - Verify localStorage persistence of source URL
-  - **Expected outcome:** Open http://169.254.94.22:8787 → record moment → see real-time logs
-
+*(none)*
+    - `package.json` — Created with @supabase/supabase-js dependency
+    - `DASHBOARD_FIX.md` — Documentation of fix and setup instructions
+  - **Documentation:** See DASHBOARD_FIX.md for full details
 
 ---
 
-## 🔲 Not Started
+## 🔲 Not Started (Phase II)
+
+### Phase 2 Strategy & Planning
+- [ ] **T-060:** Draft Phase 2 themes 1-pager
+  - **Priority:** HIGH (Session preparation)
+  - **Category:** Strategy & Planning
+  - **Status:** 🔲 NOT STARTED (Due: April 21)
+  - **Description:** Create a 1-page document detailing the key themes and priorities being tackled in Phase 2
+  - **Scope:**
+    - Summarize Phase 2 strategic focus areas
+    - Document core themes guiding Phase 2 decisions
+    - Align with learnings from Phase 1 analysis
+    - Reference Phase 2 research findings (PHASE2-RESEARCH.md)
+    - Keep to 1 page max for clarity and accessibility
+  - **Deliverable:** Phase2_Themes_1Pager.md or .pdf
+  - **Estimated effort:** 1-2 hours
+  - **Session:** April 21 (Day 1 of Phase 2 Strategy Week)
+  - **Context:** Phase 1 revealed capture works (100% adoption) but return/reflection fails (zero re-reads). Phase 2 themes must address this gap and prove dwelling works.
+
+### Voice — WhisperKit Improvements
+- [ ] **T-056:** Improve WhisperKit handling for long pauses and applause
+  - **Priority:** MEDIUM (Phase 2 quality improvement)
+  - **Description:** WhisperKit incorrectly transcribes or mishandles audio with long pauses, silence sections, or applause (environmental noise)
+  - **Current behavior:** Treats pauses as content, includes applause noise in transcription
+  - **Expected behavior:**
+    - Long pauses (>3 seconds) should be filtered/ignored or user warned
+    - Applause/environmental noise should be detected and either removed or user alerted
+    - Only preserve intentional speech content
+  - **Affects:** Users capturing moments in environments with background noise or when they pause while speaking
+  - **Phase:** 2 (Robustness)
+  - **Estimated effort:** 4-6 hours
+  - **Found during:** Phase 1 testing — users reported transcriptions including unwanted audio
+
+### Testing & Observability — Phase II
+- [ ] **T-048:** Fix console log HTTP server — real-time dashboard not populating *(moved to Phase 2)*
+  - **Priority:** MEDIUM — Debugging tool for Phase 2+ testing
+  - **Context:** LogHTTPServer running on port 8787, serving JSON logs + embedded HTML dashboard
+  - **Issue:** Browser at http://169.254.94.22:8787 shows empty log list, not receiving live updates
+  - **What's working:** App logs to JSON file ✓ | HTTP server starts ✓ | Browser connects ✓
+  - **What's failing:** Logs not appearing in dashboard (fetch from `/logs` endpoint returns empty or stale data)
+  - **Rationale for deferral:** Phase 1 testing complete without this. Needed for Phase 2 debugging work.
+  - **Expected outcome:** Open http://169.254.94.22:8787 → record moment → see real-time logs
+
+### Compatibility & Requirements — Phase II
+- [ ] **T-057:** Define minimum iOS version and compatibility guardrails
+  - **Priority:** MEDIUM (Important for Phase 2 distribution)
+  - **Description:** Establish minimum iOS version requirements and test compatibility across older and newer iOS versions
+  - **Current behavior:** App developed/tested on recent iOS versions; unclear what minimum version is supported
+  - **Expected behavior:**
+    - Define minimum deployment target (e.g., iOS 16, 17, etc.)
+    - Test on minimum version to ensure compatibility
+    - Document any iOS-version-specific issues or limitations
+    - Ensure WhisperKit, Supabase Auth, AVFoundation work across version range
+  - **Affects:** Testers and end users on older devices; app store distribution
+  - **Phase:** 2 (Foundation)
+  - **Estimated effort:** 4-6 hours
+  - **Found during:** Fresh device testing — understanding version coverage needed for Phase 2 testing pool
 
 ---
 
@@ -310,6 +354,17 @@
   - ✅ Verified with 2 app_opened events in Supabase from March 11
   - ✅ RLS policies block cross-user data access (each user sees only their events)
 
+- [x] **T-059:** Fix Moments Analytics Dashboard data staleness *(Phase 2 — Analytics)* ✅ **COMPLETE**
+  - **Root Cause:** Old service_role API key was revoked; dashboard served stale `dashboard-data.json` cache
+  - **Solution:** Updated `serve-dashboard.js` and `refresh-dashboard-data.js` with correct service_role key from Supabase project settings
+  - ✅ Dashboard now queries Supabase fresh on every request (<1 second latency)
+  - ✅ Verified data: 133 total moments, kell@ shows April 20 moments with latest at 7:28 PM
+  - ✅ Fallback to cached JSON if Supabase temporarily unavailable
+  - **Files Modified:**
+    - `serve-dashboard.js` — Now queries Supabase fresh, correct service_role key
+    - `refresh-dashboard-data.js` — Updated with correct service_role key
+  - **Key Learning:** Service_role API keys in the codebase were rotated; always check Supabase dashboard for current keys
+
 ### Security Implementation
 - [x] **T-050:** Implement 4-layer security hardening before TestFlight ✅ **COMPLETE**
   - **Phase 1: Application Layer (Rate Limiting & Login Protection)**
@@ -345,11 +400,12 @@
   - Pending T-048 fix to make dashboard fully functional
 
 ### Testing & QA (Build 104)
-- [ ] **T-033:** Phase 6: Error Handling (4 tests)
+- [x] **T-033:** Phase 6: Error Handling (4 tests) ✅ **COMPLETE**
   - Test error messages for network failures, transcription errors, auth errors, and save failures
   - Verify friendly, user-facing error copy from ERROR_MESSAGE_TESTING_GUIDE.md
   - Scenarios: offline network, timeout, invalid credentials, empty audio, sync failures
   - See TESTING_CHECKLIST_MASTER.html Phase 6 section
+  - **Completed:** April 17, 2026
 
 - [ ] **T-034:** Phase 7: Performance (3 tests)
   - Test app responsiveness, launch time, moment list scrolling performance
@@ -565,6 +621,18 @@
   - **Related:** https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
   - **Status:** Waiting for App Store readiness decision
 
+- [ ] **T-058:** Track & Resolve Supabase Advisor Warning: Leaked Password Protection *(Layer 2 — Pro Plan Upgrade)*
+  - **Priority:** MEDIUM (Plan limitation, not code issue)
+  - **Context:** Supabase Advisor flagged "Enable HaveIBeenPwned to prevent password breaches" as warning
+  - **Issue:** Feature requires Supabase Pro Plan ($25/month) — current project on Free Plan
+  - **Resolution:** Upgrade Supabase project to Pro Plan when ready for production user onboarding
+  - **Acceptance Criteria:**
+    - [ ] Supabase Pro Plan purchased and activated
+    - [ ] Feature enabled in Auth → Providers → Email → Password strength
+    - [ ] Tested with known compromised password (verified blocking behavior)
+  - **Related:** T-052 (Feature implementation)
+  - **Deferred Until:** Public App Store launch with real user passwords
+
 - [ ] **T-026:** Prepare for App Store submission
   - Privacy policy, terms of service, screenshots, description, pricing
 
@@ -618,8 +686,11 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Bugs — Offline & Auto-stop (March 15) | 2 | 2 | 0 | 0 |
 | Security Implementation (March 17) | 1 | 1 | 0 | 0 |
 | Autonomous Monitoring (Layer 2) | 1 | 0 | 0 | 1 |
-| Auth Security (Layer 2) | 1 | 0 | 0 | 1 |
-| **TOTAL** | **71** | **58** | **1** | **18** |
+| Auth Security (Layer 2) | 2 | 0 | 0 | 2 |
+| Analytics Dashboard (Layer 2) | 1 | 0 | 1 | 0 |
+| WhisperKit Improvements (Phase 2) | 1 | 0 | 0 | 1 |
+| Console Logging (Phase 2) | 1 | 0 | 0 | 1 |
+| **TOTAL** | **74** | **59** | **1** | **14** |
 
 ---
 
