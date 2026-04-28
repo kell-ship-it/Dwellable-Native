@@ -1,5 +1,11 @@
 # Dwellable Native — Session Memory
 
+## 🚨 Blocking Items
+
+**None currently.** Strategic foundation locked (April 27). Next session: operationalize into design guidelines.
+
+---
+
 ## Session: April 20, 2026 — Dashboard API Key Rotation & Service Protocol Formalization
 
 ### 🎯 TL;DR
