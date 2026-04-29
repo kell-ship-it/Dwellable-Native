@@ -157,25 +157,17 @@
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://lhcjobrtmbawlhjyodxz.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoY2pvYnJ0bWJhd2xoanlvZHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTQ5NzgsImV4cCI6MjA4ODQ5MDk3OH0.j40evNUmKBMBAtebcOPy2koLWfzGfSY9Zj228wfYRy0';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
     let chartType = null, chartDaily = null;
 
     async function load() {
         try {
-            const [{ data: moments, error: e1 }, { data: events, error: e2 }, { data: users, error: e3 }] = await Promise.all([
-                sb.from('moments').select('id, user_id, created_at').limit(2000),
-                sb.from('usage_events').select('id, user_id, event_type, moment_type, timestamp').order('timestamp', { ascending: false }).limit(2000),
-                sb.from('users').select('id, email')
-            ]);
+            const response = await fetch('dashboard-data.json');
+            if (!response.ok) throw new Error('Failed to load dashboard data');
+            const users = await response.json();
 
-            if (e1 || e2 || e3) throw new Error((e1 || e2 || e3).message);
-
-            renderMetrics(moments, events, users);
-            renderCharts(moments, events);
-            renderParticipants(moments, events, users);
+            renderMetrics(users);
+            renderCharts(users);
+            renderParticipants(users);
 
             setStatus(true);
             document.getElementById('updated-at').textContent = new Date().toLocaleTimeString();
@@ -186,40 +178,36 @@
         }
     }
 
-    function renderMetrics(moments, events, users) {
-        const voice = events.filter(e => e.event_type === 'moment_created' && e.moment_type === 'voice').length;
-        const text = events.filter(e => e.event_type === 'moment_created' && e.moment_type === 'text').length;
-        const sessions = events.filter(e => e.event_type === 'app_opened').length;
-        const activeUsers = new Set(moments.map(m => m.user_id)).size;
-        const voicePct = moments.length ? Math.round((voice / moments.length) * 100) : 0;
+    function renderMetrics(users) {
+        const totalMoments = users.reduce((sum, u) => sum + u.moment_count, 0);
+        const activeUsers = users.filter(u => u.moment_count > 0).length;
 
-        document.getElementById('m-total').textContent = moments.length;
-        document.getElementById('m-total-sub').textContent = `${voice} voice · ${text} text`;
+        document.getElementById('m-total').textContent = totalMoments;
+        document.getElementById('m-total-sub').textContent = `${activeUsers} users active`;
         document.getElementById('m-users').textContent = activeUsers;
         document.getElementById('m-users-sub').textContent = `of ${users.length} invited`;
-        document.getElementById('m-sessions').textContent = sessions;
-        document.getElementById('m-sessions-sub').textContent = activeUsers ? `avg ${(sessions / activeUsers).toFixed(1)} per user` : '';
-        document.getElementById('m-voice').textContent = voicePct + '%';
+        document.getElementById('m-sessions').textContent = '—';
+        document.getElementById('m-sessions-sub').textContent = 'from live data';
+        document.getElementById('m-voice').textContent = '—';
     }
 
-    function renderCharts(moments, events) {
-        const voice = events.filter(e => e.moment_type === 'voice').length;
-        const text = events.filter(e => e.moment_type === 'text').length;
-
+    function renderCharts(users) {
         if (chartType) chartType.destroy();
         chartType = new Chart(document.getElementById('chart-type').getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: ['Voice', 'Text'],
-                datasets: [{ data: [voice, text], backgroundColor: ['#C9B27C', '#64c8ff'], borderColor: '#1a1a1a', borderWidth: 3 }]
+                labels: ['Active', 'Inactive'],
+                datasets: [{ data: [users.filter(u => u.moment_count > 0).length, users.filter(u => u.moment_count === 0).length], backgroundColor: ['#C9B27C', '#444'], borderColor: '#1a1a1a', borderWidth: 3 }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#aaa', font: { size: 13 } } } } }
         });
 
         const daily = {};
-        events.forEach(e => {
-            const d = new Date(e.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            daily[d] = (daily[d] || 0) + 1;
+        users.forEach(u => {
+            if (u.last_moment_created) {
+                const d = new Date(u.last_moment_created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                daily[d] = (daily[d] || 0) + 1;
+            }
         });
         const labels = Object.keys(daily).slice(-14);
         const data = labels.map(l => daily[l]);
@@ -229,7 +217,7 @@
             type: 'bar',
             data: {
                 labels,
-                datasets: [{ label: 'Events', data, backgroundColor: 'rgba(201,178,124,0.5)', borderColor: '#C9B27C', borderWidth: 1, borderRadius: 4 }]
+                datasets: [{ label: 'Moments', data, backgroundColor: 'rgba(201,178,124,0.5)', borderColor: '#C9B27C', borderWidth: 1, borderRadius: 4 }]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
@@ -242,22 +230,19 @@
         });
     }
 
-    function renderParticipants(moments, events, users) {
+    function renderParticipants(users) {
         const tbody = document.getElementById('participants-tbody');
         if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No participants yet.</td></tr>'; return; }
 
-        const rows = users.map(u => {
-            const uMoments = moments.filter(m => m.user_id === u.id);
-            const uEvents = events.filter(e => e.user_id === u.id);
-            const voice = uEvents.filter(e => e.moment_type === 'voice').length;
-            const text = uEvents.filter(e => e.moment_type === 'text').length;
-            const sessions = uEvents.filter(e => e.event_type === 'app_opened').length;
-            const dates = uMoments.map(m => new Date(m.created_at));
-            const first = dates.length ? new Date(Math.min(...dates)).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
-            const allDates = uEvents.map(e => new Date(e.timestamp));
-            const last = allDates.length ? new Date(Math.max(...allDates)).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
-            return { email: u.email, total: uMoments.length, voice, text, sessions, first, last };
-        }).sort((a, b) => b.total - a.total);
+        const rows = users.map(u => ({
+            email: u.email,
+            total: u.moment_count,
+            voice: u.voice_count || 0,
+            text: u.text_count || 0,
+            sessions: u.session_count || 0,
+            first: u.first_moment_created ? new Date(u.first_moment_created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—',
+            last: u.last_moment_created ? new Date(u.last_moment_created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'
+        })).sort((a, b) => b.total - a.total);
 
         tbody.innerHTML = rows.map(r => `
             <tr>
