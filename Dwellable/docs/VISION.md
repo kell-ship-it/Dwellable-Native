@@ -1,41 +1,42 @@
 # Dwellable — Vision
 
-**Founder:** Kell Golden | **Living Document** | **Updated:** March 11, 2026
+**Founder:** Kell Golden | **Living Document** | **Updated:** April 29, 2026 (Emphasis pivot: all moments, not just peak experiences)
 
 ---
 
 ## North Star
 
-Dwellable exists to help Christians steward their God moments over time.
+Dwellable exists to help Christians notice and dwell on God's presence across their entire life — in the extraordinary and the mundane — so they can see how God is forming them through every moment.
 
 Not to interpret them. Not to explain them. Not to replace prayer, Scripture, or community.
 
-To hold them. To preserve them. To make returning effortless — so that moments of clarity, presence, and encounter remain active and influential long after they occur.
+To hold them. To preserve them. To make returning effortless — so that the highs, lows, and ordinary moments of daily life remain active and influential, shaping spiritual formation over time.
 
-The long-term vision is a structured spiritual formation system: a place where captured moments accumulate into a living record of God's presence across days, weeks, and seasons — and where patterns of meaning emerge naturally through reflection, not through instruction.
+The long-term vision is a structured spiritual formation system: a place where captured moments—work days, doubts, breakthroughs, struggles, joys—accumulate into a living record of God's presence across days, weeks, and seasons — and where patterns of meaning emerge naturally through reflection, not through instruction.
 
 ## The Problem
 
-Christians regularly experience meaningful moments with God — during prayer, worship, dreams, reflection, or quiet inner clarity. In the moment, these experiences feel significant and formative.
+Christians regularly experience God's presence throughout their entire lives — in moments of clarity, encounter, doubt, struggle, breakthrough, and ordinary daily work. In the moment, these experiences feel significant and formative.
 
 Over time, most of them fade.
 
 Not because they weren't real. But because:
 
 - Capture is inconsistent or too high-friction
-- Existing tools (Notes, Day One, voice memos) are not designed for intentional return
-- There is no gentle mechanism to bring people back to what mattered
-- Moments feel "complete" once experienced, so revisiting them feels unnecessary — until the doubt, anxiety, or confusion returns
+- Existing tools (Notes, Day One, voice memos) are not designed for intentional reflection on spiritual life
+- There is no gentle mechanism to bring people back to what mattered — or to notice God's presence in the mundane
+- People journal but don't reflect — capturing moments without the transformative work of dwelling on them
+- Generic journal apps don't know how to engage with Christians who want to see God in their day-to-day
 
-The result: insight fades. Transformation diminishes. People lose access to the very moments that were meant to anchor them.
+The result: insight fades. Transformation diminishes. People lose access to the very moments and patterns that were meant to anchor and form them.
 
 ## The Insight
 
-The primary failure is not capture. It is return, retention, and sustained influence.
+The primary failure is not capture. It is reflection, dwelling, and sustained spiritual formation.
 
-People can experience God moments. Many even capture them. The breakdown happens afterward — when life moves on and the moment is left behind.
+People can capture their lives. Many do journal. The breakdown happens afterward — when the captured moment never gets revisited or dwelt upon. Without reflection, even daily moments lose their formative power.
 
-This means the product's deepest job is not to be a better journal. It is to be a trusted keeper of sacred moments — one that makes returning feel safe, effortless, and rewarding.
+This means the product's deepest job is not to be a better journal. It is to be a trusted keeper of a person's entire spiritual life — one that makes returning feel safe, effortless, and rewarding, so that dwelling becomes the practice that forms faith.
 
 ## Product Principles
 

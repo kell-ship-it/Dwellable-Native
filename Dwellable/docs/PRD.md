@@ -1,18 +1,18 @@
 # Dwellable — Product Spec
 
-**Layer 1 Pilot** | **Founder:** Kell Golden | **Living Document** | **Updated:** March 11, 2026
+**Layer 1 Pilot** | **Founder:** Kell Golden | **Living Document** | **Updated:** April 29, 2026 (Emphasis pivot: all moments, not just peak experiences)
 
 ---
 
 ## Purpose
 
-Validate that users will adopt a faith-specific moment capture tool over generic alternatives (Notes, Day One, voice memos).
+Validate that users will adopt a faith-specific moment capture tool—designed specifically for Christian reflection and spiritual formation—over generic alternatives (Notes, Day One, voice memos).
 
-Layer 1 is not about building a complete product. It is about proving one thing: will people use this to capture their God moments instead of what they're using now?
+Layer 1 is not about building a complete product. It is about proving one thing: will people use this to capture their daily life (highs, lows, mundane moments) in a way that's intentional and contextual to their faith, creating a foundation for reflection and dwelling?
 
 ## Problem Being Solved
 
-Users struggle to easily capture their God moments in a way that feels intentional, low-friction, and faith-appropriate. Generic tools exist but are not designed for this context. Layer 1 builds the minimum viable proof that a dedicated tool creates different behavior.
+Users struggle to capture their entire lives—work, relationships, doubts, breakthroughs, ordinary days—in a way that feels intentional, low-friction, and faith-appropriate. More importantly, even when they journal (which many do), they don't reflect. Generic journal apps exist but are not designed for Christian spiritual formation. They don't help users see God in their day-to-day or create space for dwelling. Layer 1 builds the minimum viable proof that a dedicated, faith-contextual tool creates different behavior: capture + reflection, not just capture.
 
 ## Pilot Parameters
 

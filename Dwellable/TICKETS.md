@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** April 28, 2026 — Strategic brainstorm session complete, T-060 foundation locked, design guidelines phase next
-**Status:** 62/75 tickets complete (82.7%), 1 in progress (T-060 design guidelines) — Build 107 on TestFlight, Phase 1 complete, strategic foundation locked (archive + product principles)
+**Last Updated:** April 29, 2026 — Messaging pivot complete (all moments, not just peak experiences), onboarding guidelines drafted, T-061 added for risk content policy
+**Status:** 62/76 tickets complete (81.6%), 1 in progress (T-060 design guidelines), 1 new (T-061 risk policy) — Build 107 on TestFlight, Phase 1 complete, strategic foundation locked, onboarding principles refined
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -243,6 +243,37 @@
   - **Estimated effort:** 1-2 hours
   - **Session:** April 21 (Day 1 of Phase 2 Strategy Week)
   - **Context:** Phase 1 revealed capture works (100% adoption) but return/reflection fails (zero re-reads). Phase 2 themes must address this gap and prove dwelling works.
+
+- [ ] **T-061:** Define Policy for Capturing Risk Content (Abuse, Self-Harm, Crisis Moments)
+  - **Priority:** HIGH (Phase 2 Foundation — must clarify before P1 features)
+  - **Category:** Safety & Risk Management
+  - **Status:** 🔲 NOT STARTED
+  - **Description:** 
+    Dwellable is designed as a "capture everything" tool, which means users may capture moments involving abuse, self-harm, suicidal ideation, trauma processing, domestic violence, and other high-risk content. While Dwellable's core principle is to be a *keeper* (not interpreter), we need clear policies for handling risk content.
+    
+    This is a policy + design ticket, not a feature ticket. We need to clarify our approach before building P0 features.
+  - **Research questions:**
+    - Do we flag/moderate concerning content, or maintain strict privacy (no review)?
+    - Should onboarding warn users that Dwellable is not a substitute for therapy/crisis support?
+    - Do we surface crisis hotline resources (1-800-SUICIDE, Crisis Text Line, etc.) based on keyword detection?
+    - How do we ensure sensitive content stays private while being helpful?
+    - What are our liability considerations if a user captures evidence of abuse?
+    - How do competitor journal apps (Day One, Journey, etc.) handle this?
+    - What's best practice for Christian apps handling crisis content?
+  - **Deliverables:**
+    - [ ] **Policy Document:** "How Dwellable Handles Risk Content" (defines our stance: privacy-first with optional resources)
+    - [ ] **Design Recommendation:** Do we add in-app crisis resources? Where? When?
+    - [ ] **Onboarding Language:** Any disclaimers needed? (Likely minimal to avoid deterring users)
+    - [ ] **Legal Review Checklist:** Questions for legal counsel about liability
+  - **Acceptance Criteria:**
+    - [ ] Clear policy on content moderation (likely: none—privacy-first)
+    - [ ] Decision on crisis resources (show? when? how?)
+    - [ ] Onboarding language finalized
+    - [ ] Approved by Kell + legal (if available)
+  - **Estimated effort:** 8-12 hours (research + writing + legal input)
+  - **When to do:** Before P0 onboarding + feature design finalize (Week 1 of P0 planning)
+  - **Why now:** If we're capturing "all moments," we need a defensible, user-centered policy before launch. This affects onboarding messaging, data safety practices, and legal standing.
+  - **Context:** Users capturing vulnerability (doubts, depression, abuse) is actually a feature—spiritual formation includes processing hard things. But we need to be thoughtful about our responsibility.
 
 ### Voice — WhisperKit Improvements
 - [ ] **T-056:** Improve WhisperKit handling for long pauses and applause
