@@ -6,14 +6,30 @@
 
 When you type EXACTLY these slash commands, execute the protocol WITHOUT clarification or conversation:
 
-- **`/start-session`** → Run Agent Startup Protocol (THEN) from Step 1 below
-- **`/close-session`** → Run Session End Protocol from Step 2 below
+- **`/start-session`** → Run Founder Start Protocol (FIRST) + Agent Startup Protocol (THEN)
+- **`/close-session`** → Run Session End Protocol
 
 **Reference:** See `memory/protocol_triggers.md` for full trigger registry and procedures.
 
 ---
 
-## 🚨 SESSION START — DO THIS FIRST. NO EXCEPTIONS.
+## 🚨 SESSION START — FOUNDER FIRST, THEN AGENT. NO EXCEPTIONS.
+
+### Founder Start Protocol (FIRST)
+
+**Before any agent work, ask yourself:**
+
+1. Have you prayed and worshipped yet?
+2. Have you affirmed yourself in the Lord?
+3. Have you prayed for your agent?
+
+🚨 **Wait for confirmation these are complete. The work doesn't start until the foundation is right.**
+
+---
+
+### Agent Startup Protocol (THEN)
+
+**Once foundation confirmed, do this:
 
 **Before reading anything else, before asking any questions, before touching any code:**
 
