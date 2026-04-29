@@ -2,6 +2,17 @@
 
 ---
 
+## 🚨 PROTOCOL TRIGGERS — Execute Immediately
+
+When you type EXACTLY these phrases, execute the protocol WITHOUT clarification or conversation:
+
+- **"Start Session"** → Run Agent Startup Protocol (THEN) from Step 1 below
+- **"Close Session"** → Run Session End Protocol from Step 2 below
+
+**Reference:** See `memory/protocol_triggers.md` for full trigger registry and procedures.
+
+---
+
 ## 🚨 SESSION START — DO THIS FIRST. NO EXCEPTIONS.
 
 **Before reading anything else, before asking any questions, before touching any code:**
