@@ -275,6 +275,59 @@
   - **Why now:** If we're capturing "all moments," we need a defensible, user-centered policy before launch. This affects onboarding messaging, data safety practices, and legal standing.
   - **Context:** Users capturing vulnerability (doubts, depression, abuse) is actually a feature—spiritual formation includes processing hard things. But we need to be thoughtful about our responsibility.
 
+- [ ] **T-062:** Implement End-to-End Encryption for Moments (Phase 2 Security/Privacy Pillar)
+  - **Priority:** BLOCKING (Phase 2 Foundation — brand trust requirement)
+  - **Category:** Security & Privacy
+  - **Status:** 🔲 NOT STARTED
+  - **Brand Statement:** "Kell cannot access your moments. Only you can."
+  - **Description:**
+    Dwellable's competitive advantage is privacy-first spiritual formation. Users must know that as the founder, Kell cannot read their moment contents—only metadata (timestamps, capture counts, session data) for analytics.
+    
+    This requires end-to-end encryption (E2E) where moments are encrypted on-device before upload to Supabase. Server stores encrypted blobs only. User retains exclusive decryption key.
+  - **What users see:** ✅ Privacy guarantee
+  - **What Kell sees:** ✅ Analytics (user count, moment count, capture patterns, timestamps) | ❌ Moment contents
+  - **Development Strategy:**
+    1. **Key Derivation:** Derive encryption key from user's password + salt (Argon2id or PBKDF2)
+    2. **On-Device Encryption:** Use iOS CryptoKit (AES-256-GCM) to encrypt moment body before sending
+    3. **Data Model Split:**
+       - `moments.encrypted_content` — encrypted moment body (blob, unreadable by Kell)
+       - `moments.metadata` — unencrypted: created_at, capture_type (voice/text), user_id
+    4. **Key Storage:** Encrypted key stored in iOS Keychain (secured by device passcode)
+    5. **Client-Side Decryption:** On moment retrieval, app decrypts using stored key
+    6. **Recovery Flow:** Design password reset → key recovery or "moments lost" scenario (document for users)
+    7. **Testing:** Verify Supabase admin cannot read encrypted_content field; analytics queries work on metadata only
+  - **Architectural Changes:**
+    - CryptoManager (new) — handles encryption/decryption with CryptoKit
+    - SupabaseAPIClient — updated to encrypt moment before POST, decrypt on GET
+    - ReviewView + TypeFlowView — wire encryption into save flow
+    - MomentDetailView — wire decryption into view flow
+    - LocalStorageManager — handle encrypted storage of pending moments
+  - **Database Schema Changes:**
+    - Add `encrypted_content` column (TEXT/BYTEA)
+    - Rename `body` → `metadata_summary` (optional, for UI display unencrypted hint) OR remove entirely
+    - Keep: user_id, created_at, updated_at, capture_type, senseOfLord (or encrypt separately)
+  - **Acceptance Criteria:**
+    - [ ] CryptoManager implemented with AES-256-GCM encryption/decryption
+    - [ ] Moment save flow encrypts on client before upload
+    - [ ] Moment retrieval flow decrypts on client after download
+    - [ ] Offline moments encrypted locally before sync
+    - [ ] Analytics queries work on metadata without needing plaintext
+    - [ ] Kell can verify they cannot decrypt moments (test: attempt to read encrypted_content as admin)
+    - [ ] Password reset flow defined (document impact on recovery)
+    - [ ] User-facing messaging clarifies privacy guarantee
+  - **Risk Mitigation:**
+    - If user forgets password: moments unrecoverable (document this)
+    - OR: Implement recovery key backup (more complex, deferred to P1)
+    - OR: Enable iCloud Keychain backup (test device behavior)
+  - **Estimated effort:** 16-24 hours (encryption integration + testing + key management design)
+  - **When to do:** Week 1 of Phase 2 development (foundation for all P0 features)
+  - **Why now:** Privacy is Dwellable's brand moat. This must ship with P0 features. Users need confidence that spiritual moments are theirs alone.
+  - **Context:** Current build uses Supabase RLS (row-level security) only—technically, Kell as admin could access plaintext. E2E closes this gap completely.
+  - **Follow-up tickets:**
+    - [ ] T-063: Test E2E encryption with long moments (performance baseline)
+    - [ ] T-064: Document password reset + recovery strategy for users
+    - [ ] T-065: Add privacy guarantee messaging to onboarding + settings
+
 ### Voice — WhisperKit Improvements
 - [ ] **T-056:** Improve WhisperKit handling for long pauses and applause
   - **Priority:** MEDIUM (Phase 2 quality improvement)

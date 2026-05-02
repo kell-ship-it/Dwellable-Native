@@ -3,7 +3,7 @@
  * Refresh Dashboard Data Script
  *
  * Fetches aggregated user/moment data from Supabase and writes to dashboard-data.json
- * Run this script periodically (hourly/daily) to keep dashboard data fresh
+ * Reads credentials from .env file (not git-tracked)
  *
  * Usage:
  *   node refresh-dashboard-data.js
@@ -11,15 +11,20 @@
  *   # 0 * * * * cd /Users/kell/Desktop/Dwellable-Native/Dwellable && node refresh-dashboard-data.js
  */
 
+require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
 
-const SUPABASE_URL = 'https://lhcjobrtmbawlhjyodxz.supabase.co';
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoY2pvYnJ0bWJhd2xoanlvZHh6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjkxNDk3OCwiZXhwIjoyMDg4NDkwOTc4fQ.kE2anWU0Rcq99v45pEno8KIxXyKlmTbzi2L-cjzvfFc';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 async function refreshDashboardData() {
   try {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      throw new Error('Missing .env variables: SUPABASE_URL and/or SUPABASE_SERVICE_KEY');
+    }
+
     console.log('📊 Refreshing dashboard data...');
     console.log(`⏰ ${new Date().toISOString()}`);
 
