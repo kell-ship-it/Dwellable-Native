@@ -29,6 +29,7 @@ T-012,Build SearchView,UI Screens - Sub,LOW,⚪ Deferred v2,4-6,"T-004","Search 
 T-013,Build ArchiveView or CollectionsView,UI Screens - Sub,LOW,⚪ Deferred v2,3-4,"T-004","Organize into collections/tags, archive old moments"
 T-018,Add basic analytics,Analytics,MEDIUM,🔲 Not Started,2-3,"T-004, T-005","Track screen views and moment creation (voice vs type) — privacy-conscious"
 T-019,Add error logging,Analytics,MEDIUM,🔲 Not Started,2-3,"T-003","Log auth failures, API errors, transcription errors with context"
+T-060,Phase 2 Sign-Up & Onboarding Design,Phase 2 Strategy,HIGH,✅ Complete,12-16,"T-020, T-050","7-screen flow designed with detailed specs, UX research complete, strategic artifacts created. Ready for wireframing."
 T-020,Set up XCUI test target for automated UI testing,Testing,HIGH,🔲 Not Started,6-8,"T-003, T-004","Create XCUITest target, write 7+ test cases, accessibility IDs, run on simulator + device"
 T-021,Unit tests for AuthManager,Testing,MEDIUM,🔲 Not Started,3-4,"T-003","Test authentication logic and token management"
 T-022,Unit tests for StorageManager,Testing,MEDIUM,🔲 Not Started,3-4,"T-004","Test data fetch, caching, persistence logic"

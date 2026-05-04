@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** April 29, 2026 — Messaging pivot complete (all moments, not just peak experiences), onboarding guidelines drafted, T-061 added for risk content policy
-**Status:** 62/76 tickets complete (81.6%), 1 in progress (T-060 design guidelines), 1 new (T-061 risk policy) — Build 107 on TestFlight, Phase 1 complete, strategic foundation locked, onboarding principles refined
+**Last Updated:** May 4, 2026 — 7-screen sign-up/onboarding flow designed with detailed specs, research findings locked, strategic artifacts created
+**Status:** 63/76 tickets complete (82.9%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, Phase 2 onboarding design ready for wireframing
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -223,26 +223,28 @@
 ## 🔲 Not Started (Phase II)
 
 ### Phase 2 Strategy & Planning
-- [x] **T-060:** Phase 2 Themes 1-Pager & Strategic Foundation 🔄 **SUBSTANTIALLY COMPLETE — DESIGN GUIDELINES PHASE**
-  - ✅ **April 23:** Created P0_FEATURE_RESEARCH_FINDINGS.md, P0_FEATURE_FOUNDATION_MAPPING.md, T-060_Phase2_Themes_1Pager.md
-  - ✅ **April 27:** Strategic brainstorm complete — Archive reframe, inspiration models, safe integration framework, scope creep prevention principles
-  - ✅ Product principles locked (IN/OUT of scope defined)
-  - ✅ Phase gates defined (P0 → P1 → P2 transition criteria)
-  - ⏳ **Next:** Design guidelines documenting how each P0 feature embodies archive principle + Five Strategic Foundations
-  - **Priority:** HIGH (Session preparation)
-  - **Category:** Strategy & Planning
-  - **Status:** 🔲 NOT STARTED (Due: April 21)
-  - **Description:** Create a 1-page document detailing the key themes and priorities being tackled in Phase 2
-  - **Scope:**
-    - Summarize Phase 2 strategic focus areas
-    - Document core themes guiding Phase 2 decisions
-    - Align with learnings from Phase 1 analysis
-    - Reference Phase 2 research findings (PHASE2-RESEARCH.md)
-    - Keep to 1 page max for clarity and accessibility
-  - **Deliverable:** Phase2_Themes_1Pager.md or .pdf
-  - **Estimated effort:** 1-2 hours
-  - **Session:** April 21 (Day 1 of Phase 2 Strategy Week)
-  - **Context:** Phase 1 revealed capture works (100% adoption) but return/reflection fails (zero re-reads). Phase 2 themes must address this gap and prove dwelling works.
+- [x] **T-060:** Phase 2 Sign-Up & Onboarding Design ✅ **COMPLETE — Ready for Wireframing**
+  - ✅ **April 28-May 4:** UX research on 6 apps (Haptic, Structured, Cocoon, Aby, Calm, Headspace)
+  - ✅ **May 4:** 7-screen sign-up/onboarding flow designed with detailed specifications:
+    - Screen 1: Welcome + Value Proposition
+    - Screen 2: What is a Moment? (Education)
+    - Screen 3: Spiritual Intent (User defines goals)
+    - Screen 4: Spiritual Rhythm (When user encounters sacred)
+    - Screen 5: Account Creation (Minimal friction)
+    - Screen 6: Privacy & Security (Trust building)
+    - Screen 7: First Moment Capture (Immediate activation)
+  - ✅ Each screen evaluated against 5 Strategic Foundations + 8 evaluation criteria
+  - ✅ Strategic artifacts created and documented:
+    - `strategy_your_spiritual_voice.md` — Spiritual profile building over time (inspired by Wispr Flow)
+    - `strategy_spiritual_exercises.md` — Active encounter facilitation guardrails
+    - `strategy_activity_context.md` — Post-capture activity tagging + onboarding catalyst questions
+  - ✅ Copy tone locked (warm, protective, Socratic, never prescriptive)
+  - ✅ Data capture model defined per screen
+  - **Priority:** HIGH (Foundation for Phase 2 MVP)
+  - **Category:** Strategy & Design
+  - **Status:** ✅ COMPLETE
+  - **Next:** Wireframing phase — Create visual mockups in FigJam/Figma, then engineering tickets for Swift implementation
+  - **Context:** Phase 1 revealed capture works but return/reflection fails. Phase 2 starts with frictionless onboarding that establishes user intent, spiritual rhythm, and privacy trust from day one.
 
 - [ ] **T-061:** Define Policy for Capturing Risk Content (Abuse, Self-Harm, Crisis Moments)
   - **Priority:** HIGH (Phase 2 Foundation — must clarify before P1 features)
