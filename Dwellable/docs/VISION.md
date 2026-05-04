@@ -66,6 +66,16 @@ This means the product's deepest job is not to be a better journal. It is to be 
 - How it felt
 - What they believed it meant
 
+### Presence Through Rich Context
+
+- Know the person's *actual* story — not generic categories, but the arc of their ongoing struggles, breakthroughs, relationships, and patterns over time
+- Use this context to generate deeply personalized prompts and prayers that reference their unique journey
+- Example: "James, we've talked about this for months. What are you filling your heart with now?" — the app witnesses their life and invites them deeper
+- This is not mimicking God's presence. It is creating the conditions for users to experience His presence through a tool that knows them — their real story, not a template
+- Requires persistent context history: every moment, reflection, and prayer response becomes part of a continuous thread
+- AI (and human-like voices) serve only to *connect context to invitation*, never to prescribe meaning or replace discernment
+- The closer the app knows a person, the more real their experience of being accompanied becomes
+
 ## Target Users
 
 **Group 1 — Consistent Reflectors**
