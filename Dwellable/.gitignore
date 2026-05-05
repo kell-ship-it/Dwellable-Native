@@ -22,6 +22,7 @@ Carthage/Build
 .env
 .env.local
 Dwellable/Config.swift
+guides/SUPABASE_CREDENTIALS.md
 
 # Exported IPA (build artifacts)
 exportedIPA/

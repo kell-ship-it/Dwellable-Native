@@ -16,8 +16,8 @@
 **1. Dashboard Data Staleness Issue — ROOT CAUSED & FIXED**
 - **Problem:** Dashboard showed April 17 data despite 59 moments in Supabase through April 20
 - **Root Cause:** Service_role API key in serve-dashboard.js, refresh-dashboard-data.js, and other utilities was revoked by Supabase
-- **Old Key (Revoked):** `eyJ...RvLHrQ29m0UwZGXf8ioE8tN0K7j-q1eHjkCqPn6TLbA`
-- **New Key (Active):** `eyJ...kE2anWU0Rcq99v45pEno8KIxXyKlmTbzi2L-cjzvfFc` (retrieved from Supabase Dashboard → Settings → API Keys → Legacy tab)
+- **Old Key (Revoked):** ~~`eyJ...RvLHrQ29m0UwZGXf8ioE8tN0K7j-q1eHjkCqPn6TLbA`~~
+- **Key Status (May 4, 2026):** Previous "active" key was exposed on GitHub via GitGuardian alert. Key has been revoked. See SUPABASE_CREDENTIALS.md for current keys.
 - **Fix:** Updated serve-dashboard.js and refresh-dashboard-data.js with correct key
 - **Result:** Dashboard queries Supabase fresh, shows 133 total moments, kell@ at 59 moments with April 20 data ✅
 
