@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 4, 2026 — 7-screen sign-up/onboarding flow designed with detailed specs, research findings locked, strategic artifacts created
-**Status:** 63/76 tickets complete (82.9%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, Phase 2 onboarding design ready for wireframing
+**Last Updated:** May 4, 2026 — Implementation tickets created for Pillars 2 & 3 (T-067, T-063–T-066)
+**Status:** 59/79 tickets complete (74.7%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, Pillars 2 & 3 skeletons locked
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -276,6 +276,207 @@
   - **When to do:** Before P0 onboarding + feature design finalize (Week 1 of P0 planning)
   - **Why now:** If we're capturing "all moments," we need a defensible, user-centered policy before launch. This affects onboarding messaging, data safety practices, and legal standing.
   - **Context:** Users capturing vulnerability (doubts, depression, abuse) is actually a feature—spiritual formation includes processing hard things. But we need to be thoughtful about our responsibility.
+
+### Phase 2 Core Pillar Implementation — Pillar 2 (Security & Privacy)
+- [ ] **T-067:** Password Recovery Mechanism (Design + Engineering) — Pillar 2
+  - **Priority:** HIGH (Phase 2 Foundation)
+  - **Category:** Feature — Security & Privacy (Pillar 2)
+  - **Status:** 🔲 NOT STARTED
+  - **Description:**
+    Design and implement password recovery flow for users who forget their encryption password. This is critical because encryption keys are derived from passwords — if user forgets password, moments become unrecoverable.
+    
+    Options:
+    1. **No recovery** (simplest, most private): Document that forgotten password = lost access. Accept this risk.
+    2. **Recovery key backup** (complex, more helpful): Generate recovery key at signup, let user export/save separately
+    3. **Account recovery via email** (less private): Allow password reset via email, but moments remain inaccessible (key is password-derived)
+  - **Design Requirements (From Pillar 2 risks):**
+    - "Recovery flow if user forgets password?"
+    - "Should encryption keys be backed up to cloud?" (answer: probably not — violates zero-knowledge principle)
+    - Document impact on user experience and data access
+  - **Technical Tasks:**
+    - [ ] Document three recovery strategy options with trade-offs (privacy vs. convenience)
+    - [ ] Make decision: which strategy to implement?
+    - [ ] If "No recovery": Add warning to onboarding + settings ("Your password cannot be recovered. Store it safely.")
+    - [ ] If "Recovery key": Generate recovery key at encryption setup, show "Save your recovery key" prompt, allow export as text/file
+    - [ ] If "Email recovery": Implement Supabase password reset flow, but clearly document that moments stay encrypted
+    - [ ] Add help text to LoginView + SettingsView explaining password importance
+    - [ ] Test edge case: user resets password, tries to view old moments (should fail gracefully if key is gone)
+  - **Acceptance Criteria:**
+    - [ ] Decision documented in PRD or ARCHITECTURE.md (which strategy we chose)
+    - [ ] User-facing messaging clear about password importance and recovery options
+    - [ ] Test with fresh user: can they access moments if they forget password? (per strategy)
+    - [ ] Recovery workflow tested end-to-end (if applicable to chosen strategy)
+    - [ ] No unencrypted keys stored anywhere
+  - **Estimated effort:** 8-12 hours (design + implementation varies by strategy)
+  - **When to do:** Week 1-2 of Phase 2 (before/alongside T-062 encryption)
+  - **Dependencies:** T-062 (Encryption) must be in progress
+  - **Blocks:** Nothing — but affects user trust narrative
+  - **Context:** This is not a feature. It's a critical design decision about what happens when users forget passwords. We must decide and implement before launch.
+
+---
+
+### Phase 2 Core Pillar Implementation — Pillar 3 (Soaking/Responding)
+- [ ] **T-063:** Build Prayer Flow (Design + Engineering) — Pillar 3
+  - **Priority:** HIGH (Phase 2 Core)
+  - **Category:** Feature — Soaking/Responding to Captures (Pillar 3)
+  - **Status:** 🔲 NOT STARTED
+  - **Description:**
+    Implement the Prayer flow for Soaking — when users return to moments, offer a guided, contemplative response experience with optional reflection.
+    
+    Users tap "Pray" button on a moment → lands in Prayer flow → sees optional guided prompt → can respond with own prayer/reflection → response saved for later review.
+  - **Design Requirements (From Pillar 3):**
+    - Invitational framing ("Want to pray about this?")
+    - Rich Context powered (references user's actual story, themes)
+    - Guided but open-ended (not prescriptive)
+    - Optional reflection prompt to deepen thinking
+    - Response persistence (store what user prayed/reflected)
+  - **Technical Tasks:**
+    - [ ] Create PrayerFlowView (SwiftUI screen with responsive layout)
+    - [ ] Wire from MomentDetailView "Pray" button to PrayerFlowView
+    - [ ] Fetch Rich Context data for current moment (theme, user's story arc, related moments)
+    - [ ] Implement reflection prompt generation (placeholder: curated prompts from design; future: Rich Context AI)
+    - [ ] Create PrayerResponse data model (moment_id, user_response, response_type, created_at)
+    - [ ] Add prayer_responses table to Supabase with RLS policies
+    - [ ] Wire save button to persist PrayerResponse with Rich Context context
+    - [ ] Add encryption support (per T-062) for response content
+    - [ ] Test with 5+ real moments, verify Rich Context correctly surfaces user's story
+  - **Acceptance Criteria:**
+    - [ ] PrayerFlowView UI matches design skeleton
+    - [ ] "Want to pray?" prompt displays with moment context (title, time, sense_of_lord if present)
+    - [ ] Optional reflection prompt shown below prayer area
+    - [ ] User can enter prayer/reflection text
+    - [ ] Save button persists response to prayer_responses table with moment_id + user_id
+    - [ ] User can navigate back to MomentDetailView after saving
+    - [ ] Prayer responses encrypted (via T-062) before sync
+    - [ ] Responses visible in MomentDetailView as "prayer responses" list (future view)
+  - **Estimated effort:** 16-20 hours (design + SupabaseSchema + encryption integration + testing)
+  - **When to do:** Week 2 of Phase 2 implementation (after T-062 encryption complete)
+  - **Dependencies:** Pillar 1 (Capture) ✅ | T-062 (E2E Encryption) must be in progress
+  - **Blocks:** T-065, T-066 (Pillar 3 completion + Pillar 6 integration)
+  - **Context:** Prayer is one of two core Soaking flows. Users need a guided but non-prescriptive way to respond spiritually to captured moments.
+
+- [ ] **T-064:** Build Prompts Flow (Design + Engineering) — Pillar 3
+  - **Priority:** HIGH (Phase 2 Core)
+  - **Category:** Feature — Soaking/Responding to Captures (Pillar 3)
+  - **Status:** 🔲 NOT STARTED
+  - **Description:**
+    Implement the Prompts flow for Soaking — sequential dialogue that helps users discover their own insights through Socratic questioning.
+    
+    Users tap "Reflect" button on a moment → lands in Prompts flow → sees contextual reflection prompt #1 → user responds → shown prompt #2 → user responds → etc. → responses saved.
+  - **Design Requirements (From Pillar 3):**
+    - Socratic approach (ask questions, never prescribe answers)
+    - Sequential dialogue (3-5 prompts per flow, not all at once)
+    - Rich Context powered (references user's actual story, themes, patterns)
+    - Invitational framing ("Want to explore this deeper?")
+    - User can skip prompts or end early (not forced progression)
+    - Response persistence (store all reflection responses)
+  - **Technical Tasks:**
+    - [ ] Create PromptsFlowView (SwiftUI with sequential carousel/list layout)
+    - [ ] Define prompt sequence structure (Array<ReflectionPrompt> with ID, text, optional context)
+    - [ ] Fetch Rich Context for moment (themes, user's language patterns, related reflections)
+    - [ ] Implement prompt generation (placeholder: curated prompts per theme; future: Rich Context AI)
+    - [ ] Create ReflectionResponse data model (moment_id, prompt_id, user_response, sequence_position)
+    - [ ] Add reflection_responses table to Supabase with RLS policies
+    - [ ] Wire UI to show prompt #1 → save response → show prompt #2 → etc.
+    - [ ] Implement skip logic (user can skip current prompt, show next, or exit flow)
+    - [ ] Add encryption support (per T-062) for response content
+    - [ ] Test with 5+ real moments, verify prompt sequences make sense for user's story
+  - **Acceptance Criteria:**
+    - [ ] PromptsFlowView displays first prompt with moment context
+    - [ ] Prompt references user's story/themes (via Rich Context)
+    - [ ] User types response in text field
+    - [ ] Next button shows prompt #2 (different contextual question)
+    - [ ] Skip button shows next prompt without saving current
+    - [ ] Exit button returns to MomentDetailView (responses already saved)
+    - [ ] All responses encrypted (via T-062) before sync
+    - [ ] Max 5 prompts per flow (don't overwhelm users)
+    - [ ] Responses visible in MomentDetailView as "reflection responses" list (future view)
+  - **Estimated effort:** 16-20 hours (design + prompt curation + SupabaseSchema + encryption integration + testing)
+  - **When to do:** Week 2-3 of Phase 2 implementation (after T-062, can run parallel to T-063)
+  - **Dependencies:** Pillar 1 (Capture) ✅ | T-062 (E2E Encryption) must be in progress
+  - **Blocks:** T-065, T-066 (Pillar 3 completion + Pillar 6 integration)
+  - **Context:** Prompts enable deeper reflection than prayer alone. Users discover their own insights through guided questioning (never interpretation).
+
+- [ ] **T-065:** Rich Context Integration for Soaking Flows (Design + Engineering) — Pillar 3
+  - **Priority:** HIGH (Phase 2 Foundation)
+  - **Category:** Feature — Rich Context + Soaking Integration
+  - **Status:** 🔲 NOT STARTED
+  - **Description:**
+    Integrate Rich Context data into Prayer and Prompts flows, enabling hyper-personalized prompts and responses that reference user's actual story.
+    
+    When user enters Prayer flow or Prompts flow for a moment, app synthesizes:
+    - User's past moments on similar themes (anxiety, relationships, breakthrough, etc.)
+    - User's own language/phrasing (how they talk about their faith)
+    - Patterns in their spiritual journey (emerging themes, arcs over time)
+    
+    This context powers prompts like: "You've reflected on anxiety 4 times in the last month. What's changed since your breakthrough on April 15?"
+  - **Design Requirements (From VISION.md + Pillar 3):**
+    - "Know the person's *actual* story — not generic categories, but the arc of their ongoing struggles, breakthroughs, relationships, and patterns"
+    - Use context to generate "deeply personalized prompts that reference their unique journey"
+    - This is NOT interpretation — it's creating conditions for users to experience God's presence through a tool that knows them
+    - Requires persistent context history: every moment, reflection, and prayer response becomes part of continuous thread
+  - **Technical Tasks:**
+    - [ ] Define RichContextData model (themes_detected, user_language_patterns, past_moments_on_theme, breakthrough_dates, arc_summary)
+    - [ ] Create RichContextManager to fetch/synthesize user's story from:
+      - All past moments (filter by theme, date range, sentiment)
+      - All past prayer/reflection responses
+      - Detected themes and patterns from Formation Intelligence
+    - [ ] Implement theme matching (when user opens moment on "anxiety", find all past moments tagged/inferred as anxiety-related)
+    - [ ] Add "context prompt" generation (placeholder: curated + templated; future: Rich Context AI generates)
+    - [ ] Wire RichContextManager into PrayerFlowView (T-063) — fetch context on view load, inject into prompt text
+    - [ ] Wire RichContextManager into PromptsFlowView (T-064) — fetch context, generate personalized prompt sequence
+    - [ ] Test with 10+ real moments across multiple themes, verify context is accurate and helpful
+    - [ ] Design graceful fallback for new users (no history yet — show generic prompts)
+  - **Acceptance Criteria:**
+    - [ ] RichContextManager retrieves user's past moments on matching themes
+    - [ ] Context summary includes: total moments on theme, date range, user's own language patterns
+    - [ ] Example prompt with context: "You've talked about [theme] since [date]. Last time you said [user_quote]. What's true now?"
+    - [ ] Fallback prompts for new users (no theme history yet)
+    - [ ] Performance: context fetch <1s for typical user (100-500 moments)
+    - [ ] Verified with 5+ real users that context feels personal and meaningful
+  - **Estimated effort:** 12-16 hours (context synthesis + prompt generation + performance optimization + testing)
+  - **When to do:** Week 3-4 of Phase 2 implementation (after T-063, T-064 flows built)
+  - **Dependencies:** T-063 (Prayer), T-064 (Prompts), T-066 (Response persistence) in progress
+  - **Blocks:** Pillar 6 (Formation Intelligence) theme surfacing, Pillar 8 (Notifications) contextual nudges
+  - **Context:** Rich Context is the foundational principle for Phase 2. Without it, Soaking flows are generic. With it, Dwellable feels like it knows the user.
+
+- [ ] **T-066:** Response Persistence & History (Engineering) — Pillar 3
+  - **Priority:** HIGH (Phase 2 Foundation)
+  - **Category:** Feature — Data Persistence
+  - **Status:** 🔲 NOT STARTED
+  - **Description:**
+    Implement backend schema and client logic for persisting all Soaking responses (prayer + prompts). Users should see:
+    - All their prayers/reflections on a moment (chronologically)
+    - Ability to review and add more responses later
+    - Responses encrypted end-to-end (T-062)
+  - **Technical Tasks:**
+    - [ ] Update Supabase schema:
+      - [ ] prayer_responses table: (id, user_id, moment_id, response_text, created_at, updated_at)
+      - [ ] reflection_responses table: (id, user_id, moment_id, prompt_id, response_text, sequence_position, created_at)
+      - [ ] Add RLS policies (users see only their own responses)
+      - [ ] Add indexes on user_id, moment_id for fast queries
+    - [ ] Create PrayerResponse + ReflectionResponse Swift models
+    - [ ] Update SupabaseAPIClient with endpoints:
+      - [ ] POST /rest/v1/prayer_responses (save prayer)
+      - [ ] POST /rest/v1/reflection_responses (save reflection)
+      - [ ] GET /rest/v1/prayer_responses?moment_id=eq.{id} (fetch prayers for moment)
+      - [ ] GET /rest/v1/reflection_responses?moment_id=eq.{id} (fetch reflections for moment)
+    - [ ] Update MomentDetailView to fetch and display prayer/reflection history
+    - [ ] Add "View responses" button/section below moment body
+    - [ ] Implement offline response queuing (SyncManager handles pending responses)
+    - [ ] Add response encryption (T-062) before upload
+  - **Acceptance Criteria:**
+    - [ ] Users can save prayers and reflections, see them persisted in MomentDetailView
+    - [ ] Response list shows chronologically (newest first)
+    - [ ] Responses encrypted before sync (T-062)
+    - [ ] RLS policies verified (users can't access other users' responses)
+    - [ ] Offline responses queue and sync when network returns
+    - [ ] MomentDetailView shows "No responses yet" until first prayer/reflection added
+  - **Estimated effort:** 8-12 hours (schema + API + UI + encryption integration)
+  - **When to do:** Week 2-3 of Phase 2 implementation (parallel to T-063, T-064)
+  - **Dependencies:** T-062 (Encryption required), T-063 & T-064 (Flows to save to)
+  - **Blocks:** Nothing — enables T-063 & T-064 to fully function
+  - **Context:** Response persistence is the foundation for all Soaking features. Without it, user's spiritual work on moments is lost.
 
 - [ ] **T-062:** Implement End-to-End Encryption for Moments (Phase 2 Security/Privacy Pillar)
   - **Priority:** BLOCKING (Phase 2 Foundation — brand trust requirement)
@@ -781,7 +982,9 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Analytics Dashboard (Layer 2) | 1 | 0 | 1 | 0 |
 | WhisperKit Improvements (Phase 2) | 1 | 0 | 0 | 1 |
 | Console Logging (Phase 2) | 1 | 0 | 0 | 1 |
-| **TOTAL** | **74** | **59** | **1** | **14** |
+| Phase 2 Pillar 2 Implementation (Security & Privacy) | 1 | 0 | 0 | 1 |
+| Phase 2 Pillar 3 Implementation (Soaking/Responding) | 4 | 0 | 0 | 4 |
+| **TOTAL** | **79** | **59** | **1** | **19** |
 
 ---
 
