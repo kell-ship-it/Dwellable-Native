@@ -1,140 +1,237 @@
-# Dwellable — Product Spec
+# Dwellable — Product Requirements Document (PRD)
 
-**Layer 1 Pilot** | **Founder:** Kell Golden | **Living Document** | **Updated:** April 29, 2026 (Emphasis pivot: all moments, not just peak experiences)
+**Founder:** Kell Golden | **Living Document** | **Updated:** May 4, 2026
 
 ---
 
-## Purpose
+## Section 1: Foundation
 
-Validate that users will adopt a faith-specific moment capture tool—designed specifically for Christian reflection and spiritual formation—over generic alternatives (Notes, Day One, voice memos).
+### North Star
 
-Layer 1 is not about building a complete product. It is about proving one thing: will people use this to capture their daily life (highs, lows, mundane moments) in a way that's intentional and contextual to their faith, creating a foundation for reflection and dwelling?
+Dwellable exists to help Christians notice and dwell on God's presence across their entire life — in the extraordinary and the mundane — so they can see how God is forming them through every moment.
 
-## Problem Being Solved
+Not to interpret them. Not to explain them. Not to replace prayer, Scripture, or community.
 
-Users struggle to capture their entire lives—work, relationships, doubts, breakthroughs, ordinary days—in a way that feels intentional, low-friction, and faith-appropriate. More importantly, even when they journal (which many do), they don't reflect. Generic journal apps exist but are not designed for Christian spiritual formation. They don't help users see God in their day-to-day or create space for dwelling. Layer 1 builds the minimum viable proof that a dedicated, faith-contextual tool creates different behavior: capture + reflection, not just capture.
+To hold them. To preserve them. To make returning effortless — so that the highs, lows, and ordinary moments of daily life remain active and influential, shaping spiritual formation over time.
 
-## Pilot Parameters
+---
 
-- **Duration:** 7-day personal dogfooding (Kell) → QA testing (external beta) → demo prep → App Store submission
-- **Phase 1 Users:** 10+ participants across consistent reflectors (Group 1) and selective reflectors (Group 2)
-- **Distribution:** iOS via TestFlight
-- **Auth:** Pre-provisioned Supabase email accounts (no self-signup)
-- **Current Status:** Build 105 deployed to TestFlight; Phase 1 dogfooding in progress
+### Problem & Insight
 
-## Success Definition
+**The Problem:** Christians capture meaningful moments (work, relationships, doubts, breakthroughs, ordinary days) but most fade without reflection. People journal but don't dwell. Generic tools aren't designed for spiritual formation. Without a gentle return mechanism, insights are lost.
 
-**Qualitative:** "This is not only easier to capture my God moments — I find myself capturing more of them."
+**The Core Insight (Phase 1 Validated):**
+- ✅ Capture adoption is NOT the barrier — 100% of Phase 1 users immediately adopted voice-first capture
+- ❌ Return is the barrier — 0% spontaneously revisited moments
+- **Real problem: Reflection failure, not capture friction**
 
-**Quantitative:**
-- Number of moments captured per user per week
-- Number of moment views (user returns to read past moments)
-- Time to first captured moment after onboarding
-- Delta in capture frequency week 1 vs week 4
-- Session frequency and app open patterns
+Many people journal readily. The transformative work — dwelling, pattern recognition, spiritual formation — happens only when moments are revisited and reflected upon.
 
-**Emotional Outcome:** A measurable shift from anxious/uncertain to confident/anchored.
+**Dwellable's Role:** Build the return mechanism that makes dwelling irresistible, so captured moments accumulate into a living record of God's presence over time.
 
-## User Flow (Happy Path)
+---
 
-1. User opens app
-2. User lands on Moments list (home screen)
-3. User taps "+" CTA at bottom
-4. User lands on Capture screen — mic is centered, reflective prompt above
-5. User taps mic to start recording their moment
-6. User taps mic again to stop → brief "Transcribing..." state → Review screen with transcript pre-filled
-7. Optional: User adds where they sensed the Lord (inline hint below body text)
-8. User taps "Save" → returns to Moments list
-9. Moment appears at top of list
+### Product Principles (Authority Guardrails)
 
-**Alternate path (type instead):**
-- From Capture screen, user taps "type instead →" → Review screen (blank, cursor ready)
-- User types moment → taps "Save moment" → returns to Moments list
+Dwellable is a **keeper of sacred moments, not an interpreter**:
 
-## Features In Scope (Layer 1)
+- ✅ Hold moments — preserve them safely, accessible indefinitely
+- ✅ Facilitate revisiting moments — make return effortless and rewarding
+- ✅ Surface patterns over time — let emergent themes appear naturally from user's own accumulated moments
+- ✅ Invite Socratic reflection — ask questions, never prescribe answers
+- ✅ Presence Through Rich Context — synthesize user's actual story to enable hyper-personalized prayers and prompts (not interpretation, enabling their encounter with God)
+- ❌ Do NOT confirm meaning — never tell users what their moments mean
+- ❌ Do NOT prescribe action — never tell users what they should do
+- ❌ Do NOT become a spiritual voice — never position ourselves as authoritative or interpretive
 
-### Core Screens (Built & Live)
+---
 
-**LoginView**
-- Email + password login (pre-provisioned accounts)
-- Wordmark + subtitle ("Document life. Discern over time.")
-- Gold accent button
-- Session persistence across app restarts
+### Target Users
 
-**CaptureView**
-- Voice-first — mic centered on screen with reflective prompt above
-- Tap mic to start recording; tap again to stop → auto-transcribes → Review screen
-- "type instead →" link navigates to Review screen in type mode (blank canvas)
-- Rotating reflective prompts:
-  - "Did something meaningful stand out to you?"
-  - "Is there a moment you don't want to forget?"
-  - "Did God meet you in any way recently?"
-  - "What has been on your heart lately?"
+**Group 1 — Consistent Reflectors**  
+Individuals who journal or reflect regularly and already value returning to past moments. Need: reduced capture friction, seamless fit with existing habits.
 
-**ReviewView**
-- Single screen, two modes determined by origin (voice / type)
-- Voice mode: transcript pre-filled; "Re-record" + "Save" buttons in footer
-- Type mode: blank canvas, cursor ready; single full-width "Save moment" button
-- Optional "Where did you sense the Lord?" prompt shown as faint italic hint below body text
-- Gold text cursor (#C9B27C)
-- Save writes moment to backend with offline-first sync
+**Group 2 — Selective Reflectors**  
+Individuals who journal intermittently and only record moments that feel "big enough." Need: low-pressure preservation, optional return without obligation.
 
-**MomentsListView**
-- Displays all captured moments sorted by most recent first
-- Entry shows: date (small caps) + body text (15px, 3-line clamp) — no title line
-- Tapping entry → Moment detail view (full body + metadata)
-- "+" CTA button fixed at bottom
-- Empty state centered with subtitle and CTA
-- Pull-to-refresh / sync indicator for offline moments
+**Group 3 — Presence-Oriented Experiencers (Deprioritized)**  
+Individuals who rarely journal and prefer to fully experience moments in the present. Requires behavior change — not friction reduction. Not focus for Phase 1 or Phase 2.
 
-**MomentDetailView**
-- Full moment text display
-- Date created + time
-- Re-read count tracking (future: visual indicator)
-- Clean, readable typography
+---
 
-**SettingsView**
-- Profile section: email, sign out
-- App info: version, build number
-- Legal links (privacy, terms)
-- Session management
+### Build Phases
 
-### Backend & Sync
+**Phase 1 Beta — Capture + Review + Analytics (COMPLETE)**
+Establish core capture functionality. Validate that users will adopt a faith-specific moment capture tool over generic alternatives. Build 105 live on TestFlight.
 
-**Supabase Integration**
-- Authentication: email + password
-- Real-time sync: moments saved locally first, then synced to Supabase
-- Offline-first architecture: all capture succeeds locally even without network
-- Sync strategy: fire-and-forget when online; retried automatically when connection restored
-- Row-Level Security (RLS) enforced: users can only access their own moments
-- Analytics events tracked: app_opened, app_closed, moment_created (voice vs. text)
+**Phase 2 Beta — Return + Reflection + Formation Intelligence (IN PROGRESS)**
+Introduce return mechanisms (gallery, nudges, reflection prompts). Build sustained dwelling practice. Add Rich Context-powered personalization. Design Phase 2 pillars to close the return gap identified in Phase 1.
 
-**Offline-First Architecture**
-- Moments stored in Keychain (secure) + UserDefaults (sync queue)
-- Voice recordings temporarily cached to disk, deleted after transcription
-- Pending moments queue persists across app restarts
-- Auto-sync when network becomes available
-- Conflicts resolved via UUID-based upsert logic
+**Post-Launch — Formation Intelligence**
+Pattern surfacing, semantic search across moments, themed views, optional biblical anchoring. AI as a question-asker, never an interpreter.
 
-### Analytics Tracking (New in Layer 1)
+---
 
-**Events Tracked:**
-- `app_opened` — session start
-- `app_closed` — session end
-- `moment_created` — with momentType (voice or text)
+## Section 2: Pillars (Phase 2+)
 
-**Captured Data:**
-- User ID, event type, moment type, timestamp
-- Events synced to Supabase usage_events table
-- Available for Layer 1 success metrics (capture frequency, engagement patterns)
+### Pillar 1: Capture (Voice + Text)
 
-## Data Model
+**Status:** ✅ Phase 1 Beta Complete  
+**Locked:** Voice-first with text fallback, rotating prompts, offline-first architecture, Speech Framework transcription
+
+**Open Questions:**
+- Should users be able to capture multiple moments in rapid succession?
+- How should we handle very long recordings (15+ min)?
+- Should we support photo/video attachments beyond audio?
+
+**Exclusions:** Image captions, drawing/sketch input, structured forms (intentionally unstructured)
+
+**Risks:** Audio quality varies by device; Speech Framework accuracy depends on environment
+
+---
+
+### Pillar 2: Security & Privacy (E2E Encryption)
+
+**Status:** 🔄 In Progress (T-062)  
+**Locked:** AES-256-GCM encryption, key derivation from password, client-side encryption/decryption
+
+**Open Questions:**
+- Recovery flow if user forgets password?
+- Should encryption keys be backed up to cloud?
+- Multi-device support (user syncing across devices)?
+
+**Exclusions:** Zero-knowledge architecture (user can recover, but only they can decrypt), server-side decryption
+
+**Risks:** Encryption UX complexity; recovery scenarios; performance on older devices
+
+---
+
+### Pillar 3: Soaking/Responding to Captures (Prayer + Prompts)
+
+**Status:** 🔄 Concept Locked, Design in Progress  
+**Locked:** 2-option skeleton (Prayer + Prompts), Rich Context powered, invitational framing ("Want to?")
+
+**Core Concept:**  
+When users return to past moments, offer two contextual pathways:
+1. **Prayer** — Guided, contemplative response with optional reflection prompt
+2. **Prompts** — Sequential dialogue ("Socratic reflection") that helps users discover their own insights
+
+Both powered by Rich Context to reference user's actual story and themes.
+
+**Open Questions:**
+- How should we balance guided prayer vs. open-ended reflection?
+- Should users be able to respond multiple times to the same moment?
+- How do we handle moments that trigger difficult emotions?
+
+**Exclusions:** Interpretation, prescriptive guidance, theological commentary, devotional content
+
+**Risks:** Prayer language resonance; theological sensitivity; avoiding prescriptive framing
+
+---
+
+### Pillar 4: Editing
+
+**Status:** ⚪ Deferred (Phase 2+)  
+**Locked:** Not yet locked; design deferred
+
+**Open Questions:**
+- Should users be able to edit transcripts before saving?
+- Can they edit after saving?
+- Should edit history be visible?
+- Should we alert users if they edit significantly after the fact?
+
+**Exclusions:** Collaborative editing, version control
+
+---
+
+### Pillar 5: Search & Discovery
+
+**Status:** ⚪ Deferred (Phase 2+)  
+**Locked:** Not yet locked; design deferred
+
+**Open Questions:**
+- Full-text search, semantic search, or both?
+- Filter by date, theme, sense of Lord reference?
+- Should search index be encrypted?
+
+**Exclusions:** Tag-based organization (deferred to later phase)
+
+---
+
+### Pillar 6: Formation Intelligence (Patterns & Themes)
+
+**Status:** ⚪ Deferred (Phase 2+)  
+**Locked:** Not yet locked; design deferred
+
+**Core Concept (Draft):**  
+Detect recurring themes across moments (anxiety, joy, relational moments, breakthroughs) and surface them visually without interpretation. Use Rich Context to understand user's actual story.
+
+**Open Questions:**
+- How to detect themes without prescriptive categorization?
+- Should themes be user-tagged or AI-detected?
+- How often should pattern reports surface?
+
+**Exclusions:** Spiritual interpretation, predictive modeling, prescriptive insights
+
+---
+
+### Pillar 7: Beta & Marketing
+
+**Status:** 🔲 Not Started (Phase 2)  
+**Locked:** Not yet locked; design deferred
+
+**Open Questions:**
+- Self-signup flow for Phase 2 Beta?
+- How many users for Phase 2?
+- Go-to-market strategy (word-of-mouth, communities, etc.)?
+
+**Exclusions:** Paid ads, content marketing, App Store launch (post-Phase 2)
+
+---
+
+### Pillar 8: Notifications
+
+**Status:** ⚪ Deferred (Last Pillar — Phase 2+)  
+**Locked:** Concept locked; design deferred
+
+**Core Concept:**  
+Pattern detection + contextual nudges. When user reflects on a theme 3+ times without prayer, send gentle notification: *"You reflected on anxiety, but haven't prayed. Want to now?"* Invitational, not prescriptive.
+
+**Why Deferred to Last:**  
+We need to confirm what experiences we are creating before knowing what we are notifying dwellers of. Notifications requires all other pillars to exist first.
+
+**Open Questions:**
+- When should nudges arrive (day after? after 3rd moment? week later)?
+- How to identify themes without prescriptive interpretation?
+- Can users opt-out or customize frequency?
+- What counts as a "theme"?
+
+**Exclusions:** Push notifications for generic content, devotional reminders, urgency framing
+
+**Design Deferred to Phase 2+:** Competitive research, theme detection strategy, notification frequency caps, user control mechanisms
+
+---
+
+## Section 3: Technical Architecture
+
+### Tech Stack
+
+- **Framework:** SwiftUI (native iOS, iOS 15+)
+- **Language:** Swift 5.9
+- **Backend:** Supabase (PostgreSQL + Auth + RLS)
+- **Local Storage:** Keychain (secure) + UserDefaults (sync queue)
+- **Voice Recording:** AVFoundation (native iOS audio)
+- **Voice-to-Text:** Speech Framework (on-device, privacy-first)
+- **HTTP Client:** URLSession (native)
+- **Encryption (T-062):** CryptoKit (native Swift crypto library)
+
+### Data Model
 
 ```swift
 struct Moment: Codable {
     let id: String                  // UUID
     let userId: String              // Supabase auth user ID
-    let body: String                // The moment itself
+    let body: String                // The moment itself (encrypted in Phase 2+)
     let senseOfLord: String?        // Optional reflection
     let createdAt: Date             // ISO timestamp
     let updatedAt: Date
@@ -144,72 +241,152 @@ struct UsageEvent: Codable {
     let id: String
     let userId: String
     let eventType: String           // "app_opened", "app_closed", "moment_created"
-    let momentType: String?         // "voice" or "text" (null for non-moment events)
+    let momentType: String?         // "voice" or "text"
     let timestamp: Date
 }
 ```
 
-## Explicitly Out of Scope (Layer 1)
+### Backend Architecture
 
+**Authentication:**
+- Email + password with Supabase JWT auth
+- Session persistence via Keychain
+- Automatic token refresh on 401
+
+**Security:**
+- Row-Level Security (RLS) — users only access their own moments
+- HTTPS enforced; no HTTP fallback
+- Certificate pinning (SHA256 public key validation)
+- Brute force protection (5-attempt lockout, 10-min timeout)
+- E2E Encryption (T-062) — client-side encryption before sync
+
+**Offline-First Sync:**
+- Moments stored locally in Keychain + UserDefaults
+- Pending moments queue persists across app restarts
+- Auto-sync when network becomes available
+- Conflicts resolved via UUID-based upsert logic
+
+### Analytics
+
+**Events Tracked:**
+- `app_opened` — session start
+- `app_closed` — session end
+- `moment_created` — with momentType (voice or text)
+
+**Data Captured:** User ID, event type, moment type, timestamp  
+**Purpose:** Validate Phase 1/2 success metrics without tracking moment content
+
+---
+
+## Section 4: Phase 1 Beta Details
+
+### Purpose
+
+Validate that users will adopt a faith-specific moment capture tool — designed specifically for Christian reflection and spiritual formation — over generic alternatives (Notes, Day One, voice memos).
+
+Phase 1 is not about building a complete product. It is about proving one thing: will people use this to capture their daily life (highs, lows, mundane moments) in a way that's intentional and contextual to their faith?
+
+### Phase 1 Pilot Parameters
+
+- **Duration:** March 10–17, 2026 (7-day personal dogfooding) → QA → TestFlight
+- **Users:** 10+ participants across consistent reflectors and selective reflectors
+- **Distribution:** iOS via TestFlight
+- **Auth:** Pre-provisioned Supabase email accounts (no self-signup)
+- **Current Status:** Build 105 deployed to TestFlight; dogfooding complete
+
+### Phase 1 Success Definition
+
+**Qualitative:** "This is not only easier to capture my God moments — I find myself capturing more of them."
+
+**Quantitative:**
+- Number of moments captured per user per week
+- Number of moment views (user returns to read past moments) — **Phase 1 Result: 0%**
+- Time to first captured moment after onboarding
+- Delta in capture frequency week 1 vs week 4
+- Session frequency and app open patterns
+
+**Emotional Outcome:** A measurable shift from anxious/uncertain to confident/anchored.
+
+### Phase 1 User Flow (Happy Path)
+
+1. User opens app
+2. User lands on Moments list (home screen)
+3. User taps "+" CTA at bottom
+4. User lands on Capture screen — mic centered, reflective prompt above
+5. User taps mic to start recording their moment
+6. User taps mic again to stop → "Transcribing..." → Review screen with transcript
+7. Optional: User adds "Where did you sense the Lord?"
+8. User taps "Save" → returns to Moments list
+9. Moment appears at top of list
+
+**Alternate path (type instead):**
+- From Capture screen, user taps "type instead →" → Review screen (blank)
+- User types moment → taps "Save moment" → returns to Moments list
+
+### Phase 1 Features
+
+**Core Screens (Built & Live)**
+
+- **LoginView** — Email + password login, session persistence
+- **CaptureView** — Voice-first with text fallback, rotating prompts
+- **ReviewView** — Transcript edit, "Where did you sense the Lord?", save with offline sync
+- **MomentsListView** — Chronological list, empty state, sync indicator
+- **MomentDetailView** — Full moment display, metadata, re-read tracking
+- **SettingsView** — Profile, app info, sign out
+
+**Backend & Sync**
+- Supabase authentication + RLS
+- Offline-first architecture (Keychain + UserDefaults)
+- Auto-sync with retry logic
+- Analytics event tracking
+
+**Explicitly Out of Scope (Phase 1)**
 - Editing or deleting moments
-- Gallery view (Layer 2)
-- AI-generated moment images (Layer 2)
+- Gallery view or visual browsing
+- AI-generated moment images
 - Reminders or push notifications
-- Social features or sharing
-- Pattern surfacing or AI reflection
-- Interpretation or theological guidance
-- Image or media attachments (beyond voice recording)
+- Pattern surfacing or reflection
 - Search or filtering
 - Tags or categories
-- Self-signup or account management
-- User analytics dashboard (internal only)
+- Interpretation or theological guidance
+- Social features or sharing
+- Image/media attachments (beyond voice)
 
-## Current Status (March 11, 2026)
+### Phase 1 Build Status
 
-| Phase | Title | Status | Dates |
-|-------|-------|--------|-------|
-| Phase 1 | 7-Day Personal Dogfooding | 🔄 In Progress | Mar 10–17 |
-| Phase 2 | QA Testing (Build 105) | 🔲 Not Started | Mar 17–20 |
-| Phase 3 | Prototype Demo Prep | 🔲 Not Started | Mar 20–22 |
-| Phase 4 | App Store Submission Prep | 🔲 Not Started | Mar 22–25 |
-| Phase 5 | Final Validation | 🔲 Not Started | Mar 25–28 |
+- **Build:** 105 live on TestFlight
+- **Tickets:** 46/61 complete (75%)
+- **Status:** Phase 1 dogfooding in progress; zero return rate identified
 
-**Build Status:** Build 105 live on TestFlight with full analytics pipeline
+---
 
-**Tickets Complete:** 46/61 (75%)
+## Success Metrics & Validation
 
-## Roadmap
+### Phase 1 Validation (Complete)
+- ✅ 100% adoption of voice capture
+- ❌ 0% return rate (problem identified: users don't revisit moments)
 
-### Layer 2 Pilot (Planned)
+### Phase 2 Validation (In Progress)
+- **Primary Metric:** WAR (Weekly Active Reflections) — % of users returning weekly
+- **Target:** 40–50% of users return weekly by week 8
+- **Secondary Metrics:**
+  - Average session length increase
+  - Reflection engagement rate
+  - Retention (% of Phase 1 users active in Phase 2)
 
-Deepen the experience based on Layer 1 findings.
+### Long-Term Success (Post-Launch)
+- Users report: "I see patterns in how God shows up across my life"
+- Formation indicators: increased spiritual confidence, perceived divine presence, faith integration in daily decisions
+- Retention: >60% monthly active users
 
-- Moment detail screen enhancements
-- Gallery / pattern view — surface recurring themes
-- AI-generated moment imagery
-- Reflection nudges — return prompts based on pilot findings
-- Push notifications — optional capture reminders
+---
 
-### App Store Launch (Post-Pilot)
+## Appendix: Files & References
 
-- Self-signup flow
-- App Store listing — screenshots, description, metadata
-- App Store submission and review
-
-## Tech Stack
-
-- **Framework:** SwiftUI (native iOS)
-- **Language:** Swift 5.9
-- **Backend:** Supabase (Postgres + Auth + RLS)
-- **Local Storage:** Keychain (secure) + UserDefaults (sync queue)
-- **Voice Recording:** AVFoundation (native iOS audio framework)
-- **Voice-to-Text:** Speech Framework (on-device iOS STT)
-- **HTTP Client:** URLSession (native)
-
-## Design Principles
-
-- **Audio-first:** Voice input is the primary capture mechanism; text is the fallback
-- **Minimal friction:** Three taps to capture a moment (tap mic, speak, save)
-- **Spiritual tone:** Reflective UI, warm gold accents, thoughtful spacing
-- **Offline-ready:** Every action succeeds locally; sync is automatic and invisible
-- **Trustworthy:** Clear privacy stance (user data stays local until sync), no tracking except engagement metrics
+- **VISION.md** — Product vision, principles, target users
+- **ARCHITECTURE.md** — Technical system design
+- **WORKFLOW.md** — Development workflow
+- **KEY_LEARNINGS.md** — Phase 1 findings and research qualifications
+- **NOTIFICATIONS_PILLAR.md** — Pillar 8 detailed concept
+- **ONBOARDING_DESIGN_GUIDELINES.md** — Phase 2 onboarding strategy
+- **TICKETS.md** — Full ticket registry with estimates and dependencies
