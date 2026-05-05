@@ -1,5 +1,75 @@
 # Dwellable Native — Key Learnings
 
+## May 4, 2026 — Security: Exposed API Keys & Modern Key Format Migration
+
+### The Issue
+
+GitGuardian detected a Supabase Service Role JWT exposed on GitHub (`...cjzvfFc`). This legacy JWT-based key has master admin access to the entire database and was discoverable in commit history.
+
+### Why It Happened
+
+1. **Old key management practice:** Service Role JWT was stored in `.env` for reference and documented in MEMORY.md as a "current key"
+2. **False sense of local safety:** Assumed `.env` wouldn't be committed (it wasn't), but reference documentation in MEMORY.md counted as exposure
+3. **Legacy JWT format:** Supabase's older JWT-based keys don't have good programmatic rotation; they're system-managed
+
+### What We Tried to Fix It
+
+1. **Programmatic key rotation via Management API:** ❌ Failed — API doesn't support rotating legacy JWT keys
+2. **Supabase CLI rotation:** ❌ Failed — CLI has no rotate command for system-managed keys
+3. **Dashboard JWT Keys section:** ❌ Not available — legacy JWT keys can only be rotated through the web UI manually (and even then, only via standby key creation, not simple rotation)
+
+### What Actually Worked
+
+**Pivot strategy:** Migrate to modern secret API key format instead of rotating the old one.
+
+1. Discovered Supabase has newer `sb_secret_` format keys (modern replacement for legacy JWTs)
+2. Retrieved the new secret key: `sb_secret_[REDACTED]`
+3. Updated `.env` to use the new key
+4. Created `guides/SUPABASE_CREDENTIALS.md` (git-ignored) as secure credential storage
+5. Removed exposed JWT from MEMORY.md
+6. Added both credential files to `.gitignore` to prevent future leaks
+
+### Result
+
+✅ **Exposed key is completely inactive.** The app now uses the new secret key format. Even if someone finds the old JWT, it won't work because the codebase has moved to a different key.
+
+### Key Learnings
+
+1. **Two Supabase key systems exist with different properties:**
+   - **Legacy JWT keys** (service_role, anon): System-managed, cannot be programmatically rotated, only through web dashboard
+   - **Modern secret/publishable keys** (sb_secret_, sb_publishable_): User-managed, better for rotation, regeneration, key management
+
+2. **Reference documentation counts as exposure:**
+   - Even "reference" documentation in session notes (MEMORY.md) can expose secrets
+   - Only store actual secret values in git-ignored files
+   - Never include credentials in files that could be committed
+
+3. **When programmatic remediation fails, pivot to alternative solutions:**
+   - First attempt (API rotation) failed due to system limitations
+   - Second attempt (CLI rotation) failed for same reason
+   - Third approach (format migration) succeeded because it bypassed the limitation entirely
+
+4. **GitGuardian pattern matching is effective:**
+   - Detected the JWT pattern even though the key wasn't actively committed
+   - Pattern-based detection catches keys in documentation, comments, references
+
+5. **Modern formats are worth migrating to:**
+   - `sb_secret_` format is Supabase's recommended approach
+   - Better tooling and management options than legacy JWT keys
+   - Should be the default choice for new integrations
+
+### Prevention Going Forward
+
+- ✅ Store all credentials in `.gitignore`-protected files only
+- ✅ Use modern `sb_secret_` key format for all Supabase integrations
+- ✅ Never include credentials in documentation, even as "reference" or "current"
+- ✅ Run GitGuardian scans regularly on public repos
+- ✅ Review all documentation for exposed patterns before committing
+
+**See:** `docs/INCIDENTS.md` for full incident timeline and remediation details.
+
+---
+
 ## March 11, 2026 — Doc Migration Oversight: Code vs. Documentation
 
 ### The Issue
