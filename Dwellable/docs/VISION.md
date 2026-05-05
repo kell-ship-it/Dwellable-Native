@@ -25,8 +25,16 @@ Not because they weren't real. But because:
 - Capture is inconsistent or too high-friction
 - Existing tools (Notes, Day One, voice memos) are not designed for intentional reflection on spiritual life
 - There is no gentle mechanism to bring people back to what mattered — or to notice God's presence in the mundane
-- People journal but don't reflect — capturing moments without the transformative work of dwelling on them
+- **People journal but don't reflect** — capturing moments without the transformative work of dwelling on them
 - Generic journal apps don't know how to engage with Christians who want to see God in their day-to-day
+
+### Phase 1 Validation: The Core Problem Is Not Capture
+
+Phase 1 Pilot (March 10–17, 2026) proved:
+- ✅ **Capture adoption is not the barrier** — 100% of users immediately adopted voice-first moment capture, proving faith-specific tooling works
+- ❌ **Return is the barrier** — 0% of users spontaneously re-opened the app to re-read or reflect on moments
+
+**The real problem: reflection failure.** Users will capture their lives readily, but without a gentle return mechanism and inviting dwelling experiences, moments never get revisited. The transformative work of reflection doesn't happen.
 
 The result: insight fades. Transformation diminishes. People lose access to the very moments and patterns that were meant to anchor and form them.
 
@@ -40,14 +48,17 @@ This means the product's deepest job is not to be a better journal. It is to be 
 
 ## Product Principles
 
-### Authority Guardrails
+### Authority Guardrails (Strategic Foundations)
 
-- Hold moments
-- Facilitate revisiting moments
-- Surface patterns over time
-- Do NOT confirm meaning
-- Do NOT prescribe action
-- Do NOT become a spiritual voice
+Dwellable is a **keeper of sacred moments, not an interpreter**. This guardrail defines every feature decision:
+
+- ✅ Hold moments — preserve them safely, accessible indefinitely
+- ✅ Facilitate revisiting moments — make return effortless and rewarding
+- ✅ Surface patterns over time — let emergent themes appear naturally from user's own accumulated moments
+- ✅ Invite Socratic reflection — ask questions, never prescribe answers
+- ❌ Do NOT confirm meaning — never tell users what their moments mean
+- ❌ Do NOT prescribe action — never tell users what they should do about their moments
+- ❌ Do NOT become a spiritual voice — never position ourselves as authoritative, prophetic, or interpretive
 
 ### Foster Delight in Reflection
 

@@ -139,3 +139,45 @@ This typo in `Dwellable.xcodeproj/project.pbxproj` (lines 350 and 369) prevented
 ---
 
 **Updated:** March 10, 2026, 6:45 PM
+
+---
+
+## May 4, 2026 — Phase 1 Validation: Capture Works, Return Fails
+
+### The Finding
+
+Phase 1 Pilot (March 10–17) definitively proved:
+- ✅ **Capture adoption: 100%** — Users immediately adopted voice-first moment capture over generic alternatives (Notes, Voice Memos)
+- ❌ **Return rate: 0%** — Zero users spontaneously re-opened the app to re-read moments after capturing them
+
+### What This Tells Us
+
+**Capture is not the problem.** Users *will* use a faith-specific tool when it's frictionless and intentional. The barrier is not recording life — it's **reflecting on it**.
+
+This validates the product hypothesis: the primary failure for journaling users is not capture; it is **retention and dwelling**. Many people journal but don't reflect. Moments feel "complete" once captured. Without a gentle return mechanism, the insight fades.
+
+### Why It Matters for Pillar Design
+
+This single finding redirects the entire Phase 2 strategy:
+- **Phase 1 (Capture)** solved the low-friction capture problem ✓
+- **Phase 2+ must solve the reflection problem** — gallery views, return nudges, pattern surfacing, etc.
+- **Notifications/Reminders (Pillar 8) are critical** but come *last* — only after we know what experiences exist to return *to*
+
+### Research Qualification
+
+**Competitive research suggests:**
+- Gallery views increase re-engagement by 40–300% (cited: Day One 2023, Stoic 2024)
+- Visual/sensory cues improve recall and dwelling (cited: spiritual formation literature, competitive analysis)
+- Metadata organization (tags, headlines) correlates with return frequency (cited: Evernote, Bible highlight apps)
+
+**Status:** These are informed hypotheses from competitive research. Phase 2 Beta will validate them through metrics (WAR — Weekly Active Reflections, return rate %, engagement lift).
+
+### Files Archived
+
+Research documents supporting this finding have been archived in `/archive/docs/`:
+- P0_FEATURE_RESEARCH_FINDINGS.md
+- PHASE2_DISCOVERY_RESEARCH.md
+- PHASE2_THEMES_1PAGER.md
+- ONBOARDING_DESIGN_GUIDELINES.md
+
+These remain available for reference but are no longer in active development docs.
