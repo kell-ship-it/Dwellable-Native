@@ -92,23 +92,33 @@ Pattern surfacing, semantic search across moments, themed views, optional biblic
 
 ### Pillar 2: Security & Privacy (E2E Encryption)
 
-**Status:** 🔄 In Progress (T-062)  
+**Status:** 🔄 Phase 2 Beta (T-062 In Progress)  
 **Locked:** AES-256-GCM encryption, key derivation from password, client-side encryption/decryption
 
 **Open Questions:**
 - Recovery flow if user forgets password?
 - Should encryption keys be backed up to cloud?
 - Multi-device support (user syncing across devices)?
+- How to handle backup/restore with encryption?
 
-**Exclusions:** Zero-knowledge architecture (user can recover, but only they can decrypt), server-side decryption
+**Exclusions:** Zero-knowledge architecture (user can recover, but only they can decrypt), server-side decryption, cloud key storage
 
-**Risks:** Encryption UX complexity; recovery scenarios; performance on older devices
+**Risks:** Encryption UX complexity; recovery scenarios; performance on older devices; testing encrypted data flows
+
+#### Implementation Tickets
+- T-062: Implement End-to-End Encryption for Moments (16-24 hours, BLOCKING)
+  - AES-256-GCM encryption implementation
+  - Key derivation from password
+  - Encrypted storage and sync
+  - Client-side decryption on read
+- T-XXX: Password recovery mechanism (design + engineering)
+- *(Dependencies: Pillar 1 (Capture) must be complete; blocking for Pillar 3)*
 
 ---
 
 ### Pillar 3: Soaking/Responding to Captures (Prayer + Prompts)
 
-**Status:** 🔄 Concept Locked, Design in Progress  
+**Status:** 🔄 Phase 2 Beta (Concept Locked, Design In Progress)  
 **Locked:** 2-option skeleton (Prayer + Prompts), Rich Context powered, invitational framing ("Want to?")
 
 **Core Concept:**  
@@ -122,17 +132,26 @@ Both powered by Rich Context to reference user's actual story and themes.
 - How should we balance guided prayer vs. open-ended reflection?
 - Should users be able to respond multiple times to the same moment?
 - How do we handle moments that trigger difficult emotions?
+- What should prompt sequences look like (3 prompts? 5? variable)?
 
-**Exclusions:** Interpretation, prescriptive guidance, theological commentary, devotional content
+**Exclusions:** Interpretation, prescriptive guidance, theological commentary, devotional content, pre-written prayers
 
-**Risks:** Prayer language resonance; theological sensitivity; avoiding prescriptive framing
+**Risks:** Prayer language resonance; theological sensitivity; avoiding prescriptive framing; Rich Context complexity
+
+#### Implementation Tickets
+*(To be created after design skeleton locked)*
+- T-XXX: Prayer flow (design + engineering) — Guided contemplative response, optional prompt
+- T-XXX: Prompts flow (design + engineering) — Sequential dialogue, user discovery
+- T-XXX: Rich Context integration for Soaking (design + engineering) — Reference user's story, themes, patterns
+- T-XXX: Response persistence (engineering) — Store responses, track completion status
+- *(Dependencies: Pillar 1 (Capture), Pillar 2 (Encryption T-062) must be complete)*
 
 ---
 
 ### Pillar 4: Editing
 
-**Status:** ⚪ Deferred (Phase 2+)  
-**Locked:** Not yet locked; design deferred
+**Status:** 🔄 Phase 2 Beta (Design In Progress)  
+**Locked:** Not yet locked; design in progress
 
 **Open Questions:**
 - Should users be able to edit transcripts before saving?
@@ -142,73 +161,134 @@ Both powered by Rich Context to reference user's actual story and themes.
 
 **Exclusions:** Collaborative editing, version control
 
+#### Implementation Tickets
+*(To be created after design skeleton is locked)*
+- T-XXX: Edit existing moment (design + engineering)
+- T-XXX: Delete moment with confirmation (design + engineering)
+- *(Dependencies: Pillar 3 implementation must be complete)*
+
 ---
 
 ### Pillar 5: Search & Discovery
 
-**Status:** ⚪ Deferred (Phase 2+)  
-**Locked:** Not yet locked; design deferred
+**Status:** 🔄 Phase 2 Beta (Design In Progress)  
+**Locked:** Not yet locked; design in progress
 
 **Open Questions:**
 - Full-text search, semantic search, or both?
 - Filter by date, theme, sense of Lord reference?
 - Should search index be encrypted?
+- How should search results surface context (full moment or snippet)?
 
-**Exclusions:** Tag-based organization (deferred to later phase)
+**Exclusions:** Tag-based organization, AI-powered recommendations (post-launch)
+
+#### Implementation Tickets
+*(To be created after design skeleton is locked)*
+- T-XXX: Full-text search implementation (design + engineering)
+- T-XXX: Filter/refine search results (design + engineering)
+- *(Dependencies: Pillar 3 implementation; Pillar 2 encryption if applicable)*
 
 ---
 
 ### Pillar 6: Formation Intelligence (Patterns & Themes)
 
-**Status:** ⚪ Deferred (Phase 2+)  
-**Locked:** Not yet locked; design deferred
+**Status:** 🔄 Phase 2 Beta (Design In Progress)  
+**Locked:** Not yet locked; design in progress
 
 **Core Concept (Draft):**  
-Detect recurring themes across moments (anxiety, joy, relational moments, breakthroughs) and surface them visually without interpretation. Use Rich Context to understand user's actual story.
+Detect recurring themes across moments (anxiety, joy, relational moments, breakthroughs) and surface them as text-based insights without interpretation. Use Rich Context to understand user's actual story.
+
+**Phase 2 Scope:**  
+- Theme detection (Socratic, not prescriptive)
+- Text-based pattern surfacing
+- Integration with Soaking flows (reference themes in prayer/prompts)
+
+**Post-Launch Scope:**  
+- Visual gallery/imagery
+- AI-generated moment illustrations
+- Advanced semantic analysis
 
 **Open Questions:**
 - How to detect themes without prescriptive categorization?
 - Should themes be user-tagged or AI-detected?
 - How often should pattern reports surface?
+- Should theme insights be pushed to users or pull-based?
 
-**Exclusions:** Spiritual interpretation, predictive modeling, prescriptive insights
+**Exclusions:** Spiritual interpretation, predictive modeling, prescriptive insights, visual galleries
+
+#### Implementation Tickets
+*(To be created after design skeleton is locked)*
+- T-XXX: Theme detection algorithm (design + engineering)
+- T-XXX: Surface themes in Soaking prompts (integration)
+- T-XXX: Theme report/dashboard UI (design + engineering)
+- *(Dependencies: Pillar 3 implementation; Rich Context integration)*
 
 ---
 
 ### Pillar 7: Beta & Marketing
 
-**Status:** 🔲 Not Started (Phase 2)  
-**Locked:** Not yet locked; design deferred
+**Status:** 🔄 Phase 2 Beta (Design In Progress)  
+**Locked:** Not yet locked; design in progress
+
+**Core Concept:**  
+Expand from Phase 1 personal dogfooding to Phase 2 closed beta with targeted user cohorts. Build self-signup flow, manage beta cohorts, gather qualitative feedback on return/reflection experience.
+
+**Phase 2 Scope:**
+- Self-signup flow for beta users
+- Beta cohort management (closed beta, limited seats)
+- Feedback collection (surveys, interviews, usage analytics)
+- Community engagement (Discord, email list)
+
+**Post-Launch Scope:**
+- App Store submission and marketing
+- Public launch campaign
+- Paid ads, content strategy, partnerships
 
 **Open Questions:**
-- Self-signup flow for Phase 2 Beta?
-- How many users for Phase 2?
-- Go-to-market strategy (word-of-mouth, communities, etc.)?
+- How many users for Phase 2 Beta (50? 100? 500?)?
+- Should we use waitlist/invites or open signup?
+- What feedback mechanisms during beta?
+- How do we measure "dwelling" behavior qualitatively?
 
-**Exclusions:** Paid ads, content marketing, App Store launch (post-Phase 2)
+**Exclusions:** Paid advertising, content marketing, App Store launch, broad marketing campaigns
+
+#### Implementation Tickets
+*(To be created after design skeleton is locked)*
+- T-XXX: Self-signup flow (design + engineering)
+- T-XXX: Beta user management dashboard (design + engineering)
+- T-XXX: Feedback collection system (surveys, analytics)
+- *(Dependencies: All Pillars 1-6 implementation must be functional for beta)*
 
 ---
 
 ### Pillar 8: Notifications
 
-**Status:** ⚪ Deferred (Last Pillar — Phase 2+)  
-**Locked:** Concept locked; design deferred
+**Status:** ⚪ Design Deferred (Pillar 8 — Last)  
+**Locked:** Concept locked; design deferred to after Phase 2 other pillars launched
 
 **Core Concept:**  
 Pattern detection + contextual nudges. When user reflects on a theme 3+ times without prayer, send gentle notification: *"You reflected on anxiety, but haven't prayed. Want to now?"* Invitational, not prescriptive.
 
 **Why Deferred to Last:**  
-We need to confirm what experiences we are creating before knowing what we are notifying dwellers of. Notifications requires all other pillars to exist first.
+We need to confirm what experiences we are creating before knowing what we are notifying dwellers of. Notifications requires all other pillars (Capture, Soaking, Search, Formation Intelligence) to exist and be validated first.
 
 **Open Questions:**
 - When should nudges arrive (day after? after 3rd moment? week later)?
 - How to identify themes without prescriptive interpretation?
 - Can users opt-out or customize frequency?
 - What counts as a "theme"?
+- Should we use push notifications, in-app, or both?
 
-**Exclusions:** Push notifications for generic content, devotional reminders, urgency framing
+**Exclusions:** Push notifications for generic content, devotional reminders, urgency framing, prescriptive interpretation
 
-**Design Deferred to Phase 2+:** Competitive research, theme detection strategy, notification frequency caps, user control mechanisms
+**Design Deferred to Phase 2+:** Competitive research, theme detection strategy, notification frequency caps, user control mechanisms, implementation design
+
+#### Implementation Tickets
+*(To be created after all other pillars ship and design is locked)*
+- T-XXX: Pattern detection + theme identification (engineering)
+- T-XXX: Notification scheduling + delivery (engineering)
+- T-XXX: User notification preferences UI (design + engineering)
+- *(Dependencies: Pillars 3, 6 must be complete and validated)*
 
 ---
 
