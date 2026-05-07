@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 4, 2026 — Implementation tickets created for Pillars 2 & 3 (T-067, T-063–T-066)
-**Status:** 59/79 tickets complete (74.7%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, Pillars 2 & 3 skeletons locked
+**Last Updated:** May 6, 2026 — Pillars 6 & 7 strategy docs complete; LLM research complete; 7 pillar strategy docs written
+**Status:** 64/96 tickets complete (66.7%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, Pillars 0–7 strategy locked
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -221,6 +221,221 @@
 ---
 
 ## 🔲 Not Started (Phase II)
+
+### Phase 2 Strategy & Planning — Pillar Strategy Docs
+
+#### Pillar Architectural Designs (May 5, 2026 Session)
+- [x] **T-068 (Pillar 0):** Onboarding Strategy Doc ✅ **COMPLETE**
+  - Created `PILLAR_ONBOARDING_STRATEGY.md` (270 lines)
+  - 7-screen flow (Welcome → Education → Intent → Rhythm → Account → Privacy → First Capture)
+  - Competitor research (Prayer apps, Day One, Meditation apps, Bible App)
+  - Success metrics: >90% completion, >80% first capture rate
+
+- [x] **T-069 (Pillar 1):** Capture Strategy Doc ✅ **COMPLETE**
+  - Created `PILLAR_1_CAPTURE_STRATEGY.md` (169 lines)
+  - Voice-first (rotating prompts, Speech Framework) + text fallback
+  - Offline-first architecture (LocalStorageManager + SyncManager)
+  - Phase 1 completion metrics: 100% adoption, 3-5 moments/user, >95% transcription accuracy
+
+- [x] **T-070 (Pillar 3):** Soaking Strategy Doc ✅ **COMPLETE**
+  - Created `PILLAR_3_SOAKING_STRATEGY.md` (200 lines)
+  - Four features: Gallery + Tags/Headlines + Soak Mode + Reflection Prompts
+  - Prayer Flow + Prompts Flow (Socratic questions)
+  - Success metric: WAR 40-50% by week 8
+
+- [x] **T-071 (Pillar 4):** Editing Strategy Doc ✅ **COMPLETE**
+  - Created `PILLAR_4_EDITING_STRATEGY.md` (370+ lines)
+  - Headlines (auto-generated), Tags (3-tier: Selected | Suggested | All), Moods (preset + 1 custom)
+  - Edit Entry explicit action flow (Untold pattern)
+  - Competitor research (Untold, Reflection.app, Prayer Lock)
+
+- [x] **T-072 (Pillar 5):** Search Strategy Doc ✅ **COMPLETE**
+  - Created `PILLAR_5_SEARCH_STRATEGY.md` (380+ lines)
+  - Calendar view + entry list + tag filter + full-text search + prayed status filter
+  - Future: "Ask Your Entries" AI + unified discovery (Bible verses, books, films)
+  - Competitor research (Untold, Reflection.app, Apple Calendar/Notes, Bible App)
+
+- [x] **T-074 (Pillar 6):** Menu Bar / Navigation Strategy Doc ✅ **COMPLETE**
+  - Created `PILLAR_6_MENU_BAR_STRATEGY.md` (170+ lines)
+  - 4-tab navigation: Today | Entries | Create | Insights
+  - Tab architecture with specific purposes, metrics, implementation phases
+  - Alternatives considered (bottom tab bar, 5+ tabs, hamburger menu, etc.)
+  - 7 implementation tickets identified (T-076 through T-082)
+  - Success metrics: >90% tab switch frequency, <5% navigation confusion
+
+- [x] **T-075 (Pillar 7):** Notifications Strategy Doc ✅ **COMPLETE**
+  - Created `PILLAR_7_NOTIFICATIONS_STRATEGY.md` (340+ lines)
+  - Sparse notification philosophy: 1-2 per month, opt-out model
+  - 4-segment user targeting (new users, non-soakers, occasional, active dwellers)
+  - Metadata-based personalization only (due to E2E encryption constraints)
+  - 9 implementation tickets identified (T-083 through T-091)
+  - Success metrics: >35% D7 retention, >40% CTR, <10% opt-out rate
+
+- [ ] **T-073 (Pillar 2):** Security & Privacy Strategy Doc 🔲 **NOT STARTED**
+  - Architectural design provided by Kell: E2E encryption (AES-256-GCM, Argon2id key derivation)
+  - User sees: privacy guarantee | Kell sees: analytics only, no moment contents
+  - Next: Write `PILLAR_2_SECURITY_STRATEGY.md` with architectural design
+
+- [ ] **T-074 (Pillar 6):** Menu Bar / Navigation Strategy Doc 🔲 **NOT STARTED**
+  - Architectural design needed from Kell
+  - Bottom nav tabs: Insights, Discover, Create, Entries, Trends
+  - Next: Get design from Kell, write `PILLAR_6_MENU_BAR_STRATEGY.md`
+
+- [ ] **T-075 (Pillar 7):** Unknown Pillar Strategy Doc 🔲 **NOT STARTED**
+  - Pillar 7 exists but not yet discussed
+  - Next: Get architectural design from Kell, write strategy doc
+
+### Pillar 6 (Menu Bar) Implementation Tickets (May 6 Session)
+
+- [ ] **T-076:** Build SwiftUI NavigationStack with 4 tabs 🔲 **NOT STARTED**
+  - Create tab-based navigation skeleton (Today | Entries | Create | Insights)
+  - NavigationStack vs. bottom tab bar per design spec
+  - Test on iPhone 13, 14, 15, 16
+  - Estimated effort: M (Medium, 12-15 hours)
+  - Dependencies: None
+  - Priority: HIGH (Phase 2 Foundation)
+
+- [ ] **T-077:** Wire Today tab to recent moments (7-day filter) 🔲 **NOT STARTED**
+  - Pull last 7 days of moments from MomentsListView
+  - Show in reverse chronological order
+  - Empty state: "No moments this week. Create one?"
+  - Estimated effort: M
+  - Dependencies: T-076
+  - Priority: HIGH
+
+- [ ] **T-078:** Wire Entries tab to full moments list + filters 🔲 **NOT STARTED**
+  - Show all moments (entire history, searchable, filterable)
+  - Filters: Date range, prayer-tagged, prompt-engaged, soaking-depth
+  - Tap moment → detail view; swipe to mark favorite
+  - Empty state: "No moments yet. Create your first?"
+  - Estimated effort: L (Large, 18-24 hours)
+  - Dependencies: T-076, T-040 (moment list UI)
+  - Priority: HIGH
+
+- [ ] **T-079:** Wire Create tab (navigate to existing CaptureView) 🔲 **NOT STARTED**
+  - Create tab simply navigates to existing CaptureView
+  - Voice button, text button, cancel, save confirmation
+  - Estimated effort: S (Small, 2-3 hours)
+  - Dependencies: T-076
+  - Priority: HIGH
+
+- [ ] **T-080:** Build Insights dashboard (WAR, Formation Rate, etc.) 🔲 **NOT STARTED**
+  - Display metrics: Weekly Active Reflections (WAR), Formation Engagement Rate, Soaking Depth, Prayer Rate, D7 Retention, Avg Session Length
+  - Visualizations: Line charts (trends), cards (current week stats)
+  - Tap stat → detailed breakdown
+  - Estimated effort: L (18-24 hours)
+  - Dependencies: T-076, analytics data ready
+  - Priority: HIGH
+
+- [ ] **T-081:** Polish: Empty states, loading states, error handling 🔲 **NOT STARTED**
+  - Empty states for all tabs (no moments, no entries, no data)
+  - Loading spinners during data fetch
+  - Error handling (network failures, etc.)
+  - Estimated effort: M (12-15 hours)
+  - Dependencies: T-077, T-078, T-080
+  - Priority: MEDIUM
+
+- [ ] **T-082:** Test: Device testing + QA (iPhone 13, 14, 15, 16) 🔲 **NOT STARTED**
+  - Comprehensive device testing across 4 iPhone models
+  - Verify tab switching smoothness, navigation flow, performance
+  - Test on real devices (not simulator)
+  - Estimated effort: M (12-15 hours)
+  - Dependencies: All tabs wired
+  - Priority: HIGH
+
+### Pillar 7 (Notifications) Implementation Tickets (May 6 Session)
+
+- [ ] **T-083:** Setup: Firebase Cloud Messaging for push notifications 🔲 **NOT STARTED**
+  - Integrate FCM into Dwellable project
+  - Request notification permissions on first app launch
+  - Configure APNs certificates in App Store Connect
+  - Estimated effort: M (12-15 hours)
+  - Dependencies: None
+  - Priority: HIGH (Phase 2 Foundation)
+
+- [ ] **T-084:** Build: Notification scheduling engine (cadence logic) 🔲 **NOT STARTED**
+  - Implement frequency cap (1-2 per user per month)
+  - Schedule notifications based on segment + timing
+  - Implement back-off logic (stop after 3 no-clicks)
+  - Estimated effort: M (12-15 hours)
+  - Dependencies: T-083
+  - Priority: HIGH
+
+- [ ] **T-085:** Build: User segmentation logic (new, non-soaker, occasional, active) 🔲 **NOT STARTED**
+  - Logic to identify segment: new users, non-soakers, occasional soakers, active dwellers
+  - Store segment assignment in database
+  - Update segment on each user interaction
+  - Estimated effort: M (12-15 hours)
+  - Dependencies: Analytics data
+  - Priority: HIGH
+
+- [ ] **T-086:** Build: Settings UI for notification preferences 🔲 **NOT STARTED**
+  - Add settings page for notification opt-out
+  - Frequency options (weekly, bi-weekly, monthly)
+  - Clear explanation of why notifications are sent
+  - Estimated effort: S (6-8 hours)
+  - Dependencies: T-083
+  - Priority: MEDIUM
+
+- [ ] **T-087:** Write: Generic notification templates (4 templates per segment) 🔲 **NOT STARTED**
+  - 4 segments × 3-4 message variations = 12-16 templates total
+  - New users: "Ready to capture what's on your heart?"
+  - Non-soakers: "How has your heart been this week?"
+  - Occasional soakers: "You responded to a prompt last week. How about this week?"
+  - Active dwellers: "You've been reflecting deeply. Want to explore patterns?"
+  - Estimated effort: S (6-8 hours)
+  - Dependencies: T-085
+  - Priority: MEDIUM
+
+- [ ] **T-088:** Integrate: Analytics logging (notification events) 🔲 **NOT STARTED**
+  - Log when notifications sent, clicked, or dismissed
+  - Track CTR (click-through rate), conversion, opt-outs
+  - Integrate with UsageTracker
+  - Estimated effort: M (10-12 hours)
+  - Dependencies: T-083, T-085, UsageTracker
+  - Priority: MEDIUM
+
+- [ ] **T-089:** Test: Notification delivery on real devices 🔲 **NOT STARTED**
+  - Test delivery on iPhone 13, 14, 15, 16
+  - Verify notifications appear at correct times
+  - Test opt-out flow
+  - Estimate baseline CTR and opt-out rate
+  - Estimated effort: M (12-15 hours)
+  - Dependencies: T-083 through T-088
+  - Priority: HIGH
+
+- [ ] **T-090:** Optimize: Send time based on user behavior 🔲 **NOT STARTED**
+  - Analyze when users typically open app
+  - Schedule notifications for optimal time (user's typical app-open time)
+  - A/B test: fixed time vs. smart time
+  - Estimated effort: M (12-15 hours)
+  - Dependencies: T-084, usage data
+  - Priority: MEDIUM
+
+- [ ] **T-091:** Polish: Edge cases, opt-out flows, error handling 🔲 **NOT STARTED**
+  - Handle edge cases (permission denied, device not registered, etc.)
+  - Graceful error messages
+  - Recovery flows if notifications fail to send
+  - Estimated effort: M (10-12 hours)
+  - Dependencies: All notification tickets
+  - Priority: MEDIUM
+
+### LLM Research Documentation
+
+- [x] **LLM_RESEARCH.md:** Tournament bracket & selection strategy ✅ **COMPLETE**
+  - Free tier championship: Google Gemini 2.0 Flash (winner)
+  - Paid tier championship: Mistral 7B (winner)
+  - Champion: Google Gemini (MVP) → Mistral 7B (Scale)
+  - Comprehensive cost breakdown for 10K users Year 1 (~$13-20K)
+  - Detailed model comparison table with 5 models
+
+- [ ] **T-076 (Previously):** Update PRD with references to all pillar strategy docs 🔲 **NEEDS REVIEW**
+  - PRD.md updated to reference Pillars 0, 1, 3, 4, 5
+  - Needs: Add references to Pillars 2, 6, 7 with doc links
+
+- [ ] **T-077 (Previously):** Create DWELLABLE_THOUGHTS.md catch-all file ✅ **COMPLETE**
+  - Captures random architectural questions and design considerations
+  - Current entries: (1) Soaking reflection placement, (2) Reflection display format (conversational vs. final)
 
 ### Phase 2 Strategy & Planning
 - [x] **T-060:** Phase 2 Sign-Up & Onboarding Design ✅ **COMPLETE — Ready for Wireframing**
@@ -984,7 +1199,11 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | Console Logging (Phase 2) | 1 | 0 | 0 | 1 |
 | Phase 2 Pillar 2 Implementation (Security & Privacy) | 1 | 0 | 0 | 1 |
 | Phase 2 Pillar 3 Implementation (Soaking/Responding) | 4 | 0 | 0 | 4 |
-| **TOTAL** | **79** | **59** | **1** | **19** |
+| Pillar Strategy Docs (May 5-6 Session) | 8 | 8 | 0 | 0 |
+| Pillar 6 Implementation (May 6 Session) | 7 | 0 | 0 | 7 |
+| Pillar 7 Implementation (May 6 Session) | 9 | 0 | 0 | 9 |
+| LLM Research Documentation (May 6 Session) | 1 | 1 | 0 | 0 |
+| **TOTAL** | **96** | **64** | **1** | **31** |
 
 ---
 
@@ -1159,3 +1378,24 @@ T-011 · T-012 · T-013 · T-027 · T-028
   - **Tester notes:** "Yes, let me calculate what role it doesn't. Around row 26, 27, it starts to jump, and you can no longer see it. Actually, row 23. It starts to jump."
 
 - **Ticket progress:** 59/70 complete (84%) — 1 new Phase 2 ticket created, 99 Phase 1 tests consolidated
+
+### May 5 Session — Pillar 4 & 5 Architectural Design Complete
+- **✅ PILLAR 4 & 5 STRATEGY DOCS: COMPLETE**
+  - **PILLAR_4_EDITING_STRATEGY.md** (370+ lines) — Headlines (auto-generated), Tags (3-tier selection), Moods (preset + 1 custom), Edit Entry flow
+    - Competitor research: Untold (edit flow), Reflection.app (3-tier tags), Prayer Lock/Abide (mood selection)
+    - Implementation tickets: T-067, T-068, T-069, T-070 (not started)
+  - **PILLAR_5_SEARCH_STRATEGY.md** (380+ lines) — Calendar view, tag/mood/status filters, full-text search, future: AI "Ask Your Entries" + unified discovery
+    - Competitor research: Untold (calendar + list), Reflection.app (multi-select), Apple Calendar/Notes (full-text), Bible App (unified discovery)
+    - Implementation tickets: T-071, T-072, T-073, T-074 (not started)
+  - **DWELLABLE_THOUGHTS.md** created as catch-all for architectural questions/considerations
+    - Current entries: (1) Soaking reflection placement (fullscreen vs. list context), (2) Reflection display format (conversational vs. final journal)
+    - First architectural thought submitted: soaking per reflection should be fullscreen/immersive (Option A)
+
+- **Remaining pillars identified:**
+  - **Pillar 2 (Security & Privacy):** Architectural design provided by Kell (E2E encryption, AES-256-GCM, Argon2id)
+  - **Pillar 6 (Menu Bar):** Architectural design needed (Insights, Discover, Create, Entries, Trends tabs)
+  - **Pillar 7:** Exists but not yet discussed — architectural design needed
+  - **Pillar 8 (Notifications):** Deferred to last pillar
+
+- **Next session plan:** Write Pillar 2, 6, and 7 strategy docs (get architectural designs for 6 & 7 from Kell)
+- **Ticket progress:** 62/82 complete (75.6%) — 5 pillar strategy docs complete, 2 remaining

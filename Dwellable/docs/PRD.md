@@ -74,10 +74,30 @@ Pattern surfacing, semantic search across moments, themed views, optional biblic
 
 ## Section 2: Pillars (Phase 2+)
 
+### Pillar 0: Onboarding (Sign-Up & Account Setup)
+
+**Status:** ✅ Design Complete (T-060), Implementation Ready  
+**Locked:** 7-screen sequential flow (Welcome → Education → Intent → Rhythm → Account → Privacy → First Capture)
+
+**Design Skeleton:** See [`docs/PILLAR_ONBOARDING_STRATEGY.md`](PILLAR_ONBOARDING_STRATEGY.md) for full design specification, competitor research (Prayer Lock, Dwell, Day One, Calm), and implementation guidance.
+
+**Core Intent:** Establish spiritual intent, prayer rhythm, and privacy expectations before first capture. Set psychological contract that Dwellable is a formation tool, not a productivity app.
+
+**Success Metrics:**
+- Completion rate: >90% reach first capture
+- First capture rate: >80% of completers record/type moment
+- Time to value: <5 minutes from app launch to completed capture
+
+**Risks:** Intent collection friction, account creation drop-off, privacy screen comprehension, first capture anxiety
+
+---
+
 ### Pillar 1: Capture (Voice + Text)
 
-**Status:** ✅ Phase 1 Beta Complete  
+**Status:** ✅ Phase 1 Beta Complete (Build 107)  
 **Locked:** Voice-first with text fallback, rotating prompts, offline-first architecture, Speech Framework transcription
+
+**Design Skeleton:** See [`docs/PILLAR_1_CAPTURE_STRATEGY.md`](PILLAR_1_CAPTURE_STRATEGY.md) for full technical architecture, validation rules, risk mitigations, and Phase 1 completion metrics (100% adoption, 3-5 moments/user, >95% transcription accuracy).
 
 **Open Questions:**
 - Should users be able to capture multiple moments in rapid succession?
@@ -118,15 +138,17 @@ Pattern surfacing, semantic search across moments, themed views, optional biblic
 
 ### Pillar 3: Soaking/Responding to Captures (Prayer + Prompts)
 
-**Status:** 🔄 Phase 2 Beta (Concept Locked, Design In Progress)  
-**Locked:** 2-option skeleton (Prayer + Prompts), Rich Context powered, invitational framing ("Want to?")
+**Status:** ✅ Design Complete, Implementation Not Started  
+**Locked:** 2-option skeleton (Prayer + Prompts), Rich Context powered, invitational framing ("Want to?"), Gallery + Soak Mode + Reflection Prompts + Notifications architecture
+
+**Design Skeleton:** See [`docs/PILLAR_3_SOAKING_STRATEGY.md`](PILLAR_3_SOAKING_STRATEGY.md) for full design specification, competitor research (Prayer Lock, Untold, Calm, Medito, Dwell, Day One, Stoic), skeletal system architecture, and success metrics (WAR 40-50% by week 8).
 
 **Core Concept:**  
 When users return to past moments, offer two contextual pathways:
 1. **Prayer** — Guided, contemplative response with optional reflection prompt
 2. **Prompts** — Sequential dialogue ("Socratic reflection") that helps users discover their own insights
 
-Both powered by Rich Context to reference user's actual story and themes.
+Both powered by Rich Context to reference user's actual story and themes. Gallery View + Tags + Soak Mode create the visual + contemplative infrastructure for dwelling.
 
 **Open Questions:**
 - How should we balance guided prayer vs. open-ended reflection?

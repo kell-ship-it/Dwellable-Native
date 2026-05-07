@@ -37,7 +37,7 @@ GitGuardian detected that a Supabase Service Role JWT was exposed on GitHub:
 **Strategy:** Migrate from legacy JWT-based keys to modern secret API key format
 
 1. **Identified the modern key format:** Supabase has newer `sb_secret_` format keys in the "Publishable and secret API keys" section
-2. **Retrieved the new secret key:** `sb_secret_[REDACTED]` (modern format, not exposed)
+2. **Retrieved the new secret key:** `sb_secret_[REDACTED]` (modern format, stored securely in .gitignore-protected files)
 3. **Updated .env** to use the new key instead of the exposed JWT
 4. **Created secure credential storage:**
    - `guides/SUPABASE_CREDENTIALS.md` (git-ignored)
