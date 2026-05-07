@@ -63,13 +63,103 @@ When you type EXACTLY these slash commands, execute the protocol WITHOUT clarifi
 
 ## 🚨 SESSION END — DO THIS LAST. NO EXCEPTIONS.
 
-**Before closing the session:**
+**Execute in order. Do NOT skip steps.**
 
-**1. Update `TICKETS.md` and `TICKETS.csv`** to reflect any status changes.
+### Step 1: Update All Ticket Records
 
-**2. Output the full ticket table again** — same format as session open, all tickets, all statuses.
+**Update both files:**
+- **`TICKETS.md`** — Update header count, mark tickets complete/in-progress/not-started, add new tickets if created
+- **`TICKETS.csv`** — Sync spreadsheet version with TICKETS.md
 
-**3. State the next session opener** — the single first action for the next agent, specific enough to execute without clarification.
+**Output the full ticket table** — same format as session open, all tickets, all statuses visible:
+```
+| # | ID | Title | Epic | Priority | Status |
+|---|---|---|---|---|---|
+| 1 | S-001 | Build LoginView | UI Screens | BLOCKING | ✅ Complete |
+```
+
+### Step 2: Identify Pending Work for Next Session
+
+**Define the top 3 specific, actionable items for the next session:**
+
+1. [Ticket/Task]: [Exact description] — [Why this matters]
+2. [Ticket/Task]: [Exact description] — [Why this matters]
+3. [Ticket/Task]: [Exact description] — [Why this matters]
+
+**These items MUST be:**
+- ✅ Specific (not vague; reference ticket IDs where applicable)
+- ✅ Actionable (next agent can execute without clarification)
+- ✅ Prioritized (in execution order)
+
+### Step 3: Verify & Write to MEMORY.md
+
+**Update `/docs/MEMORY.md` with:**
+```markdown
+## Next Session Objective (May X, 2026)
+
+**Confirmed Pending Items:**
+1. [Item 1]
+2. [Item 2]
+3. [Item 3]
+
+**Rationale:** [Why these items move the product forward]
+```
+
+**CRITICAL: Do NOT proceed until Kell confirms these match the actual pending items.**
+
+### Step 4: Git Commit & Push
+
+**Stage and commit all changes:**
+```bash
+git add TICKETS.md TICKETS.csv docs/MEMORY.md [any other files modified]
+git commit -m "[Session close] Update tickets and document next session objective (X, Y, Z)"
+git push origin main
+```
+
+**Verify push succeeded** — output should show commits uploaded to origin/main.
+
+### Step 5: Final Verification Checklist
+
+**Before ending the session, confirm ALL of these:**
+
+- ✅ **TICKETS.md updated:** Header reflects new count, all status changes logged
+- ✅ **Next session objective written:** 3 specific items documented in MEMORY.md
+- ✅ **MEMORY.md matches pending items:** The "Next Session Objective" section is accurate and complete
+- ✅ **Git committed:** `git log` shows latest commit message with session close + objective items
+- ✅ **Git pushed:** `git push origin main` succeeded (no rejection errors)
+- ✅ **Output to user:** Kell sees the final summary of what was done and what's pending
+
+### Step 6: Output Final Summary to User
+
+**State clearly:**
+
+```
+=== SESSION CLOSE SUMMARY ===
+
+✅ COMPLETED THIS SESSION:
+• [List 3-5 major deliverables]
+
+📊 TICKET STATUS:
+• Before: X/Y complete
+• After: Z/Y complete
+
+📝 PENDING FOR NEXT SESSION:
+1. [Item 1] — [Why]
+2. [Item 2] — [Why]
+3. [Item 3] — [Why]
+
+🔒 PERSISTED TO:
+✅ TICKETS.md (updated header + new tickets)
+✅ docs/MEMORY.md (next session objective documented)
+✅ GitHub main branch (committed + pushed)
+✅ INCIDENTS.md (if relevant)
+
+🎯 NEXT SESSION: Agent should start by confirming these 3 items match the stored objective.
+```
+
+---
+
+**DO NOT end the session without completing ALL 6 steps and the final summary.**
 
 ---
 

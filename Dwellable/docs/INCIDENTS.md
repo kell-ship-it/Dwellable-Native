@@ -4,6 +4,73 @@ Document of significant bugs, security incidents, and their resolutions. Include
 
 ---
 
+## Incident: May 7, 2026 — Session Closure Protocol: Pending Items Not Persisted to MEMORY
+
+**Severity:** 🟠 HIGH (Process/workflow failure, causes repeated context loss across sessions)
+
+### What the Issue Was
+
+The session closure protocol was supposed to document "Pending for Next Session" items and write them to `MEMORY.md`, but **the pending items documented in the closure were not the same as what appeared in the next session's MEMORY**.
+
+**Example:**
+- **Session closure documented:** Full Skeleton Diagram, Complete Ticket List, Tournament Bracket (with full context)
+- **Next session's MEMORY showed:** "Create implementation tickets for Responding to Captures MVP, then tackle Pillar 2 (Security & Privacy)"
+- **What actually happened:** Created Pillar 6 & 7 tickets + locked all strategies (neither match original pending items)
+
+**Impact:**
+- Next session agent had wrong context about what needed to be done
+- Work got redirected based on misaligned priorities
+- User frustration: "You say you're writing them, but you have not done that. This happens a lot."
+- Repeated session context loss due to MEMORY not accurately reflecting closure protocol output
+
+### Root Cause
+
+**The session closure protocol (as written in CLAUDE.md) was incomplete:**
+1. It said to "state the next session opener" but didn't mandate writing it to MEMORY.md
+2. It had no verification step to ensure pending items were persisted
+3. It had no git commit + push verification step
+4. It had no final summary output showing what was persisted where
+5. It had no synchronization check between "what was documented verbally" and "what was saved to MEMORY"
+
+### How We Fixed It
+
+**Rewrote the SESSION END protocol in CLAUDE.md to include 6 mandatory steps:**
+
+1. **Update All Ticket Records** (TICKETS.md + TICKETS.csv)
+2. **Identify Pending Work** (define top 3 items)
+3. **Verify & Write to MEMORY.md** (document pending items, require Kell confirmation)
+4. **Git Commit & Push** (verify all changes persisted)
+5. **Final Verification Checklist** (confirm all 6 items complete before session ends)
+6. **Output Final Summary to User** (state clearly what was done + what's pending + what's persisted where)
+
+**Key improvements:**
+- ✅ **Explicit MEMORY update:** Pending items are written to `/docs/MEMORY.md` with a structured section
+- ✅ **Verification step:** User confirms pending items match what's documented
+- ✅ **Git verification:** Shows push succeeded to origin/main
+- ✅ **Synchronization:** MEMORY.md content is now the source of truth for next session objectives
+- ✅ **Visibility:** Final summary shows exactly what persisted (TICKETS.md, MEMORY.md, GitHub, etc.)
+
+### Result
+
+✅ **Session closure protocol is now a verified, documented process** that ensures:
+1. Pending items are captured with specificity
+2. They're written to MEMORY.md (persisted to disk)
+3. They're committed to git and pushed to main
+4. The next session reads from MEMORY and confirms alignment
+
+### Prevention Going Forward
+
+- ✅ Always complete all 6 steps of the SESSION END protocol
+- ✅ Do NOT skip the MEMORY.md write step
+- ✅ Do NOT skip git commit + push verification
+- ✅ Do NOT skip the final summary output
+- ✅ User confirmation of pending items happens before session ends
+- ✅ Next session immediately verifies MEMORY content matches actual pending work
+
+**See:** `CLAUDE.md` → "🚨 SESSION END" section for the complete updated protocol.
+
+---
+
 ## Incident: May 4, 2026 — Exposed Supabase Service Role JWT on GitHub
 
 **Severity:** 🔴 CRITICAL (Master database access key exposed)
