@@ -74,6 +74,8 @@ Pattern surfacing, semantic search across moments, themed views, optional biblic
 
 ## Section 2: Pillars (Phase 2+)
 
+**Pillar Architecture Update (May 7, 2026):** Journal Creation has been inserted after Soaking/Prayer (Pillar 3), shifting subsequent pillars from 4→5, 5→6, 6→7, 7→8. Total structure is now 0-8 (9 pillars).
+
 ### Pillar 0: Onboarding (Sign-Up & Account Setup)
 
 **Status:** ✅ Design Complete (T-060), Implementation Ready  
@@ -170,96 +172,206 @@ Both powered by Rich Context to reference user's actual story and themes. Galler
 
 ---
 
-### Pillar 4: Editing
+### Pillar 4: Journal Creation (Synthesis + Dwelling Place)
+
+**Status:** ✅ Design Complete (P4_SUMMARY.html), Implementation Ready  
+**Locked:** LLM-powered synthesis (title + body), Rich Context powered, Dwelling Place tab as home, photo management v1, mood/tag selection, editability (detail view only), soft delete capability
+
+**Design Skeleton:** See [`docs/P4_SUMMARY.html`](P4_SUMMARY.html) for complete design specification including 6-step happy path (capture → synthesis → journal editing), journal artifact structure, LLM output format, 10 locked decisions, and integration points with Pillar 3 (Soaking).
+
+**Core Intent:** Transform captured voice conversation into a synthesized journal entry using Rich Context (conversation history + themes) to generate personalized title and body. Enable users to dwell on their moments through a beautifully composed narrative, then attach guided prayer for reflection.
+
+**Journal Artifact Structure:**
+```swift
+struct JournalEntry: Codable {
+    let id: String                              // UUID
+    let momentId: String                        // Reference to original Pillar 1 capture
+    let dateCreated: Date                       // ISO timestamp
+    let title: String                           // Auto-generated (4-6 words)
+    let body: String                            // LLM synthesis (2-3 paragraphs)
+    let moods: [String]                         // 2-3 tags from predefined palette (Reflective, Conflicted, Exhausted, Hopeful, Loved, Prayerful, etc.)
+    let photos: [PhotoReference]                // User can add/remove (post-synthesis)
+    let prayerReference: String?                // Link to Prayer artifact from Pillar 3
+    let originalTranscript: String              // Original moment body (read-only in entry tab)
+    let edited: Bool                            // Tracks if journal text was edited post-synthesis
+    let deleted: Bool                           // Soft delete flag
+    let deletedAt: Date?                        // Timestamp of soft delete
+    let encryptedContent: Data                  // AES-256-GCM encrypted (same as Pillar 2)
+    let encryptionKey: String                   // Derived from user password (Argon2id)
+}
+```
+
+**Happy Path (6 Steps):**
+1. **Capture Complete** → User returns to Moments list after saving moment
+2. **Confirmation Screen (Option A)** → "Captured your moment! We briefly talked about [theme1, theme2, theme3]. Want to pray over these things?"
+3. **Guided Prayer (v1)** → User optionally prays (prayer artifact created/linked)
+4. **Journal Synthesis (Background)** → LLM generates title + body using Rich Context + conversation themes
+5. **Dwelling Place Tab** → User sees synthesized journal entry with title, body, suggested moods, original transcript (Entry tab)
+6. **Editing & Customization** → User can edit title/body (detail view only), select/adjust moods, add/remove photos, delete entry
+
+**LLM Synthesis Output Format:**
+- **Title:** 4-6 words, thematic, capturing essence of moment (e.g., "When Doubt Became Permission to Ask")
+- **Body:** 2-3 paragraphs of prose narrative (not bullet points, not analysis), using Rich Context to reference user's story/themes
+- **Moods:** System-suggested 2-3 moods from predefined palette (user can override)
+
+**Success Metrics:**
+- LLM synthesis latency: <2 sec for average moment
+- User sentiment on journal quality: >4.0/5.0 on post-capture survey
+- Dwelling engagement: >60% of users open Dwelling Place within 24h of synthesis
+- Edit rate: <20% of users edit synthesized text (indicates strong synthesis quality)
+
+**Open Questions (Deferred):**
+- Synthesis latency UX — show "generating journal..." or silently in background?
+- Prayer artifact storage — how is prayer object persisted (designer decision)
+- Empty/very short captures — how to handle synthesis on <5 second recordings?
+- Offline synthesis capability — should synthesis be available offline or cloud-only?
+- Final LLM provider selection — Gemini 2.0 Flash vs Mistral 7B (cost + latency tradeoff)
+
+**Exclusions:** AI-generated moment imagery (post-MVP), analysis format (Rosebud-style), insight/affirmation format, structured form-based synthesis, collaborative journaling
+
+**Encryption:** AES-256-GCM, same key derivation as Pillar 2 (Argon2id from password), encrypted at rest and in transit
+
+#### Implementation Tickets
+*(To be created after all pillar happy paths locked)*
+- T-XXX: LLM synthesis engine integration (Gemini/Mistral selection + implementation)
+- T-XXX: Journal entry UI and Dwelling Place tab (design + engineering)
+- T-XXX: Photo management v1 (camera + upload, add/remove from journal)
+- T-XXX: Mood/tag selection UI (predefined palette)
+- T-XXX: Journal entry editing (title + body, detail view only)
+- T-XXX: Soft delete capability (archive vs permanent delete flow)
+- T-XXX: Rich Context integration for synthesis (conversation history + themes)
+- T-XXX: Encryption for journal entries (AES-256-GCM)
+- *(Dependencies: Pillar 1 (Capture), Pillar 2 (Encryption T-062), Pillar 3 (Soaking) must be complete)*
+
+---
+
+### Pillar 5: Editing (Moment + Journal Refinement)
 
 **Status:** 🔄 Phase 2 Beta (Design In Progress)  
-**Locked:** Not yet locked; design in progress
+**Locked:** Edit scope, journal editability (detail view only), soft delete strategy, soft delete recovery window (30 days)
+
+**Design Skeleton:** See [`docs/P5_EDITING_STRATEGY.md`](P5_EDITING_STRATEGY.md) for complete specification including 5 happy paths (edit transcript pre/post synthesis, delete with recovery), 8 locked decisions, and soft delete recovery flow.
+
+**Core Concept:**  
+Users can edit captured moment transcript (before/after synthesis), edit synthesized journal title and body (detail view only), and soft-delete moments or journal entries with recovery window. Encourages re-capture rather than endless editing.
 
 **Open Questions:**
 - Should users be able to edit transcripts before saving?
 - Can they edit after saving?
 - Should edit history be visible?
 - Should we alert users if they edit significantly after the fact?
+- Recovery flow for soft-deleted entries?
 
-**Exclusions:** Collaborative editing, version control
+**Exclusions:** Collaborative editing, version control, edit history timeline
 
 #### Implementation Tickets
 *(To be created after design skeleton is locked)*
-- T-XXX: Edit existing moment (design + engineering)
+- T-XXX: Edit moment transcript (pre/post capture)
+- T-XXX: Edit journal entry title and body (detail view only)
 - T-XXX: Delete moment with confirmation (design + engineering)
-- *(Dependencies: Pillar 3 implementation must be complete)*
+- T-XXX: Delete journal entry with soft delete (design + engineering)
+- T-XXX: Recovery/restore for soft-deleted entries (optional)
+- *(Dependencies: Pillar 1 (Capture), Pillar 4 (Journal Creation) must be complete)*
 
 ---
 
-### Pillar 5: Search & Discovery
+### Pillar 6: Search & Discovery
 
 **Status:** 🔄 Phase 2 Beta (Design In Progress)  
-**Locked:** Not yet locked; design in progress
+**Locked:** Full-text search (moments + journals), encryption-aware search index, real-time results, filter combination (AND logic), exclude soft-deleted items
+
+**Design Skeleton:** See [`docs/P6_SEARCH_STRATEGY.md`](P6_SEARCH_STRATEGY.md) for complete specification including 6 happy paths (full-text, date filter, mood filter, chronological browse, pinned moments, sense of Lord search), 8 locked decisions, and encrypted search index architecture.
+
+**Core Concept:**  
+Enable users to find and revisit moments and journals across their entire history. Support full-text search across transcripts and journal bodies, multi-filter views (by date, mood, theme, sense of Lord), and contextual browsing. Make re-engagement effortless through discovery.
+
+**Phase 2 Scope:**  
+- Full-text search across moment transcripts and journal bodies
+- Filter by date range, moods, tags, sense of Lord
+- Search results surface context (snippet + metadata)
+- Encryption-aware indexing (searching without decrypting entire library)
+
+**Post-Launch Scope:**  
+- Semantic search (AI-powered meaning-based search, not just keywords)
+- AI-powered recommendations (based on themes and patterns)
+- Saved searches / custom filters
 
 **Open Questions:**
-- Full-text search, semantic search, or both?
-- Filter by date, theme, sense of Lord reference?
-- Should search index be encrypted?
+- Full-text search, semantic search, or both for MVP?
+- Filter by date, mood, theme, sense of Lord reference?
+- Should search index be encrypted or indexed in plaintext?
 - How should search results surface context (full moment or snippet)?
 
-**Exclusions:** Tag-based organization, AI-powered recommendations (post-launch)
+**Exclusions:** Tag-based organization (handled by Pillar 4/5), AI recommendations (post-launch), social/collaborative search
 
 #### Implementation Tickets
 *(To be created after design skeleton is locked)*
 - T-XXX: Full-text search implementation (design + engineering)
+- T-XXX: Encrypted search index (engineering)
 - T-XXX: Filter/refine search results (design + engineering)
-- *(Dependencies: Pillar 3 implementation; Pillar 2 encryption if applicable)*
+- T-XXX: Search UI and results display (design + engineering)
+- *(Dependencies: Pillar 1 (Capture), Pillar 4 (Journal Creation), Pillar 2 (Encryption)*
 
 ---
 
-### Pillar 6: Formation Intelligence (Patterns & Themes)
+### Pillar 7: Formation Intelligence (Patterns & Themes)
 
 **Status:** 🔄 Phase 2 Beta (Design In Progress)  
-**Locked:** Not yet locked; design in progress
+**Locked:** Theme detection at 3+ occurrences, Rich Context powered, invitational framing (never prescriptive), no interpretation, user's own language for theme names, theme linking (moments ↔ journals), timeline view
 
-**Core Concept (Draft):**  
-Detect recurring themes across moments (anxiety, joy, relational moments, breakthroughs) and surface them as text-based insights without interpretation. Use Rich Context to understand user's actual story.
+**Design Skeleton:** See [`docs/P7_FORMATION_INTELLIGENCE_STRATEGY.md`](P7_FORMATION_INTELLIGENCE_STRATEGY.md) for complete specification including 5 happy paths (discover theme, explore in reflection, weekly summary, filter by theme, monthly review), 8 locked decisions, and LLM-powered theme detection architecture.
+
+**Core Concept:**  
+Detect recurring themes across moments (anxiety, joy, relational moments, breakthroughs, God sightings) and surface them as invitations for reflection — never as interpretation. Use Rich Context to understand user's actual story and spiritual journey. Surface themes that emerge naturally from captured moments over time, helping users *notice* their own patterns.
 
 **Phase 2 Scope:**  
-- Theme detection (Socratic, not prescriptive)
-- Text-based pattern surfacing
-- Integration with Soaking flows (reference themes in prayer/prompts)
+- Theme detection (Socratic, not prescriptive) — detect patterns in user's own language
+- Text-based pattern surfacing (e.g., "You've reflected on doubt 8 times in the past month. What patterns do you notice?")
+- Integration with Soaking flows (reference themes in prayer/prompts, enabling contextual reflection)
+- Theme dashboard or insights view (optional pull-based surfacing)
 
 **Post-Launch Scope:**  
-- Visual gallery/imagery
+- Visual gallery/imagery by theme
 - AI-generated moment illustrations
 - Advanced semantic analysis
+- Predictive pattern recognition (what might emerge next based on history)
 
 **Open Questions:**
-- How to detect themes without prescriptive categorization?
-- Should themes be user-tagged or AI-detected?
-- How often should pattern reports surface?
-- Should theme insights be pushed to users or pull-based?
+- How to detect themes without prescriptive categorization (user-detected vs AI-detected)?
+- Should themes be user-tagged or AI-detected or both?
+- How often should pattern reports surface (weekly? monthly)?
+- Should theme insights be pushed to users (notifications) or pull-based (dashboard)?
+- How do we avoid over-interpreting or spiritually directing users?
 
-**Exclusions:** Spiritual interpretation, predictive modeling, prescriptive insights, visual galleries
+**Exclusions:** Spiritual interpretation, prescriptive insights ("You should..."), devotional content, predictive modeling (Phase 2), visual galleries (Phase 2)
 
 #### Implementation Tickets
 *(To be created after design skeleton is locked)*
 - T-XXX: Theme detection algorithm (design + engineering)
+- T-XXX: Rich Context integration for theme surfacing (engineering)
 - T-XXX: Surface themes in Soaking prompts (integration)
-- T-XXX: Theme report/dashboard UI (design + engineering)
-- *(Dependencies: Pillar 3 implementation; Rich Context integration)*
+- T-XXX: Theme dashboard/insights UI (design + engineering)
+- T-XXX: Theme-based filters in Search (integration with Pillar 6)
+- *(Dependencies: Pillar 3 (Soaking), Pillar 4 (Journal Creation), Rich Context architecture)*
 
 ---
 
-### Pillar 7: Beta & Marketing
+### Pillar 8: Beta & Marketing
 
 **Status:** 🔄 Phase 2 Beta (Design In Progress)  
-**Locked:** Not yet locked; design in progress
+**Locked:** Closed beta (invite-only), cohort structure (consistent vs selective reflectors), feedback collection (analytics + surveys + interviews), community platform (Discord), email cadence (weekly digest + bi-weekly feature highlights + periodic interviews), success metric (WAR 40-50% by week 8)
+
+**Design Skeleton:** See [`docs/P8_BETA_MARKETING_STRATEGY.md`](P8_BETA_MARKETING_STRATEGY.md) for complete specification including 7 happy paths (self-signup, cohort enrollment, in-app feedback, interviews, Discord community, email engagement, metrics dashboard), 8 locked decisions, and cohort-based rollout strategy.
 
 **Core Concept:**  
-Expand from Phase 1 personal dogfooding to Phase 2 closed beta with targeted user cohorts. Build self-signup flow, manage beta cohorts, gather qualitative feedback on return/reflection experience.
+Expand from Phase 1 personal dogfooding to Phase 2 closed beta with targeted user cohorts (consistent reflectors vs selective reflectors). Validate dwelling behavior at scale through analytics, surveys, and 1:1 interviews. Build community and gather qualitative insights to inform Phase 2+ iteration. Establish foundation for public launch strategy.
 
 **Phase 2 Scope:**
 - Self-signup flow for beta users
 - Beta cohort management (closed beta, limited seats)
 - Feedback collection (surveys, interviews, usage analytics)
-- Community engagement (Discord, email list)
+- Community engagement (Discord, email list, early adopter program)
+- Cohort-based iteration and feedback loops
 
 **Post-Launch Scope:**
 - App Store submission and marketing
@@ -269,48 +381,51 @@ Expand from Phase 1 personal dogfooding to Phase 2 closed beta with targeted use
 **Open Questions:**
 - How many users for Phase 2 Beta (50? 100? 500?)?
 - Should we use waitlist/invites or open signup?
-- What feedback mechanisms during beta?
+- What feedback mechanisms during beta (surveys? interviews? in-app feedback)?
 - How do we measure "dwelling" behavior qualitatively?
+- What cohort segments should we prioritize for Phase 2 (consistent reflectors first)?
 
-**Exclusions:** Paid advertising, content marketing, App Store launch, broad marketing campaigns
+**Exclusions:** Paid advertising, content marketing, App Store launch, broad marketing campaigns (Phase 2), growth hacking
 
 #### Implementation Tickets
 *(To be created after design skeleton is locked)*
 - T-XXX: Self-signup flow (design + engineering)
 - T-XXX: Beta user management dashboard (design + engineering)
 - T-XXX: Feedback collection system (surveys, analytics)
-- *(Dependencies: All Pillars 1-6 implementation must be functional for beta)*
+- T-XXX: Beta onboarding and cohort tracking (design + engineering)
+- *(Dependencies: All Pillars 1-7 implementation must be functional for beta)*
 
 ---
 
-### Pillar 8: Notifications
+### Pillar 9: Notifications & Nudges (Deferred)
 
-**Status:** ⚪ Design Deferred (Pillar 8 — Last)  
-**Locked:** Concept locked; design deferred to after Phase 2 other pillars launched
+**Status:** ⭕ Design Deferred (Post-Beta)  
+**Locked:** Concept locked; design deferred to after Phase 2 other pillars validated
 
 **Core Concept:**  
-Pattern detection + contextual nudges. When user reflects on a theme 3+ times without prayer, send gentle notification: *"You reflected on anxiety, but haven't prayed. Want to now?"* Invitational, not prescriptive.
+Pattern detection + contextual nudges. When user reflects on a theme 3+ times without prayer, send gentle notification: *"You reflected on anxiety, but haven't prayed. Want to now?"* Invitational, not prescriptive. Use Rich Context to make nudges deeply personal.
 
-**Why Deferred to Last:**  
-We need to confirm what experiences we are creating before knowing what we are notifying dwellers of. Notifications requires all other pillars (Capture, Soaking, Search, Formation Intelligence) to exist and be validated first.
+**Why Deferred:**  
+We need to confirm what experiences we are creating (Pillars 1-8) and validate user behavior in Phase 2 before knowing what we are notifying dwellers of. Notifications requires all other pillars (Capture, Soaking, Search, Formation Intelligence) to exist and be validated in production first.
 
-**Open Questions:**
+**Open Questions (Design Phase):**
 - When should nudges arrive (day after? after 3rd moment? week later)?
 - How to identify themes without prescriptive interpretation?
 - Can users opt-out or customize frequency?
-- What counts as a "theme"?
+- What counts as a "theme" worth notifying on?
 - Should we use push notifications, in-app, or both?
+- How do we avoid notification fatigue?
 
 **Exclusions:** Push notifications for generic content, devotional reminders, urgency framing, prescriptive interpretation
 
-**Design Deferred to Phase 2+:** Competitive research, theme detection strategy, notification frequency caps, user control mechanisms, implementation design
+**Design Deferred to Phase 2+ (Post-Beta):** Competitive research, theme detection strategy, notification frequency caps, user control mechanisms, Rich Context integration for personalization, implementation design
 
 #### Implementation Tickets
-*(To be created after all other pillars ship and design is locked)*
+*(To be created after Pillars 1-8 ship and Phase 2 Beta validates dwelling behavior)*
 - T-XXX: Pattern detection + theme identification (engineering)
 - T-XXX: Notification scheduling + delivery (engineering)
 - T-XXX: User notification preferences UI (design + engineering)
-- *(Dependencies: Pillars 3, 6 must be complete and validated)*
+- *(Dependencies: Pillars 3 (Soaking), 7 (Formation Intelligence) must be complete and validated)*
 
 ---
 

@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 7, 2026 — SESSION END protocol rewritten; Pillar 2 architecture locked; next session objectives finalized
-**Status:** 64/96 tickets complete (66.7%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, Pillars 0–7 strategy locked
+**Last Updated:** May 7, 2026 — Phase 2 Pillar Architecture Complete (0-8); All happy paths documented; PRD updated; Ready for implementation ticket creation
+**Status:** 71+/96 tickets complete (74%+), 0 in progress, Build 107 on TestFlight, Phase 1 complete, Phase 2 pillars 0-8 strategy docs locked and ready
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -284,6 +284,55 @@
 - [ ] **T-075 (Pillar 7):** Unknown Pillar Strategy Doc 🔲 **NOT STARTED**
   - Pillar 7 exists but not yet discussed
   - Next: Get architectural design from Kell, write strategy doc
+
+#### Pillar Architectural Designs — UPDATED (May 7, 2026 Session)
+**Context:** Journal Creation (formerly "Pillar 4: Editing" in PRD) was inserted after Soaking (Pillar 3), causing pillar renumbering. All subsequent pillars shifted up by 1. Architecture is now 0-8 (9 pillars total, with Pillar 9 deferred).
+
+- [x] **T-HYP (Pillar 4):** Journal Creation Strategy Doc ✅ **COMPLETE**
+  - Created `P4_SUMMARY.html` (comprehensive specification)
+  - 6-step happy path: Capture → Confirmation → Prayer (v1) → Synthesis → Dwelling Place → Editing
+  - LLM synthesis (title 4-6 words + body 2-3 paragraphs using Rich Context)
+  - Mood/tag selection, photo management v1, soft delete, encryption (AES-256-GCM)
+  - Success metric: <2 sec synthesis latency, >4.0/5.0 user satisfaction
+
+- [x] **T-HYP (Pillar 5):** Editing Strategy Doc ✅ **COMPLETE**
+  - Created `P5_EDITING_STRATEGY.md` (500+ lines)
+  - 5 happy paths: Edit transcript pre/post-synthesis, edit journal title/body, delete moment, delete journal, recover deleted
+  - Soft delete with 30-day recovery window, edit flags, encryption support
+  - Success metric: <10% edit rate (indicates good synthesis quality)
+
+- [x] **T-HYP (Pillar 6):** Search & Discovery Strategy Doc ✅ **COMPLETE**
+  - Created `P6_SEARCH_STRATEGY.md` (450+ lines)
+  - 6 happy paths: Full-text search, date filter, mood/theme filter, chronological browse, pin moments, sense of Lord search
+  - Encrypted search index, multi-filter combination (AND logic), <200ms latency target
+  - Success metric: >50% search adoption, >30% filter adoption, >80% search success rate
+
+- [x] **T-HYP (Pillar 7):** Formation Intelligence Strategy Doc ✅ **COMPLETE**
+  - Created `P7_FORMATION_INTELLIGENCE_STRATEGY.md` (550+ lines)
+  - 5 happy paths: Discover emerging theme, explore in reflection, weekly summary, filter by theme, monthly review
+  - Theme detection at 3+ occurrences, Rich Context powered, invitational framing (never prescriptive)
+  - Success metric: >50% theme engagement, >4.0/5.0 theme relevance satisfaction
+
+- [x] **T-HYP (Pillar 8):** Beta & Marketing Strategy Doc ✅ **COMPLETE**
+  - Created `P8_BETA_MARKETING_STRATEGY.md` (600+ lines)
+  - 7 happy paths: Self-signup, cohort enrollment/tracking, in-app feedback, interviews, Discord community, email engagement, metrics dashboard
+  - Closed beta with cohort segmentation (consistent reflectors vs selective reflectors), staggered rollout
+  - Success metric: WAR 40-50% by week 8, >50% cohort A retention
+
+- [x] **T-HYP (Architecture Overview):** PILLAR_ARCHITECTURE_COMPLETE.md ✅ **COMPLETE**
+  - Created comprehensive overview showing all 9 pillars (0-8, with 9 deferred)
+  - Executive summary table with status and happy path counts
+  - Data flow diagram, pillar sequencing, cross-pillar features (Rich Context, E2E encryption, soft delete)
+  - Phase 2 success metrics, architectural priorities, file reference guide
+
+- [x] **T-HYP (PRD Update):** Updated PRD.md for 0-8 Pillar Structure ✅ **COMPLETE**
+  - Added header note about pillar architecture update (Journal Creation inserted as Pillar 4)
+  - Updated all pillar descriptions to match new numbering
+  - Added references to new strategy documents (P5, P6, P7, P8)
+  - Clarified Pillar 9 (Notifications) as deferred to Phase 3+
+  - Confirmed all integration points with Rich Context principle
+
+**Status Update:** All Phase 2 Pillars (0-8) now have documented happy paths. Ready for implementation ticket creation.
 
 ### Pillar 6 (Menu Bar) Implementation Tickets (May 6 Session)
 
