@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pillar 2: Security & Privacy — Skeleton Summary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f9fafb;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 30px;
+            font-size: 28px;
+            border-bottom: 3px solid #ef4444;
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            color: #1f2937;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            background: #f3f4f6;
+            padding: 12px 15px;
+            border-radius: 4px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .flow-box {
+            background: #eff6ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .flow-step {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            background: #ef4444;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content strong {
+            display: block;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .step-content p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 700px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tool-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .tool-card strong {
+            display: block;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .tool-card p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .open-questions {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .open-questions li {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #92400e;
+        }
+
+        .decision-locked {
+            background: #dcfce7;
+            border-left: 4px solid #22c55e;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .decision-tentative {
+            background: #fce7f3;
+            border-left: 4px solid #ec4899;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .badge-locked {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-tentative {
+            background: #fce7f3;
+            color: #be185d;
+        }
+
+        .badge-complete {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        th, td {
+            border: 1px solid #e5e7eb;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        th {
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pillar 2: Security & Privacy — Skeleton Summary</h1>
+
+        <div class="section">
+            <h2>What We're Building</h2>
+            <div class="flow-box">
+                <p><strong>Pillar 2 (Security & Privacy)</strong> is the encryption and key management layer that protects all captured moments. Every moment is encrypted locally before syncing to the server, ensuring user data remains private and inaccessible to Dwellable or any third party.</p>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <strong>Account Creation → Key Derivation</strong>
+                    <p>User sets password during signup (pillar 0). Argon2id KDF derives master encryption key from password (memory-hard, salt-based). Master key stored in iOS Keychain. Password never stored locally.</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <strong>Moment Capture → Local Encryption</strong>
+                    <p>Moment captured, transcribed/typed, and auto-headline generated (pillar 1). Plaintext assembled. AES-256-GCM encrypts moment + metadata (authenticated encryption). Ciphertext stored locally in Keychain (doubly encrypted: app layer + OS layer).</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <strong>Sync → Remote Storage</strong>
+                    <p>Background sync detects encrypted moments. Encrypted payload sent to Supabase (server never decrypts). Unencrypted metadata (timestamp, tags, mood) stored separately for indexing/search. Server data is opaque.</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <strong>Retrieval → Decryption on Device</strong>
+                    <p>User opens app. Master key retrieved from Keychain. Encrypted moments fetched from Supabase. AES-256-GCM decrypts locally in RAM only. Plaintext never persisted unencrypted on device.</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <strong>Password Recovery → Key Rotation</strong>
+                    <p>User resets password via email verification. New Argon2id derives new master key. Old encrypted moments re-encrypted locally with new key. No server involvement. All key rotation on-device.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Tools & SDKs Required</h2>
+
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <strong>CryptoKit (Apple Native)</strong>
+                    <p>AES-256-GCM symmetric encryption. Authenticated encryption prevents ciphertext tampering. Part of iOS Foundation framework, no external dependency.</p>
+                    <span class="badge badge-locked">Locked</span>
+                </div>
+
+                <div class="tool-card">
+                    <strong>Argon2id</strong>
+                    <p>Memory-hard key derivation function (KDF). Derives master key from password. GPU-resistant, industry standard post-2020. Via external pod or native implementation (requires evaluation).</p>
+                    <span class="badge badge-locked">Locked</span>
+                </div>
+
+                <div class="tool-card">
+                    <strong>iOS Keychain</strong>
+                    <p>OS-managed secure storage for master encryption key. Encrypted by OS, accessible only to app. Automatic on device lock. No additional tools needed; native API.</p>
+                    <span class="badge badge-locked">Locked</span>
+                </div>
+
+                <div class="tool-card">
+                    <strong>Supabase PostgreSQL</strong>
+                    <p>Server-side encrypted blob storage. pgcrypto available but unused (app handles all encryption). Stores encrypted_content opaque blobs + unencrypted metadata. Already selected for pillar 0 auth.</p>
+                    <span class="badge badge-locked">Locked</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Design Exploration & Rejected Approaches</h2>
+
+            <div class="decision-locked">
+                <strong>Metadata Encryption Strategy:</strong> Encrypting ALL metadata (tags, mood, timestamps) was considered for maximum privacy. Rejected in favor of split strategy: encrypted_content (ciphertext blob) + unencrypted metadata (timestamp, tags, mood). Rationale: unencrypted metadata enables server-side full-text search and indexing without decryption, drastically improving search performance. Risk of metadata exposure deemed acceptable given value of fast search.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Server-Side Encryption (pgcrypto):</strong> PostgreSQL native encryption (pgcrypto) was considered as additional server-side layer. Rejected: app now handles all encryption, server stores encrypted blobs opaque to itself. Cleaner architecture—server is dumb storage, client is security owner.
+            </div>
+
+            <div class="decision-locked">
+                <strong>iCloud Backup Strategy Clarification:</strong> Manual iCloud backup toggle was initially considered (user opts in/out). Clarified: iCloud backup is automatic at OS level. If user restores on new device, encrypted moments sync automatically via Supabase (user signs in, fetches encrypted moments, decrypts locally with password-derived key). No additional user setup required. Automatic backup simplifies UX.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Biometric Unlock Deferral:</strong> Face ID / Touch ID unlock for master key retrieval was considered for Phase 2 MVP. Deferred to Phase 2+ optimization—adds complexity without blocking core security. MVP uses Keychain native security (device unlock required).
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Locked Decisions</h2>
+
+            <div class="decision-locked">
+                <strong>Encryption Standard:</strong> AES-256-GCM (authenticated symmetric encryption). Prevents ciphertext tampering; standard across industry.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Key Derivation:</strong> Argon2id (memory-hard, salt-based, GPU-resistant). Industry standard for password-to-key derivation post-2020.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Key Storage:</strong> iOS Keychain (OS-managed encryption, automatic on device lock). Master key never persisted in plaintext.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Server Role:</strong> Storage only. Server never has access to plaintext or master keys. Encrypted data is opaque at rest.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Metadata Strategy:</strong> Split encrypted_content (ciphertext) from unencrypted metadata (timestamp, tags, mood). Enables server-side search + indexing without decryption.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Decryption Scope:</strong> Decryption happens only on user's device, in RAM. Plaintext never persisted unencrypted locally or synced to server.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Password Recovery:</strong> Local key re-encryption via password reset. No master key reset; users retain all encrypted moments. Key rotation happens on-device post-reset.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Rich Context Integration:</strong> When pillar 3 (soaking) needs past moments for context synthesis, decrypt locally in-memory, pass plaintext to Gemini only in RAM (never persisted).
+            </div>
+
+            <div class="decision-locked">
+                <strong>Encrypted Data Version Headers:</strong> Encrypted moment payloads include 1-2 byte algorithm version header (e.g., "AES-256-GCM v1"). Enables future algorithm upgrades without breaking decryption. Minimal overhead. Prevents silent failures if encryption standards change in phase 2+.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Tentative / TBD</h2>
+
+            <div class="decision-tentative">
+                <strong>Argon2id Parameters:</strong> Time cost, memory cost, parallelism locked on direction. Exact tuning depends on performance testing on actual iOS devices (iPhone 12 baseline).
+            </div>
+
+            <div class="decision-tentative">
+                <strong>Metadata Encryption:</strong> Should tags, mood, timestamps also be encrypted, or remain unencrypted for indexing? MVP keeps metadata unencrypted for search performance. Future: evaluate selective encryption.
+            </div>
+
+            <div class="decision-tentative">
+                <strong>Biometric Unlock:</strong> Face ID / Touch ID unlock for master key retrieval without password re-entry? Pillar 7 feature, not MVP. Deferred to phase 2+ optimization.
+            </div>
+
+            <div class="decision-tentative">
+                <strong>Account Deletion Policy:</strong> On account deletion, should encrypted moments be deleted immediately or retained in archive? Legal/compliance question, deferred to legal review.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Open Questions</h2>
+
+            <div class="open-questions">
+                <ul>
+                    <li><strong>Keychain Access Control:</strong> Should master key require device unlock? App-level PIN on top of Keychain? Evaluate threat model.</li>
+                    <li><strong>Backup & Restore:</strong> Should iCloud backup include encrypted moments? If user restores on new device, can they decrypt old moments with password?</li>
+                    <li><strong>Sync Conflict Resolution:</strong> If user edits moment offline then syncs, how do we merge encrypted versions? Lamport clock? Last-write-wins?</li>
+                    <li><strong>Argon2id Pod Selection:</strong> Which Argon2id Swift pod is most maintained + performant? Or should we implement via native C bindings?</li>
+                    <li><strong>Server-Side Indexing:</strong> Should we build full-text search on unencrypted metadata, or require client-side decryption for search?</li>
+                    <li><strong>Key Rotation Schedule:</strong> Should master key be rotated periodically (e.g., annually), or only on password reset?</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Success Metrics (Phase 2 Beta)</h2>
+
+            <div class="flow-box">
+                <ul style="list-style-position: inside; margin: 0;">
+                    <li><strong>Encryption Performance:</strong> &lt;100ms to encrypt/decrypt moment on device (no user-perceptible lag)</li>
+                    <li><strong>Key Derivation Speed:</strong> &lt;2s for Argon2id KDF on device (password reset must feel snappy)</li>
+                    <li><strong>Sync Success Rate:</strong> >99% encrypted moments sync without corruption</li>
+                    <li><strong>Zero Data Loss:</strong> 0 unencrypted user moments leak to server or local storage</li>
+                    <li><strong>Password Reset Completion:</strong> >95% users successfully reset password and retain encrypted moments</li>
+                    <li><strong>Keychain Reliability:</strong> 0 failures to retrieve master key from Keychain during normal app usage</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Integration Points with Other Pillars</h2>
+
+            <table>
+                <tr>
+                    <th>Pillar</th>
+                    <th>Integration</th>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 0 (Onboarding)</strong></td>
+                    <td>Password set during signup feeds into Argon2id KDF. Master key derived and stored in Keychain before first capture.</td>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 1 (Capture)</strong></td>
+                    <td>Moment auto-headline generated, then entire moment encrypted with AES-256-GCM before local storage. No plaintext persisted.</td>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 3 (Soaking)</strong></td>
+                    <td>Rich Context decrypts past 20 moments in-memory, passes plaintext to Gemini for context synthesis. Plaintext discarded after LLM processes.</td>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 4 (Editing)</strong></td>
+                    <td>User edits plaintext moment in-memory. Changes re-encrypted with AES-256-GCM. Updated ciphertext synced to server.</td>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 5 (Search)</strong></td>
+                    <td>Full-text search uses unencrypted metadata + server-side indexing. Rich content search (tags, mood) remains on encrypted payload; client decrypts + filters locally.</td>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 6 (Menu Bar)</strong></td>
+                    <td>Today/Entries tabs display plaintext moments after decryption on-device. Ciphertext never displayed to UI.</td>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 7 (Notifications)</strong></td>
+                    <td>Notification metadata (timestamp, category) unencrypted. Full moment content only shown in app after decryption.</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Blocking Status & Next Steps</h2>
+
+            <div class="flow-box">
+                <p><strong>Pillar 2 is the blocking pillar for all downstream development.</strong> Pillar 3 (Soaking) cannot proceed until encryption architecture is locked and key rotation flow is validated.</p>
+                <p style="margin-top: 15px;"><strong>Next Pillar:</strong> Pillar 3 (Soaking & Reflecting on Captures) — depends on Pillar 2 encryption + Rich Context synthesis.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

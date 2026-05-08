@@ -251,3 +251,66 @@ Research documents supporting this finding have been archived in `/archive/docs/
 - ONBOARDING_DESIGN_GUIDELINES.md
 
 These remain available for reference but are no longer in active development docs.
+
+---
+
+## May 7, 2026 — Artifact Delivery: One Big Task at a Time, Not Batched
+
+### The Issue
+
+Generated a 2,200-token response containing three major planning artifacts (Skeleton Diagram, LLM Tournament, Ticket Map) **all at once**, assuming the user wanted them in parallel. Result: lengthy, dense response that didn't invite iterative feedback or refinement on individual pieces.
+
+### The Learning
+
+**Big planning artifacts need iteration, not batch delivery.**
+
+When given a list of deliverables without explicit "do all three now" instruction, presume **one task at a time**:
+- Allows feedback on artifact 1 before starting artifact 2
+- Prevents wasted effort on refinements to artifact 3 if artifact 1 requires pivot
+- Keeps response length manageable (~500-800 tokens per artifact vs. 2,200)
+- Respects that large lists (ticket maps, architecture docs) usually need adjustments as we discover more requirements
+
+### Pattern
+
+- ✅ **If user says:** "I need X, Y, and Z — let's do all three" → deliver all three
+- ✅ **If user says:** "Do one at a time" → one task only
+- ✅ **If I ask:** "Should I do all three now or focus on one?" → explicit permission granted
+- ❌ **If user just says:** "Here's a list of things" → presume one at a time, ask for confirmation before moving to next
+
+### Action
+
+Going forward: One major task per delivery cycle. Iterate until locked. Then ask: "Ready to move to the next one, or do you want more refinement here?"
+
+---
+
+## May 7, 2026 — Notification Strategy Before Tickets
+
+### The Issue
+
+Generated 9 notification tickets (T-093–T-101) **before locking the notification strategy itself**. Tickets became prescriptive about features (FCM setup, segmentation, personalization) without answering the "why" questions first:
+- What is our sparse philosophy exactly? (1-2/month, but when? how to pick which user?)
+- Who gets notified and when? (new users? non-soakers? re-engagement threshold?)
+- What is the segmentation logic really trying to solve?
+
+### The Learning
+
+**Strategy comes before tickets. Tickets are the execution plan for a locked strategy.**
+
+For major features like notifications (which touches product, UX, and backend):
+1. **Lock the strategy first** — Why sparse? When does a user get a notification? What's the re-engagement logic?
+2. **Design the user experience** — What does a notification look like? When does it arrive? How does it feel?
+3. **Document the data requirements** — What signals from moments/user behavior trigger a notification?
+4. **Then write tickets** — Now tickets can be crisp: "Implement segmentation logic for non-soakers" (strategy is already settled)
+
+### Apply To
+
+Before drafting any more tickets for Pillars 6 or 7:
+- Lock the Menu Bar UX strategy (what's the 4-tab philosophy? why this layout?)
+- Lock the Notification strategy (sparse philosophy + segmentation + copy strategy)
+- Lock the Search strategy (what does relevance mean? ranking philosophy?)
+
+Then write tickets.
+
+### Status
+
+Notification strategy is documented in SKELETON_DIAGRAM.md (1-2/month, LLM-personalized, sparse philosophy) but not yet locked as a standalone strategy doc. Recommend creating `NOTIFICATION_STRATEGY.md` before implementing T-093–T-101.

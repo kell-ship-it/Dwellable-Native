@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pillar 1: Capture — Skeleton Summary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f9fafb;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 30px;
+            font-size: 28px;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            color: #1f2937;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            background: #f3f4f6;
+            padding: 12px 15px;
+            border-radius: 4px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .flow-box {
+            background: #eff6ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .flow-step {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            background: #3b82f6;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content strong {
+            display: block;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .step-content p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 700px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tool-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .tool-card strong {
+            display: block;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .tool-card p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .open-questions {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .open-questions li {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #92400e;
+        }
+
+        .decision-locked {
+            background: #dcfce7;
+            border-left: 4px solid #22c55e;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .decision-tentative {
+            background: #fce7f3;
+            border-left: 4px solid #ec4899;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .badge-locked {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-tentative {
+            background: #fce7f3;
+            color: #be185d;
+        }
+
+        .badge-complete {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        th, td {
+            border: 1px solid #e5e7eb;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        th {
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pillar 1: Capture — Skeleton Summary</h1>
+
+        <div class="section">
+            <h2>What We're Building</h2>
+            <div class="flow-box">
+                <p><strong>Pillar 1 (Capture)</strong> is the low-friction moment recording system, enhanced for phase 2 beta with conversational text interface, optional prompts, and post-capture completion flow.</p>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <strong>Capture Initiation Screen</strong>
+                    <p>Toggle engine (voice/text icons) + large microphone button + carousel of optional prompt starters. Seamless switching between modes.</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">2a</div>
+                <div class="step-content">
+                    <strong>Voice Capture Flow</strong>
+                    <p>Record with real-time waveform visualization + timer. On-device transcription via Speech Framework. Validate minimum 0.5s audio, reject silence.</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">2b</div>
+                <div class="step-content">
+                    <strong>Text Capture Flow (New for Phase 2)</strong>
+                    <p>Message-style chat interface. System prompts appear as optional starters (left-aligned). User responses in chat bubbles (right-aligned). Send button at bottom. Conversational, not form-like.</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <strong>Post-Capture Processing</strong>
+                    <p>Moment saved locally (encrypted via pillar 2). LLM generates auto-headline. Queued for sync when network available.</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <strong>Post-Capture Completion Screen</strong>
+                    <p>✓ Moment saved confirmation. Display auto-generated headline + preview text. Prompt: "Ready to reflect deeper?" CTAs: "Pray on This Moment" (primary, indexes toward pillar 3), "View My Moment", "Capture Another".</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Tools & SDKs Required</h2>
+
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <strong>AVFoundation</strong>
+                    <p>Native iOS audio recording. Already implemented in Build 107. Handles mic permissions, audio file management, duration timer.</p>
+                    <span class="badge badge-complete">Build 107</span>
+                </div>
+
+                <div class="tool-card">
+                    <strong>Speech Framework</strong>
+                    <p>On-device transcription. Privacy-first, offline-capable. Already implemented in Build 107. Validates audio quality, rejects blank/silence.</p>
+                    <span class="badge badge-complete">Build 107</span>
+                </div>
+
+                <div class="tool-card">
+                    <strong>Keychain + UserDefaults</strong>
+                    <p>Local secure storage. Keychain for encrypted moments, UserDefaults for sync queue. Already implemented in Build 107. Offline-first support.</p>
+                    <span class="badge badge-complete">Build 107</span>
+                </div>
+
+                <div class="tool-card">
+                    <strong>Gemini 2.0 Flash</strong>
+                    <p>LLM for auto-generating headlines from captured text. Summarize to 8 words max. MVP uses free tier (~1-2 tokens per moment).</p>
+                    <span class="badge badge-locked">New P2</span>
+                </div>
+
+                <div class="tool-card">
+                    <strong>PostHog</strong>
+                    <p>Analytics for capture events. Track: capture type (voice/text), time-to-save, prompt engagement, completion rates.</p>
+                    <span class="badge badge-locked">New P2</span>
+                </div>
+
+                <div class="tool-card">
+                    <strong>SwiftUI Native</strong>
+                    <p>UI components: toggle, waveform visualization, chat bubbles, completion screen. No external frameworks needed.</p>
+                    <span class="badge badge-locked">New P2</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Design Exploration & Rejected Approaches</h2>
+
+            <div class="decision-locked">
+                <strong>Text Capture Interface Evolution:</strong> Form-based text input (similar to current Build 107 TypeFlowView) was initially considered. Rejected in favor of message-style chat bubble interface because chat feels conversational and invitational, not form-like. Users engage with system prompts naturally, can ignore them, or start fresh.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Prompt System Evolution:</strong> Initial approach: static prompt carousel shown at initiation, user could swipe/tap. Evolved to conversational system: 1 prompt upfront at capture initiation, then 1 prompt after each user response (voice or text), continuing naturally throughout capture. This mirrors human conversation better than carousel alone.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Reflection Prompts Placement:</strong> Reflection prompts are intentionally NOT in P1 (capture) as continuous dialogue. Instead: 3 reflection prompts appear in P0 (onboarding, intent clarification phase) + conversational prompts during capture (P1) are different—they guide reflection on the moment itself. Separation keeps phases distinct: P0 is "who are you?", P1 is "what happened?", P3 is "what does this mean?"
+            </div>
+
+            <div class="decision-locked">
+                <strong>Completion Screen Routing:</strong> Considered: different CTAs based on capture type (voice vs text). Rejected: single primary CTA ("Pray on This Moment") for both. Keeps UX consistent, indexes all users toward P3 soaking equally.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Locked Decisions</h2>
+
+            <div class="decision-locked">
+                <strong>Voice-First + Text Fallback:</strong> Voice primary (100% phase 1 adoption proven). Text is secondary but equal capability. Both routes to same completion flow.
+            </div>
+
+            <div class="decision-locked">
+                <strong>On-Device Transcription:</strong> Speech Framework (Apple native). Privacy-first, offline-capable, no API keys exposed.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Text Message Interface:</strong> Chat bubble style for text capture. Conversational, invitational (not form-like). System prompts optional starters.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Optional Prompts:</strong> Prompts are never mandatory. Users can ignore carousel and start fresh. Soft invitation to reflection.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Post-Capture Completion Screen:</strong> Show moment + headline, ask "Ready to reflect deeper?", index heavily toward "Pray on This Moment" CTA (pillar 3 soaking).
+            </div>
+
+            <div class="decision-locked">
+                <strong>Integration with Pillar 0:</strong> First capture embedded in onboarding flow. Completion screen leads to post-entry celebration (pillar 0 step 4b).
+            </div>
+
+            <div class="decision-locked">
+                <strong>Encryption-Ready:</strong> All moments prepared for E2E encryption (pillar 2). No changes to capture logic; encryption happens at sync layer.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Intent-Based Context Prompts:</strong> Prompts shown on capture screen are personalized based on user's selected intents from pillar 0 onboarding. Provides contextually relevant guidance for reflection (e.g., user selected "Deepen faith" → prompts about God's presence; selected "Process emotions" → prompts about feelings). Makes capture more relevant + invitational.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Conversational Prompt System (During Capture):</strong> 1 reflection prompt shown upfront at capture initiation. After user responds (voice transcribed or text entered), another prompt appears. Continues conversationally throughout capture. Applied to both voice + text flows. May gate after N prompts per session (premium feature).
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Tentative / TBD</h2>
+
+            <div class="decision-tentative">
+                <strong>Prompt Content Source:</strong> MVP uses static/generic prompts in carousel. Next version: prompts personalized based on past conversations + detected themes (requires narrative continuity from phase 2+).
+            </div>
+
+            <div class="decision-tentative">
+                <strong>Auto-Generated Headline Quality:</strong> LLM-generated headlines locked for direction. Exact quality depends on Gemini integration. May need human refinement loop in beta.
+            </div>
+
+            <div class="decision-tentative">
+                <strong>Prompt Carousel Behavior:</strong> Should prompts auto-advance, require swipe/tap, or randomize each session? UX refinement during design phase.
+            </div>
+
+            <div class="decision-tentative">
+                <strong>Text Message Visual Refinement:</strong> Chat bubble styling locked conceptually. Color scheme, animations, spacing refined during design handoff.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Open Questions</h2>
+
+            <div class="open-questions">
+                <ul>
+                    <li><strong>Prompt Engagement Tracking:</strong> Should we log which prompts users engage with vs ignore? (Informs next-version personalization strategy)</li>
+                    <li><strong>Completion Screen Variants:</strong> Should CTA buttons differ based on capture type (voice vs text)? E.g., voice → "Pray on This", text → "Add more context"?</li>
+                    <li><strong>Multi-Prompt Capture:</strong> Can users capture multiple moments in rapid succession? Any rate limiting or cooldown?</li>
+                    <li><strong>Prompt Freshness:</strong> How often should prompt carousel rotate? Per session? Per day? Random?</li>
+                    <li><strong>Headline Customization:</strong> Should users be able to edit auto-generated headlines immediately on completion screen, or defer to pillar 4 (editing)?</li>
+                    <li><strong>Audio File Cleanup:</strong> Where/when are temporary audio files deleted after transcription?</li>
+                    <li><strong>Empty Moment Handling:</strong> If user captures but doesn't add "sense of Lord" or other metadata, what's the minimum valid moment?</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Success Metrics (Phase 2 Beta)</h2>
+
+            <div class="flow-box">
+                <ul style="list-style-position: inside; margin: 0;">
+                    <li><strong>Capture Adoption:</strong> >95% of daily active users capture at least 1 moment/week</li>
+                    <li><strong>Voice Quality:</strong> >95% transcription accuracy in normal environments</li>
+                    <li><strong>Text Engagement:</strong> >60% of users use text capture at least once (vs voice-only)</li>
+                    <li><strong>Prompt Engagement:</strong> >50% of users tap a prompt starter (vs ignoring carousel)</li>
+                    <li><strong>Completion Rate:</strong> >85% of captured moments reach post-capture screen (not abandoned)</li>
+                    <li><strong>Time-to-Save:</strong> &lt;30 seconds average from capture initiation to completion screen</li>
+                    <li><strong>Headline Quality:</strong> >70% user satisfaction with auto-generated headlines (rated in pillar 4 editing)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Integration Points with Other Pillars</h2>
+
+            <table>
+                <tr>
+                    <th>Pillar</th>
+                    <th>Integration</th>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 0 (Onboarding)</strong></td>
+                    <td>First capture happens in onboarding flow. Completion screen leads to post-entry celebration.</td>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 2 (Security)</strong></td>
+                    <td>All moments encrypted before sync. Capture logic unchanged; encryption at sync layer.</td>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 3 (Soaking)</strong></td>
+                    <td>Completion screen CTA "Pray on This Moment" routes to pillar 3 prayer/prompts flow. Captured moments feed rich context synthesis.</td>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 4 (Editing)</strong></td>
+                    <td>Auto-generated headlines editable post-capture. Users can refine, re-tag, add mood in editing flow.</td>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 5 (Search)</strong></td>
+                    <td>Captured moments searchable via full-text search, calendar filters, tag filters.</td>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 6 (Menu Bar)</strong></td>
+                    <td>Create tab routes to capture screen. Captured moments appear in Today/Entries tabs.</td>
+                </tr>
+                <tr>
+                    <td><strong>Pillar 7 (Notifications)</strong></td>
+                    <td>Notifications nudge users to capture. Capture counts inform engagement segmentation.</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Next Steps</h2>
+
+            <div class="flow-box">
+                <p><strong>Pillar 2: Security & Privacy</strong> — Blocking pillar. Must complete before pillar 3 (soaking). Design E2E encryption (AES-256-GCM + Argon2id), iOS Keychain integration, password recovery flow.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

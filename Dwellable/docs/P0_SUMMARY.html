@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P0: Onboarding — Skeleton Summary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f9fafb;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 30px;
+            font-size: 28px;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            color: #1f2937;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            background: #f3f4f6;
+            padding: 12px 15px;
+            border-radius: 4px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .flow-box {
+            background: #eff6ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .flow-step {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            background: #3b82f6;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content strong {
+            display: block;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .step-content p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 700px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tool-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .tool-card strong {
+            display: block;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .tool-card p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .open-questions {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .open-questions li {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #92400e;
+        }
+
+        .decision-locked {
+            background: #dcfce7;
+            border-left: 4px solid #22c55e;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .decision-tentative {
+            background: #fce7f3;
+            border-left: 4px solid #ec4899;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .badge-locked {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-tentative {
+            background: #fce7f3;
+            color: #be185d;
+        }
+
+        .badge-deferred {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>P0: Onboarding — Skeleton Summary</h1>
+
+        <div class="section">
+            <h2>What We're Building</h2>
+            <div class="flow-box">
+                <p><strong>Pillar 0 (Onboarding)</strong> is the first-time user journey that takes spiritual seekers from discovery to their first captured moment, with personalization grounded in their intent.</p>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <strong>Initial Decision Screen</strong>
+                    <p>Sign Up / Sign In choice. Returning users go to Sign-In. New users proceed to carousel.</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <strong>Product Expectation Carousel (4 Cards)</strong>
+                    <p>Aspirational lifestyle imagery + spiritual tone. Each card weaves problem clarity, value clarity, education, and trust throughout (not 1:1 mapping).</p>
+                    <p><strong>Cards:</strong> Partnership with God | Hidden Private Moments | Capture → Reflect → Grow | Ready to dwell deeper?</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <strong>Access & Identity Formation (Model 1: Embedded Progressive)</strong>
+                    <p>Display name → Intent question → Email/Password (no separate "Create Account" screen). Google/Apple IDPs available on Sign-In screen only (not in signup flow).</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <strong>Intent Calibration + Personalized Promise</strong>
+                    <p>User selects 2-3 intents from list of 6. Gemini generates a personalized promise confirming Dwellable's understanding and outcomes.</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <strong>Capture Screen</strong>
+                    <p>Embedded in onboarding. User captures their first moment (voice or text).</p>
+                </div>
+            </div>
+
+            <div class="flow-step">
+                <div class="step-number">6</div>
+                <div class="step-content">
+                    <strong>Post-Capture Celebration + Invitation to Soak</strong>
+                    <p>"Congratulations for your first entry." CTA: "Pray" / "Soak" (same experience, label TBD) or "See my moment." Design indexes heavily toward Pray/Soak.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Tools & SDKs Required</h2>
+
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <strong>Supabase Auth</strong>
+                    <p>Email/password signup + Google Sign-In SDK + Apple Sign-In SDK. Handles user account creation and authentication.</p>
+                    <span class="badge badge-locked">Locked</span>
+                </div>
+
+                <div class="tool-card">
+                    <strong>PostHog</strong>
+                    <p>Event analytics for onboarding funnels. Tracks: CTR (carousel → signup), signup completion rate, time-to-first-capture.</p>
+                    <span class="badge badge-locked">Locked</span>
+                </div>
+
+                <div class="tool-card">
+                    <strong>Gemini 2.0 Flash</strong>
+                    <p>LLM for generating personalized promise copy based on user-selected intents. MVP uses free tier (~2-5 tokens per signup).</p>
+                    <span class="badge badge-locked">Locked</span>
+                </div>
+
+                <div class="tool-card">
+                    <strong>SwiftUI Native</strong>
+                    <p>Carousel cards, forms, password validation, navigation. No external UI frameworks needed.</p>
+                    <span class="badge badge-locked">Locked</span>
+                </div>
+            </div>
+
+            <div class="decision-locked">
+                <strong>Backlog item (v2):</strong> Email validation confirmation. Currently skipped in v1 (faster signup). Add to backlog tracking system.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Design Exploration & Rejected Approaches</h2>
+
+            <div class="decision-locked">
+                <strong>Signup Model Evolution:</strong> Model 2 (dedicated "Create Account" screen separate from Sign-In) was explored but rejected. Model 1 (Embedded Progressive) chosen because it feels more conversational and natural for first-time users—questions flow as part of the onboarding experience, not as a separate account creation step.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Email Validation Confirmation:</strong> Email confirmation gating (requiring user to click email link before account activation) was considered for MVP but deferred to v2. MVP prioritizes fast signup (email validated server-side, no manual confirmation required). Future version can add this security layer if needed.
+            </div>
+
+            <div class="decision-locked">
+                <strong>IDP Placement:</strong> Google Sign-In and Apple Sign-In considered for both signup and sign-in flows. Rejected for signup carousel. Currently locked to Sign-In screen only—keeps signup lightweight, prioritizes password-based identity for security model, reduces complexity in first-time flow.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Reflection Prompts During Intent Selection (New):</strong> After carousel, users see 3 reflective prompts (e.g., "Think of a decision that didn't turn out how you hoped. What did you learn?") before committing intents. These help clarify intentions and preview what reflection feels like. Separate from P1 capture experience—this is intent calibration, not moment capture.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Locked Decisions</h2>
+
+            <div class="decision-locked">
+                <strong>Signup Model:</strong> Model 1 (Embedded Progressive). No separate "Create Account" screen. Questions flow naturally as part of onboarding.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Demo Approach:</strong> Carousel cards with aspirational lifestyle imagery (not product UI). Spiritual tone (not explicitly Christian labels, but deeply spiritual language).
+            </div>
+
+            <div class="decision-locked">
+                <strong>Intent List:</strong> 6 intents (Keep journaling habit, Deepen faith, Process emotions, Find peace, Understand God's voice, Practice gratitude). All deliverable in Phase 2 Beta MVP.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Reflection Prompts During Intent Selection:</strong> After carousel, users see reflection prompts (e.g., "Think of a decision that didn't turn out how you hoped. What did you learn?") to help clarify intents and preview what reflection feels like. Prompts can be refreshed. Helps users self-assess + builds confidence before committing intents.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Intent Lock:</strong> Intents are locked at signup (not editable later). Used for first-capture personalization only.
+            </div>
+
+            <div class="decision-locked">
+                <strong>IDP Strategy:</strong> Google/Apple Sign-In available on Sign-In screen only (not in signup carousel flow). Hybrid approach: lightweight decision screen (Sign Up / Sign In) routes users to appropriate flow.
+            </div>
+
+            <div class="decision-locked">
+                <strong>Phase 2 Beta Release:</strong> Option A — Phase 2 Beta fully complete with all 7 pillars → release to App Store as MVP (no staging or feature gates).
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Tentative / TBD</h2>
+
+            <div class="decision-tentative">
+                <strong>Carousel Copy:</strong> 4 cards locked on direction and imagery. Exact copy is aspirational placeholder — refine during design handoff.
+            </div>
+
+            <div class="decision-tentative">
+                <strong>Password Strength Requirements:</strong> Suggested minimum 8 characters + mix of letters + numbers. Visual strength indicator optional. Not yet validated with UX/design.
+            </div>
+
+            <div class="decision-tentative">
+                <strong>Pray vs. Soak Label:</strong> Both options represent the same experience (P3 Soaking). Decision on final label and UX deferred to P3 skeletal design.
+            </div>
+
+            <div class="decision-tentative">
+                <strong>Post-Capture Experience (P3):</strong> What happens when user taps "Pray" / "Soak"? Full P3 (Soaking) design TBD.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Open Questions</h2>
+
+            <div class="open-questions">
+                <ul>
+                    <li><strong>Backlog tracking:</strong> Where should v2 items (like email validation) be tracked? BACKLOG.md or existing brainstorm doc?</li>
+                    <li><strong>PostHog configuration:</strong> What's the specific event schema for analytics? (e.g., event names, properties, user identity)</li>
+                    <li><strong>Promise screen design:</strong> Should personalized promise be a full-screen card, inline with other copy, or embedded in the "ready to capture?" prompt?</li>
+                    <li><strong>Intent CRUD:</strong> If intents are locked at signup, do we need an admin interface to manage the intent list as it grows post-MVP?</li>
+                    <li><strong>Error handling:</strong> What happens if Gemini promise generation fails? Show static fallback, retry, or graceful skip?</li>
+                    <li><strong>Accessibility:</strong> WCAG compliance for carousel (screen readers, keyboard nav, color contrast)?</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Success Metrics (from P0)</h2>
+
+            <div class="flow-box">
+                <ul style="list-style-position: inside; margin: 0;">
+                    <li><strong>CTR (Click-Through Rate):</strong> % of users who start carousel and complete signup</li>
+                    <li><strong>Signup Completion Rate:</strong> % of users who reach intent selection</li>
+                    <li><strong>Time-to-First-Capture:</strong> Average time from signup to first moment captured</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Next Steps</h2>
+
+            <div class="flow-box">
+                <p><strong>Pillar 1: Capture</strong> — Review current state (Build 107) and assess enhancements needed for Phase 2 Beta MVP.</p>
+                <p style="margin-top: 15px;"><strong>Ticket Creation:</strong> Once all pillar skeletons (0-7) are locked, create detailed tickets per pillar, then comprehensive ticket map.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P0: Onboarding Flows — Model 1 vs Model 2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f9fafb;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 30px;
+            font-size: 28px;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            color: #1f2937;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .flow-diagram {
+            background: #f3f4f6;
+            border-left: 4px solid #3b82f6;
+            padding: 20px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.4;
+            margin: 20px 0;
+        }
+
+        .model-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        @media (max-width: 1000px) {
+            .model-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .model-box {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .model-box h3 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .model-box .flow-diagram {
+            margin: 15px 0;
+            background: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid #e5e7eb;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        th {
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .decision-section {
+            background: #eff6ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .key-note {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .option-list {
+            list-style: none;
+            margin: 20px 0;
+            padding: 0;
+        }
+
+        .option-list li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 14px;
+        }
+
+        .option-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #3b82f6;
+            font-weight: bold;
+        }
+
+        .button-demo {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin: 5px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .button-demo.secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>P0: Onboarding Flows — Model 1 vs Model 2</h1>
+
+        <div class="section">
+            <h2>Initial Decision Screen (Both Models)</h2>
+            <p>Every new user starts here. Returning users go directly to Sign-In.</p>
+            <div class="flow-diagram">┌─────────────────────────┐
+│   Dwellable             │
+│                         │
+│  [ Sign Up ]            │
+│                         │
+│  Already have account?  │
+│  [ Sign In ]            │
+└─────────────────────────┘</div>
+            <div class="decision-section">
+                <strong>Flow:</strong>
+                <ul class="option-list">
+                    <li><strong>Sign In</strong> → Sign-In Screen (email/password, Google, Apple)</li>
+                    <li><strong>Sign Up</strong> → Carousel → Model 1 or Model 2</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Models Side-by-Side</h2>
+            <div class="model-container">
+                <div class="model-box">
+                    <h3>MODEL 1: Embedded & Progressive</h3>
+                    <p style="font-size: 13px; margin-bottom: 15px; color: #666;">Questions feel conversational, one step at a time.</p>
+                    <div class="flow-diagram">Carousel (4 cards)
+[Problem] [Value] [Education] [Trust]
+
+   ↓
+
+┌──────────────────────┐
+│ What should we       │
+│ call you?            │
+│                      │
+│ [ Name ]             │
+│                      │
+│ [Next]               │
+└──────────────────────┘
+
+   ↓
+
+┌──────────────────────┐
+│ What brings you to   │
+│ Dwellable?           │
+│                      │
+│ [ Interest/reason ]  │
+│                      │
+│ [Next]               │
+└──────────────────────┘
+
+   ↓
+
+┌──────────────────────┐
+│ Secure your moments  │
+│ with God             │
+│                      │
+│ Email: [ _ ]         │
+│ Password: [ _ ]      │
+│                      │
+│ [Create Account &    │
+│  Capture]            │
+└──────────────────────┘
+
+   ↓
+
+Capture Screen
+   ↓
+✓ Moment saved</div>
+                    <div class="key-note">
+                        <strong>Key:</strong> No separate "Create Account" screen. Progressive flow feels like an extension of capturing.
+                    </div>
+                </div>
+
+                <div class="model-box">
+                    <h3>MODEL 2: Dedicated Account Screen</h3>
+                    <p style="font-size: 13px; margin-bottom: 15px; color: #666;">All account details on one screen, then capture.</p>
+                    <div class="flow-diagram">Carousel (4 cards)
+[Problem] [Value] [Education] [Trust]
+
+   ↓
+
+┌──────────────────────┐
+│ CREATE ACCOUNT       │
+│                      │
+│ Name: [ _ ]          │
+│ Email: [ _ ]         │
+│ Password: [ _ ]      │
+│                      │
+│ What brings you?     │
+│ [ _ ]                │
+│                      │
+│ [Create Account]     │
+└──────────────────────┘
+
+   ↓
+
+Capture Screen
+   ↓
+✓ Moment saved</div>
+                    <div class="key-note">
+                        <strong>Key:</strong> Clear visual break with "CREATE ACCOUNT" header. All fields collected in one place.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Sign-In Screen (Both Models)</h2>
+            <p>Existing users or those choosing to sign in see this:</p>
+            <div class="flow-diagram">┌──────────────────────┐
+│ SIGN IN              │
+│                      │
+│ Email: [ _ ]         │
+│ Password: [ _ ]      │
+│                      │
+│ [Sign in with Email] │
+│                      │
+│ ─── OR ───           │
+│                      │
+│ [Sign in with Google]│
+│ [Sign in with Apple] │
+│                      │
+│ Don't have account?  │
+│ [Sign Up]            │
+└──────────────────────┘
+   ↓
+[Home / Menu Bar]</div>
+        </div>
+
+        <div class="section">
+            <h2>Side-by-Side Comparison</h2>
+            <table>
+                <tr>
+                    <th>Aspect</th>
+                    <th>Model 1 (Progressive)</th>
+                    <th>Model 2 (Dedicated Screen)</th>
+                </tr>
+                <tr>
+                    <td><strong>Visual breaks</strong></td>
+                    <td>Minimal (feels conversational)</td>
+                    <td>One clear break ("CREATE ACCOUNT")</td>
+                </tr>
+                <tr>
+                    <td><strong>Form fields per screen</strong></td>
+                    <td>1–2 fields at a time</td>
+                    <td>All fields at once (name, email, password, interest)</td>
+                </tr>
+                <tr>
+                    <td><strong>Cognitive load</strong></td>
+                    <td>Lower (progressive)</td>
+                    <td>Higher (all at once)</td>
+                </tr>
+                <tr>
+                    <td><strong>Tone</strong></td>
+                    <td>Conversational, intimate</td>
+                    <td>Transactional, clear</td>
+                </tr>
+                <tr>
+                    <td><strong>Time to capture</strong></td>
+                    <td>Slightly longer (more screens)</td>
+                    <td>Slightly faster (one form)</td>
+                </tr>
+                <tr>
+                    <td><strong>Drop-off risk</strong></td>
+                    <td>Spread across multiple screens</td>
+                    <td>Concentrated on one screen</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Post-Signup UX (Decision Needed)</h2>
+            <p>After the user's first moment is saved, where should they land?</p>
+            <div class="decision-section">
+                <ul class="option-list">
+                    <li><strong>Option A:</strong> Home menu bar (Today tab active, showing their moment)</li>
+                    <li><strong>Option B:</strong> Celebration screen ("You've captured your first moment") → then home</li>
+                    <li><strong>Option C:</strong> Brief prompt (explore galleries? settings?) → then home</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

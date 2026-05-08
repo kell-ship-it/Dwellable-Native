@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pillar 1: Text Message Capture Interface + Completion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f9fafb;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 30px;
+            font-size: 28px;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            color: #1f2937;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .screen-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+
+        @media (max-width: 1000px) {
+            .screen-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .phone-frame {
+            background: #000;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            aspect-ratio: 9/19.5;
+            display: flex;
+            flex-direction: column;
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        .phone-notch {
+            background: #000;
+            height: 30px;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 8px;
+        }
+
+        .phone-screen {
+            background: #1a1a1a;
+            border-radius: 32px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .phone-header {
+            background: #000;
+            color: white;
+            padding: 12px 20px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .phone-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message-bubble {
+            margin-bottom: 12px;
+            display: flex;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-bubble.user {
+            justify-content: flex-end;
+        }
+
+        .message-bubble.system {
+            justify-content: flex-start;
+        }
+
+        .bubble-content {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .message-bubble.user .bubble-content {
+            background: #a8714a;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-bubble.system .bubble-content {
+            background: #333;
+            color: #e5e7eb;
+            border-bottom-left-radius: 4px;
+        }
+
+        .input-area {
+            padding: 16px;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: white;
+            font-size: 13px;
+            font-family: inherit;
+            resize: none;
+            max-height: 80px;
+        }
+
+        .input-field::placeholder {
+            color: #999;
+        }
+
+        .send-button {
+            background: #a8714a;
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .send-button:hover {
+            background: #c98a60;
+        }
+
+        .completion-content {
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .moment-display {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #a8714a;
+        }
+
+        .moment-headline {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .moment-preview {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            max-height: 60px;
+            overflow: hidden;
+        }
+
+        .celebration-text {
+            font-size: 18px;
+            color: #1f2937;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .cta-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .cta-button {
+            padding: 14px 20px;
+            border-radius: 10px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .cta-primary {
+            background: #a8714a;
+            color: white;
+        }
+
+        .cta-primary:hover {
+            background: #c98a60;
+        }
+
+        .cta-secondary {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+
+        .cta-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .description {
+            background: #eff6ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+
+        .screen-title {
+            text-align: center;
+            color: #1f2937;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pillar 1: Text Message Capture Interface + Post-Capture Completion</h1>
+
+        <div class="screen-container">
+            <!-- TEXT MESSAGE CAPTURE SCREEN -->
+            <div>
+                <div class="screen-title">Text Message Capture Interface</div>
+                <div class="phone-frame">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <span>11:45</span>
+                            <span>⚡ 📶 🔋</span>
+                        </div>
+
+                        <div class="phone-content">
+                            <div class="message-bubble system">
+                                <div class="bubble-content">What's a moment from today where you felt God's presence, even subtly?</div>
+                            </div>
+
+                            <div class="message-bubble user">
+                                <div class="bubble-content">I was driving to work and a song came on that I hadn't heard in years. It reminded me of when I first committed my life to Him. Made me feel grounded again.</div>
+                            </div>
+
+                            <div class="message-bubble system">
+                                <div class="bubble-content">That's beautiful. What does that grounding feel like in your body right now?</div>
+                            </div>
+
+                            <div class="message-bubble user">
+                                <div class="bubble-content">Like a weight lifted off my chest. More spacious.</div>
+                            </div>
+                        </div>
+
+                        <div class="input-area">
+                            <input type="text" class="input-field" placeholder="Type your response...">
+                            <button class="send-button">↑</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="description">
+                    <strong>Design Notes:</strong>
+                    <ul style="margin-top: 8px; margin-left: 20px;">
+                        <li>Chat bubble interface feels conversational, not like a form</li>
+                        <li>System prompts on left (darker), user responses on right (spiritual tone color)</li>
+                        <li>Messages flow naturally; user can engage with prompt or ignore and start fresh</li>
+                        <li>Input at bottom with send button (familiar iMessage-style UX)</li>
+                        <li>No character limit shown; emphasizes freedom to express</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- POST-CAPTURE COMPLETION SCREEN -->
+            <div>
+                <div class="screen-title">Post-Capture Completion Screen</div>
+                <div class="phone-frame">
+                    <div class="phone-notch"></div>
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <span>11:47</span>
+                            <span>⚡ 📶 🔋</span>
+                        </div>
+
+                        <div class="completion-content">
+                            <div class="celebration-text">✓ Moment saved</div>
+
+                            <div class="moment-display">
+                                <div class="moment-headline">A Song in Traffic: Grounding in Presence</div>
+                                <div class="moment-preview">I was driving to work and a song came on that I hadn't heard in years. It reminded me of when I first committed my life to Him...</div>
+                            </div>
+
+                            <div class="celebration-text" style="font-size: 16px;">Ready to reflect deeper?</div>
+
+                            <div class="cta-buttons">
+                                <button class="cta-primary">Pray on This Moment</button>
+                                <button class="cta-secondary">View My Moment</button>
+                                <button class="cta-secondary">Capture Another</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="description">
+                    <strong>Design Notes:</strong>
+                    <ul style="margin-top: 8px; margin-left: 20px;">
+                        <li>Brief celebration: ✓ Moment saved (affirms action without praise)</li>
+                        <li>Display auto-generated headline + preview of captured text</li>
+                        <li>Prompt: "Ready to reflect deeper?" (invitational, not directive)</li>
+                        <li><strong>Primary CTA:</strong> "Pray on This Moment" (index heavily toward soaking/pillar 3)</li>
+                        <li>Secondary CTAs: View moment, Capture another (alternative paths)</li>
+                        <li>Reassuring tone; moment is preserved and encrypted</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <h2>Flow Summary</h2>
+
+        <div class="description">
+            <strong>Text Message Capture Flow:</strong>
+            <ol style="margin-top: 10px; margin-left: 20px;">
+                <li><strong>Initiation:</strong> User lands on capture screen with toggle (voice/text icon) + prompts carousel</li>
+                <li><strong>Tap text icon:</strong> Shifts to message-style interface with system prompt at top</li>
+                <li><strong>User responds:</strong> Types in input field; message bubbles appear naturally</li>
+                <li><strong>Can continue:</strong> System can offer follow-up prompts (optional, swipeable)</li>
+                <li><strong>Submit:</strong> User taps send or "Done capturing" → triggers save + LLM headline generation</li>
+                <li><strong>Completion screen:</strong> Shows moment + headline, offers "Pray on This" or alternative actions</li>
+            </ol>
+        </div>
+
+        <h2>Key Differences from Current TypeFlowView</h2>
+
+        <div class="description">
+            <strong>Current (Build 107):</strong> Full-screen text input, form-like, minimal context
+            <br><br>
+            <strong>Phase 2 Beta Pillar 1:</strong> Chat bubble interface, conversational, prompts provide gentle guidance, feels like dialogue not form submission
+        </div>
+
+        <h2>Integration with Other Pillars</h2>
+
+        <div class="description">
+            <strong>Pillar 0 (Onboarding):</strong> First text capture during onboarding uses this interface<br>
+            <strong>Pillar 2 (Security):</strong> Captured text encrypted before sync<br>
+            <strong>Pillar 3 (Soaking):</strong> Completion screen CTA "Pray on This Moment" routes to prayer/prompts flow<br>
+            <strong>Pillar 4 (Editing):</strong> Auto-generated headline editable post-capture
+        </div>
+    </div>
+</body>
+</html>
