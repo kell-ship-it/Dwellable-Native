@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 7, 2026 — Phase 2 Pillar Architecture Complete (0-8); All happy paths documented; PRD updated; Ready for implementation ticket creation
-**Status:** 71+/96 tickets complete (74%+), 0 in progress, Build 107 on TestFlight, Phase 1 complete, Phase 2 pillars 0-8 strategy docs locked and ready
+**Last Updated:** May 7, 2026 — Phase 2 Pillar Skeletons 0-4 Locked; P5-P8 Strategy Docs Created (awaiting user review); PRD updated with 0-8 architecture
+**Status:** 71+/96 tickets complete (74%+), 0 in progress, Build 107 on TestFlight, Phase 1 complete, Pillars 0-4 locked, Pillars 5-8 pending skeleton review
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -1448,3 +1448,52 @@ T-011 · T-012 · T-013 · T-027 · T-028
 
 - **Next session plan:** Write Pillar 2, 6, and 7 strategy docs (get architectural designs for 6 & 7 from Kell)
 - **Ticket progress:** 62/82 complete (75.6%) — 5 pillar strategy docs complete, 2 remaining
+
+---
+
+## 🎯 NEXT SESSION OBJECTIVE (PRIMARY)
+
+**Walk Through & Lock Pillar Skeletons 5-8**
+
+Pillars 0-4 locked today. Pillars 5-8 strategy docs created and ready for user review.
+
+**Session Opener:** 
+Open each of the following in order and walk through happy paths, asking for feedback, locked decisions, and clarifications (same process as Pillar 4 today):
+
+1. **P5_EDITING_STRATEGY.md** (5 happy paths)
+   - Edit transcript pre/post-synthesis
+   - Edit journal title/body (detail view only)
+   - Delete moment with soft delete
+   - Delete journal entry (moment preserved)
+   - Recover deleted items (optional, future)
+
+2. **P6_SEARCH_STRATEGY.md** (6 happy paths)
+   - Full-text search across moments + journals
+   - Filter by date range
+   - Filter by mood/theme
+   - Browse chronologically (gallery view)
+   - Save/pin moments
+   - Search by sense of Lord
+
+3. **P7_FORMATION_INTELLIGENCE_STRATEGY.md** (5 happy paths)
+   - Discover emerging theme (3+ occurrences)
+   - Explore themes in reflection (linked from Soaking)
+   - Weekly theme summary
+   - Filter search by theme
+   - Monthly formation review
+
+4. **P8_BETA_MARKETING_STRATEGY.md** (7 happy paths)
+   - Beta user self-signup
+   - Cohort enrollment & tracking
+   - In-app feedback collection
+   - Structured interview process
+   - Community engagement (Discord)
+   - Email engagement campaign
+   - Internal metrics dashboard
+
+**After P5-P8 are locked, proceed to:**
+- Create implementation tickets for Pillars 5-8
+- Finalize LLM selection (Gemini vs Mistral)
+- Create architecture diagram with data flow
+
+---
