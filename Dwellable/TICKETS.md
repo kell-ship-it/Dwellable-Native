@@ -1,6 +1,6 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 7, 2026 — Phase 2 Pillar Skeletons 0-4 Locked; P5-P8 Strategy Docs Created (awaiting user review); PRD updated with 0-8 architecture
+**Last Updated:** May 7, 2026 — Phase 2 Pillar Skeletons 0-4 Locked; P5-P8 Strategy Docs Created (awaiting user review); Documentation clarified (Pillars 0-4 locked vs 5-8 drafts); PRD updated with 0-8 architecture
 **Status:** 71+/96 tickets complete (74%+), 0 in progress, Build 107 on TestFlight, Phase 1 complete, Pillars 0-4 locked, Pillars 5-8 pending skeleton review
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
