@@ -1,12 +1,17 @@
 # Dwellable Pillar Architecture — Complete Overview
 
-**Founder:** Kell Golden | **Status:** All Phase 2 Pillars Happy Paths Complete | **Updated:** May 7, 2026
+**Founder:** Kell Golden | **Status:** Pillars 0-4 Locked via User Walkthrough; Pillars 5-8 Drafts Awaiting User Review | **Updated:** May 7, 2026
 
 ---
 
 ## Executive Summary
 
 Dwellable's Phase 2 Beta architecture consists of **9 pillars** (0-8, with Pillar 9 deferred):
+
+**Current Status:**
+- ✅ **Pillars 0-4:** Architecture locked through user walkthrough (Onboarding, Capture, Security, Soaking, Journal Creation)
+- 🔲 **Pillars 5-8:** Strategy documents drafted; pending user walkthrough to lock architecture (Editing, Search, Formation Intelligence, Beta & Marketing)
+- ⭕ **Pillar 9:** Deferred to Phase 3+
 
 | Pillar | Name | Status | Happy Paths | Design Doc | Phase 2? |
 |--------|------|--------|-------------|-----------|---------|
@@ -318,16 +323,20 @@ Capture Complete → Confirmation Screen (Option A) → Guided Prayer (v1) → J
 
 ## Summary
 
-✅ **All Phase 2 Pillars (0-8) now have documented happy paths.**
+✅ **All Phase 2 Pillars (0-8) now have documented strategy specifications and happy paths.**
 
-The architecture is complete in terms of design specification. Each pillar has:
+**Important Status Distinction:**
+- **Pillars 0-4 (✅ LOCKED):** Walked through with founder, design locked, ready for implementation
+- **Pillars 5-8 (🔲 DRAFTS PENDING):** Strategy documents created, happy paths documented, awaiting founder walkthrough to lock before implementation
+
+Each pillar document includes:
 - Clear happy path(s) documenting the user experience
-- Locked decisions defining scope and approach
+- Locked decisions (0-4) or tentative decisions (5-8) defining scope and approach
 - Integration points with other pillars
 - Success metrics and validation criteria
 - Technical considerations and data models
 - Next steps for design/engineering
 
-**Ready for:** Implementation ticket creation, effort estimation, team assignment, design handoff.
+**Ready for:** Pillar 5-8 founder walkthrough/lock (next session), then implementation ticket creation, effort estimation, team assignment, design handoff.
 
 **Deferred to Phase 3+:** Pillar 9 (Notifications & Nudges), post-MVP features, visual galleries, semantic search, AI recommendations.
