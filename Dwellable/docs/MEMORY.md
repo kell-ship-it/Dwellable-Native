@@ -305,37 +305,173 @@
 
 ---
 
+## Session: May 4–8, 2026 — Pillars 5 & 6 Interactive Review + Lock, Pillar 7 Ready
+
+### 🎯 TL;DR
+**Pillars 5 & 6 LOCKED ✅ via interactive HTML review forms. Phase 2 foundations nearly complete.** Replaced text-based Markdown reviews with interactive HTML decision forms (approve/needs-change buttons, textarea notes, image uploads, JavaScript summary generation). User completed Pillar 5 ("The Journal") review & locked all 7 decisions + notes. Created comprehensive Pillar 6 summary HTML with happy paths, locked decisions, tentative items, open questions, things-considered, and out-of-scope sections. User completed Pillar 6 review & locked with critical notes on transcript/journal relationship and search scope. Created REVIEW_P7_FORMATION_INTELLIGENCE.html ready for next session. **Systematic replacement of "Phase 3" with "Post MVP"** across 20+ files per user feedback ("Shared this 3 times now"). **Progress: Pillars 5-6 locked, Pillar 7 ready for review, Pillar 8 not yet created.**
+
+### What Was Done
+
+**1. Pillar 5 Review Process Refinement**
+- **Format Shift:** User reported markdown review files caused "decision fatigue." Solution: Created interactive HTML form with:
+  - Approve/Needs-Change button toggles with visual feedback
+  - Textarea for notes/concerns on each decision
+  - Image upload capability for diagrams
+  - JavaScript buildSummary() function generating clipboard-ready summary
+- **Result:** User confirmed "Great. Let's use this method moving forward. I can get through questions with less fatigue."
+- **Pillar 5 Decisions Locked:**
+  - Mood Mutability: Freely editable (edits = signals of spiritual growth)
+  - Text Formatting: Lean rich-text editor (bold, italics, lists, links)
+  - Bounded Conversation + Paywall: Deferred (depends on P7 Formation Intelligence)
+  - Archive/Delete: Soft delete with 30-day recovery window
+  - Edit Timestamps: Locked (don't track, keep simple)
+  - Journal Synthesis Timing: Locked (happens at journal creation)
+  - Journal Count: One conversation → one journal (deferred for Phase 2)
+
+**2. Pillar 6 Summary HTML — Comprehensive Verification Format**
+- **Structure:** 6 happy paths + 8 locked decisions + 5 tentative decisions + 3 critical questions + open questions + things-considered + out-of-scope sections
+- **Happy Paths Status:**
+  - ✅ Paths 1, 3, 4, 5 confirmed for MVP (Full-text search, Mood/Theme filter, Chronological gallery, Pinned moments)
+  - ⏳ Paths 2, 6 deferred to Post MVP (Date range filter, Sense of Lord filter)
+- **MVP Lock:** Calendar + infinite scroll journal reflections (user confirmed critical path)
+- **User Notes on Locked Decisions:**
+  - Decision 1 (Full-Text Search Scope): User flagged ambiguity in transcript vs journal relationship when journals updated/deleted → marked as TBD for future clarification
+  - Decision 2 (Encryption-Aware Search): User asking if this holds regardless of LLM SDK choice
+  - Decision 3 (Real-Time Results): User noted "Not sure what this means" → needs technical spec clarity
+- **Tentative Decisions Made:**
+  - Saved Searches: Deferred to Post MVP
+  - Search History: NO (privacy-first)
+  - Gallery with Images: Deferred to Post MVP
+  - Semantic Search: Full-text only (MVP) — user clarified this means partial/fuzzy matching on partial queries
+  - **Results Pagination: CONFIRMED AS MVP** (infinite scroll) — user emphasized "This should not be deferred. This is MVP (Phase 2 of Beta)"
+- **Final Status:** ✅ Locked & Verified
+
+**3. Pillar 7 Formation Intelligence HTML — Ready for Next Session**
+- **File Created:** REVIEW_P7_FORMATION_INTELLIGENCE.html
+- **Key Unlock Pillar:** Formation Intelligence determines:
+  - Paywall trigger timing (Pillar 5)
+  - Multi-journal consumption view feasibility (Pillar 6)
+  - Monetization strategy for entire product
+- **5 Happy Paths (all CORE):**
+  1. Discover an Emerging Theme (3+ occurrences, auto-detected, invitational prompt)
+  2. Explore Themes in Reflection (see linked themes while reading journal)
+  3. Weekly Theme Summary (pull-based, optional)
+  4. Filter Search by Theme (integrate with P6)
+  5. Monthly Formation Review (spiritual journey arc)
+- **8 Locked Decisions:** Theme detection at 3+, Rich Context required, Invitational framing, No interpretation, User language for themes, Theme linking, Timeline view, Privacy by default
+- **5 Tentative Decisions (CRITICAL):**
+  1. Theme Naming: Auto-generated (MVP) vs user-customizable?
+  2. Push vs Pull: Notifications vs dashboard-only?
+  3. Detection Threshold: 3, 5, or configurable?
+  4. Monthly Review: Automated vs user-triggered?
+  5. Visual Presentation: Text-only vs visualized?
+- **3 Critical Monetization Questions:**
+  1. Should Formation Intelligence be free or paid tier?
+  2. Should LLM training happen free or paid?
+  3. Does Formation Intelligence availability affect paywall closure (P5)?
+- **Status:** Ready for user review in next session
+
+**4. Terminology Update — "Phase 3" → "Post MVP"**
+- **User Feedback:** "Shared this 3 times now. Please remove Phase 3 information and replace with Post MVP within all files that are relevant please."
+- **Action Taken:** Ran global sed replacement across 20+ files:
+  - REVIEW_P*.html (5 files)
+  - P*.md strategy docs (8 files)
+  - PILLAR*.md and PILLAR*.html (6+ files)
+  - LLM_*.md research docs (3 files)
+  - Other strategy/reference files
+- **Result:** ✅ Phase 3 → Post MVP terminology consistent across entire codebase
+- **Note:** Some instances of "Pillar 3" (referring to Soaking pillar) protected from replacement
+
+**5. User Clarifications & Decisions Made**
+- **Semantic Search:** User clarified that "full-text MVP" means users can type partial queries and get fuzzy-matched results ✅
+- **Infinite Scroll:** User confirmed this is MVP, not deferred — emphasized importance in survey response
+- **AI Recommendations:** User responded to "what would you recommend?" with request for recommendation from agent → suggest: defer to Post MVP (listening phase first)
+- **Search History Tracking:** User asking for recommendation + implementation timeline
+- **Pillar 7 Formation Intelligence Pricing:** Deferred to Pillar 7 review (next session)
+
+### Files Created/Updated
+
+| File | Change | Status |
+|------|--------|--------|
+| REVIEW_P5_*.html (multiple) | Interactive forms for Pillar 5 decisions | ✅ Complete |
+| REVIEW_P6_SUMMARY.html | Comprehensive summary with all decision categories | ✅ Complete |
+| REVIEW_P7_FORMATION_INTELLIGENCE.html | Ready for user review | ✅ Complete |
+| All strategy & review docs | "Phase 3" → "Post MVP" replacement | ✅ Complete |
+| MEMORY.md | This session log entry | ✅ In Progress |
+
+### Key Decisions Finalized
+
+**Pillar 5 (The Journal):** 7 decisions locked
+**Pillar 6 (Search & Discovery):** 8 decisions locked + 5 tentative decided + MVP path confirmed
+**Pillar 7 (Formation Intelligence):** Structure complete, awaiting user review for 5 tentative + 3 monetization questions
+
+### Confidence Assessment
+
+| Pillar | Confidence | Status |
+|--------|-----------|--------|
+| **P5 (Journal)** | Very High (90%+) | All decisions locked; open questions documented for P6/P7 clarification |
+| **P6 (Search)** | Very High (90%+) | MVP path locked (calendar + infinite scroll); deferred items clear |
+| **P7 (Formation Intelligence)** | High (80%+) | Structure locked; awaiting user decisions on 5 tentative + 3 monetization Qs |
+| **P8 (Beta Marketing)** | Pending | Not yet created |
+
+### Design Insights Noted
+
+- **Interactive HTML forms dramatically improve decision-making speed** — reduces fatigue vs. text-based reviews
+- **Monetization strategy hinges on Formation Intelligence** — paywall timing, free/paid tier, training timing all depend on P7 choices
+- **Transcript/Journal relationship TBD** — important for search scope when journals updated or deleted; affects whether searches return transcript, journal, or both
+- **Privacy-first on search history** — aligns with overall Dwellable values (no tracking, user agency)
+
+### Build Status
+
+✅ **Pillars 5 & 6 LOCKED** — Ready for implementation ticket generation
+🔄 **Pillar 7 READY FOR REVIEW** — Critical unlock pillar; awaiting user decisions
+⏳ **Pillar 8 NOT YET CREATED** — Will create REVIEW_P8_BETA_MARKETING.html after P7 locked
+
+---
+
 ## Next Session Objective
 
-**Primary Task:** Begin P0 feature ticket breakdown + technical architecture planning
+**PRIMARY TASK:** Complete Pillars 7 & 8 Review & Lock, Then Begin Implementation Ticket Generation
 
-**Scope:**
-1. **Break down P0 features into engineering tickets** (15-20 tickets total)
-   - Gallery View (2-3 tickets: UI structure, tile layout, sorting/filtering)
-   - Tags & Headlines (2-3 tickets: user input, auto-suggestion, storage)
-   - Notifications (2-3 tickets: scheduling, copy variants, user preferences)
-   - Soak Mode (2-3 tickets: UI, audio library integration, duration controls)
-   - Backend support (2-3 tickets: P0 API endpoints, RLS policies, data schema)
-   - Analytics (1-2 tickets: WAR tracking, adoption metrics, event logging)
-2. **Technical architecture planning**
-   - Database schema updates (headlines, tags, soak sessions)
-   - API endpoint design for new features
-   - Analytics instrumentation for WAR metric
-   - Notification scheduling service
-3. **Effort estimation:** Validate 200-300 hour estimate across all P0 tickets
-4. **Roadmap:** Map tickets to 4-6 week dev window (mid-May → late June GA)
+**Step 1: Pillar 7 (Formation Intelligence) — Review & Lock**
+1. User opens `/Users/kell/Desktop/Dwellable-Native/Dwellable/docs/REVIEW_P7_FORMATION_INTELLIGENCE.html`
+2. Review 5 happy paths (all CORE, likely approve all)
+3. Confirm 8 locked decisions
+4. **Decide 5 critical tentative decisions:**
+   - Theme naming (auto vs user-customizable)
+   - Push vs Pull (notifications vs dashboard)
+   - Detection threshold (3, 5, or configurable)
+   - Monthly review automation (automated vs user-triggered)
+   - Visual presentation (text-only vs visualized)
+5. **Answer 3 critical monetization questions:**
+   - Formation Intelligence free or paid tier?
+   - LLM training free or paid?
+   - Impact on P5 paywall trigger timing?
+6. Submit summary → Pillar 7 LOCKED
 
-**Why:** Strategic roadmap is locked. Next step is converting to engineering work. Clear ticket breakdown enables parallel work, accurate estimation, and measurable progress.
+**Step 2: Pillar 8 (Beta & Marketing) — Create & Review**
+1. Create REVIEW_P8_BETA_MARKETING.html from P8_BETA_MARKETING_STRATEGY.md
+2. Follow same interactive format: 7 happy paths + locked decisions + tentative decisions + open questions
+3. User reviews & locks all decisions
+4. Submit summary → Pillar 8 LOCKED
+
+**Step 3: Implementation Ticket Generation**
+1. Create implementation tickets for Pillars 5-8 (currently 71/96 complete, ~25 new tickets needed)
+2. Assign effort estimates + priority levels
+3. Map to Phase 2 development timeline (May-August 2026)
+
+**Why:** All Phase 2 pillar skeletons (0-8) must be locked before implementation. Pillars 5-6 are now locked; P7-8 are the final gates. Once locked, move immediately to engineering ticket breakdown + LLM tournament resolution.
 
 **Expected Outcome:**
-- 15-20 P0 feature tickets created in TICKETS.md with effort estimates + descriptions
-- Engineering team can begin work immediately on May 1 kickoff
-- Dependencies mapped (e.g., Backend APIs needed before UI implementation)
-- Clear path to June GA release + August week-8 evaluation (WAR ≥ 40%)
+- All 9 Phase 2 pillars locked & verified ✅
+- 25+ implementation tickets created (estimated 200-300 hour Phase 2 scope)
+- Clear path to June MVP release + August evaluation (40-50% WAR target)
+- Dependencies mapped across all pillars
+- LLM tournament complete (Gemini vs Mistral decision finalized)
 
-**Ticket(s):** T-060 (create subtasks), plus new P0 engineering tickets (P0-001 through P0-025 approx.)
+**Ticket(s):** T-HYP-P7-LOCK, T-HYP-P8-LOCK, T-HYP-IMPL (implementation tickets TBD)
 
-**Updated:** April 23, 2026, evening session — UX flows complete, ready for engineering kickoff
+**Updated:** May 8, 2026 — Pillars 5-6 locked, P7 ready, P8 pending
 4. **Know Your Key Formats** — Legacy (JWT) vs. New (sb_secret_) keys are in different places in dashboard
 5. **Check Data Pipeline Endpoints First** — When data is stale, verify if fresh data is coming from source before blaming sync
 

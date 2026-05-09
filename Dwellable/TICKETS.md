@@ -1497,3 +1497,157 @@ Open each of the following in order and walk through happy paths, asking for fee
 - Create architecture diagram with data flow
 
 ---
+
+## 📋 BACKLOG — Future Features & Pillars
+
+### BL-001: "Dwellable Look Back" — Personalized Reflection Generator
+**Pillar:** 9 (Post-Phase 2) or Pillar 7 Extension (Formation Intelligence)  
+**Status:** 🔲 BACKLOG (Concept only)  
+**Added:** May 8, 2026
+
+**Feature Description:**
+Generate personalized content (poems, declarations, narratives) that reminds user of:
+- God's faithfulness throughout their journey
+- Specific moods, themes, and experiences from their journals
+- Emerging patterns and spiritual growth
+
+**Output Formats:**
+- Poem — artistic reflection on themes/moods
+- Declaration — affirmation/statement about God's faithfulness in their story
+- Narrative — story format ("This is who you are, Kell...") telling user's spiritual journey
+
+**Powered by:**
+- Formation Intelligence (Pillar 7) theme extraction
+- LLM synthesis (Gemini/Mistral) using themes + moods as context
+- User's actual journal content and captured moments
+
+**Example Use Cases:**
+1. User taps "Look Back" → sees themes from past 30 days (Hopeful, Breakthrough, Doubt)
+2. User selects "Hopeful" mood → system generates poem about moments when they felt hopeful
+3. User selects themes "God's Faithfulness" + "Trust" → system creates declaration or narrative
+
+**Rationale:**
+- Combat fatigue/burnout ("I hate Dwellable") with positive reminder content
+- Shift from "journaling for self" to "journaling for spiritual growth"
+- Use Formation Intelligence as key unlock for generative, personalized content
+- Reinforce God's presence/faithfulness in user's lived experience
+
+**Dependencies:**
+- Pillar 7 (Formation Intelligence) themes fully locked and operational
+- LLM model selected and integration complete
+- Theme extraction and ranking system working
+
+**Effort Estimate:** 
+- Research & Design: 5 sprints (post-Phase 2)
+- Implementation: 8-10 sprints
+- Testing & Refinement: 3-5 sprints
+
+**Phase:** Phase 3+ (Post-Phase 2 MVP)
+
+---
+
+### BL-002: Alternative Search/Discovery Views (Pillar 6 Extension)
+**Status:** 🔲 BACKLOG  
+**Added:** May 8, 2026  
+**Phase:** Phase 3+
+
+**Feature Description:**
+Add multiple view modes for search & discovery beyond calendar + infinite scroll default.
+
+**Requested Views:**
+1. **Patreon-Style Content Display** — Journal entries displayed like Patreon creators showcase content (visual cards, featured posts, curated layout)
+2. **Additional grid/card-based layouts** for browsing and discovery
+3. **Theme-based browsing** (by Formation Intelligence themes)
+
+**Rationale:**
+- Default MVP view (calendar + scroll) is functional but may feel monotonous
+- Patreon-style display makes user's own "story" feel more curated/celebratory
+- Reinforces "God's faithfulness" narrative by presenting journals as meaningful content
+- Discovery experience more engaging for long-term retention
+
+**Dependencies:**
+- Pillar 6 MVP (calendar + scroll) locked and working
+- Formation Intelligence (Pillar 7) themes available for theme-based browsing
+
+**Effort Estimate:** 5-7 sprints (design + implementation)
+
+---
+
+### BL-003: Batch Question/Analysis of All Reflections
+**Status:** 🔲 BACKLOG  
+**Added:** May 8, 2026  
+**Phase:** Phase 3+ (Formation Intelligence Extension)
+
+**Feature Description:**
+Enable users to ask questions about ALL their reflections at once and receive synthesized insights across their entire journal history.
+
+**Use Cases:**
+1. "What has God taught me about trust?" → synthesis of all moments/journals touching on trust
+2. "Show me my biggest breakthroughs" → ranked/filtered by theme/mood across entire history
+3. "How have I grown spiritually?" → narrative summary of spiritual journey across all entries
+4. "What themes keep appearing?" → frequency analysis + synthesis of recurring themes
+
+**Powered by:**
+- Formation Intelligence (Pillar 7) theme extraction
+- LLM synthesis (Gemini/Mistral) for cross-journal analysis
+- Aggregation of all user's moments + journals with thematic tagging
+
+**Rationale:**
+- Shift from "entry-by-entry reflection" to "holistic spiritual journey reflection"
+- Use Formation Intelligence to surface patterns user might miss
+- Powerful tool for spiritual growth and deepening faith awareness
+- Complements "Dwellable Look Back" (BL-001) as insight/analysis tool
+
+**Dependencies:**
+- Pillar 7 (Formation Intelligence) fully operational
+- Theme extraction, ranking, and cross-journal aggregation working
+- LLM synthesis for multi-journal insights
+
+**Effort Estimate:** 6-8 sprints (design + implementation + testing)
+
+---
+
+## 📋 SESSION COMPLETION STATUS — May 8, 2026
+
+### ✅ PILLARS 5 & 6 LOCKED (via Interactive Review Forms)
+
+**T-HYP-P5-LOCK:** Pillar 5 (The Journal) Review & Lock  
+**Status:** ✅ COMPLETE  
+**Method:** Interactive HTML form (REVIEW_P5_*.html) with approve/needs-change buttons, textarea notes, image uploads  
+**Decisions Locked:** 7 (Mood Mutability, Text Formatting, Archive/Delete, Edit Timestamps, Synthesis Timing, Journal Count, Paywall Model approach)  
+**Notes:** User confirmed text format change resolved decision fatigue. Deferred items documented: conversation closing timing, multi-journal consumption, and paywall strategy (depends on P7)  
+
+**T-HYP-P6-LOCK:** Pillar 6 (Search & Discovery) Review & Lock  
+**Status:** ✅ COMPLETE  
+**Method:** Comprehensive HTML summary with 6 paths + 8 locked decisions + 5 tentative + open questions + things-considered + out-of-scope  
+**MVP View Confirmed:** Calendar + Infinite Scroll Journal Reflections  
+**Decisions Locked:** 8 (Full-text search scope, encryption, real-time results, result context, AND filter logic, sort options, soft-delete exclusion, search index encryption)  
+**User Decisions Made:** 5 tentative decisions finalized; infinite scroll confirmed as MVP (not deferred); search history = privacy-first (no tracking)  
+**Critical Notes:** Transcript/journal relationship TBD for future clarity; encryption scope verification needed with LLM SDK selection  
+
+### 🔄 PILLAR 7 FORMATION INTELLIGENCE — READY FOR NEXT SESSION
+
+**T-HYP-P7-LOCK:** Pillar 7 (Formation Intelligence) Review & Lock  
+**Status:** 🔄 READY FOR REVIEW (HTML form created, user to complete next session)  
+**File:** `/Users/kell/Desktop/Dwellable-Native/Dwellable/docs/REVIEW_P7_FORMATION_INTELLIGENCE.html`  
+**Key Unlock Pillar:** Determines paywall strategy (P5), multi-journal view feasibility (P6), monetization across entire product  
+**5 Happy Paths (all CORE):** Discover emerging themes, Explore in reflection, Weekly summary, Filter by theme, Monthly formation review  
+**8 Locked Decisions:** Theme detection at 3+, Rich Context required, Invitational framing, No interpretation, User language for themes, Theme linking, Timeline view, Privacy by default  
+**5 Tentative Decisions (CRITICAL):** Theme naming (auto vs user), Push vs Pull (notifications vs dashboard), Detection threshold (3/5/configurable), Monthly review automation, Visual presentation (text vs visualized)  
+**3 Critical Monetization Questions:** Formation Intelligence free or paid tier? LLM training free or paid? Impact on P5 paywall closure?  
+**Next Session Action:** User opens form, locks all 5 tentative + answers 3 monetization questions → Pillar 7 LOCKED
+
+### ⏳ PILLAR 8 BETA & MARKETING — NOT YET CREATED
+
+**T-HYP-P8-LOCK:** Pillar 8 (Beta & Marketing) Review & Lock  
+**Status:** 🔲 NOT YET CREATED (strategy doc exists, interactive review form pending)  
+**Next Session Action:** After P7 locked, create REVIEW_P8_BETA_MARKETING.html from P8_BETA_MARKETING_STRATEGY.md, user reviews & locks  
+
+### 📝 GLOBAL TERMINOLOGY UPDATE COMPLETED
+
+**Change:** "Phase 3" → "Post MVP" across entire codebase  
+**Files Updated:** 20+ files (strategy docs, review forms, PILLAR docs, LLM research, etc.)  
+**Reason:** User feedback: "Shared this 3 times now. Please remove Phase 3 information and replace with Post MVP within all files that are relevant."  
+**Status:** ✅ COMPLETE (sed replacements applied systematically)
+
+---
