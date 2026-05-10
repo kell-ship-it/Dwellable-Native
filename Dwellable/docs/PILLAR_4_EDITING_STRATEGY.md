@@ -158,7 +158,7 @@ reflectionEditedAt: ISO8601? (timestamp if user added/edited reflections)
 |----------|-----------|
 | **Unlimited tags** | Risk of tag bloat and over-categorization. Max 2 forces focus on core themes. Users can refine during editing if needed. |
 | **AI-powered mood suggestions based on content** | Violates "keeper not interpreter" principle. Mood is user's choice; system doesn't interpret emotional state. User selects, not system assigns. |
-| **Edit history for headlines** | v1 simplicity. Users can see when reflection was edited but not headline-specific changelog. Deferred to Phase 3. |
+| **Edit history for headlines** | v1 simplicity. Users can see when reflection was edited but not headline-specific changelog. Deferred to Post MVP. |
 | **Inline editing (tap to edit in-place)** | Reduces accidental changes; explicit "Edit Entry" action clarifies intent (Untold pattern). In-place editing creates ambiguity. |
 | **Editable reflection text** | Preserves moment integrity and audit trail. Reflections are additions to moments, not replacements. Edit tracking keeps reflections trustworthy. |
 | **Multiple custom moods** | v1 constraint: 1 custom field per entry. Limits flexibility slightly but prevents mood as another tagging system. Deferred if needed post-launch. |

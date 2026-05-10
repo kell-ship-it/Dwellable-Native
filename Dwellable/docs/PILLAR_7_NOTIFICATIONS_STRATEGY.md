@@ -246,7 +246,7 @@ Action: Tap → Opens Insights tab
 - [ ] Build logic to identify segments (new, non-soaker, occasional, active)
 - [ ] Store segment assignment in database
 
-**Phase 3: Generic Notifications (Weeks 3–4)**
+**Post MVP: Generic Notifications (Weeks 3–4)**
 - [ ] Write generic notification templates for each segment
 - [ ] Test delivery, timing, click behavior
 - [ ] Measure baseline CTR and conversion

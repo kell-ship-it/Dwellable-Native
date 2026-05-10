@@ -125,7 +125,7 @@
 - [ ] **Create:** Wire to CaptureView (existing, no changes)
 - [ ] **Insights:** Wire to analytics dashboard (pull metrics from UsageTracker)
 
-**Phase 3 (Polish):**
+**Post MVP (Polish):**
 - [ ] Empty states for each tab
 - [ ] Loading states during data fetch
 - [ ] Error handling (network failures, etc.)

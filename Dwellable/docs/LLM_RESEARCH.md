@@ -177,7 +177,7 @@ Total: $15,800-20,000 (~$1.58-2.00 per user for Year 1)
 - [ ] Test latency and quality parity
 - [ ] Cost: ~$100-200 for 5K users
 
-### **Phase 3+ (Optional): On-Device Fallback**
+### **Post MVP (Optional): On-Device Fallback**
 - [ ] Download Llama 2 7B at first app launch (one-time 4GB download)
 - [ ] Use on-device for offline scenarios; Mistral as primary
 - [ ] Reduces API dependency; future-proofs against API outages

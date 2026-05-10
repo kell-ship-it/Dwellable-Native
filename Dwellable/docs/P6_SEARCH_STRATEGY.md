@@ -101,9 +101,9 @@ Pillar 6 enables users to find and revisit moments and journals across their ent
 
 ## Tentative Decisions (TBD by Designer)
 
-1. ❓ **Saved Searches:** Should users be able to save frequently-used searches? (Recommend: defer to Phase 3)
+1. ❓ **Saved Searches:** Should users be able to save frequently-used searches? (Recommend: defer to Post MVP)
 2. ❓ **Search History:** Should we track user's search history? (Recommend: no, privacy concern)
-3. ❓ **Gallery View:** Should we include visual gallery mode (showing generated images)? (Recommend: defer to Phase 3)
+3. ❓ **Gallery View:** Should we include visual gallery mode (showing generated images)? (Recommend: defer to Post MVP)
 4. ❓ **Semantic Search:** Should Phase 2 include semantic/meaning-based search or just full-text? (Recommend: full-text only for MVP)
 5. ❓ **Search Results Limit:** How many results show by default before pagination? (Recommend: 20 results with infinite scroll or pagination)
 
@@ -111,11 +111,11 @@ Pillar 6 enables users to find and revisit moments and journals across their ent
 
 ## Open Questions (Deferred)
 
-- Semantic search (AI-powered meaning search) — Phase 3+
-- AI-powered recommendations ("You might also like...") — Phase 3+
+- Semantic search (AI-powered meaning search) — Post MVP
+- AI-powered recommendations ("You might also like...") — Post MVP
 - Social/collaborative search — post-launch
-- Advanced filters (by prayer type, reflection frequency, etc.) — Phase 3+
-- Export/download search results — Phase 3+
+- Advanced filters (by prayer type, reflection frequency, etc.) — Post MVP
+- Export/download search results — Post MVP
 
 ---
 

@@ -118,21 +118,21 @@ This is where Dwellable becomes a *witness* to the user's spiritual journey, not
 
 ## Tentative Decisions (TBD by Designer/Product)
 
-1. ❓ **Theme Naming:** Auto-generated names (LLM abstraction) vs user-customizable names? (Recommend: auto-generated for MVP, customizable Phase 3)
-2. ❓ **Push vs Pull:** Should themes be proactively surfaced (notifications) or pull-based (dashboard only)? (Recommend: pull-based for MVP, notifications Phase 3)
+1. ❓ **Theme Naming:** Auto-generated names (LLM abstraction) vs user-customizable names? (Recommend: auto-generated for MVP, customizable Post MVP)
+2. ❓ **Push vs Pull:** Should themes be proactively surfaced (notifications) or pull-based (dashboard only)? (Recommend: pull-based for MVP, notifications Post MVP)
 3. ❓ **Theme Threshold:** Should detection trigger at 3 occurrences, 5, or configurable? (Recommend: 3 for MVP)
 4. ❓ **Monthly Review:** Should this be automated or user-triggered? (Recommend: user-triggered for MVP)
-5. ❓ **Visual vs Text:** Should themes be visualized (images, colors) or text-only? (Recommend: text-only for MVP, visuals Phase 3)
+5. ❓ **Visual vs Text:** Should themes be visualized (images, colors) or text-only? (Recommend: text-only for MVP, visuals Post MVP)
 
 ---
 
 ## Open Questions (Deferred)
 
-- Predictive pattern recognition ("Based on your patterns, here's what might emerge next") — Phase 3+
-- AI-generated moment illustrations by theme — Phase 3+
+- Predictive pattern recognition ("Based on your patterns, here's what might emerge next") — Post MVP
+- AI-generated moment illustrations by theme — Post MVP
 - Collaborative theme discussion (community) — post-launch
 - Spiritual direction integration (clergy partnerships) — post-launch
-- Machine learning on user's interpretation of themes — Phase 3+
+- Machine learning on user's interpretation of themes — Post MVP
 
 ---
 

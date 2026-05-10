@@ -230,10 +230,10 @@ createdAt: Date
 
 | Decision | Reasoning |
 |----------|-----------|
-| **Complex boolean search (AND/OR/NOT syntax)** | Too complex for casual users. Simple multi-select tag filtering (OR) is more discoverable. Advanced queries deferred to Phase 3. |
+| **Complex boolean search (AND/OR/NOT syntax)** | Too complex for casual users. Simple multi-select tag filtering (OR) is more discoverable. Advanced queries deferred to Post MVP. |
 | **Saved searches/filters** | v1 simplicity. Users can re-apply filters quickly if needed. Saved filters (like Evernote) deferred to Phase 2+. |
 | **Search suggestions / autocomplete** | Real-time debounced search is sufficient for v1. Autocomplete adds complexity; deferred to Phase 2. |
-| **Social search (find other users' moments with tag X)** | Privacy-first design. Search is personal only. Social discovery deferred to Phase 3+ if ever. |
+| **Social search (find other users' moments with tag X)** | Privacy-first design. Search is personal only. Social discovery deferred to Post MVP if ever. |
 | **Faceted search (filter by date range, mood range, etc.)** | Overwhelms UI. Date picker + tag + prayed status is sufficient. Faceted search deferred to Phase 2+. |
 | **Search ranking / relevance scoring** | v1: chronological or tag-match order. Relevance ranking (using embeddings) deferred to Phase 2.1+. |
 | **Full-text search with AI reranking** | Overkill for v1. Local FTS is fast enough. AI reranking for Phase 2.1+ after embeddings ready. |

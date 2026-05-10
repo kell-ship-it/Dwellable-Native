@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pillar 6: Search & Discovery — Summary & Verification</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 900px; margin: 40px auto; padding: 0 24px; background: #0f0f0f; color: #e8e8e8; }
+  h1 { font-size: 22px; color: #C9B27C; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 13px; margin-bottom: 32px; }
+  h2 { font-size: 16px; color: #C9B27C; margin: 40px 0 16px; border-bottom: 1px solid #2a2a2a; padding-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .item { background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+  .item-header { font-size: 15px; font-weight: 600; color: #C9B27C; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .confirmed { background: #1a3a1a; color: #6dbe6d; }
+  .deferred { background: #3a2a1a; color: #d4af37; }
+  .locked { background: #1a3a1a; color: #6dbe6d; }
+  .tentative { background: #3a3a1a; color: #d4af37; }
+  .description { font-size: 13px; color: #aaa; line-height: 1.6; margin-bottom: 12px; }
+  .path-details { background: #0f0f0f; border-left: 2px solid #333; padding: 12px 14px; margin: 12px 0; font-size: 13px; color: #999; }
+  .btn-group { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .btn { padding: 8px 16px; border-radius: 20px; border: 1px solid #444; background: #1a1a1a; color: #888; font-size: 13px; cursor: pointer; transition: all 0.15s; font-weight: 500; }
+  .btn:hover { border-color: #666; }
+  .btn.selected { background: #1a3a1a; border-color: #3d8b3d; color: #6dbe6d; }
+  textarea { width: 100%; background: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 10px 12px; color: #e8e8e8; font-size: 13px; font-family: inherit; resize: vertical; box-sizing: border-box; }
+  textarea::placeholder { color: #555; }
+  .section-note { background: #1a2a1a; border-left: 3px solid #d4af37; padding: 12px 14px; margin-bottom: 16px; border-radius: 4px; font-size: 13px; color: #ccc; }
+  .done-btn { margin-top: 32px; width: 100%; padding: 14px; background: #C9B27C; color: #0f0f0f; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+  .done-btn:hover { opacity: 0.85; }
+  .copy-area { display: none; margin-top: 16px; background: #141414; border: 1px solid #333; border-radius: 8px; padding: 14px; font-size: 12px; color: #aaa; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+</style>
+</head>
+<body>
+
+<h1>Pillar 6: Search & Discovery</h1>
+<p class="subtitle">Complete summary of all decisions, paths, and items for final verification before locking.</p>
+
+<!-- HAPPY PATHS REVIEW -->
+<div>
+  <h2>Happy Paths (6)</h2>
+  <div class="section-note">Paths 2 & 6 deferred to Post MVP. Paths 1, 3, 4, 5 confirmed for MVP.</div>
+
+  <!-- Path 1 -->
+  <div class="item">
+    <div class="item-header">
+      Path 1: Full-Text Search
+      <span class="badge confirmed">CONFIRMED</span>
+    </div>
+    <div class="description">User types keyword or phrase to search moments & journals. Results appear with context snippets, sorted newest first.</div>
+    <div class="path-details">
+      • Search field with placeholder "Search moments & journals..."<br>
+      • Real-time results as user types (debounced)<br>
+      • Result preview shows snippet + date + moods<br>
+      • Tap result to open full detail view<br>
+      • Searches across moment transcripts AND journal bodies
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'path1')">✓ Verify confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'path1')">✎ Add notes</button>
+    </div>
+    <textarea id="path1-notes" placeholder="Any additional notes or changes..." rows="2"></textarea>
+  </div>
+
+  <!-- Path 2 -->
+  <div class="item">
+    <div class="item-header">
+      Path 2: Filter by Date Range
+      <span class="badge deferred">DEFERRED</span>
+    </div>
+    <div class="description">User filters search results by date (past week, past month, custom range). Deferred to Post MVP.</div>
+    <div class="path-details">
+      • Preset options: Past week, Past month, Past 3 months<br>
+      • Custom date picker for specific ranges<br>
+      • Can combine with search + mood filters<br>
+      • Status: PHASE 3+ (complexity, lower priority)
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'path2')">✓ Confirm deferred</button>
+      <button class="btn" onclick="toggleBtn(this, 'path2')">? Reconsider for Phase 2</button>
+    </div>
+    <textarea id="path2-notes" placeholder="Any notes about deferral..." rows="2"></textarea>
+  </div>
+
+  <!-- Path 3 -->
+  <div class="item">
+    <div class="item-header">
+      Path 3: Filter by Mood/Theme
+      <span class="badge confirmed">CONFIRMED</span>
+    </div>
+    <div class="description">User filters moments by mood (Reflective, Conflicted, Exhausted, Hopeful, Loved, Prayerful) or detected themes. Core MVP feature.</div>
+    <div class="path-details">
+      • Mood palette showing all available moods<br>
+      • Multi-select (checkboxes)<br>
+      • Results narrow to matching moods<br>
+      • Can combine mood + full-text search + date (when Post MVP added)<br>
+      • Integration point: Pillar 7 themes will extend this filter
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'path3')">✓ Verify confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'path3')">✎ Add notes</button>
+    </div>
+    <textarea id="path3-notes" placeholder="Any additional notes or changes..." rows="2"></textarea>
+  </div>
+
+  <!-- Path 4 -->
+  <div class="item">
+    <div class="item-header">
+      Path 4: Browse by Date (Chronological Gallery)
+      <span class="badge confirmed">CONFIRMED</span>
+    </div>
+    <div class="description">User casually browses moments in chronological order (newest first) without searching. MVP view: Calendar + infinite scroll journal reflections.</div>
+    <div class="path-details">
+      • Gallery/Timeline view mode (alternate from search)<br>
+      • Reverse chronological order (newest first)<br>
+      • Date headers ("May 2026", "April 2026", etc.)<br>
+      • Infinite scroll through moments<br>
+      • Tap moment to open detail view<br>
+      • <strong>MVP LOCK: Calendar + Infinite Scroll View</strong>
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'path4')">✓ Verify confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'path4')">✎ Add notes</button>
+    </div>
+    <textarea id="path4-notes" placeholder="Any additional notes or changes..." rows="2"></textarea>
+  </div>
+
+  <!-- Path 5 -->
+  <div class="item">
+    <div class="item-header">
+      Path 5: Saved/Pinned Moments
+      <span class="badge confirmed">CONFIRMED</span>
+    </div>
+    <div class="description">User marks moments as favorites (heart/star icon) to return to them easily. Pinned status persists across sessions.</div>
+    <div class="path-details">
+      • Heart/star icon in moment detail header<br>
+      • Tap to pin/unpin (toggles)<br>
+      • Visual feedback (heart fills in when pinned)<br>
+      • Can filter by "Pinned" or view "Favorites" view<br>
+      • Pinned status persists (stored in DB)<br>
+      • Pinned items included in search results with special indicator
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'path5')">✓ Verify confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'path5')">✎ Add notes</button>
+    </div>
+    <textarea id="path5-notes" placeholder="Any additional notes or changes..." rows="2"></textarea>
+  </div>
+
+  <!-- Path 6 -->
+  <div class="item">
+    <div class="item-header">
+      Path 6: Search by Sense of Lord
+      <span class="badge deferred">DEFERRED</span>
+    </div>
+    <div class="description">User filters moments by "Sense of Lord" data (spiritual insights). Deferred to Post MVP pending Pillar 7 integration.</div>
+    <div class="path-details">
+      • Filter option: "Sense of Lord" (if data exists)<br>
+      • Shows moments with populated senseOfLord field<br>
+      • Can combine with other filters<br>
+      • Status: PHASE 3+ (depends on Pillar 7 completion & theme integration)
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'path6')">✓ Confirm deferred</button>
+      <button class="btn" onclick="toggleBtn(this, 'path6')">? Reconsider for Phase 2</button>
+    </div>
+    <textarea id="path6-notes" placeholder="Any notes about deferral..." rows="2"></textarea>
+  </div>
+
+</div>
+
+<!-- LOCKED DECISIONS -->
+<div>
+  <h2>Locked Decisions (8) ✓</h2>
+  <div class="section-note">These 8 decisions are locked and ready for implementation. Confirm each.</div>
+
+  <div class="item">
+    <div class="item-header">
+      1. Full-Text Search Scope
+      <span class="badge locked">LOCKED</span>
+    </div>
+    <div class="description">Full-text search is enabled across both moment transcripts AND journal bodies (both searchable).</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked1')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked1')">✎ Has notes</button>
+    </div>
+    <textarea id="locked1-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">
+      2. Encryption-Aware Search
+      <span class="badge locked">LOCKED</span>
+    </div>
+    <div class="description">Search index is encrypted or uses privacy-preserving methods. No plaintext index on server.</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked2')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked2')">✎ Has notes</button>
+    </div>
+    <textarea id="locked2-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">
+      3. Real-Time Results
+      <span class="badge locked">LOCKED</span>
+    </div>
+    <div class="description">Search results appear as user types (debounced to reduce server load).</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked3')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked3')">✎ Has notes</button>
+    </div>
+    <textarea id="locked3-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">
+      4. Result Context & Preview
+      <span class="badge locked">LOCKED</span>
+    </div>
+    <div class="description">Search results display snippet of matching text + metadata (date, moods) for context.</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked4')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked4')">✎ Has notes</button>
+    </div>
+    <textarea id="locked4-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">
+      5. Filter Combination (AND Logic)
+      <span class="badge locked">LOCKED</span>
+    </div>
+    <div class="description">Support AND logic: mood + date + search all apply together. When both search and mood filter are active, results must match BOTH.</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked5')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked5')">✎ Has notes</button>
+    </div>
+    <textarea id="locked5-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">
+      6. Sort Options
+      <span class="badge locked">LOCKED</span>
+    </div>
+    <div class="description">Default sort = newest first; allow toggle to oldest first.</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked6')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked6')">✎ Has notes</button>
+    </div>
+    <textarea id="locked6-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">
+      7. Exclude Soft-Deleted Items
+      <span class="badge locked">LOCKED</span>
+    </div>
+    <div class="description">Soft-deleted moments/journals are excluded from search results (filter by deleted: false).</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked7')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked7')">✎ Has notes</button>
+    </div>
+    <textarea id="locked7-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">
+      8. Search Index Encryption
+      <span class="badge locked">LOCKED</span>
+    </div>
+    <div class="description">Search index is encrypted using AES-256-GCM (consistent with Pillar 2 encryption strategy).</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked8')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked8')">✎ Has notes</button>
+    </div>
+    <textarea id="locked8-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+</div>
+
+<!-- TENTATIVE DECISIONS -->
+<div>
+  <h2>Tentative Decisions (5)</h2>
+  <div class="section-note">These 5 items are TBD. Review each and select your preference.</div>
+
+  <div class="item">
+    <div class="item-header">
+      1. Saved Searches
+      <span class="badge tentative">TENTATIVE</span>
+    </div>
+    <div class="description">Should users be able to save frequently-used searches for quick access?</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'tent1')">✓ Phase 2</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent1')">⏳ Defer Post MVP</button>
+    </div>
+    <textarea id="tent1-notes" placeholder="Your choice and reasoning..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">
+      2. Search History Tracking
+      <span class="badge tentative">TENTATIVE</span>
+    </div>
+    <div class="description">Should the system track and display user's search history? Privacy concern noted.</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'tent2')">✓ Track history</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent2')">✗ No history (privacy first)</button>
+    </div>
+    <textarea id="tent2-notes" placeholder="Your choice and reasoning..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">
+      3. Gallery View with Generated Images
+      <span class="badge tentative">TENTATIVE</span>
+    </div>
+    <div class="description">Should Phase 2 include visual gallery mode (showing generated images from moments)?</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'tent3')">✓ Phase 2</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent3')">⏳ Defer Post MVP</button>
+    </div>
+    <textarea id="tent3-notes" placeholder="Your choice and reasoning..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">
+      4. Semantic Search (AI-Powered)
+      <span class="badge tentative">TENTATIVE</span>
+    </div>
+    <div class="description">Should Phase 2 include semantic/meaning-based search or full-text only? (Recommend: full-text MVP)</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'tent4')">✓ Full-text only (MVP)</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent4')">✨ Semantic search Post MVP</button>
+    </div>
+    <textarea id="tent4-notes" placeholder="Your choice and reasoning..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">
+      5. Search Results Pagination/Infinite Scroll
+      <span class="badge tentative">TENTATIVE</span>
+    </div>
+    <div class="description">How many results show by default? 20 with infinite scroll, or pagination?</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'tent5')">∞ Infinite scroll (20+ auto-load)</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent5')">📄 Pagination (load more)</button>
+    </div>
+    <textarea id="tent5-notes" placeholder="Your choice and reasoning..." rows="2"></textarea>
+  </div>
+
+</div>
+
+<!-- DEFERRED & OUT OF SCOPE -->
+<div>
+  <h2>Items Deferred to Post MVP or Out of Scope</h2>
+
+  <div class="item">
+    <div class="item-header">Post MVP Candidates</div>
+    <div class="path-details">
+      • Semantic search (AI-powered meaning search)<br>
+      • AI-powered recommendations ("You might also like...")<br>
+      • Advanced filters (by prayer type, reflection frequency, etc.)<br>
+      • Export/download search results<br>
+      • Social/collaborative search<br>
+      • Visual gallery with generated images
+    </div>
+  </div>
+
+  <div class="item">
+    <div class="item-header">Feature Future Requests (Post-Phase 2)</div>
+    <div class="path-details">
+      • <strong>Patreon-style display:</strong> Enable users to review their journal entries in a curated visual layout (like Patreon creators display content). Backlog item BL-002.<br>
+      • <strong>Batch question analysis:</strong> User can ask questions about ALL reflections at once for synthesized insights (e.g., "What has God taught me about trust?"). Backlog item BL-003.
+    </div>
+  </div>
+
+</div>
+
+<!-- OPEN QUESTIONS -->
+<div>
+  <h2>Open Questions (Remain TBD)</h2>
+  <div class="section-note">These questions are deferred and may surface during Post MVP development or user feedback.</div>
+
+  <div class="item">
+    <div class="item-header">1. Semantic Search Implementation</div>
+    <div class="description">How should AI-powered meaning-based search work? What LLM model? When in Post MVP?</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'q1')">📝 Add comment</button>
+    </div>
+    <textarea id="q1-notes" placeholder="Your thoughts on this question..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">2. AI Recommendations ("You Might Also Like")</div>
+    <div class="description">Should Post MVP include algorithmic recommendations for moments based on user history?</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'q2')">📝 Add comment</button>
+    </div>
+    <textarea id="q2-notes" placeholder="Your thoughts on this question..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">3. Advanced Filters (Prayer Type, Reflection Frequency)</div>
+    <div class="description">Should users be able to filter by prayer type, reflection frequency, or other advanced criteria?</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'q3')">📝 Add comment</button>
+    </div>
+    <textarea id="q3-notes" placeholder="Your thoughts on this question..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">4. Export/Download Search Results</div>
+    <div class="description">Should users be able to export or download their search results?</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'q4')">📝 Add comment</button>
+    </div>
+    <textarea id="q4-notes" placeholder="Your thoughts on this question..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">5. Social/Collaborative Search</div>
+    <div class="description">Post-launch: Should users be able to share searches or collaborate on search queries?</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'q5')">📝 Add comment</button>
+    </div>
+    <textarea id="q5-notes" placeholder="Your thoughts on this question..." rows="2"></textarea>
+  </div>
+
+</div>
+
+<!-- THINGS CONSIDERED BUT NOT LOCKED -->
+<div>
+  <h2>Things Considered But Not Locked</h2>
+  <div class="section-note">These were explored but are either tentative (TBD) or explicitly deferred. Marked as open decisions or Post MVP.</div>
+
+  <div class="item">
+    <div class="item-header">Search History Tracking</div>
+    <div class="description"><strong>Status:</strong> Tentative (privacy concern noted)
+      <br><strong>Reason Not Locked:</strong> Privacy vs convenience tradeoff. Current recommendation: no history tracking (privacy-first approach).</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'cons1')">✓ Agree (no tracking)</button>
+      <button class="btn" onclick="toggleBtn(this, 'cons1')">? Reconsider tracking</button>
+    </div>
+    <textarea id="cons1-notes" placeholder="Your thoughts..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">Date Range Filtering (Path 2)</div>
+    <div class="description"><strong>Status:</strong> Deferred to Post MVP
+      <br><strong>Reason Not Locked:</strong> Adds complexity; Mood/Theme filtering (Path 3) covers primary MVP need. Date filtering is nice-to-have for future phases.</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'cons2')">✓ Agree (defer)</button>
+      <button class="btn" onclick="toggleBtn(this, 'cons2')">? Reconsider for Phase 2</button>
+    </div>
+    <textarea id="cons2-notes" placeholder="Your thoughts..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">Sense of Lord Filtering (Path 6)</div>
+    <div class="description"><strong>Status:</strong> Deferred to Post MVP
+      <br><strong>Reason Not Locked:</strong> Depends on Pillar 7 (Formation Intelligence) completion. Once themes are finalized, this filter becomes more useful.</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'cons3')">✓ Agree (defer)</button>
+      <button class="btn" onclick="toggleBtn(this, 'cons3')">? Reconsider for Phase 2</button>
+    </div>
+    <textarea id="cons3-notes" placeholder="Your thoughts..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">Generated Image Gallery</div>
+    <div class="description"><strong>Status:</strong> Tentative, recommend Post MVP
+      <br><strong>Reason Not Locked:</strong> Visual components add scope. MVP focus is search + filtering. Images can enhance UX in Post MVP.</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'cons4')">✓ Agree (defer)</button>
+      <button class="btn" onclick="toggleBtn(this, 'cons4')">? Include in Phase 2</button>
+    </div>
+    <textarea id="cons4-notes" placeholder="Your thoughts..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">Saved Searches</div>
+    <div class="description"><strong>Status:</strong> Tentative (TBD)
+      <br><strong>Reason Not Locked:</strong> Nice-to-have but not essential for MVP. Can be added in Post MVP based on user request frequency.</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'cons5')">✓ Agree (Post MVP)</button>
+      <button class="btn" onclick="toggleBtn(this, 'cons5')">✨ Include Phase 2</button>
+    </div>
+    <textarea id="cons5-notes" placeholder="Your thoughts..." rows="2"></textarea>
+  </div>
+
+</div>
+
+<!-- OUT OF SCOPE / NOT CONSIDERED -->
+<div>
+  <h2>Out of Scope / Not Considered for Phase 2</h2>
+  <div class="section-note">These are deliberately excluded from Phase 2 MVP scope. They can be revisited in Post MVP or based on user demand.</div>
+
+  <div class="item">
+    <div class="item-header">Visual Curation (Patreon-Style Display)</div>
+    <div class="description">Enable users to display their journals in a curated visual layout (like Patreon creators).
+      <br><strong>Reason Out of Scope:</strong> Design-heavy feature; adds significant UI complexity. Better suited for Post MVP after core search is stable.
+      <br><strong>Backlog:</strong> BL-002</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'out1')">✓ Keep out of Phase 2</button>
+      <button class="btn" onclick="toggleBtn(this, 'out1')">? Reconsider</button>
+    </div>
+    <textarea id="out1-notes" placeholder="Your thoughts..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">Batch Question Analysis</div>
+    <div class="description">Allow users to ask questions about ALL reflections at once (e.g., "What has God taught me about trust?").
+      <br><strong>Reason Out of Scope:</strong> Requires advanced LLM synthesis across entire journal. Better as Post MVP feature once Formation Intelligence is mature.
+      <br><strong>Backlog:</strong> BL-003</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'out2')">✓ Keep out of Phase 2</button>
+      <button class="btn" onclick="toggleBtn(this, 'out2')">? Reconsider</button>
+    </div>
+    <textarea id="out2-notes" placeholder="Your thoughts..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">Real-Time Collaboration</div>
+    <div class="description">Multi-user search sessions or shared search results.
+      <br><strong>Reason Out of Scope:</strong> Dwellable is personal, not collaborative. Post-launch feature only.</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'out3')">✓ Keep out of Phase 2</button>
+      <button class="btn" onclick="toggleBtn(this, 'out3')">? Reconsider</button>
+    </div>
+    <textarea id="out3-notes" placeholder="Your thoughts..." rows="2"></textarea>
+  </div>
+
+</div>
+
+<!-- FINAL VERIFICATION -->
+<div>
+  <h2>Final Verification</h2>
+
+  <div class="item">
+    <div class="item-header">Is Pillar 6 ready to lock?</div>
+    <div class="btn-group" id="final-group">
+      <button class="btn" onclick="toggleBtn(this, 'final')">✓ Locked & verified</button>
+      <button class="btn" onclick="toggleBtn(this, 'final')">⚠️ Needs revisions</button>
+    </div>
+    <textarea id="final-notes" placeholder="If revisions needed, explain here..." rows="3"></textarea>
+  </div>
+
+</div>
+
+<button class="done-btn" onclick="buildSummary()">Done — Generate Summary for Claude</button>
+<div class="copy-area" id="copy-area"></div>
+
+<script>
+function toggleBtn(btn, groupId) {
+  const parent = btn.closest('.btn-group');
+  parent.querySelectorAll('.btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function buildSummary() {
+  let out = '=== PILLAR 6: SEARCH & DISCOVERY — SUMMARY ===\n\n';
+
+  out += 'HAPPY PATHS (6):\n';
+  const paths = [
+    {id: 'path1', name: 'Full-Text Search', status: 'CONFIRMED'},
+    {id: 'path2', name: 'Filter by Date Range', status: 'DEFERRED'},
+    {id: 'path3', name: 'Filter by Mood/Theme', status: 'CONFIRMED'},
+    {id: 'path4', name: 'Chronological Gallery', status: 'CONFIRMED (MVP)'},
+    {id: 'path5', name: 'Pinned Moments', status: 'CONFIRMED'},
+    {id: 'path6', name: 'Sense of Lord Search', status: 'DEFERRED'}
+  ];
+
+  paths.forEach(p => {
+    const notes = document.getElementById(p.id + '-notes').value.trim();
+    const parent = document.querySelector('[onclick*="' + p.id + '"]').closest('.btn-group');
+    const btn = parent.querySelector('.selected');
+    const userInput = btn ? btn.textContent.trim() : 'Not reviewed';
+    out += `${p.name}: ${p.status}`;
+    if (userInput) out += ` (${userInput})`;
+    if (notes) out += `\n  Notes: ${notes}`;
+    out += '\n';
+  });
+  out += '\n';
+
+  out += 'LOCKED DECISIONS (8):\n';
+  for (let i = 1; i <= 8; i++) {
+    const notes = document.getElementById('locked' + i + '-notes').value.trim();
+    const parent = document.querySelector('[onclick*="locked' + i + '"]').closest('.btn-group');
+    const btn = parent.querySelector('.selected');
+    const status = btn ? btn.textContent.trim() : 'Not confirmed';
+    out += `Decision ${i}: ${status}`;
+    if (notes) out += `\n  Notes: ${notes}`;
+    out += '\n';
+  }
+  out += '\n';
+
+  out += 'TENTATIVE DECISIONS (5):\n';
+  const tentItems = [
+    'Saved Searches',
+    'Search History Tracking',
+    'Gallery View with Images',
+    'Semantic Search',
+    'Results Pagination/Infinite Scroll'
+  ];
+
+  for (let i = 1; i <= 5; i++) {
+    const notes = document.getElementById('tent' + i + '-notes').value.trim();
+    const parent = document.querySelector('[onclick*="tent' + i + '"]').closest('.btn-group');
+    const btn = parent.querySelector('.selected');
+    const choice = btn ? btn.textContent.trim() : 'Not selected';
+    out += `${i}. ${tentItems[i-1]}: ${choice}`;
+    if (notes) out += `\n   Reasoning: ${notes}`;
+    out += '\n';
+  }
+  out += '\n';
+
+  out += 'OPEN QUESTIONS (5 — Deferred/TBD):\n';
+  const openQs = [
+    'Semantic Search Implementation',
+    'AI Recommendations ("You Might Also Like")',
+    'Advanced Filters (Prayer Type, Reflection Frequency)',
+    'Export/Download Search Results',
+    'Social/Collaborative Search'
+  ];
+  for (let i = 1; i <= 5; i++) {
+    const notes = document.getElementById('q' + i + '-notes').value.trim();
+    if (notes) out += `Q${i}. ${openQs[i-1]}: ${notes}\n`;
+  }
+  out += '\n';
+
+  out += 'THINGS CONSIDERED BUT NOT LOCKED (5):\n';
+  const considered = [
+    'Search History Tracking',
+    'Date Range Filtering (Path 2)',
+    'Sense of Lord Filtering (Path 6)',
+    'Generated Image Gallery',
+    'Saved Searches'
+  ];
+  for (let i = 1; i <= 5; i++) {
+    const notes = document.getElementById('cons' + i + '-notes').value.trim();
+    const parent = document.querySelector('[onclick*="cons' + i + '"]').closest('.btn-group');
+    const btn = parent.querySelector('.selected');
+    const choice = btn ? btn.textContent.trim() : 'Not confirmed';
+    out += `${i}. ${considered[i-1]}: ${choice}`;
+    if (notes) out += `\n   Notes: ${notes}`;
+    out += '\n';
+  }
+  out += '\n';
+
+  out += 'OUT OF SCOPE / NOT CONSIDERED FOR PHASE 2 (3):\n';
+  const outOfScope = [
+    'Visual Curation (Patreon-Style Display) — BL-002',
+    'Batch Question Analysis — BL-003',
+    'Real-Time Collaboration'
+  ];
+  for (let i = 1; i <= 3; i++) {
+    const notes = document.getElementById('out' + i + '-notes').value.trim();
+    const parent = document.querySelector('[onclick*="out' + i + '"]').closest('.btn-group');
+    const btn = parent.querySelector('.selected');
+    const choice = btn ? btn.textContent.trim() : 'Not confirmed';
+    out += `${i}. ${outOfScope[i-1]}: ${choice}`;
+    if (notes) out += `\n   Notes: ${notes}`;
+    out += '\n';
+  }
+  out += '\n';
+
+  out += 'FINAL VERIFICATION:\n';
+  const finalParent = document.querySelector('#final-group');
+  const finalBtn = finalParent.querySelector('.selected');
+  const finalStatus = finalBtn ? finalBtn.textContent.trim() : 'Not confirmed';
+  out += `Status: ${finalStatus}\n`;
+  const finalNotes = document.getElementById('final-notes').value.trim();
+  if (finalNotes) out += `Notes: ${finalNotes}\n`;
+
+  const area = document.getElementById('copy-area');
+  area.style.display = 'block';
+  area.textContent = out;
+  navigator.clipboard.writeText(out).catch(() => {});
+}
+</script>
+
+</body>
+</html>

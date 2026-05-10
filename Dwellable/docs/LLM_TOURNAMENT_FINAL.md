@@ -256,10 +256,10 @@ Week 15:
 
 Week 16+:
   [ ] Iterate on prompt templates (new learnings from scale)
-  [ ] Plan Formation Intelligence features (Phase 3)
+  [ ] Plan Formation Intelligence features (Post MVP)
 ```
 
-### **Phase 3: Self-Hosted Mistral (50K+ users)**
+### **Post MVP: Self-Hosted Mistral (50K+ users)**
 ```
 Trigger: When Mistral API costs exceed $15K/yr
 
@@ -316,7 +316,7 @@ Options:
 2. **Do contextual prompts actually increase soaking engagement?** (Target: >25% lift vs. generic)
 3. **What latency is acceptable for real-time prompts?** (Assumption: <1.5s; test in beta)
 4. **Do users prefer shorter (faster) or longer (more thoughtful) responses?** (UX research needed)
-5. **Should Formation Intelligence use same LLM or specialized model?** (Defer to Phase 3)
+5. **Should Formation Intelligence use same LLM or specialized model?** (Defer to Post MVP)
 
 ---
 

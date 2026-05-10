@@ -170,10 +170,10 @@ The core principle: Validate dwelling behavior at scale before public launch. Me
 
 ## Open Questions (Deferred)
 
-- Public launch strategy (App Store submission, press, partnerships) — Phase 3+
-- Paid advertising / growth strategy — Phase 3+
-- Influencer partnerships (Christian podcasts, authors) — Phase 3+
-- Corporate/ministry partnerships (churches, prayer apps) — Phase 3+
+- Public launch strategy (App Store submission, press, partnerships) — Post MVP
+- Paid advertising / growth strategy — Post MVP
+- Influencer partnerships (Christian podcasts, authors) — Post MVP
+- Corporate/ministry partnerships (churches, prayer apps) — Post MVP
 
 ---
 

@@ -111,7 +111,7 @@
 | **Should users be able to edit Intent/Rhythm after onboarding?** | Deferred to Settings design | Design Settings flow for preference updates |
 | **How granular should Intent options be?** | Needs user testing | Validate if current 4 options resonate; consider adding/removing based on beta feedback |
 | **Recovery flow if user forgets password?** | Blocked by T-062 (E2E Encryption) | Design recovery UX that doesn't compromise encryption |
-| **Multi-device onboarding (same account on iPad + iPhone)?** | Deferred to Phase 3 | Explore account sync behavior across devices |
+| **Multi-device onboarding (same account on iPad + iPhone)?** | Deferred to Post MVP | Explore account sync behavior across devices |
 
 ---
 

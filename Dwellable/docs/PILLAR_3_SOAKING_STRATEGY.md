@@ -134,7 +134,7 @@ Pillar 3 consists of four interconnected features that together create the **dwe
 |----------|-----------|
 | **AI-interpreted theme summaries ("Your moments show a pattern of trusting God")** | Violates "keeper not interpreter" principle. User must discover their own patterns. Rejected interpretation engine entirely; relying on user + Socratic prompts instead. |
 | **Mandatory daily dwelling practice or streaks** | Contradicts grace-centered design ("no guilt"). Dwelling is invitation, not obligation. All features optional; no gamification. |
-| **Auto-generated reflections or AI-written responses** | Users own their reflection. AI can prompt; users provide answers. Deferred AI response assistance to Phase 3+. |
+| **Auto-generated reflections or AI-written responses** | Users own their reflection. AI can prompt; users provide answers. Deferred AI response assistance to Post MVP. |
 | **Social sharing of moments or responses** | Privacy-first brand. Moments stay private by default. Sharing deferred to Phase 2+; when added, will be explicit opt-in only. |
 | **Scripture anchoring or biblical commentary in P0** | "Keeper not interpreter" principle. Users can link moments to Scripture themselves; Dwellable doesn't guide or suggest passages. Deferred to Phase 2+. |
 | **Real-time moment notifications** | Risk of constant pinging. Dwelling invitation (2x weekly) is intentional, not reactive. No push-on-capture or real-time engagement loops. |

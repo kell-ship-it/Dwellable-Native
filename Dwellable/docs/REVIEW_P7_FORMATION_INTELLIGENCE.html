@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pillar 7: Formation Intelligence — Review</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 900px; margin: 40px auto; padding: 0 24px; background: #0f0f0f; color: #e8e8e8; }
+  h1 { font-size: 22px; color: #C9B27C; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 13px; margin-bottom: 32px; }
+  h2 { font-size: 16px; color: #C9B27C; margin: 40px 0 16px; border-bottom: 1px solid #2a2a2a; padding-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .item { background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+  .item-header { font-size: 15px; font-weight: 600; color: #C9B27C; margin-bottom: 12px; }
+  .description { font-size: 13px; color: #aaa; line-height: 1.6; margin-bottom: 12px; }
+  .path-steps { font-size: 13px; color: #999; line-height: 1.6; margin: 12px 0; padding-left: 16px; border-left: 2px solid #333; }
+  .btn-group { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .btn { padding: 8px 16px; border-radius: 20px; border: 1px solid #444; background: #1a1a1a; color: #888; font-size: 13px; cursor: pointer; transition: all 0.15s; font-weight: 500; }
+  .btn:hover { border-color: #666; }
+  .btn.selected { background: #1a3a1a; border-color: #3d8b3d; color: #6dbe6d; }
+  textarea { width: 100%; background: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 10px 12px; color: #e8e8e8; font-size: 13px; font-family: inherit; resize: vertical; box-sizing: border-box; }
+  textarea::placeholder { color: #555; }
+  .image-upload { margin: 12px 0; }
+  .image-upload label { display: block; font-size: 13px; color: #888; margin-bottom: 6px; cursor: pointer; padding: 10px 12px; border: 1px dashed #444; border-radius: 6px; text-align: center; background: #0f0f0f; transition: all 0.15s; }
+  .image-upload label:hover { border-color: #C9B27C; color: #C9B27C; }
+  .image-upload input { display: none; }
+  .image-preview { width: 100px; height: 100px; border-radius: 6px; margin-top: 8px; object-fit: cover; }
+  .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+  .locked { background: #1a3a1a; color: #6dbe6d; }
+  .tentative { background: #3a3a1a; color: #d4af37; }
+  .important { background: #3a1a1a; color: #d4b06d; border-left: 3px solid #d4b06d; }
+  .done-btn { margin-top: 32px; width: 100%; padding: 14px; background: #C9B27C; color: #0f0f0f; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+  .done-btn:hover { opacity: 0.85; }
+  .copy-area { display: none; margin-top: 16px; background: #141414; border: 1px solid #333; border-radius: 8px; padding: 14px; font-size: 12px; color: #aaa; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+  .note { background: #1a2a1a; border-left: 3px solid #d4af37; padding: 12px 14px; margin: 12px 0; border-radius: 4px; font-size: 13px; color: #ccc; }
+</style>
+</head>
+<body>
+
+<h1>Pillar 7: Formation Intelligence</h1>
+<p class="subtitle">KEY UNLOCK pillar. Review happy paths, locked decisions, and tentative items. This pillar determines paywall strategy, multi-journal consumption, and Formation Intelligence monetization.</p>
+
+<div class="note">
+⚠️ <strong>CRITICAL:</strong> Decisions made here cascade to Pillars 5, 6, and overall monetization strategy. Theme detection accuracy, push/pull strategy, and visual presentation all affect UX + monetization model.
+</div>
+
+<!-- HAPPY PATHS -->
+<div>
+  <h2>Happy Paths (5)</h2>
+
+  <!-- Path 1 -->
+  <div class="item">
+    <div class="item-header">Path 1: Discover an Emerging Theme <span class="status-badge locked">CORE</span></div>
+    <div class="description"><strong>Scenario:</strong> User captures 3-4 moments over 2 weeks mentioning doubt/questioning. App detects theme "Wondering" and invites reflection.</div>
+    <div class="path-steps">
+      1. User Captures Moment #4 → "I'm questioning whether God is listening"<br>
+      2. Theme Detection (Background) → LLM finds pattern: doubt/questioning in moments 1, 3, 4<br>
+      3. Theme Emerges → System marks "Wondering" (abstracted from user's language)<br>
+      4. Gentle In-App Indication → Optional subtle notification "A pattern is emerging"<br>
+      5. User Sees Themes Dashboard → User opens app, sees themes in "Themes" dashboard<br>
+      6. Tap Theme → See 3 moments + how user talked about it + prompt: "You've sat with this 3 times. What are you noticing?"
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'path1')">✓ Approve</button>
+      <button class="btn" onclick="toggleBtn(this, 'path1')">✎ Needs change</button>
+    </div>
+    <textarea id="path1-notes" placeholder="Notes (optional)..." rows="2"></textarea>
+  </div>
+
+  <!-- Path 2 -->
+  <div class="item">
+    <div class="item-header">Path 2: Explore Themes in Reflection <span class="status-badge locked">CORE</span></div>
+    <div class="description"><strong>Scenario:</strong> User reading journal entry about doubt sees linked themes showing how this moment connects to broader patterns.</div>
+    <div class="path-steps">
+      1. In Dwelling Place → User reading journal entry about doubt<br>
+      2. See Linked Themes → Bottom shows "This moment relates to: Wondering (3 moments)"<br>
+      3. Tap to Explore → User taps theme link<br>
+      4. View Theme Context → See all 3 moments + timeline of when theme emerged<br>
+      5. Reflection Prompt → "You've visited this struggle across these moments. What's shifted?"<br>
+      6. Guided Reflection → Optional: respond with prayer or prompt sequence (Pillar 3 integration)<br>
+      7. Return → User can return to original moment or continue exploring
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'path2')">✓ Approve</button>
+      <button class="btn" onclick="toggleBtn(this, 'path2')">✎ Needs change</button>
+    </div>
+    <textarea id="path2-notes" placeholder="Notes (optional)..." rows="2"></textarea>
+  </div>
+
+  <!-- Path 3 -->
+  <div class="item">
+    <div class="item-header">Path 3: Weekly Theme Summary <span class="status-badge locked">CORE</span></div>
+    <div class="description"><strong>Scenario:</strong> User receives optional weekly summary of emerging themes (pull-based, not push).</div>
+    <div class="path-steps">
+      1. User Opens App → Sees "Weekly themes" card (optional feature)<br>
+      2. View Summary → "This week you reflected on: Hope (2 moments), Relational Joy (3 moments), Guidance (1 moment)"<br>
+      3. Tap Theme → Can dive into any theme to see moment context<br>
+      4. Reflection Prompt → "What story is emerging across these themes?"<br>
+      5. Pray or Journal → User can respond, or dismiss and return later
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'path3')">✓ Approve</button>
+      <button class="btn" onclick="toggleBtn(this, 'path3')">✎ Needs change</button>
+    </div>
+    <textarea id="path3-notes" placeholder="Notes (optional)..." rows="2"></textarea>
+  </div>
+
+  <!-- Path 4 -->
+  <div class="item">
+    <div class="item-header">Path 4: Filter Search by Theme <span class="status-badge locked">CORE</span></div>
+    <div class="description"><strong>Scenario:</strong> User in Search mode filters moments by detected themes (integrates with Pillar 6).</div>
+    <div class="path-steps">
+      1. In Search → User browsing moments from past month<br>
+      2. Apply Theme Filter → User taps "Filter by theme" and sees detected themes<br>
+      3. Select Theme → User chooses "Wondering"<br>
+      4. See Filtered Results → Only moments tagged with "Wondering" appear<br>
+      5. Explore Context → User sees how theme evolved across moments<br>
+      6. Return to Search → User can remove filter or add more filters
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'path4')">✓ Approve</button>
+      <button class="btn" onclick="toggleBtn(this, 'path4')">✎ Needs change</button>
+    </div>
+    <textarea id="path4-notes" placeholder="Notes (optional)..." rows="2"></textarea>
+  </div>
+
+  <!-- Path 5 -->
+  <div class="item">
+    <div class="item-header">Path 5: Monthly Formation Review <span class="status-badge locked">CORE</span></div>
+    <div class="description"><strong>Scenario:</strong> User reviews spiritual journey over a month and sees the arc of themes that emerged.</div>
+    <div class="path-steps">
+      1. From Dashboard → User taps "Monthly Review" or "Formation View"<br>
+      2. See Month's Themes → Visual or text summary: "In April, your journey included..."<br>
+         • Joy & Gratitude (5 moments)<br>
+         • Uncertainty (4 moments)<br>
+         • Breakthrough (2 moments)<br>
+      3. View Timeline → Themes appear chronologically so user sees arc<br>
+      4. Reflection Questions → "How did Joy & Gratitude emerge after Uncertainty?"<br>
+      5. Spiritual Discernment → User sees their own story, makes their own meaning
+    </div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'path5')">✓ Approve</button>
+      <button class="btn" onclick="toggleBtn(this, 'path5')">✎ Needs change</button>
+    </div>
+    <textarea id="path5-notes" placeholder="Notes (optional)..." rows="2"></textarea>
+  </div>
+
+</div>
+
+<!-- LOCKED DECISIONS -->
+<div>
+  <h2>Locked Decisions (8) ✓</h2>
+
+  <div class="item">
+    <div class="item-header">1. Theme Detection Trigger</div>
+    <div class="description"><strong>Decision:</strong> Automatic detection when theme appears 3+ times (or configurable threshold)</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked1')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked1')">✎ Has comments</button>
+    </div>
+    <textarea id="locked1-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">2. Rich Context Required</div>
+    <div class="description"><strong>Decision:</strong> Themes use conversation history + user's language, not just keyword frequency</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked2')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked2')">✎ Has comments</button>
+    </div>
+    <textarea id="locked2-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">3. Invitational Framing</div>
+    <div class="description"><strong>Decision:</strong> All prompts are questions, never directives ("What patterns do you notice?" not "Here's what this means")</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked3')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked3')">✎ Has comments</button>
+    </div>
+    <textarea id="locked3-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">4. No Interpretation</div>
+    <div class="description"><strong>Decision:</strong> Themes surface observed patterns; user interprets meaning. App is witness, not interpreter.</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked4')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked4')">✎ Has comments</button>
+    </div>
+    <textarea id="locked4-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">5. User Language</div>
+    <div class="description"><strong>Decision:</strong> Theme names use user's own words/phrases when possible (abstracted but authentic)</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked5')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked5')">✎ Has comments</button>
+    </div>
+    <textarea id="locked5-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">6. Theme Linking</div>
+    <div class="description"><strong>Decision:</strong> Themes link moments to journals, enabling cross-moment reflection</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked6')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked6')">✎ Has comments</button>
+    </div>
+    <textarea id="locked6-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">7. Timeline View</div>
+    <div class="description"><strong>Decision:</strong> Show when themes emerged and evolved over time</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked7')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked7')">✎ Has comments</button>
+    </div>
+    <textarea id="locked7-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">8. Privacy by Default</div>
+    <div class="description"><strong>Decision:</strong> Theme detection is on-device first (optional cloud sync for cross-device)</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'locked8')">✓ Confirmed</button>
+      <button class="btn" onclick="toggleBtn(this, 'locked8')">✎ Has comments</button>
+    </div>
+    <textarea id="locked8-notes" placeholder="Comments..." rows="2"></textarea>
+  </div>
+
+</div>
+
+<!-- TENTATIVE DECISIONS -->
+<div>
+  <h2>Tentative Decisions (5) — CRITICAL FOR MONETIZATION</h2>
+  <p style="color: #d4af37; font-size: 13px; margin-bottom: 16px;">⚠️ These decisions unlock deferred items from Pillars 5 & 6. Answer all 5 to finalize Formation Intelligence strategy.</p>
+
+  <div class="item">
+    <div class="item-header">1. Theme Naming <span class="status-badge tentative">TENTATIVE</span></div>
+    <div class="description"><strong>Question:</strong> Auto-generated names (LLM abstraction) vs user-customizable names?
+      <br><strong>Recommendation:</strong> Auto-generated for MVP, customizable Post MVP</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'tent1')">◯ Auto-generated (MVP)</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent1')">◯ User-customizable</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent1')">? Other</button>
+    </div>
+    <textarea id="tent1-notes" placeholder="Your choice and reasoning..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">2. Push vs Pull <span class="status-badge tentative">TENTATIVE</span></div>
+    <div class="description"><strong>Question:</strong> Should themes be proactively surfaced (notifications) or pull-based (dashboard only)?
+      <br><strong>Recommendation:</strong> Pull-based for MVP, notifications Post MVP</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'tent2')">◯ Pull-based (dashboard)</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent2')">◯ Push notifications</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent2')">? Other</button>
+    </div>
+    <textarea id="tent2-notes" placeholder="Your choice and reasoning..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">3. Theme Detection Threshold <span class="status-badge tentative">TENTATIVE</span></div>
+    <div class="description"><strong>Question:</strong> Should detection trigger at 3 occurrences, 5, or configurable?
+      <br><strong>Recommendation:</strong> 3 for MVP</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'tent3')">◯ 3 occurrences</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent3')">◯ 5 occurrences</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent3')">◯ Configurable</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent3')">? Other</button>
+    </div>
+    <textarea id="tent3-notes" placeholder="Your choice and reasoning..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">4. Monthly Review Automation <span class="status-badge tentative">TENTATIVE</span></div>
+    <div class="description"><strong>Question:</strong> Should monthly review be automated or user-triggered?
+      <br><strong>Recommendation:</strong> User-triggered for MVP</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'tent4')">◯ Automated (pushed to user)</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent4')">◯ User-triggered (dashboard)</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent4')">? Other</button>
+    </div>
+    <textarea id="tent4-notes" placeholder="Your choice and reasoning..." rows="2"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">5. Visual Presentation <span class="status-badge tentative">TENTATIVE</span></div>
+    <div class="description"><strong>Question:</strong> Should themes be visualized (images, colors) or text-only?
+      <br><strong>Recommendation:</strong> Text-only for MVP, visuals Post MVP</div>
+    <div class="btn-group">
+      <button class="btn" onclick="toggleBtn(this, 'tent5')">◯ Text-only (MVP)</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent5')">◯ Visualized (colors/images)</button>
+      <button class="btn" onclick="toggleBtn(this, 'tent5')">? Other</button>
+    </div>
+    <textarea id="tent5-notes" placeholder="Your choice and reasoning..." rows="2"></textarea>
+  </div>
+
+</div>
+
+<!-- CRITICAL QUESTIONS -->
+<div>
+  <h2>Critical Questions for Monetization & Deferred Items</h2>
+  <p style="color: #aaa; font-size: 13px; margin-bottom: 16px;">Answers here unlock paywall strategy (P5), multi-journal consumption (P6), and Dwellable "Look Back" feature (BL-001).</p>
+
+  <div class="item">
+    <div class="item-header">Q1: Should Formation Intelligence be Paid Tier Feature?</div>
+    <div class="description">Should theme detection + Formation Intelligence be:
+      <br>• Free tier feature (available to all users)?
+      <br>• Paid tier feature (premium subscription unlock)?
+      <br>• Hybrid (basic theme detection free, advanced features paid)?</div>
+    <textarea id="q1" placeholder="Your answer..." rows="3"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">Q2: Does Formation Intelligence Training Happen Free or Paid?</div>
+    <div class="description">When does the LLM start training on user's data?
+      <br>• On free tier (after first 3 moments)?
+      <br>• Only on paid tier (user must pay to train their model)?
+      <br>• Both (free tier trains basic model, paid tier trains advanced)?</div>
+    <textarea id="q2" placeholder="Your answer..." rows="3"></textarea>
+  </div>
+
+  <div class="item">
+    <div class="item-header">Q3: Impact on Bounded Conversation + Paywall (Pillar 5)</div>
+    <div class="description">Does Formation Intelligence availability affect when the conversation paywall triggers?
+      <br>• Paywall triggers BEFORE Formation Intelligence is trained (limits free tier, forces paid for themes)?
+      <br>• Paywall triggers AFTER Formation Intelligence is trained (user gets free themes, then conversation ends)?
+      <br>• Formation Intelligence training happens independently of paywall (doesn't affect closure)?</div>
+    <textarea id="q3" placeholder="Your answer..." rows="3"></textarea>
+  </div>
+
+</div>
+
+<!-- FINAL CONFIRMATION -->
+<div>
+  <h2>Final Confirmation</h2>
+
+  <div class="item">
+    <div class="item-header">Is Pillar 7 ready to lock?</div>
+    <div class="btn-group" id="final-group">
+      <button class="btn" onclick="toggleBtn(this, 'final')">✓ Locked & ready</button>
+      <button class="btn" onclick="toggleBtn(this, 'final')">⚠️ Needs revisions</button>
+    </div>
+    <textarea id="final-notes" placeholder="If revisions needed, explain..." rows="3"></textarea>
+  </div>
+
+</div>
+
+<button class="done-btn" onclick="buildSummary()">Done — Generate Summary for Claude</button>
+<div class="copy-area" id="copy-area"></div>
+
+<script>
+function toggleBtn(btn, groupId) {
+  const parent = btn.closest('.btn-group') || btn.parentElement;
+  parent.querySelectorAll('.btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function buildSummary() {
+  let out = '=== PILLAR 7: FORMATION INTELLIGENCE — REVIEW SUMMARY ===\n\n';
+
+  out += 'HAPPY PATHS (5):\n';
+  for (let i = 1; i <= 5; i++) {
+    const notes = document.getElementById('path' + i + '-notes').value.trim();
+    const parent = document.querySelector('[onclick*="path' + i + '"]').closest('.btn-group');
+    const btn = parent.querySelector('.selected');
+    const status = btn ? btn.textContent.trim() : 'Not reviewed';
+    out += `Path ${i}: ${status}`;
+    if (notes) out += `\n  Notes: ${notes}`;
+    out += '\n';
+  }
+  out += '\n';
+
+  out += 'LOCKED DECISIONS (8):\n';
+  for (let i = 1; i <= 8; i++) {
+    const notes = document.getElementById('locked' + i + '-notes').value.trim();
+    const parent = document.querySelector('[onclick*="locked' + i + '"]').closest('.btn-group');
+    const btn = parent.querySelector('.selected');
+    const status = btn ? btn.textContent.trim() : 'Not confirmed';
+    out += `Decision ${i}: ${status}`;
+    if (notes) out += `\n  Notes: ${notes}`;
+    out += '\n';
+  }
+  out += '\n';
+
+  out += 'TENTATIVE DECISIONS (5) — CRITICAL:\n';
+  for (let i = 1; i <= 5; i++) {
+    const notes = document.getElementById('tent' + i + '-notes').value.trim();
+    const parent = document.querySelector('[onclick*="tent' + i + '"]').closest('.btn-group');
+    const btn = parent.querySelector('.selected');
+    const status = btn ? btn.textContent.trim() : 'Not selected';
+    out += `Item ${i}: ${status}`;
+    if (notes) out += `\n  Reasoning: ${notes}`;
+    out += '\n';
+  }
+  out += '\n';
+
+  out += 'CRITICAL QUESTIONS FOR MONETIZATION:\n';
+  const q1 = document.getElementById('q1').value.trim();
+  if (q1) out += `Q1 (Formation Intelligence Pricing): ${q1}\n`;
+  const q2 = document.getElementById('q2').value.trim();
+  if (q2) out += `Q2 (Training Free vs Paid): ${q2}\n`;
+  const q3 = document.getElementById('q3').value.trim();
+  if (q3) out += `Q3 (Impact on Bounded Conversation): ${q3}\n`;
+  out += '\n';
+
+  out += 'FINAL CONFIRMATION:\n';
+  const finalParent = document.querySelector('#final-group');
+  const finalBtn = finalParent.querySelector('.selected');
+  const finalStatus = finalBtn ? finalBtn.textContent.trim() : 'Not confirmed';
+  out += `Status: ${finalStatus}\n`;
+  const finalNotes = document.getElementById('final-notes').value.trim();
+  if (finalNotes) out += `Notes: ${finalNotes}\n`;
+
+  const area = document.getElementById('copy-area');
+  area.style.display = 'block';
+  area.textContent = out;
+  navigator.clipboard.writeText(out).catch(() => {});
+}
+</script>
+
+</body>
+</html>

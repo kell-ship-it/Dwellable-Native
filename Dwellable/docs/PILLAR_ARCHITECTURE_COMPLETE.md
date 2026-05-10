@@ -11,7 +11,7 @@ Dwellable's Phase 2 Beta architecture consists of **9 pillars** (0-8, with Pilla
 **Current Status:**
 - ✅ **Pillars 0-4:** Architecture locked through user walkthrough (Onboarding, Capture, Security, Soaking, Journal Creation)
 - 🔲 **Pillars 5-8:** Strategy documents drafted; pending user walkthrough to lock architecture (Editing, Search, Formation Intelligence, Beta & Marketing)
-- ⭕ **Pillar 9:** Deferred to Phase 3+
+- ⭕ **Pillar 9:** Deferred to Post MVP
 
 | Pillar | Name | Status | Happy Paths | Design Doc | Phase 2? |
 |--------|------|--------|-------------|-----------|---------|
@@ -24,7 +24,7 @@ Dwellable's Phase 2 Beta architecture consists of **9 pillars** (0-8, with Pilla
 | **6** | Search & Discovery | 🔄 Design In Progress | 6 paths | P6_SEARCH_STRATEGY.md | ✅ |
 | **7** | Formation Intelligence (Patterns) | 🔄 Design In Progress | 5 paths | P7_FORMATION_INTELLIGENCE_STRATEGY.md | ✅ |
 | **8** | Beta & Marketing | 🔄 Design In Progress | 7 paths | P8_BETA_MARKETING_STRATEGY.md | ✅ |
-| **9** | Notifications & Nudges | ⭕ Deferred | TBD | PRD.md (Pillar 9 section) | ❌ Phase 3+ |
+| **9** | Notifications & Nudges | ⭕ Deferred | TBD | PRD.md (Pillar 9 section) | ❌ Post MVP |
 
 ---
 
@@ -55,7 +55,7 @@ Pillar 7: Formation Intelligence → (view themes, see patterns over time)
     ↓
 Pillar 8: Beta & Marketing → (provide feedback, join Discord, participate in cohort)
     ↓
-[Pillar 9: Notifications - deferred to Phase 3+]
+[Pillar 9: Notifications - deferred to Post MVP]
 ```
 
 ---
@@ -212,7 +212,7 @@ Capture Complete → Confirmation Screen (Option A) → Guided Prayer (v1) → J
 ---
 
 ### Pillar 9: Notifications & Nudges (⭕ DEFERRED)
-**Status:** Design deferred to Phase 3+ (post-beta)
+**Status:** Design deferred to Post MVP (post-beta)
 
 **Rationale:** Need to validate all other pillars and dwelling behavior in Phase 2 before knowing what to notify users about.
 
@@ -339,4 +339,4 @@ Each pillar document includes:
 
 **Ready for:** Pillar 5-8 founder walkthrough/lock (next session), then implementation ticket creation, effort estimation, team assignment, design handoff.
 
-**Deferred to Phase 3+:** Pillar 9 (Notifications & Nudges), post-MVP features, visual galleries, semantic search, AI recommendations.
+**Deferred to Post MVP:** Pillar 9 (Notifications & Nudges), post-MVP features, visual galleries, semantic search, AI recommendations.

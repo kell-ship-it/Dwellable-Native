@@ -1,30 +1,18 @@
 # Pillar 5: Editing — Strategy & Design Specification
 
-**Founder:** Kell Golden | **Status:** Design In Progress | **Updated:** May 7, 2026
+**Founder:** Kell Golden | **Status:** ✅ LOCKED | **Updated:** May 8, 2026
 
 ---
 
 ## What We're Building
 
-Pillar 5 enables users to refine their captured moments and synthesized journals. Users can edit the original moment transcript (before or after synthesis), edit synthesized journal title/body (detail view only post-synthesis), and permanently or soft-delete moments/entries. The core principle: encourage re-capture rather than endless editing.
+Pillar 5 enables users to refine synthesized journals and manage their captures through deletion and recovery. Transcripts are read-only — the core principle is to encourage re-capture rather than editing. Users can edit only the synthesized journal title/body (post-synthesis), and soft-delete moments or journals with a 30-day recovery window via Trash view.
 
 ---
 
 ## Happy Paths
 
-### Path 1: Edit Moment Transcript (Pre-Synthesis)
-
-**Scenario:** User captures a moment, reviews the transcript, and notices transcription errors or wants to clarify wording.
-
-1. **From Capture Screen** → User taps "Review Transcript" or sees Review screen after voice→text conversion
-2. **Edit Transcript** → User selects/edits text inline, corrects transcription errors
-3. **Save Edits** → User taps "Save Edited Moment"
-4. **Synthesis Triggered** → Journal synthesis begins with edited transcript (background)
-5. **Returns to Moments List** → User sees moment in list, journal synthesis in progress
-
----
-
-### Path 2: Edit Journal Title & Body (Post-Synthesis)
+### Path 1: Edit Journal Title & Body (Post-Synthesis)
 
 **Scenario:** User reads synthesized journal entry and wants to refine the title or body text to better capture their feeling.
 
@@ -38,38 +26,38 @@ Pillar 5 enables users to refine their captured moments and synthesized journals
 
 ---
 
-### Path 3: Delete Moment (Soft Delete with Recovery Option)
+### Path 2: Delete Moment (Soft Delete with Recovery Option)
 
 **Scenario:** User decides a moment is no longer relevant or was captured in error, and wants to remove it.
 
 1. **From Moments List or Detail View** → User taps "..." menu or swipes to reveal actions
 2. **Tap Delete** → Confirmation dialog appears: "Delete this moment and its journal? You can recover it within 30 days."
 3. **Confirm Delete** → User taps "Delete" in confirmation
-4. **Soft Delete Applied** → System marks moment/journal with `deleted: true`, sets `deletedAt: timestamp`
-5. **Removed from Main View** → Moment disappears from Moments List and search results
-6. **Optional: Show Trash View** → Users can access "Trash" section to view deleted items (future)
+4. **Soft Delete Applied** → System marks moment and its journal with `deleted: true`, sets `deletedAt: timestamp`
+5. **Removed from Main View** → Moment and journal disappear from Moments List and search results
+6. **Accessible via Trash** → Users can access "Trash" section to view and recover deleted items
 7. **30-Day Retention** → After 30 days, permanently deleted from system
 
 ---
 
-### Path 4: Delete Journal Entry (Soft Delete with Moment Preserved)
+### Path 3: Delete Journal Entry (Soft Delete — Deletes Conversation Too)
 
-**Scenario:** User wants to delete the synthesized journal but keep the original moment (for re-journaling later).
+**Scenario:** User wants to delete the synthesized journal and its associated conversation/transcript.
 
 1. **From Dwelling Place Tab Detail View** → User taps "..." menu or swipes
-2. **Tap Delete Journal** → Confirmation dialog: "Delete this journal? Your original moment will be preserved."
-3. **Confirm Delete** → User taps "Delete Journal"
-4. **Soft Delete Applied** → System marks journal entry with `deleted: true`, sets `deletedAt: timestamp`
-5. **Original Moment Preserved** → Moment remains in Moments List (moment not deleted, only journal)
-6. **Returns to Moments List** → User can re-capture or re-synthesize the moment later if desired
+2. **Tap Delete Journal** → Confirmation dialog: "Delete this journal and its conversation? You can recover it within 30 days."
+3. **Confirm Delete** → User taps "Delete"
+4. **Soft Delete Applied** → System marks journal AND its conversation/transcript with `deleted: true`, sets `deletedAt: timestamp`
+5. **Removed from Both Views** → Journal removed from Dwelling Place; conversation removed from Moments List
+6. **Accessible via Trash** → Recoverable within 30 days
 
 ---
 
-### Path 5: Recover Deleted Moment/Journal (Optional - Future)
+### Path 4: Recover Deleted Moment/Journal
 
 **Scenario:** User changed their mind and wants to restore a deleted moment or journal from trash.
 
-1. **From Trash View** → User navigates to "Trash" or "Recently Deleted" section
+1. **From Trash View** → User navigates to "Trash" or "Recently Deleted" section (Phase 2)
 2. **View Deleted Items** → Shows moments/journals deleted in past 30 days with deletion date
 3. **Tap Recover** → User selects item and taps "Recover"
 4. **Restore Applied** → System marks `deleted: false`, clears `deletedAt`
@@ -79,39 +67,41 @@ Pillar 5 enables users to refine their captured moments and synthesized journals
 
 ## Locked Decisions
 
-1. ✅ **Edit Scope:** Edit only transcript (before synthesis) and journal title/body (after synthesis). Do NOT allow re-synthesis of edited moment in Phase 2.
-2. ✅ **Journal Editability:** Edit journal title/body in detail view ONLY (not from list view or inline). Prevents accidental edits.
-3. ✅ **Edited Flag:** Mark journals with `edited: true` so user knows they've modified the AI synthesis.
-4. ✅ **Soft Delete Strategy:** Use soft delete (flag + timestamp) rather than hard delete. Allows recovery within 30 days.
-5. ✅ **Moment vs Journal:** Deleting a moment also deletes its journal. Deleting a journal preserves the moment (allows re-journaling).
-6. ✅ **Edit History:** Do NOT track edit history in Phase 2. Too much overhead for minimal value.
-7. ✅ **Encryption:** Edits apply to encrypted data. Update `encryptedContent` after edits.
-8. ✅ **Sync:** Edits sync to cloud immediately (or queue if offline).
+1. ✅ **Transcripts are read-only.** Transcripts/conversations cannot be edited after capture. Re-capture is the intended path.
+2. ✅ **Edit Scope:** Journal title/body only (post-synthesis, detail view only). No pre-synthesis editing, no re-synthesis in Phase 2.
+3. ✅ **Journal Editability:** Detail view only — not inline from list view. Prevents accidental edits.
+4. ✅ **Edited Flag:** Mark journals with `edited: true` so user knows they've modified the AI synthesis.
+5. ✅ **Soft Delete Strategy:** Soft delete (flag + timestamp) rather than hard delete. 30-day recovery window.
+6. ✅ **Delete Journal = Delete Conversation:** Deleting a journal also deletes its associated conversation/transcript. Nothing is preserved separately.
+7. ✅ **Delete Moment = Delete Journal:** Deleting a moment also deletes its synthesized journal.
+8. ✅ **Trash View in Phase 2:** Included in Phase 2 (Phase 2 is the final beta phase).
+9. ✅ **Recovery Window:** 30 days from deletion date.
+10. ✅ **Edit History:** Do NOT track edit history in Phase 2.
+11. ✅ **Encryption:** Edits re-encrypt `encryptedContent`. Soft delete updates metadata flags only (fast).
+12. ✅ **Sync:** Edits sync to cloud immediately (or queue if offline).
 
 ---
 
-## Tentative Decisions (TBD by Designer)
+## Backlog (Future Features)
 
-1. ❓ **Trash View:** Should Phase 2 include a "Trash" view or defer to Phase 3? (Recommend: defer if constrained on time)
-2. ❓ **Recovery Period:** 30-day recovery window or different timeline?
-3. ❓ **Edit Alerts:** Should we alert user if they edit significantly after initial save (to encourage re-capture)?
-4. ❓ **Undo/Redo:** Should edit view include undo/redo buttons? (Recommend: defer to Phase 3)
-5. ❓ **Edit Timestamps:** Should we track when edits were made? (Recommend: no, keep simple)
+- **Edit Alerts:** Gentle nudge to re-capture instead of heavily editing — deferred, not in Phase 2 scope
+- **Undo/Redo:** In edit view — deferred
+- **Edit Timestamps:** Tracking when edits were made — deferred (keep simple)
+- **Edit History:** Show original vs. current version — deferred
+- **Version Control:** Too complex for Phase 2
 
 ---
 
 ## Open Questions (Deferred)
 
-- Edit history timeline — should we show "original version" vs "current version"?
 - Collaborative editing — post-launch only, if at all
-- Version control — too complex for MVP; defer to Phase 3
-- Pre-synthesis editing workflow — design flow where user edits transcript before synthesis even happens
+- Pre-synthesis editing — out of scope for Phase 2
 
 ---
 
 ## Success Metrics
 
-- Edit adoption rate: <10% of moments edited post-capture (indicates good synthesis quality)
+- Edit adoption rate: <10% of journals edited post-synthesis (indicates strong synthesis quality)
 - Edit latency: Edits apply instantly (<500ms)
 - Delete confidence: >70% user satisfaction with delete/recovery flow (survey)
 - Soft delete recovery: <5% of deleted items actually recovered (indicates good deletion UX)
@@ -120,55 +110,35 @@ Pillar 5 enables users to refine their captured moments and synthesized journals
 
 ## Integration Points with Other Pillars
 
-- **Pillar 1 (Capture):** Edit moment transcript immediately after capture (pre-synthesis)
+- **Pillar 1 (Capture):** Transcripts are read-only post-capture; re-capture is the editing path
 - **Pillar 4 (Journal Creation):** Edit journal title/body in detail view only
-- **Pillar 6 (Search & Discovery):** Soft-deleted items should be excluded from search results
-- **Pillar 7 (Formation Intelligence):** Themes should not include deleted moments
+- **Pillar 6 (Search & Discovery):** Soft-deleted items excluded from search results
+- **Pillar 7 (Formation Intelligence):** Themes do not include deleted moments or journals
 
 ---
 
 ## Technical Considerations
 
-### Data Model Additions
+### Data Model
 
 ```swift
 struct MomentMetadata: Codable {
-    let edited: Bool                    // Whether original transcript was edited
-    let editedAt: Date?                 // Timestamp of last edit
-    let deleted: Bool                   // Soft delete flag
-    let deletedAt: Date?                // Timestamp of soft delete
-    let recoveryDeadline: Date?         // 30 days from deletedAt
+    let deleted: Bool
+    let deletedAt: Date?
+    let recoveryDeadline: Date?         // deletedAt + 30 days
 }
 
 struct JournalMetadata: Codable {
     let edited: Bool                    // Whether journal text was edited post-synthesis
-    let editedAt: Date?                 // Timestamp of last edit
-    let deleted: Bool                   // Soft delete flag
-    let deletedAt: Date?                // Timestamp of soft delete
-    let recoveryDeadline: Date?         // 30 days from deletedAt
+    let editedAt: Date?
+    let deleted: Bool
+    let deletedAt: Date?
+    let recoveryDeadline: Date?         // deletedAt + 30 days
 }
 ```
 
 ### Encryption Implications
 
 - Edits update `encryptedContent` (re-encrypt entire object)
-- Soft delete only updates metadata flags (fast operation)
-- Recovery restores `deleted: false` (fast operation)
-
----
-
-## Next Steps
-
-1. Designer to finalize edit UI flows (screenshot mockups for edit detail view)
-2. Determine Phase 2 scope: Trash view included or defer?
-3. Create implementation tickets after happy path validation
-4. Define error states: What if edit fails? Offline edit sync?
-
----
-
-## Success Criteria for Design Lock
-
-- ✅ Happy paths documented and reviewed
-- ⏳ Mockups created for edit screens
-- ⏳ Error state handling documented
-- ⏳ Implementation tickets created with effort estimates
+- Soft delete updates metadata flags only (fast operation, no re-encryption needed)
+- Recovery restores `deleted: false`, clears `deletedAt` (fast operation)
