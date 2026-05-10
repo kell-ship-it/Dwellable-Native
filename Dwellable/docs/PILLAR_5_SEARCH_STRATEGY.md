@@ -1,7 +1,45 @@
 # Pillar 5: Search — Query & Discover Reflections — Architectural Design Skeleton
 
 **Status:** 🔄 Architectural Design Complete, Implementation Not Started (T-071, T-072, T-073, T-074)  
-**Last Updated:** May 5, 2026
+**Last Updated:** May 10, 2026
+
+---
+
+## Formation Intelligence System
+
+**What Pillar 5 Is:**  
+Search & Discovery is the *discovery layer* of Formation Intelligence. Users revisit and re-examine moments, revealing what they're wrestling with, celebrating, and dwelling on over time.
+
+**What P5 Learns:**  
+Every search interaction is a formation signal. We learn:
+- **Search themes:** What topics users return to (anxiety, gratitude, relationships, faith questions)
+- **Temporal patterns:** When users search (after tough weeks, before decisions, during seasons)
+- **Unresolved questions:** Searches without matching results reveal what users are seeking that they haven't yet captured
+- **Re-dwelling patterns:** How often users revisit the same moment or theme (signals deep wrestling or celebration)
+- **Recent searches:** History of searches reveals obsessions, preoccupations, spiritual concerns across time
+
+Through search behavior, we understand the user's interior life better than any single capture could reveal.
+
+**What P5 Communicates:**  
+- "We understand you, and we are here for you" — Search results affirm that we've been listening and remembering
+- "Your moments matter." — Making them findable celebrates their significance
+- "You're not alone in this." — Discovering patterns in their own moments shows consistency and God's faithfulness
+- "We're here to help you dwell." — Search enables re-engagement with moments for deeper reflection
+
+**How P5 Prepares P6 (Formation Intelligence / Pattern Naming):**  
+P5 collects the *behavioral signals* that P6 needs. Search interactions, recent searches, filter patterns—these feed into P6's ability to name themes with confidence. P6 says "You keep searching for moments about anxiety"—P5 made that visible first.
+
+**Trust Principle (Cross-Pillar):**  
+Search is foundational to trust. Accurate, fast search results that surface the moments users are looking for affirm that we understand them and have been faithfully recording their life. Slow search, irrelevant results, or missing moments breaks trust at the core level. Every search interaction is a trust moment.
+
+**Search Intelligence (MVP Scope):**  
+Although metadata is bounded (3D model only: Prayed × Mood × Object), search is still intelligent because it's contextual. We search based on:
+- What we know about the user from P0 (their identity, intent, theological framework)
+- What we know from P1 (their archetype: Jotter, Venter, Processor)
+- Current moment content (what they just captured)
+- Recent history (what they've been searching for)
+
+Minimal data, maximum understanding: P5 searches are personalized because we know the dweller, not because we have unlimited metadata.
 
 ---
 
@@ -47,24 +85,25 @@ Pillar 5 consists of two phases: **v1 (Query & Filter)** and **future (Semantic 
 - **Filter State:** List updates as user changes calendar date, tag filter, or status filter
 - **Tap to Open:** Each entry opens full detail view
 
-#### 3. **Tag Filter (Multi-Select)**
-- **Trigger:** Tap tag icon or "Filter by tags" button
-- **Interface:** Modal/sidebar with searchable tag list
+#### 3. **Object Filter (Single Select)**
+- **Trigger:** Tap "Filter by Object" or category icon
+- **Interface:** Modal/sidebar with Object category list
+- **Options:** Family | Romance | Career | Health | Spiritual | Other
 - **Behavior:**
-  - User can select multiple tags (OR logic: show entries with *any* selected tag)
-  - User can remove individual tag selections
-  - "Clear filters" button resets to all entries
-  - Tag count shows how many entries match selected tags
-- **Combined with Date:** User can filter by date *and* tags simultaneously
-- **Design Pattern:** Reflection.app, Evernote
+  - User can select one Object category at a time (shows all moments in that domain)
+  - User can clear filter to see all Objects
+  - Category count shows how many entries match
+- **Combined with Date & Prayed Status:** User can filter by date *and* object *and* prayed status simultaneously
+- **Design Pattern:** Apple Mail (category-based organization)
 
 #### 4. **Prayed Status Filter**
-- **Purpose:** Distinguish entries with reflections/prayers from those without
+- **Purpose:** Distinguish moments by engagement level (whether user has prayed/responded)
 - **Options:**
   - All entries (default)
-  - Only entries with reflections/prayers ("Prayed")
-  - Only entries without reflections yet ("Not yet prayed")
-- **Logic:** Reflection = user response to prayer prompt or soaking prompt
+  - Prayed (user has prayed over or reflected on the moment)
+  - Not Yet Prayed (captured but not yet prayed over)
+  - Reflecting (user actively revisiting and exploring the moment)
+- **Logic:** Prayed status tracks user engagement depth with each moment
 - **Design Pattern:** Simple toggle or radio buttons
 
 #### 5. **Full-Text Search**
@@ -78,7 +117,19 @@ Pillar 5 consists of two phases: **v1 (Query & Filter)** and **future (Semantic 
 - **Scope:** Searches only user's own moments (no cross-user search)
 - **Design Pattern:** Untold, Apple Notes
 
-#### 6. **Ask Your Entries (Future v1.1)**
+#### 6. **Recent Searches**
+- **Purpose:** Quick access to recently searched queries, themes, or objects
+- **Trigger:** Tap search field (shows recent search history)
+- **Display:** List of last 5-10 searches (objects, moods, keywords)
+- **Behavior:**
+  - User can tap recent search to re-run it
+  - Each recent search shows what was searched + when
+  - Swipe to remove individual searches from history
+  - "Clear all" option to reset history
+- **Formation Intelligence Signal:** Reveals what themes user revisits, what they're wrestling with, temporal search patterns
+- **Design Pattern:** iOS Search, Google Search
+
+#### 7. **Ask Your Entries (Future v1.1)**
 - **Button:** "Ask Your Entries" prompt at top
 - **Purpose:** AI-powered query across all reflections
 - **Example Queries:** "What themes show up most in my reflections?" / "When do I feel most at peace?" / "How has my faith evolved?"
@@ -90,7 +141,7 @@ Pillar 5 consists of two phases: **v1 (Query & Filter)** and **future (Semantic 
 
 ### Phase 2+: Semantic Discovery (Future)
 
-#### 7. **Unified Discovery (Cross-Platform)**
+#### 8. **Unified Discovery (Cross-Platform)**
 - **Concept:** Search for a theme (e.g., "Love") and see:
   - Dwellable reflections tagged/mentioning "Love"
   - Bible verses about love (YouVersion API integration)
@@ -292,6 +343,37 @@ createdAt: Date
 - Patterns emerge (temporal, thematic) from filter usage
 - Users return weekly not just to capture, but to search/reflect on past moments
 - Search enables "dwelling on a theme" (e.g., "show me all Healing moments from the past month")
+
+---
+
+## Post-MVP Feature: Notating Answered Prayers
+
+### Concept
+
+Users should be able to mark prayers as "answered" after they've been prayed over, creating a record of God's work in their life.
+
+**Flow:**
+1. User views an old moment with "Prayed" status
+2. Sees affordance: "Mark prayer as answered"
+3. Taps to mark prayer with answer date + optional note ("How God answered this")
+4. Answered prayer now searchable/filterable as a distinct category
+5. Formation Intelligence (P6) can surface patterns in answered prayers
+
+**Why This Matters:**
+- Celebrates God's faithfulness (spiritual formation signal)
+- Creates a dwelling place not just for the prayer, but for the answer
+- Enables reflection on God's timing and methods
+- Builds evidence of formation over time
+
+### Potential Pillar Placement (TBD)
+
+This feature could belong to:
+- **P3 Extension** — Prayers are attached here; marking answers is part of the prayer lifecycle
+- **P6 Extension** — Formation Intelligence could detect themes in answered prayers and celebrate patterns ("You've seen 7 prayers answered about Career in 2026")
+- **P8 Extension** — Notifications could celebrate answered prayers or remind users to check if prayers were answered
+- **Standalone Post-MVP** — Could be its own feature requiring deeper architecture (answer tracking, prayer lifecycle states)
+
+**Recommendation:** Document across P3, P6, P8 strategy docs as a potential enhancement after MVP validation. Decision on final pillar placement deferred to Post-MVP planning.
 
 ---
 

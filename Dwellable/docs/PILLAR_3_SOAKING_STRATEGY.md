@@ -1,199 +1,290 @@
-# Pillar 3: Soaking & Responding to Captures — Strategy & Design Skeleton
+# Pillar 3: Soaking (Guided Prayer) — Strategy & Design Skeleton
 
-**Status:** 🔄 Design Complete, Implementation Not Started (T-063, T-064, T-065, T-066)  
-**Last Updated:** May 5, 2026
-
----
-
-## Key Job to Be Done
-
-**Phase 1 Proven:** Capture adoption is 100%. Users will voice-record moments when it's frictionless.
-
-**Phase 1 Gap:** Return rate is 0%. Users captured moments but never re-opened the app to reflect on them. The barrier is not *capturing* moments—it's **dwelling on them**.
-
-**Pillar 3's Job:** Transform captured moments from static artifacts into anchors for reflection and spiritual formation by inviting users back to their moments through visible galleries, gentle prompts, and contemplative experiences.
+**Status:** 🔄 **Phase 2 Beta** (Design In Progress)  
+**Last Updated:** May 10, 2026
 
 ---
 
-## Skeletal System Overview
+## Design Summary
 
-Pillar 3 consists of four interconnected features that together create the **dwelling experience**:
+Pillar 3 is where users **seal their moments through guided prayer**. After capturing a moment (P1), users are invited to pray over it with an AI-generated, contextually-rich prayer that reflects back what they shared.
 
-### 1. **Gallery View (Visual Moment Catalog)**
-- **What:** Tile-based visual grid showing all user's moments (work days, breakthroughs, struggles, celebrations)
-- **Design:** Each tile shows:
-  - Moment preview (first 20 words or auto-generated headline)
-  - Date stamp
-  - Optional visual indicator (emoji, color, or AI-generated imagery — deferred to P1)
-  - Tap to open full moment detail
-- **Entry Point:** Primary way users discover and return to moments
-- **Research Validation:** Stoic App (3.2x re-engagement), Day One (40% increase with visual timeline)
+Prayer is not prescriptive. It's a **confirmation signal** — when users pray with us, they're affirming: *"Yes, you understand me."*
 
-### 2. **Tags & Headlines (Metadata for Pattern Recognition)**
-- **What:** User-written headlines + optional suggested tags for organizational clarity
-- **Design:**
-  - Headline: 8-word user-generated retrieval cue (e.g., "God's peace in uncertainty")
-  - Tags: 5 max per moment, user-controlled (e.g., Presence, Peace, Waiting)
-  - Both optional—preserve user agency
-- **Purpose:** Enable pattern discovery ("I notice 60% of my moments involve solitude") without interpretation
-- **Research Validation:** Evernote users who organize return 2.1x more frequently; Bible app users who tag verses return 3x more
-
-### 3. **Soak Mode (Contemplative Environment)**
-- **What:** Optional 5/10/15-minute contemplative mode with ambient soundscape + moment text visible
-- **Design:**
-  - User selects moment
-  - Chooses duration (5, 10, or 15 minutes)
-  - Selects ambient soundscape (piano, rain, forest, silence)
-  - Moment text displayed prominently
-  - Soft timer (not intrusive)
-- **Purpose:** Shift dwelling session from passive scroll (30 seconds) to active contemplation (5-15 minutes)
-- **Research Validation:** Contemplative traditions emphasize sensory re-engagement; 7+ minute threshold activates spiritual presence
-
-### 4. **Reflection Prompts (Socratic Questions)**
-- **What:** Optional, gentle prompts that ask users Socratic questions about their moments
-- **Design:** Two flows based on user choice:
-
-#### **A. Prayer Flow**
-- User selects moment
-- System presents: "How can you pray about what you wrote here?"
-- Structured but open prayer guidance (not prescriptive)
-- User response saved as reflection attached to moment
-
-#### **B. Prompts Flow**
-- User selects moment
-- System asks Socratic questions in three tiers:
-  - **Tier 1 (Gentle):** "What stands out to you now?" / "How do you feel reading this today?"
-  - **Tier 2 (Deeper):** "How did God meet you here?" / "What did you learn about yourself?"
-  - **Tier 3 (Pattern-seeking):** "You've mentioned this theme five times—how is it evolving?" (only after 5+ related moments)
-- User response saved as reflection
+**MVP Scope:** Guided prayer only (AI-created, contextual to conversation)  
+**V2 Scope:** Open-ended prayer option (user writes their own)
 
 ---
 
-## Competitor Research & Skeletal References
+## Formation Intelligence — What Pillar 3 Is & Learns
 
-### Prayer Lock (Prayer + Reflection App)
-**Design Pattern:** Structured prayer flow with moment-based reflection  
-**Key Insight:** Users pray *about* their moments rather than analyzing them. Prayer as response deepens personal agency.  
-**Screenshot reference:** [User selects moment → prayer prompt appears → user writes prayer response → saved to moment]  
-**Dwellable adoption:** Prayer Flow incorporates this pattern
+### What Pillar 3 Is (in the Formation Intelligence System)
 
-### Untold (Faith Storytelling App)
-**Design Pattern:** User narrative accumulation + visual timeline  
-**Key Insight:** Seeing your story unfold visually (not just text list) creates emotional resonance and return frequency.  
-**Screenshot reference:** [Timeline view showing moment cards with dates, themes, preview text]  
-**Dwellable adoption:** Gallery View skeletal system based on this pattern
+**P3 is the sealing layer — it transforms captured moments into spiritual artifacts.**
 
-### Calm & Medito (Contemplative Apps)
-**Design Pattern:** Ambient soundscape + guided presence experience  
-**Key Insight:** Audio environment + visual simplicity + time threshold = deeper contemplation than text alone.  
-**Screenshot reference:** [Fullscreen moment text + ambient sound selector + gentle timer]  
-**Dwellable adoption:** Soak Mode skeletal system incorporates soundscape + time-awareness
+| Pillar | Role |
+|--------|------|
+| **P0 (Onboarding)** | Establishes foundation (intent, theology, support style) |
+| **P1 (Capture)** | Captures moment + context (archetype, emotional tone, intent) |
+| **P2 (Security)** | Protects the data (enables trust) |
+| **P3 (Soaking/Prayer)** | **Seals the moment spiritually** (affirms understanding, deepens engagement) |
+| **P4+ (Journal, Themes)** | Uses sealing signal to synthesize and pattern |
 
-### Day One & Stoic (Journaling + Reflection)
-**Design Pattern:** Gallery view + tag/category organization + revisit nudges  
-**Key Insight:** Visual + metadata + gentle reminders create habit-forming return cycle.  
-**Screenshot reference:** [Tile grid of moments with headlines + category badges + notification prompt]  
-**Dwellable adoption:** Gallery + Tags + Headlines features informed by this research
+### What Pillar 3 Learns
 
-### Dwell (Christian Habit App)
-**Design Pattern:** Scripture + reflection prompts on shared passages  
-**Key Insight:** External + personal reflection combined, but Dwell uses external (Scripture); Dwellable inverts this (user's moment is the text).  
-**Screenshot reference:** [Moment card + prompt suggestions + user-written response]  
-**Dwellable adoption:** Prompts Flow design informed by this, but all text is user-generated, not external
+**P3 learns through the act of praying.**
 
----
+When a user prays with us, they signal: *"Yes, you understand me."* This is a **soft yes** — alignment confirmation.
 
-## Intended Outcome
+**P3 learns:**
+- **Which moments they choose to pray over** (what matters most spiritually)
+- **Whether we understood correctly** (did they engage with the prayer? did it resonate?)
+- **Their spiritual engagement pattern** (do they pray over all moments? some? struggles only?)
+- **What themes recur in prayer** (what keeps coming back to their heart)
+- **Their prayer-to-moment ratio** (indicator of spiritual depth-seeking)
 
-### Quantitative Target
-- **Weekly Active Reflections (WAR):** 40-50% of users return to moments weekly by week 8
-- **Gallery adoption:** 85%+ voluntary usage
-- **Notification open rate:** 25-35% (gentle frequency, not all users need reminders)
-- **Soak adoption:** 35-40% (contemplative diversity—not everyone wants audio)
-- **Tags adoption:** 40-50% (metadata adds friction; reasonable adoption)
+Over time: **Formation patterns emerge** — what they're growing in, what they're wrestling with, where God is meeting them.
 
-### Qualitative Target
-- **User Experience:** "I find myself going back to my moments. They help me see patterns in how God shows up."
-- **Foundation Alignment:**
-  - "Dwellable respects my interpretation" (85%+)
-  - "I discover insights myself in Dwellable" (60%+ of active users)
-  - "I see my faith deepening through dwelling" (65%+ by week 8)
-  - "Dwellable feels personal to my faith journey" (80%+)
+### What Pillar 3 Communicates to the User
 
-### Spiritual Formation Impact
-- Users build **active memory of God's faithfulness** (can point to specific moments)
-- Users develop **increased attentiveness to the Spirit** (capture discipline becomes spiritual discipline)
-- Users gain **resilience through pattern recognition** (when doubt comes, they return to moments of God's presence)
-- Users experience **deeper integration of faith & life** (dwelling becomes a spiritual practice)
+#### "We heard you. We understand what you're feeling."
 
----
+The guided prayer is proof:
+- Includes their **name** (personalization)
+- References **specific feelings** they expressed (acknowledgment)
+- Names **specific people** they mentioned — and their role (witness)
+- Articulates the **intended outcome** they're yearning for (hope)
 
-## Considered & Rejected
+**Not generic. Theirs.**
 
-| Decision | Reasoning |
-|----------|-----------|
-| **AI-interpreted theme summaries ("Your moments show a pattern of trusting God")** | Violates "keeper not interpreter" principle. User must discover their own patterns. Rejected interpretation engine entirely; relying on user + Socratic prompts instead. |
-| **Mandatory daily dwelling practice or streaks** | Contradicts grace-centered design ("no guilt"). Dwelling is invitation, not obligation. All features optional; no gamification. |
-| **Auto-generated reflections or AI-written responses** | Users own their reflection. AI can prompt; users provide answers. Deferred AI response assistance to Post MVP. |
-| **Social sharing of moments or responses** | Privacy-first brand. Moments stay private by default. Sharing deferred to Phase 2+; when added, will be explicit opt-in only. |
-| **Scripture anchoring or biblical commentary in P0** | "Keeper not interpreter" principle. Users can link moments to Scripture themselves; Dwellable doesn't guide or suggest passages. Deferred to Phase 2+. |
-| **Real-time moment notifications** | Risk of constant pinging. Dwelling invitation (2x weekly) is intentional, not reactive. No push-on-capture or real-time engagement loops. |
+#### "Your feelings matter. Your experience is sacred."
 
----
+Prayer structure **honors complexity:**
+- Acknowledges the hard feelings: *"I feel unworthy"* ✓ (we see it)
+- Doesn't dismiss it: ✓ (we don't minimize)
+- Counteracts with God's truth: *"But God, you call me worthy"* ✓ (we point to hope)
 
-## Open Questions
+Never: *"Thank you for making me worthy"* ❌ (that affirms the lie)
 
-| Question | Status | Next Step |
-|----------|--------|-----------|
-| **How can we surface themes from accumulated moments without interpretation?** | In Progress — P1 design | Design theme surfacing as "here's what you've been saying" (mirror) not "here's what it means" (interpretation) |
-| **How often should we invite users to return without creating fatigue?** | Locked for P0 (2x weekly) | Validate through beta: test 1x, 2x, 3x weekly + opt-out rates; adjust based on engagement data |
-| **Should soundscapes stream or be bundled locally?** | Locked for P0 (local bundle) | Validate storage footprint doesn't exceed device limits; test on iPhone SE baseline |
-| **Should both Prayer + Prompts flows be available, or one primary?** | Locked for P0 (both optional) | Validate through user testing: do users find both options clarifying or confusing? |
-| **Should user reflections be saved as separate Response objects or appended to moments?** | Locked for P0 (separate Response model) | Test sync performance with nested response threading; validate revision history UX |
-| **How should Rich Context personalization work without revealing our interpretation?** | In Progress — needs validation | Test whether users perceive Rich Context-powered prompts as "understanding me" vs. "interpreting me"; validate theological safety |
+#### "This moment is sealed. I won't forget it."
 
-### Top 5 Risks & Mitigations
+**Prayer = spiritual seal:**
+- Before prayer: relief (they were heard)
+- After prayer: very heard + secure (moment is sealed)
+- Prayer artifact in journal: proof this moment was brought before God
 
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| **User Discovery Failure** — Gallery/Soak exist but users don't find them | Return rate stays 0% | Progressive feature onboarding on first return; in-app explainers for Gallery + Soak; highlighted in home screen |
-| **Notification Fatigue** — 2x weekly feels intrusive | Opt-out rate > 30% | Default OFF; fully customizable (1x, 2x, pause); sunset copy variants monthly based on engagement data |
-| **Interpretation Drift** — Prompts or AI subtly interpret moments ("This shows your spiritual growth") | Violates core principle (keeper, not interpreter) | All prompts are questions, never statements; no AI interpretation in P0; user responses stored as-is without analysis |
-| **Scope Creep** — Adding social/sharing/ranking during P0 | Brand drift; theological misalignment | Strictly enforce scope: P0 = solo dwelling only. Social deferred to P2. No moment ranking or comparison features. |
-| **Retention Cliff** — Return rate peaks week 4, then drops | WAR < 40% by week 8, fails P0 gate | Reserve mid-P0 design review (week 4) to iterate copy, onboarding, notification timing based on early data |
+**Trust signal:** "We care about this moment as much as you do."
+
+### How Pillar 3 Prepares Pillar 4 (Journal Creation)
+
+#### The Flywheel
+
+1. **P1 Capture:** User captures moment + context
+2. **P3 Prayer:** User prays over it → generates "Prayed" signal
+3. **P4 Journal:**
+   - Creates journal automatically (always)
+   - If "Prayed" signal present → embeds prayer artifact
+   - Journal entry carries spiritual weight: *"I didn't just capture this. I prayed over this."*
+   - Journal synthesis uses prayer's themes (what we surfaced, what they affirmed)
+
+#### Data Handoff
+
+P3 gives P4:
+- **Prayer content** (what we highlighted, what God's truth we offered)
+- **Confirmation signal** (they prayed → they're going deeper)
+- **Spiritual tone** (the prayer's language, their engagement level)
+
+P4 uses it:
+- Synthesizes journal with prayer's themes
+- Creates narrative: *"Here's what happened AND here's what I brought to God"*
+- Embeds prayer artifact as digital signal of spiritual engagement
+
+#### The Depth Spiral
+
+- Every moment → every prayer → every journal
+- Deeper context → better prayer → richer journal
+- Better prayer → more trust → deeper next capture
+- **Depth creates breadth; breadth enables more depth**
 
 ---
 
-## Blocking Dependency
+## User Experience (MVP)
 
-**T-062 (End-to-End Encryption):** Must complete before Pillar 3 features ship to production.  
-- **Why:** Users expect moments to be private. E2E encryption ensures no Dwellable servers, Supabase, or third parties can read moment content.
-- **Impact:** P0 development can begin in parallel, but TestFlight/GA release blocked until T-062 complete.
-- **Timeline:** T-062 = 16-24 hours; Pillar 3 = 4-6 weeks. E2E encryption is the bottleneck.
+### Happy Path
 
----
+1. **User completes conversation** (P1 Capture)
+2. **Sees CTA:** "Want to pray over this?"
+3. **Taps → Guided prayer screen** (AI-generated, contextual)
+4. **Reads prayer silently or aloud** (user prays with it)
+5. **Confirmation signal:** "Prayed" appears
+6. **Transition** to next experience (likely journal preview or moments list)
+7. **Prayer artifact embedded** in journal creation (automatic, signals spiritual engagement)
 
-## What's NOT Included (Deferred to Phase 1+)
+### What User Is Experiencing
 
-❌ AI-generated moment imagery  
-❌ Semantic search or theme surfacing  
-❌ Social features (sharing, ranking, comparison)  
-❌ Scripture integration or biblical anchoring  
-❌ Prescription spiritual direction  
-❌ Forced practices (daily streaks, gamification)  
-❌ External content (devotionals, verses, quotes)  
-
-These are explicitly deferred and will only be considered if P0 (dwelling phase) succeeds via WAR metric.
+- **Heard** (conversation was understood)
+- **Very heard** (prayer proves it)
+- **Secure** (moment won't be forgotten; it's sealed spiritually)
+- **Invited deeper** (prayer deepens engagement, not closes it)
 
 ---
 
-## Implementation Tickets (Not Started)
+## Guided Prayer Specification (MVP)
 
-- **T-063:** Prayer Flow — Moment selection → Prayer prompt → Response save
-- **T-064:** Prompts Flow — Moment selection → Socratic prompt tiers → Response save
-- **T-065:** Rich Context Integration — Use user's own language/themes to personalize prompts
-- **T-066:** Response Persistence — Save reflections, view response history per moment
+### What Prayer Must Include
+
+- **User's name** (personalization, not generic)
+- **Specific feelings** they expressed (acknowledgment)
+- **Specific people** they mentioned (+ their role: boss, friend, parent, etc.)
+- **Intended outcome** they're yearning for (what they hope for)
+
+### Counteracting Negative Beliefs
+
+**Structure: Acknowledge + Counteract**
+
+❌ **Wrong:**  
+*"Thank you for making me worthy"* (affirms the lie that they were unworthy)
+
+✅ **Right:**  
+*"Although I feel unworthy, God you call me worthy"* (honors the feeling, points to truth)
+
+### What Prayer Should Avoid
+
+- ❌ Identifying user as bad person
+- ❌ Negative reinforcement of characteristics
+- ❌ Dismissing difficult feelings
+- ❌ Prescriptive advice ("You should...")
+- ❌ Generic spiritual platitudes
+
+### Prayer Language Principles
+
+- **Specific, not generic** — reference their actual story
+- **Contemplative, not instructional** — invite prayer, don't teach
+- **Honest about struggle** — don't bypass the hard feelings
+- **Hope-oriented** — always point to God's perspective
+- **Client-appropriate** — match their theological language (if they said "Lord," use that; if "God," use that)
 
 ---
 
-**Reference:** See `archive/docs/PHASE2_DISCOVERY_RESEARCH.md`, `archive/docs/P0_FEATURE_RESEARCH_FINDINGS.md`, and `archive/docs/T-060_Phase2_Themes_1Pager.md` for full research backing.
+## Technical Architecture
+
+### Prayer Generation
+
+**Input data (from P0–P2):**
+- User's name (from P0 Onboarding)
+- Theological framework (if shared in P0)
+- Support style preference (from P0)
+- Conversation transcript (from P1 Capture)
+- Encrypted context (from P2 Security layer)
+
+**LLM task:**
+1. Extract feelings, people, intended outcomes from transcript
+2. Identify spiritual themes (doubt, joy, relationship, breakthrough, etc.)
+3. Generate contextual prayer using template + rich context
+4. Ensure prayer counteracts negative beliefs with God's perspective
+5. Match user's theological language/style
+
+**Output:**
+- Guided prayer text (300–400 words, contemplative tone)
+- "Prayed" signal (boolean flag for P4 embedding)
+
+### Prayer Artifact Storage
+
+**Encrypted in Supabase:**
+```swift
+struct PrayerArtifact: Codable {
+    let id: String                      // UUID
+    let momentId: String                // Reference to P1 capture
+    let userId: String                  // User ID
+    let prayerText: String              // LLM-generated prayer
+    let encryptedContent: Data          // AES-256-GCM encrypted
+    let createdAt: Date                 // ISO timestamp
+    let userEngaged: Bool               // Did user read/pray with it?
+}
+```
+
+**Embedded in Journal:**
+- Prayer artifact linked to journal entry
+- Visual indicator: "🙏 You prayed over this"
+- User can view prayer again when reading journal
+
+---
+
+## Formation Intelligence Learning
+
+### What Formation Happens Here
+
+**P3 operates at the root level:**
+
+Formation is about going to the root of challenging experiences and replacing them with healthy spiritual perspective.
+
+**P3's role:**
+- User captures root-level experience (P1)
+- P3 prayer brings it to God, surfaces what's underneath
+- Next moment, we know them deeper (more context for P3 next time)
+- Over time: **Depth spiral** → formation accelerates
+
+### Every Moment Matters
+
+- Not one powerful prayer that changes everything
+- But **every moment treated with equal spiritual significance**
+- More specific context → more appropriate prayer → more trust
+- Over 100 moments: depth creates visible formation trajectory
+
+---
+
+## Success Metrics (MVP)
+
+### Formation Intelligence Perspective
+- ✅ User feels understood through prayer content
+- ✅ Prayer language resonates (feels authentic to user's theology)
+- ✅ "Prayed" signal creates sense of spiritual sealing
+- ✅ Prayer artifact in journal reinforces spiritual significance of moment
+- ✅ Users return to moments more because they're spiritually sealed
+
+### Technical Perspective
+- ✅ Prayer generation latency <3s
+- ✅ Prayer content contextual (references specific names, feelings, outcomes)
+- ✅ Prayer avoids negative reinforcement patterns
+- ✅ Prayer artifact successfully embedded in journal creation
+- ✅ "Prayed" signal reliably transitions to next experience
+
+---
+
+## Open Questions for MVP
+
+1. **How do we handle difficult emotions in P3?**
+   - User captures: "I feel suicidal" or trauma material
+   - What's our pastoral responsibility in prayer?
+   - Do we refer? Do we normalize? How do we not harm?
+   - **Not a blocker; flag for careful MVP design**
+
+2. **What else can we do post-prayer to deepen the experience?**
+   - Are there other modular experiences we can offer after prayer?
+   - What else can be inferred from their capture + prayer to create deeper spiritual engagement?
+   - Examples to explore: Scripture connection? Meditation invitation? Prompt for journaling? Invitation to review similar past moments?
+   - Can this be modular — let users opt-in to different post-prayer experiences?
+   - **Not a blocker for MVP; exploratory for future versions**
+
+---
+
+## Backlog for V2
+
+1. **Open-ended prayer option** — user writes their own prayer instead of guided
+2. **Multiple prayers on same moment** — user can pray again, see prayer progression
+3. **Prayer variations** — different prayer styles/traditions for diverse users
+4. **Scripture connection** — surface relevant Scripture during/after prayer
+5. **Meditation/stillness option** — guided meditation paired with prayer
+
+---
+
+## Next: How P3 Prepares P4
+
+Once P3 is locked, P4 (Journal Creation) can be articulated as:
+- **What P4 is:** LLM-powered synthesis that weaves moment + prayer into narrative
+- **What P4 learns:** How users integrate their experience with spiritual reflection
+- **How P4 prepares P5+:** By capturing the full arc (moment → prayer → journal), P4 creates rich formation data
+
+---
+
+**Ready to lock P3 and move to P4?**

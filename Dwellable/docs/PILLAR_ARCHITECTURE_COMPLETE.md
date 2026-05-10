@@ -1,17 +1,20 @@
 # Dwellable Pillar Architecture — Complete Overview
 
-**Founder:** Kell Golden | **Status:** Pillars 0-4 Locked via User Walkthrough; Pillars 5-8 Drafts Awaiting User Review | **Updated:** May 7, 2026
+**Founder:** Kell Golden | **Status:** ✅ Formation Intelligence System Complete (P0-P8); Ready for Implementation Sequencing | **Updated:** May 10, 2026
 
 ---
 
 ## Executive Summary
 
-Dwellable's Phase 2 Beta architecture consists of **9 pillars** (0-8, with Pillar 9 deferred):
+Dwellable's Phase 2 Beta architecture consists of **8 pillars** (0-7, with Pillar 8 deferred):
 
 **Current Status:**
-- ✅ **Pillars 0-4:** Architecture locked through user walkthrough (Onboarding, Capture, Security, Soaking, Journal Creation)
-- 🔲 **Pillars 5-8:** Strategy documents drafted; pending user walkthrough to lock architecture (Editing, Search, Formation Intelligence, Beta & Marketing)
-- ⭕ **Pillar 9:** Deferred to Post MVP
+- ✅ **Pillars 0-7:** Formation Intelligence System COMPLETE. All pillars documented with integrated FI articulation.
+  - P0-P1: Formation Intelligence locked + validated (earlier sessions)
+  - P2-P3: Formation Intelligence locked + documented (May 7)
+  - P4: Formation Intelligence locked + documented (May 10) — now combines Journal Creation + Ownership
+  - P5-P7: Formation Intelligence locked + documented (May 10) — relabeled from P6-P8
+- ⭕ **Pillar 8:** Deferred to Post MVP (Notifications & Nudges)
 
 | Pillar | Name | Status | Happy Paths | Design Doc | Phase 2? |
 |--------|------|--------|-------------|-----------|---------|
@@ -19,12 +22,11 @@ Dwellable's Phase 2 Beta architecture consists of **9 pillars** (0-8, with Pilla
 | **1** | Capture (Voice + Text) | ✅ Complete | 2 main paths | PILLAR_1_CAPTURE_STRATEGY.md | ✅ |
 | **2** | Security & Privacy (E2E Encryption) | 🔄 In Progress | N/A (infrastructure) | PRD.md | ✅ |
 | **3** | Soaking/Responding to Captures | ✅ Complete | 2 main paths | PILLAR_3_SOAKING_STRATEGY.md | ✅ |
-| **4** | Journal Creation (Synthesis) | ✅ Complete | 1 main path (6 steps) | P4_SUMMARY.html | ✅ |
-| **5** | Editing (Moment + Journal) | 🔄 Design In Progress | 5 paths | P5_EDITING_STRATEGY.md | ✅ |
-| **6** | Search & Discovery | 🔄 Design In Progress | 6 paths | P6_SEARCH_STRATEGY.md | ✅ |
-| **7** | Formation Intelligence (Patterns) | 🔄 Design In Progress | 5 paths | P7_FORMATION_INTELLIGENCE_STRATEGY.md | ✅ |
-| **8** | Beta & Marketing | 🔄 Design In Progress | 7 paths | P8_BETA_MARKETING_STRATEGY.md | ✅ |
-| **9** | Notifications & Nudges | ⭕ Deferred | TBD | PRD.md (Pillar 9 section) | ❌ Post MVP |
+| **4** | Journal Creation & Ownership (Synthesis + Customization) | ✅ Complete | 1 unified path (9 steps) | PILLAR_4_JOURNAL_CREATION_AND_OWNERSHIP_STRATEGY.md | ✅ |
+| **5** | Search & Discovery | 🔄 Design In Progress | 6 paths | P5_SEARCH_STRATEGY.md | ✅ |
+| **6** | Formation Intelligence (Patterns) | 🔄 Design In Progress | 5 paths | P6_FORMATION_INTELLIGENCE_STRATEGY.md | ✅ |
+| **7** | Beta & Marketing | 🔄 Design In Progress | 7 paths | P7_BETA_MARKETING_STRATEGY.md | ✅ |
+| **8** | Notifications & Nudges | ⭕ Deferred | TBD | PRD.md (Pillar 8 section) | ❌ Post MVP |
 
 ---
 
@@ -41,21 +43,20 @@ Pillar 2: Security & Privacy → (E2E encrypt data in transit/at rest)
     ↓
 Pillar 3: Soaking → (optional: pray or reflect with prompts)
     ↓
-Pillar 4: Journal Creation → (LLM synthesis: title + body using Rich Context)
+Pillar 4: Journal Creation & Ownership → (LLM synthesis + user customization)
+    ↓ [User synthesizes journal, customizes headline/tags/moods, saves in same session]
     ↓
-Pillar 5: Editing → (optional: edit transcript, edit journal, delete)
+[User can now return via Pillars 5, 6, or check email/Discord for Pillar 7]
     ↓
-[User can now return via Pillars 6, 7, or check email/Discord for Pillar 8]
+Pillar 5: Search & Discovery → (find moments/journals via search or browse by tags/moods)
     ↓
-Pillar 6: Search & Discovery → (find moments/journals via search or browse)
-    ↓
-Pillar 7: Formation Intelligence → (view themes, see patterns over time)
+Pillar 6: Formation Intelligence → (view themes, see patterns over time)
     ↓
 (Return to Pillar 3 for re-dwelling on discovered moments)
     ↓
-Pillar 8: Beta & Marketing → (provide feedback, join Discord, participate in cohort)
+Pillar 7: Beta & Marketing → (provide feedback, join Discord, participate in cohort)
     ↓
-[Pillar 9: Notifications - deferred to Post MVP]
+[Pillar 8: Notifications - deferred to Post MVP]
 ```
 
 ---
@@ -114,42 +115,24 @@ Pillar 8: Beta & Marketing → (provide feedback, join Discord, participate in c
 
 ---
 
-### Pillar 4: Journal Creation (✅ COMPLETE)
-**1 Main Happy Path (6 Steps):**
-Capture Complete → Confirmation Screen (Option A) → Guided Prayer (v1) → Journal Synthesis (background) → Dwelling Place Tab → Editing & Customization
+### Pillar 4: Journal Creation & Ownership (✅ COMPLETE)
+**1 Unified Happy Path (9 Steps):**
+Capture Complete → Confirmation Screen → Guided Prayer (v1) → Journal Synthesis (background) → Dwelling Place Tab View → Edit Headline → Customize Tags → Assign Mood → Finalize & Save
 
 **Key Design Points:**
 - LLM synthesis: title (4-6 words) + body (2-3 paragraphs) using Rich Context
-- Dwelling Place tab as primary journal home
-- Photo management v1 (add/remove post-synthesis)
-- Mood/tag selection (predefined palette)
+- Title shared between Entry (conversation) and Dwelling Place (journal) tabs
+- Customization: headlines (user-editable), tags (max 2, auto-suggested + custom), moods (8 preset + 1 custom), photos (add/remove)
+- Personalized mood message generated
 - Soft delete capability
 - AES-256-GCM encryption
 - <2 sec synthesis latency target
-- See: P4_SUMMARY.html
+- <5 min customization flow target
+- See: PILLAR_4_JOURNAL_CREATION_AND_OWNERSHIP_STRATEGY.md
 
 ---
 
-### Pillar 5: Editing (🔄 DESIGN IN PROGRESS)
-**5 Main Happy Paths:**
-1. Edit moment transcript (pre-synthesis)
-2. Edit journal title & body (post-synthesis, detail view only)
-3. Delete moment (soft delete, 30-day recovery)
-4. Delete journal (soft delete, moment preserved)
-5. Recover deleted moment/journal (optional, future)
-
-**Key Design Points:**
-- Edit transcript before synthesis, journal title/body after
-- Detail view only (prevents accidental edits)
-- Marked with `edited: true` flag
-- Soft delete + 30-day recovery window
-- Encourages re-capture over endless editing
-- No edit history tracking (Phase 2)
-- See: P5_EDITING_STRATEGY.md
-
----
-
-### Pillar 6: Search & Discovery (🔄 DESIGN IN PROGRESS)
+### Pillar 5: Search & Discovery (🔄 DESIGN IN PROGRESS)
 **6 Main Happy Paths:**
 1. Full-text search (keywords across moments + journals)
 2. Filter by date range (preset or custom picker)
@@ -169,7 +152,7 @@ Capture Complete → Confirmation Screen (Option A) → Guided Prayer (v1) → J
 
 ---
 
-### Pillar 7: Formation Intelligence (🔄 DESIGN IN PROGRESS)
+### Pillar 6: Formation Intelligence (🔄 DESIGN IN PROGRESS)
 **5 Main Happy Paths:**
 1. Discover emerging theme (3+ occurrence detection, Rich Context powered)
 2. Explore themes in reflection (linked from Soaking)
@@ -189,7 +172,7 @@ Capture Complete → Confirmation Screen (Option A) → Guided Prayer (v1) → J
 
 ---
 
-### Pillar 8: Beta & Marketing (🔄 DESIGN IN PROGRESS)
+### Pillar 7: Beta & Marketing (🔄 DESIGN IN PROGRESS)
 **7 Main Happy Paths:**
 1. Beta user self-signup (form → waitlist → cohort invite → install)
 2. Cohort enrollment & tracking (admin assigns users to cohorts)
@@ -211,18 +194,29 @@ Capture Complete → Confirmation Screen (Option A) → Guided Prayer (v1) → J
 
 ---
 
-### Pillar 9: Notifications & Nudges (⭕ DEFERRED)
+### Pillar 8: Notifications & Nudges (⭕ DEFERRED)
 **Status:** Design deferred to Post MVP (post-beta)
 
 **Rationale:** Need to validate all other pillars and dwelling behavior in Phase 2 before knowing what to notify users about.
 
 **Concept (Draft):** Rich Context + pattern detection → contextual nudges when themes detected but not prayed over ("You reflected on anxiety, haven't prayed. Want to now?")
 
-**See:** PRD.md Pillar 9 section
+**See:** PRD.md Pillar 8 section
 
 ---
 
 ## Critical Architectural Features (Cross-Pillar)
+
+### Trust Principle (Cross-Pillar)
+- **Definition:** Every interaction is a trust-building or trust-breaking moment. Users share intimate spiritual and emotional content—the app's reliability, accuracy, and care in handling that content directly impacts Formation Intelligence.
+- **Applies to:** All pillars, but especially Search (P5), where accurate results affirm understanding, and Encryption (P2), where security affirms safety.
+- **Manifestations:**
+  - **P5 (Search):** Fast, accurate results build trust. Slow search, irrelevant results, or missing moments breaks trust.
+  - **P2 (Encryption):** Transparent security builds trust. Users must understand their data is theirs alone.
+  - **P4 (Journal Synthesis):** Accurate synthesis (reflects their voice, not LLM voice) builds trust. Generic or misaligned synthesis breaks trust.
+  - **P3 (Prayer & Prompts):** Contextual, non-generic responses build trust. Generic prayers break trust.
+  - **P1 (Capture):** Reliable transcription and saving builds trust. Lost captures or transcription errors break trust.
+- **Architecture Implication:** All systems must prioritize accuracy and user understanding over feature richness. A trusted, minimal feature set beats an untrusted, feature-rich one.
 
 ### Rich Context (Product Principle)
 - **Enables:** Personalized synthesis (P4), personalized prompts (P3), personalized nudges (P9)
@@ -279,16 +273,15 @@ Capture Complete → Confirmation Screen (Option A) → Guided Prayer (v1) → J
 2. Capture (Pillar 1) ← core feature
 3. Security & Encryption (Pillar 2) ← prerequisite for cloud sync
 4. Soaking/Prayer & Prompts (Pillar 3) ← return mechanism (Phase 1 learning)
-5. Journal Creation (Pillar 4) ← dwelling experience
+5. Journal Creation & Ownership (Pillar 4) ← dwelling experience + personalization
 
-### Important (Pillar 5-8)
-6. Editing (Pillar 5) ← refinement, user control
-7. Search & Discovery (Pillar 6) ← re-engagement, revisiting
-8. Formation Intelligence (Pillar 7) ← pattern surfacing, spiritual formation
-9. Beta & Marketing (Pillar 8) ← validation, community, iteration
+### Important (Pillar 5-7)
+6. Search & Discovery (Pillar 5) ← re-engagement, revisiting, pattern discovery
+7. Formation Intelligence (Pillar 6) ← pattern surfacing, spiritual formation
+8. Beta & Marketing (Pillar 7) ← validation, community, iteration
 
-### Deferred (Pillar 9)
-10. Notifications & Nudges (Pillar 9) ← post-MVP, post-validation
+### Deferred (Pillar 8)
+9. Notifications & Nudges (Pillar 8) ← post-MVP, post-validation
 
 ---
 
@@ -312,31 +305,49 @@ Capture Complete → Confirmation Screen (Option A) → Guided Prayer (v1) → J
 | 1 | PILLAR_1_CAPTURE_STRATEGY.md | ✅ Exists |
 | 2 | PRD.md (Pillar 2 section) | ✅ Exists |
 | 3 | PILLAR_3_SOAKING_STRATEGY.md | ✅ Exists |
-| 4 | P4_SUMMARY.html | ✅ Exists |
-| 5 | P5_EDITING_STRATEGY.md | ✅ NEW (Created May 7) |
-| 6 | P6_SEARCH_STRATEGY.md | ✅ NEW (Created May 7) |
-| 7 | P7_FORMATION_INTELLIGENCE_STRATEGY.md | ✅ NEW (Created May 7) |
-| 8 | P8_BETA_MARKETING_STRATEGY.md | ✅ NEW (Created May 7) |
-| 9 | PRD.md (Pillar 9 section) | ✅ Exists |
+| 4 | PILLAR_4_JOURNAL_CREATION_AND_OWNERSHIP_STRATEGY.md | ✅ NEW (Combined May 10) |
+| 5 | P5_SEARCH_STRATEGY.md | ✅ Exists (relabeled from P6) |
+| 6 | P6_FORMATION_INTELLIGENCE_STRATEGY.md | ✅ Exists (relabeled from P7) |
+| 7 | P7_BETA_MARKETING_STRATEGY.md | ✅ Exists (relabeled from P8) |
+| 8 | PRD.md (Pillar 8 section) | ✅ Exists (relabeled from P9) |
+
+**Deprecated Files:**
+- PILLAR_4_JOURNAL_CREATION_STRATEGY.md (merged into P4)
+- PILLAR_5_EDITING_STRATEGY.md (merged into P4)
 
 ---
 
 ## Summary
 
-✅ **All Phase 2 Pillars (0-8) now have documented strategy specifications and happy paths.**
+✅ **Formation Intelligence System (P0-P7) COMPLETE**
 
-**Important Status Distinction:**
-- **Pillars 0-4 (✅ LOCKED):** Walked through with founder, design locked, ready for implementation
-- **Pillars 5-8 (🔲 DRAFTS PENDING):** Strategy documents created, happy paths documented, awaiting founder walkthrough to lock before implementation
+All Phase 2 Pillars (0-7) now have:
+- Documented strategy specifications with happy paths
+- **Integrated Formation Intelligence articulation** (what pillar is, what it learns, what it communicates, how it prepares the next pillar)
+- Clear architectural role within the 8-pillar Formation Intelligence cascade
+- Locked design decisions and success metrics
+
+**Architecture Complete:**
+- **P0-P1 (Identity Foundation & Capture):** Formation Intelligence foundation. Establishes who user is and captures raw moments.
+- **P2-P3 (Trust & Prayer Response):** Formation Intelligence enabler. Encryption builds trust; prayer seals moments and signals value to God.
+- **P4 (Synthesis & Ownership):** Formation Intelligence building. Journal synthesizes AND user personalizes (combined pillar). User claims ownership in one session.
+- **P5-P6 (Discovery & Pattern Naming):** Formation Intelligence deepening. Search reveals patterns; themes name patterns.
+- **P7 (Validation & Celebration):** Formation Intelligence articulation & celebration. Beta validates the entire system works.
 
 Each pillar document includes:
+- Formation Intelligence System section (defining pillar's role in the cascade)
 - Clear happy path(s) documenting the user experience
-- Locked decisions (0-4) or tentative decisions (5-8) defining scope and approach
+- Locked design decisions and tentative/TBD items
 - Integration points with other pillars
 - Success metrics and validation criteria
-- Technical considerations and data models
-- Next steps for design/engineering
+- Technical architecture and data models
+- Open questions and deferred decisions
 
-**Ready for:** Pillar 5-8 founder walkthrough/lock (next session), then implementation ticket creation, effort estimation, team assignment, design handoff.
+**Ready for:**
+1. ✅ Formation Intelligence system validation with founder (completed May 10)
+2. Implementation sequencing and ticket generation (next phase)
+3. Effort estimation and team assignment
+4. Design handoff for Pillars 5-7 UI/UX
+5. LLM selection finalization (Gemini vs Mistral vs Claude vs OpenAI for synthesis, theme detection, prompts)
 
-**Deferred to Post MVP:** Pillar 9 (Notifications & Nudges), post-MVP features, visual galleries, semantic search, AI recommendations.
+**Deferred to Post MVP:** Pillar 8 (Notifications & Nudges), post-MVP features, visual galleries, semantic search, AI recommendations.

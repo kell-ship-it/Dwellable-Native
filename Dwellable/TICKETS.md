@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 7, 2026 — Phase 2 Pillar Skeletons 0-4 Locked; P5-P8 Strategy Docs Created (awaiting user review); Documentation clarified (Pillars 0-4 locked vs 5-8 drafts); PRD updated with 0-8 architecture
-**Status:** 71+/96 tickets complete (74%+), 0 in progress, Build 107 on TestFlight, Phase 1 complete, Pillars 0-4 locked, Pillars 5-8 pending skeleton review
+**Last Updated:** May 10, 2026 (Session 2) — Pass 2 Formation Intelligence Articulation Complete; Formation Intelligence defined as cross-cutting lens (not pillar); MVP vs Post-MVP signal capture clarified across P0-P7; Trust Principle added; Next: Pass 3 Ticket Generation & Phase 2 Launch Planning
+**Status:** 72/96 tickets complete (75%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, P0-P4 skeleton + FI locked, P5-P7 FI clarified + locked, P8 ready for next session
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -332,7 +332,21 @@
   - Clarified Pillar 9 (Notifications) as deferred to Phase 3+
   - Confirmed all integration points with Rich Context principle
 
-**Status Update:** All Phase 2 Pillars (0-8) now have documented happy paths. Ready for implementation ticket creation.
+- [x] **T-HYP (Pass 2 Formation Intelligence Articulation):** Formation Intelligence Lens Framework ✅ **COMPLETE (May 10)**
+  - Reframed Formation Intelligence as cross-cutting lens (not a pillar) across P0-P7
+  - Created FORMATION_INTELLIGENCE_LENS_REVIEW.html interactive review form with all pillar analysis
+  - Added Trust Principle section to PILLAR_ARCHITECTURE_COMPLETE.md (cross-pillar)
+  - Updated P5_SEARCH_STRATEGY.md with comprehensive Formation Intelligence System section
+  - Locked MVP vs Post-MVP signal capture architecture:
+    - P0: No theological framework in MVP; inferred passively Post-MVP
+    - P1: Archetype inferred passively (not asked), stored but not used in MVP
+    - P3: Pre-written prompts in MVP; contextually richer Post-MVP via journal/conversation history
+    - P4: Edits reveal formation growth (mood + prayer progress) → inform Post-MVP
+    - P5: User-driven "manual" discovery vs P6/P8 system-driven pattern detection
+    - P6/P8: Pattern detection & nudging Post-MVP only
+  - Next: Pass 3 - Ticket Generation & Phase 2 Launch Planning Questions
+
+**Status Update:** All Phase 2 Pillars (0-8) now have documented happy paths + locked Formation Intelligence framework. Ready for implementation ticket creation and Phase 2 launch planning.
 
 ### Pillar 6 (Menu Bar) Implementation Tickets (May 6 Session)
 
