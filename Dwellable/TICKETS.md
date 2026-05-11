@@ -483,6 +483,29 @@
   - Dependencies: All notification tickets
   - Priority: MEDIUM
 
+### Phase 2 Launch Readiness (Strategic Planning)
+
+- [ ] **T-092:** Phase 2 Launch Readiness: Dependency mapping & integration plan 🔲 **NOT STARTED**
+  - **Purpose:** Map all Phase 2 blockers and integration points before launching parallel pillar implementation
+  - **Deliverables:**
+    1. Pillar dependency graph (which pillar blocks others? what's critical path?)
+    2. Integration checklist (P0 → P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8)
+    3. LLM selection finalized (Gemini 2.0 Flash vs Mistral 7B for synthesis/themes)
+    4. Infrastructure readiness (Firebase, Rich Context system, E2E encryption T-062)
+    5. Team assignment & sprint plan (who owns which pillar?)
+    6. Beta cohort recruitment strategy (how many users? which segment first?)
+    7. Success metrics & measurement plan (WAR, Formation Engagement Rate, etc.)
+    8. Risk & mitigation plan (what breaks Phase 2? how do we prevent it?)
+  - **Acceptance Criteria:**
+    - Dependency graph shows clear sequencing (no circular dependencies)
+    - LLM selection locked with integration plan
+    - All blockers identified and scheduled (T-062 encryption is highest priority)
+    - Team can execute P0-P8 without blocking on design decisions
+  - **Estimated effort:** L (18-20 hours)
+  - **Dependencies:** All pillar strategy docs complete (P0-P8)
+  - **Priority:** CRITICAL (blocks all Phase 2 implementation)
+  - **Must complete before:** T-093 (first implementation ticket)
+
 ### LLM Research Documentation
 
 - [x] **LLM_RESEARCH.md:** Tournament bracket & selection strategy ✅ **COMPLETE**
