@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications Strategy — Collab Review</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --owner-bg: #fef9ec;
+      --owner-border: #C9B27C;
+      --owner-mark: rgba(201,178,124,0.35);
+      --owner-avatar: #C9B27C;
+      --agent-bg: #f5f0ff;
+      --agent-border: #7c3aed;
+      --agent-mark: rgba(124,58,237,0.15);
+      --agent-avatar: #7c3aed;
+      --doc-width: 820px;
+      --toolbar-h: 56px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f4f2ef;
+      color: #1a1a1a;
+      line-height: 1.7;
+    }
+
+    /* ── TOOLBAR ───────────────────────────────── */
+    .toolbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--toolbar-h);
+      background: #2c2420;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .toolbar-left h1 { font-size: 16px; font-weight: 600; }
+    .toolbar-left .doc-meta { font-size: 12px; color: #C9B27C; margin-left: 12px; }
+    .toolbar-right { display: flex; align-items: center; gap: 12px; }
+    .comment-count { font-size: 13px; color: #aaa; }
+    .btn-export {
+      background: #C9B27C; color: #2c2420;
+      border: none; padding: 7px 16px;
+      border-radius: 6px; font-size: 13px; font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-export:hover { background: #b8a06b; }
+    .btn-edit {
+      background: none; color: #aaa;
+      border: 1px solid #555; padding: 6px 14px;
+      border-radius: 6px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-edit:hover { border-color: #aaa; color: #fff; }
+    .btn-edit.active { background: #2d6a4f; border-color: #4ade80; color: #4ade80; }
+    .btn-backup {
+      background: none; color: #aaa;
+      border: 1px solid #555; padding: 6px 12px;
+      border-radius: 6px; font-size: 13px;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-backup:hover { border-color: #aaa; color: #fff; }
+    .toolbar-divider { width: 1px; height: 24px; background: #444; margin: 0 4px; }
+    .restore-toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #2d6a4f; color: #fff; border-radius: 8px;
+      padding: 12px 24px; font-size: 14px; font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3); z-index: 9999;
+      display: none;
+    }
+
+    /* ── DOCUMENT ──────────────────────────────── */
+    .doc-wrapper {
+      max-width: var(--doc-width);
+      margin: calc(var(--toolbar-h) + 32px) auto 80px;
+      padding: 0 24px;
+    }
+
+    .doc-section {
+      background: #fff;
+      border-radius: 8px;
+      padding: 32px 36px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    h2.section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2c2420;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0ede8;
+    }
+    h3.sub-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #3d2f28;
+      margin: 20px 0 8px;
+    }
+    h4.sub-sub-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #5c4b42;
+      margin: 14px 0 6px;
+    }
+
+    p { margin-bottom: 10px; font-size: 14px; }
+    ul, ol { padding-left: 20px; margin-bottom: 10px; }
+    li { font-size: 14px; margin-bottom: 4px; }
+
+    strong { font-weight: 600; color: #2c2420; }
+    em { font-style: italic; }
+
+    .meta-grid { display: flex; flex-direction: column; gap: 4px; }
+    .meta-row { font-size: 14px; }
+    .meta-label { font-weight: 600; }
+
+    /* ── TABLES ────────────────────────────────── */
+    .doc-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px; margin: 12px 0;
+    }
+    .doc-table th {
+      background: #f5f2ee; font-weight: 600;
+      text-align: left; padding: 8px 12px;
+      border: 1px solid #e8e4de; color: #3d2f28;
+    }
+    .doc-table td {
+      padding: 8px 12px;
+      border: 1px solid #e8e4de;
+      vertical-align: top;
+    }
+    .doc-table tr:nth-child(even) td { background: #faf8f5; }
+    .tfoot-add-row td {
+      text-align: center;
+      cursor: pointer;
+      color: #C9B27C;
+      font-size: 20px;
+      font-weight: 300;
+      padding: 6px;
+      border-top: 1px dashed #ddd;
+      background: #fafaf8;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .tfoot-add-row:hover td { background: rgba(201,178,124,0.1); }
+    .custom-row td[contenteditable] { outline: none; }
+    .custom-row td[contenteditable]:empty::before {
+      content: attr(data-placeholder);
+      color: #bbb;
+      font-style: italic;
+    }
+    .custom-row td[contenteditable]:focus { background: #fef9ec !important; }
+    .row-controls {
+      white-space: nowrap;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .row-controls button {
+      display: block;
+      background: none; border: none;
+      color: #ccc; font-size: 13px; cursor: pointer;
+      line-height: 1.4; padding: 0;
+      width: 100%;
+    }
+    .row-controls .delete-row { font-size: 16px; }
+    .row-controls button:hover { color: #666; }
+    .row-controls .delete-row:hover { color: #ef5350; }
+
+    /* ── CODE BLOCKS ───────────────────────────── */
+    .notif-example {
+      background: #faf8f5;
+      border: 1px solid #e8e4de;
+      border-left: 4px solid #C9B27C;
+      border-radius: 6px;
+      padding: 14px 16px;
+      font-size: 13px;
+      margin: 12px 0;
+      font-family: 'SF Mono', 'Monaco', monospace;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    /* ── CHECKLIST ─────────────────────────────── */
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 14px; }
+    .checklist li::before { content: '☐'; color: #C9B27C; font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    .divider { border: none; border-top: 1px solid #e8e4de; margin: 20px 0; }
+
+    /* ── HIGHLIGHTS ────────────────────────────── */
+    mark.comment-mark {
+      background: var(--owner-mark);
+      border-radius: 2px;
+      border-bottom: 2px solid var(--owner-border);
+      cursor: pointer;
+      padding: 0 1px;
+    }
+    mark.comment-mark:hover { background: rgba(201,178,124,0.55); }
+
+    /* ── COMMENT THREADS ───────────────────────── */
+    .comment-thread {
+      margin: 8px 0 16px;
+      border-left: 3px solid #e8e4de;
+      padding-left: 16px;
+    }
+
+    .comment-card {
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .comment-card.owner {
+      background: var(--owner-bg);
+      border: 1px solid var(--owner-border);
+    }
+    .comment-card.agent {
+      background: var(--agent-bg);
+      border: 1px solid var(--agent-border);
+    }
+    .comment-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .avatar {
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .avatar.owner { background: var(--owner-avatar); }
+    .avatar.agent { background: var(--agent-avatar); }
+    .comment-author { font-weight: 600; font-size: 12px; }
+    .comment-author.owner { color: #8a6a1a; }
+    .comment-author.agent { color: #5b21b6; }
+    .comment-time { font-size: 11px; color: #999; margin-left: auto; }
+
+    .comment-quoted {
+      background: rgba(0,0,0,0.04);
+      border-left: 2px solid #ccc;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+
+    .comment-body { color: #2c2420; line-height: 1.5; }
+
+    .comment-actions { margin-top: 6px; display: flex; gap: 8px; }
+    .btn-delete-comment {
+      background: none; border: 1px solid #e8b4b4; font-size: 11px;
+      color: #c0392b; cursor: pointer; padding: 3px 10px;
+      border-radius: 4px; font-weight: 600;
+    }
+    .btn-delete-comment:hover { background: #fdecea; }
+
+    /* ── FLOATING COMMENT BUTTON ───────────────── */
+    #comment-btn {
+      position: fixed;
+      z-index: 2000;
+      background: #2c2420;
+      color: #C9B27C;
+      border: 2px solid #C9B27C;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      display: none;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+    #comment-btn:hover { background: #3d3028; }
+
+    /* ── MODAL ─────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 28px;
+      width: 480px;
+      max-width: 90vw;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal-box h3 { font-size: 16px; margin-bottom: 14px; color: #2c2420; }
+    .modal-quoted {
+      background: #faf8f5;
+      border-left: 3px solid #C9B27C;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 14px;
+      font-style: italic;
+      max-height: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .modal-box textarea {
+      width: 100%;
+      min-height: 100px;
+      border: 2px solid #e0d8ce;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+    }
+    .modal-box textarea:focus { border-color: #C9B27C; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+    .btn-cancel {
+      background: none; border: 2px solid #e0d8ce;
+      padding: 8px 16px; border-radius: 6px; font-size: 13px;
+      cursor: pointer; color: #666;
+    }
+    .btn-submit {
+      background: #C9B27C; color: #2c2420;
+      border: none; padding: 8px 18px;
+      border-radius: 6px; font-size: 13px; font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-submit:hover { background: #b8a06b; }
+    .btn-submit:disabled { opacity: 0.5; cursor: default; }
+
+    /* ── EMPTY STATE ───────────────────────────── */
+    .empty-hint {
+      text-align: center;
+      padding: 40px 20px;
+      color: #bbb;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="toolbar-left">
+    <h1>Notifications Strategy</h1>
+    <span class="doc-meta">Pillar 8 · May 6, 2026 · Strategy Locked</span>
+  </div>
+  <div class="toolbar-right">
+    <span class="comment-count" id="comment-count">0 comments</span>
+    <button class="btn-backup" onclick="backupData()" title="Download backup of all comments + edits">💾 Backup</button>
+    <label class="btn-backup" title="Restore from a backup file" style="cursor:pointer;">
+      📂 Restore <input type="file" accept=".json" onchange="restoreFromBackup(event)" style="display:none;">
+    </label>
+    <button class="btn-backup" onclick="resetToSource()" title="Clear cached edits and reload from source HTML">↺ Reset to Source</button>
+    <div class="toolbar-divider"></div>
+    <button class="btn-edit" id="btn-edit" onclick="toggleEditMode()">✏️ Edit Doc</button>
+    <button class="btn-export" onclick="exportComments()">↓ Export Comments</button>
+  </div>
+</div>
+
+<!-- DOCUMENT -->
+<div class="doc-wrapper">
+
+  <!-- 1. Overview -->
+  <div class="doc-section" id="section-overview">
+    <h2 class="section-title">1. Overview</h2>
+    <div class="meta-grid">
+      <div class="meta-row"><span class="meta-label">Pillar:</span> 8 (Notifications &amp; Nudges)</div>
+      <div class="meta-row"><span class="meta-label">Purpose:</span> Drive user return and deeper dwelling engagement through sparse, contextual invitations to dwell</div>
+      <div class="meta-row"><span class="meta-label">Scope:</span> Push notifications + in-app notifications (MVP); no email</div>
+      <div class="meta-row"><span class="meta-label">Status:</span> Strategy locked, ready for implementation</div>
+      <div class="meta-row"><span class="meta-label">Philosophy:</span> "Invitations to dwell," not "reminders to use the app"</div>
+    </div>
+  </div>
+
+  <!-- 2. Product Purpose -->
+  <div class="doc-section" id="section-purpose">
+    <h2 class="section-title">2. Product Purpose</h2>
+    <h3 class="sub-title">The Problem Notifications Solve</h3>
+    <ul>
+      <li>Phase 1 validation: 100% capture adoption, 0% return rate</li>
+      <li>Root cause: Users aren't returning to reflect on moments they captured</li>
+      <li>Solution: Sparse, meaningful notifications that invite users back to dwell on their moments</li>
+    </ul>
+    <h3 class="sub-title">Why Pillar 8 (Last)</h3>
+    <ul>
+      <li>Notifications only work <em>after</em> there are compelling experiences (Prayer/Dwelling from Pillar 3)</li>
+      <li>Without good prayer prompts, notifications just nag users to use an empty app</li>
+      <li>Pillar 5 (Search) makes moments accessible; Pillar 8 invites users back to them</li>
+    </ul>
+  </div>
+
+  <!-- 3. Success Criteria -->
+  <div class="doc-section" id="section-success">
+    <h2 class="section-title">3. Success Criteria</h2>
+    <h3 class="sub-title">Qualitative</h3>
+    <ul class="checklist">
+      <li>Notifications feel like invitations, not reminders</li>
+      <li>Users perceive notifications as genuinely helpful, not pushy</li>
+      <li>Notifications respect the spiritual/faith tone of Dwellable (not productivity-gamified)</li>
+    </ul>
+    <h3 class="sub-title">Quantitative</h3>
+    <ul class="checklist">
+      <li>D7 Retention increases to &gt;35% (from 0% baseline)</li>
+      <li>Formation Engagement Rate (% of users dwelling) increases &gt;20% <em>(MVP: dwelling = prayer on a captured moment OR journal return — prompt response not counted)</em></li>
+      <li>Click-through rate on notifications &gt;40% (users act on invitations)</li>
+      <li>Opt-out rate &lt;10% (users keep notifications enabled)</li>
+      <li>No increase in churn from notification fatigue</li>
+    </ul>
+  </div>
+
+  <!-- 4. Design Decisions -->
+  <div class="doc-section" id="section-decisions">
+    <h2 class="section-title">4. Design Decisions</h2>
+    <table class="doc-table">
+      <thead><tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Frequency</strong></td><td>Stage-dependent (B1/B2: weekly; C3: 1x/month; D: none)</td><td>Cadence scales with urgency — active discovery stages warrant weekly; re-engagement is sparse; dwelling needs silence</td></tr>
+        <tr><td><strong>Opt model</strong></td><td>Opt-out (default on)</td><td>Maximizes reach; users can disable if unwanted; easier to adopt than opt-in</td></tr>
+        <tr><td><strong>Personalization</strong></td><td>Yes, contextual (metadata-based)</td><td>Generic notifications feel cold; personalized by user segment + behavior</td></tr>
+        <tr><td><strong>Timing</strong></td><td>User's typical app-open time</td><td>Better engagement; respects user's natural rhythm</td></tr>
+        <tr><td><strong>Message tone</strong></td><td>Invitation, not reminder</td><td>"Ready to reflect?" not "You haven't used the app"</td></tr>
+        <tr><td><strong>No streaks</strong></td><td>Avoid gamification</td><td>Aligns with faith-based philosophy; formation ≠ productivity</td></tr>
+        <tr><td><strong>Push + in-app (no email)</strong></td><td>Native push + in-app nudge; if user responds to one, suppress the other</td><td>More immediate; respects privacy (email = broadcast); in-app reinforces without double-firing</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 5. Funnel Stages — Messaging & Delivery (combined with former Section 7) -->
+  <div class="doc-section" id="section-segmentation">
+    <h2 class="section-title">5. Funnel Stages — Notification Playbook</h2>
+
+    <p>We segment by <strong>where someone is in the funnel</strong> — not by who we think they are. Archetypes are Post-MVP.</p>
+    <p><strong>Funnel:</strong> Onboarded → Captures → Responds to Prompt → Prays → Returns to Journal → Consistent Dwelling</p>
+    <p><strong>Dwelling (MVP)</strong> = praying on a captured moment OR returning to a journal entry (to edit, add context, or pray/journal from a notification). Responding to a prompt is <em>not</em> counted as dwelling — it's a positive signal that reduces notification urgency but does not advance funnel stage. A user's funnel stage is determined by the deepest dwelling act they've taken.</p>
+    <p>Each stage below specifies: <strong>Condition</strong> (who this applies to), <strong>Why</strong> (intervention goal), <strong>When to fire</strong> (timing trigger), and <strong>Cool-off</strong> (suppression rules) — followed by Push and In-App message options.</p>
+
+    <hr class="divider">
+
+    <h3 class="sub-title">Quick Reference — All Stages</h3>
+    <table class="doc-table" id="quick-ref-table">
+      <thead>
+        <tr><th>Stage</th><th>Behavioral Trigger</th><th>Example Message</th><th>Cool-off</th><th style="width:28px;"></th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>A0</strong></td>
+          <td>Started onboarding, never completed</td>
+          <td>"You started something. Finish setting up so we can meet you where you are."</td>
+          <td>1 push max. Stop at Day 7 if no completion.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><strong>A</strong></td>
+          <td>Onboarding complete; 0 moments captured<br><em>Push + in-app. If user responds to one, suppress the other.</em></td>
+          <td><u>Brings dweller to capture</u><br>"What's something you'd like to remember from this week?"<br><em>Contextual to dweller's intent from onboarding</em></td>
+          <td>1 push total. Suppress all after first capture.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><strong>B1</strong></td>
+          <td>Any capture that exits without prayer (fires after every unprayed capture, not just first)<br><em>Push + in-app. If user responds to one, suppress the other.</em></td>
+          <td><u>Brings dweller to prayer</u><br>"You captured something earlier. When you're ready, would you like to pray on it?"<br><em>Or provide a snippet of the prayer.</em></td>
+          <td>Push 1/week at 8am (dweller's time zone). After 4 no-clicks, expire. If they click but don't pray, continue weekly cadence.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><strong>B2</strong></td>
+          <td>≥1 capture + prompt response; 0 prayers recorded<br><em>Push + in-app. If user responds to one, suppress the other.</em></td>
+          <td><u>Brings dweller to prayer</u><br>"You captured something earlier. When you're ready, would you like to pray on it?"<br><em>Or provide a snippet of the prayer.</em></td>
+          <td>Push 1/week at 8am (dweller's time zone). After 4 no-clicks, expire. If they click but don't pray, continue weekly cadence.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><strong>C1</strong></td>
+          <td>≥1 prayer recorded; has not returned to any journal entry</td>
+          <td>
+            <u>Brings dweller to journal:</u><br>"You shared your heart earlier, and here's how we honored it..."<br><br>
+            <u>Brings dweller to capture:</u><br>"How have you been feeling since prayer?"<br><br>
+            <u>Brings dweller to capture:</u><br>"Where's your heart at regarding {subject}?"
+          </td>
+          <td>In-app: once per prayer session. Push: 1/week at 8am (dweller's time zone). Stop after 2 ignores per C1 notif.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><strong>C2</strong></td>
+          <td>≥1 journal return; 0 prayers ever recorded</td>
+          <td>"You've been reflecting. Ready to bring it to prayer?"</td>
+          <td>1 push max in first month. Stop outbound if no action in 3 weeks.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><strong>C3</strong></td>
+          <td>Prayer + journal return on record; no dwelling in 14+ days</td>
+          <td>"It's been a little while. How's your heart?"</td>
+          <td>1x/month. Reduce to 1x/6 weeks after 3 no-clicks.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><strong>D</strong></td>
+          <td>Any dwelling act within last 7–10 days</td>
+          <td>MVP: no push. Stay silent — the product is working.</td>
+          <td>MVP: 0 push. Post-MVP: 0–1 per quarter.</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr class="divider">
+
+    <h3 class="sub-title">Push vs In-App — Core Distinction</h3>
+    <table class="doc-table">
+      <thead><tr><th></th><th>Push</th><th>In-App</th></tr></thead>
+      <tbody>
+        <tr><td><strong>When it fires</strong></td><td>User is NOT in the app</td><td>User is actively in the app</td></tr>
+        <tr><td><strong>Intent</strong></td><td>Re-engagement (bring them back)</td><td>Contextual deepening (guide them further)</td></tr>
+        <tr><td><strong>Investment prerequisite</strong></td><td>≥1 meaningful action before pushing</td><td>None — can surface Day 1</td></tr>
+        <tr><td><strong>Frequency cap</strong></td><td>1–2 per user per month (global)</td><td>1 active nudge at a time; dismiss on action</td></tr>
+        <tr><td><strong>Timing control</strong></td><td>We schedule it</td><td>Triggered by in-session behavior</td></tr>
+        <tr><td><strong>Opt-out</strong></td><td>iOS notification settings</td><td>N/A — contextual UI element</td></tr>
+      </tbody>
+    </table>
+
+    <hr class="divider">
+
+    <!-- ── STAGE A0 ───────────────────────────────── -->
+    <h3 class="sub-title">Stage A0 — Onboarded, incomplete setup</h3>
+    <p><strong>Condition:</strong> Account partially created — started onboarding but did not complete (intent, support style, or theological framework not captured)</p>
+    <p><strong>Why:</strong> Recover the install. They showed intent (downloaded, started) but didn't finish. Goal is not to pressure completion — it's to remind them why they came and make re-entry frictionless.</p>
+    <p><strong>When to fire:</strong> Day 2 after install if onboarding is incomplete (push, 1x). On re-open (in-app, pick up where they left off).</p>
+    <p><strong>Cool-off:</strong> 1 push max. After Day 7 with no completion, stop all outbound — await organic return.</p>
+    <h4 class="sub-sub-title">Push</h4>
+    <ul>
+      <li>"You started something. Finish setting up so we can meet you where you are."</li>
+      <li>"Your Dwellable profile is almost ready — a few steps to make it yours."</li>
+    </ul>
+    <h4 class="sub-sub-title">In-App</h4>
+    <p><strong>Placement:</strong> First screen on first open — before onboarding asks anything. Then resumes onboarding. Dismiss: onboarding completed.</p>
+    <ul>
+      <li>"You're here. That took something. This space is yours."</li>
+      <li>"Welcome back. Let's finish getting you set up." <em>(re-open)</em></li>
+    </ul>
+
+    <hr class="divider">
+
+    <!-- ── STAGE A ───────────────────────────────── -->
+    <h3 class="sub-title">Stage A — Onboarded, no captures yet</h3>
+    <p><strong>Condition:</strong> Onboarding complete, 0 moments captured</p>
+    <p><strong>Why:</strong> Drive the first capture — the first meaningful investment. Until someone captures, nothing else in the product has context to work with.</p>
+    <p><strong>When to fire:</strong> Day 3 with no capture (push, 1x). Create tab empty state surfaces Day 1 (in-app).</p>
+    <p><strong>Cool-off:</strong> 1 push total before first capture. Suppress all push after first capture is made. AI personalization of the first in-app prompt is MVP (not Post-MVP).</p>
+    <h4 class="sub-sub-title">Push</h4>
+    <ul>
+      <li>"Ready to capture what's on your heart?"</li>
+      <li>"What's something you'd like to remember from this week?"</li>
+      <li>"Your voice is worth capturing."</li>
+    </ul>
+    <h4 class="sub-sub-title">In-App</h4>
+    <p><strong>Placement:</strong> Create tab empty state (Day 1). Dismiss: first capture made.</p>
+    <ul>
+      <li>"Start by capturing a moment — a thought, a feeling, something that happened."</li>
+    </ul>
+
+    <hr class="divider">
+
+    <!-- ── STAGE B1 ───────────────────────────────── -->
+    <h3 class="sub-title">Stage B1 — Captured, no dwelling</h3>
+    <p><strong>Condition:</strong> Any capture that exits without prayer — fires after every unprayed capture, not just the first</p>
+    <p><strong>Why:</strong> Prayer is invited after every capture. The emotional context is always live right after a moment is captured — that window should never close without an invitation.</p>
+    <p><strong>When to fire:</strong> Same evening or next morning after any capture without prayer (push, within ~12 hours). Weekly cadence continues until prayer is recorded.</p>
+    <p><strong>Cool-off:</strong> Push + in-app. If user responds to one, suppress the other. Weekly push at 8am (dweller's time zone). After 4 no-clicks, expire. If they click but don't pray, continue weekly cadence.</p>
+    <h4 class="sub-sub-title">Push</h4>
+    <ul>
+      <li>"You captured something earlier. When you're ready, would you like to pray on it?"</li>
+      <li>"How has your heart been this week? Anything to reflect on?"</li>
+      <li>"Your moments are waiting. Ready to go deeper?"</li>
+    </ul>
+    <h4 class="sub-sub-title">In-App</h4>
+    <p><strong>Placement:</strong> Immediately after capture, before exit. Today tab moment card on return. Dismiss: prayer started or prompt response submitted.</p>
+    <ul>
+      <li>"Would you like to take a moment to pray on what you just shared?"</li>
+      <li>"You captured this — ready to pray on it?"</li>
+    </ul>
+
+    <hr class="divider">
+
+    <!-- ── STAGE B2 ───────────────────────────────── -->
+    <h3 class="sub-title">Stage B2 — Captured, responded to prompt, no prayer</h3>
+    <p><strong>Condition:</strong> ≥1 moment captured, ≥1 prompt response, 0 prayers recorded</p>
+    <p><strong>Why:</strong> They're already dwelling — responding to a prompt IS a form of dwelling. Tone is softer, urgency is lower. We're not pulling them in; we're inviting the next step.</p>
+    <p><strong>When to fire:</strong> 3–5 days after prompt response with no prayer (push). Today tab contextual on return (in-app).</p>
+    <p><strong>Cool-off:</strong> 1 push/month max. In-app shows once per return session. No stacking.</p>
+    <h4 class="sub-sub-title">Push</h4>
+    <ul>
+      <li>"Your moments have depth. Ready to bring them to prayer?"</li>
+      <li>"You've been reflecting. How's your heart in prayer?"</li>
+    </ul>
+    <h4 class="sub-sub-title">In-App</h4>
+    <p><strong>Placement:</strong> Today tab, below recent moment. Dismiss: prayer started.</p>
+    <ul>
+      <li>"You've reflected on this — want to pray on it too?"</li>
+    </ul>
+
+    <hr class="divider">
+
+    <!-- ── STAGE C1 ───────────────────────────────── -->
+    <h3 class="sub-title">Stage C1 — First prayer, no journal return (L5a)</h3>
+    <p><strong>Condition:</strong> ≥1 prayer recorded; has not returned to a journal entry; active within last 14 days</p>
+    <p><strong>Why:</strong> They prayed but haven't seen what came from it. A journal entry was created after prayer — they may not know it's there, or haven't felt the pull to return. Goal: surface the connection between the moment they prayed and the artifact it generated.</p>
+    <p><strong>When to fire:</strong> Immediately after prayer closes (in-app — show the journal card before they exit). Push: 7 days after prayer with no journal return.</p>
+    <p><strong>Cool-off:</strong> In-app: once per prayer session. Push: 1x in first 30 days; after that, fold into Stage C3 if still quiet.</p>
+    <h4 class="sub-sub-title">Push</h4>
+    <ul>
+      <li>"You prayed over something. It's worth returning to — see what came from it."</li>
+      <li>"Something you prayed about is waiting for you."</li>
+    </ul>
+    <h4 class="sub-sub-title">In-App</h4>
+    <p><strong>Placement:</strong> Immediately after prayer closes, before exiting prayer flow. Shows journal card generated from that prayer. Dismiss: journal entry opened.</p>
+    <ul>
+      <li>"Your moment was written down. Want to see it?"</li>
+      <li>"Here's what came from what you just brought to God." [surfaces journal card]</li>
+    </ul>
+
+    <hr class="divider">
+
+    <!-- ── STAGE C2 ───────────────────────────────── -->
+    <h3 class="sub-title">Stage C2 — Journal return, no prayer (L5b)</h3>
+    <p><strong>Condition:</strong> Has returned to ≥1 journal entry; 0 prayers ever recorded</p>
+    <p><strong>Why:</strong> They found their way to the journal (likely through capturing and AI synthesis) but haven't discovered prayer. This is the journal-first path. Goal: invite prayer as the natural next step — not as something new, but as something that belongs alongside what they're already doing.</p>
+    <p><strong>When to fire:</strong> After 2nd+ journal return with no prayer (in-app nudge below journal body). Push: 5–7 days after last journal activity with no prayer recorded.</p>
+    <p><strong>Cool-off:</strong> Push + in-app. If user responds to one, suppress the other. Weekly push at 8am (dweller's time zone). After 4 no-clicks, expire. Stop outbound if no action — await organic return.</p>
+    <h4 class="sub-sub-title">Push</h4>
+    <ul>
+      <li>"You've been reflecting. Ready to bring it to prayer?"</li>
+      <li>"Your journal has depth. Prayer is the next step, when you're ready."</li>
+    </ul>
+    <h4 class="sub-sub-title">In-App</h4>
+    <p><strong>Placement:</strong> After reading a journal entry — below the journal body. Dismiss: prayer initiated.</p>
+    <ul>
+      <li>"Want to pray on what you just read?"</li>
+      <li>"This moment has been captured and reflected on. Prayer is the next step."</li>
+    </ul>
+
+    <hr class="divider">
+
+    <!-- ── STAGE C3 ───────────────────────────────── -->
+    <h3 class="sub-title">Stage C3 — Prayed and returned to journal, now quiet</h3>
+    <p><strong>Condition:</strong> ≥1 prayer AND ≥1 journal return recorded; no dwelling of any kind in 14+ days</p>
+    <p><strong>Why:</strong> They've completed the full loop. They know what dwelling looks like. Re-invite gently — not with instruction or explanation, just with presence. The tone is familiar, not pedagogical.</p>
+    <p><strong>When to fire:</strong> 14+ days since last dwelling act (push). Today tab on return (in-app, oldest unprayed moment surfaced).</p>
+    <p><strong>Cool-off:</strong> 1x/month. Reduce to 1x/6 weeks after 3 no-clicks.</p>
+    <h4 class="sub-sub-title">Push</h4>
+    <ul>
+      <li>"It's been a little while. How's your heart?"</li>
+      <li>"You have moments worth returning to. Ready to dwell?"</li>
+      <li>"Whenever you're ready, your moments are here."</li>
+    </ul>
+    <h4 class="sub-sub-title">In-App</h4>
+    <p><strong>Placement:</strong> Today tab, top of feed — oldest unprayed moment surfaced. Dismiss: any dwelling act.</p>
+    <ul>
+      <li>"Whenever you're ready."</li>
+    </ul>
+
+    <hr class="divider">
+
+    <!-- ── STAGE D ───────────────────────────────── -->
+    <h3 class="sub-title">Stage D — Actively dwelling</h3>
+    <p><strong>Condition:</strong> Prayer, prompt response, or journal return within the past 7–10 days</p>
+    <p><strong>Why:</strong> Don't interrupt what's working. The product experience is the nudge. Stay mostly silent — presence over prompting.</p>
+    <p><strong>When to fire:</strong> MVP: no push. Post-MVP: rare high-signal Formation Intelligence event only. In-app: contextual prompts within prayer flow only.</p>
+    <p><strong>Cool-off:</strong> MVP: 0 push. Post-MVP: 0–1 per quarter maximum.</p>
+    <h4 class="sub-sub-title">Push</h4>
+    <p>MVP: none. Post-MVP only:</p>
+    <ul>
+      <li>"Something keeps showing up in your moments — want to explore it?"</li>
+    </ul>
+    <h4 class="sub-sub-title">In-App</h4>
+    <p><strong>Placement:</strong> Contextual prompts within prayer flow only. Post-MVP: Formation Intelligence insights surfaced on Today tab.</p>
+
+    <hr class="divider">
+
+    <!-- ── DORMANCY RESET ───────────────────────────────── -->
+    <h3 class="sub-title">Dormancy Reset Rule</h3>
+    <p>Any user who reaches Stage D (actively dwelling) and then goes quiet for 14+ consecutive days is automatically routed to Stage C3 notification logic. No penalty framing — the same gentle re-invite applies regardless of how active they were before.</p>
+    <p>The transition is invisible to the user. Functionally: Stage D check runs daily; if last dwelling act is 14+ days ago, switch to C3 rules. Escalation follows normal C3 cool-off from that point.</p>
+
+    <hr class="divider">
+
+    <h3 class="sub-title">Global Frequency Caps</h3>
+    <ul>
+      <li><strong>Push:</strong> Max 1–2 per user per month across all stages — <em>exception: B1/B2 operate on weekly cadence (prayer is time-sensitive; caps don't override active discovery stages)</em></li>
+      <li><strong>In-App:</strong> 1 active nudge visible at a time; no stacking; dismiss on action</li>
+    </ul>
+
+    <h3 class="sub-title">Optimal Push Send Time</h3>
+    <ul>
+      <li><strong>Primary:</strong> User's typical app-open time (inferred from usage data)</li>
+      <li><strong>Fallback:</strong> 9am local time if usage pattern is unclear</li>
+      <li><strong>Blackout:</strong> Never between 10pm–7am local time</li>
+    </ul>
+
+    <hr class="divider">
+
+    <p><em>Note: Archetype labels are deferred to Post-MVP. The data from stages A0–D will surface the real patterns. We name them then, not now.</em></p>
+  </div>
+
+  <!-- 6. Personalization Rules -->
+  <div class="doc-section" id="section-personalization">
+    <h2 class="section-title">6. Personalization Rules (Metadata-Based, Due to E2E Encryption)</h2>
+    <p><strong>NOTE:</strong> Due to Pillar 2 (E2E Encryption), user moments are encrypted client-side. We cannot read plaintext. Therefore, notifications are personalized using <strong>metadata only</strong>, not moment content.</p>
+
+    <h3 class="sub-title">What we CAN personalize (metadata)</h3>
+    <ul>
+      <li>✓ Timing (when user typically opens app)</li>
+      <li>✓ Dwelling history (prayer vs. prompt preference)</li>
+      <li>✓ Funnel stage (A–D)</li>
+      <li>✓ Engagement frequency (# of moments captured, # of prayers, # of prompt responses)</li>
+    </ul>
+
+    <h3 class="sub-title">What we CANNOT personalize (encrypted)</h3>
+    <ul>
+      <li>✗ Moment themes ("You captured about faith")</li>
+      <li>✗ Specific moment content (reference to what user wrote)</li>
+    </ul>
+
+    <h3 class="sub-title">Generic Fallbacks (Always Available)</h3>
+    <ul>
+      <li>"How has your heart been this week? Anything to reflect on?"</li>
+      <li>"You have unresponded moments. Ready to dwell?"</li>
+      <li>"Your moments are waiting."</li>
+    </ul>
+  </div>
+
+
+  <!-- 8. Privacy -->
+  <div class="doc-section" id="section-privacy">
+    <h2 class="section-title">8. Privacy &amp; E2E Encryption Implications</h2>
+    <p><strong>Privacy Promise (unchanged):</strong></p>
+    <p><em>"Your responses are end-to-end encrypted. We never see your moments."</em></p>
+
+    <h3 class="sub-title">Notification Transparency</h3>
+    <ul>
+      <li>Notifications are generated using metadata (timing, engagement patterns, segment)</li>
+      <li>Moments are encrypted; notifications do not reference plaintext content</li>
+      <li>Users can disable notifications entirely in settings</li>
+    </ul>
+  </div>
+
+  <!-- 9. Notification Examples -->
+  <div class="doc-section" id="section-examples">
+    <h2 class="section-title">9. Notification Examples by Segment &amp; Type</h2>
+
+    <h3 class="sub-title">New User (Day 3, No Capture Yet)</h3>
+    <div class="notif-example">Title: "Ready to capture what's on your heart?"
+Body: "Dwellable is a space to voice your faith, concerns, and breakthroughs.
+       Start with your voice—no perfection needed."
+Action: Tap → Opens Create tab</div>
+
+    <h3 class="sub-title">Stage B1 — Every Unprayed Capture</h3>
+    <div class="notif-example">Title: "How has your heart been this week?"
+Body: "You have moments waiting. Ready to pray on one?"
+Action: Tap → Opens Today tab (shows recent moments)</div>
+
+    <h3 class="sub-title">Stage B2 — Responded to Prompt, No Prayer (Contextual)</h3>
+    <div class="notif-example">Title: "Your moments have depth."
+Body: "You've been reflecting. Ready to bring them to prayer?"
+Action: Tap → Opens Today tab</div>
+
+    <h3 class="sub-title">Stage C3 — Prayed and Returned to Journal, Now Quiet</h3>
+    <div class="notif-example">Title: "It's been a little while. How's your heart?"
+Body: "You have moments worth returning to. Ready to dwell?"
+Action: Tap → Opens Today tab</div>
+
+    <h3 class="sub-title">Active Dweller (Rare, High-Signal)</h3>
+    <div class="notif-example">Title: "You've been reflecting deeply on faith."
+Body: "Here's a pattern in your moments: growth through struggle.
+       Want to explore more?"
+Action: Tap → Opens Insights tab</div>
+  </div>
+
+  <!-- 10. Alternatives -->
+  <div class="doc-section" id="section-alternatives">
+    <h2 class="section-title">10. Alternatives Considered (Not Chosen)</h2>
+    <table class="doc-table">
+      <thead><tr><th>Alternative</th><th>Why Considered</th><th>Why Not Chosen</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Email notifications</strong></td><td>Reach more users, easier delivery</td><td>Email feels broadcast/impersonal; breaks intimacy of faith app</td></tr>
+        <tr><td><strong>Daily notifications</strong></td><td>Higher engagement, more touchpoints</td><td>Too noisy; violates faith philosophy; causes fatigue</td></tr>
+        <tr><td><strong>Streak gamification</strong></td><td>Proven engagement driver in habit apps</td><td>Contradicts faith-based philosophy; turns formation into productivity</td></tr>
+        <tr><td><strong>In-app badges/alerts</strong></td><td>Non-intrusive alternative to push</td><td>Requires app open; misses users who don't return</td></tr>
+        <tr><td><strong>SMS notifications</strong></td><td>High delivery rate, direct</td><td>Too intrusive; breaches privacy; not all users want SMS</td></tr>
+        <tr><td><strong>Notifications for all segments</strong></td><td>Maximize engagement</td><td>Wastes notifications on active users; causes churn</td></tr>
+        <tr><td><strong>High frequency (daily or weekly)</strong></td><td>Drive habit formation</td><td>Contradicts "sparse, meaningful" philosophy; risks fatigue</td></tr>
+        <tr><td><strong>Opt-in model</strong></td><td>Safer from trust perspective</td><td>Lower adoption; users who need notifications most won't opt in</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 11. Metrics -->
+  <div class="doc-section" id="section-metrics">
+    <h2 class="section-title">11. Metrics to Track</h2>
+    <table class="doc-table">
+      <thead><tr><th>Metric</th><th>Definition</th><th>Success Target</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Click-through rate (CTR)</strong></td><td>% of delivered notifications that user clicks</td><td>&gt;40%</td></tr>
+        <tr><td><strong>Conversion rate</strong></td><td>% of clicks that lead to prayer</td><td>&gt;30%</td></tr>
+        <tr><td><strong>D7 Retention</strong></td><td>% of users returning within 7 days after notification</td><td>&gt;35%</td></tr>
+        <tr><td><strong>Formation Engagement (post-notif)</strong></td><td>% of notified users who dwell within 3 days</td><td>&gt;25%</td></tr>
+        <tr><td><strong>Opt-out rate</strong></td><td>% of users who disable notifications</td><td>&lt;10%</td></tr>
+        <tr><td><strong>Segment conversion</strong></td><td>% of new users → first capture after notification</td><td>&gt;20%</td></tr>
+        <tr><td><strong>Churn impact</strong></td><td>Change in churn rate before/after notifications</td><td>No increase</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 12. Implementation -->
+  <div class="doc-section" id="section-implementation">
+    <h2 class="section-title">12. Implementation Approach</h2>
+
+    <h3 class="sub-title">Phase 1: Infrastructure (Weeks 1–2)</h3>
+    <ul class="checklist">
+      <li>Set up push notification service (Firebase Cloud Messaging for iOS)</li>
+      <li>Build notification scheduling system</li>
+      <li>Implement opt-out/settings UI</li>
+      <li>Add analytics event logging</li>
+    </ul>
+
+    <h3 class="sub-title">Phase 2: User Segmentation (Weeks 2–3)</h3>
+    <ul class="checklist">
+      <li>Build logic to identify funnel stage (A, B1, B2, C, D) per user</li>
+      <li>Store segment assignment in database</li>
+    </ul>
+
+    <h3 class="sub-title">Phase 3: Generic Notifications (Weeks 3–4)</h3>
+    <ul class="checklist">
+      <li>Write generic notification templates for each segment</li>
+      <li>Test delivery, timing, click behavior</li>
+      <li>Measure baseline CTR and conversion</li>
+    </ul>
+
+    <h3 class="sub-title">Phase 4: Timing Optimization (Weeks 5+)</h3>
+    <ul class="checklist">
+      <li>Analyze when users typically open app</li>
+      <li>Schedule notifications for optimal time</li>
+      <li>A/B test: fixed time vs. smart time</li>
+    </ul>
+  </div>
+
+  <!-- 13. Tickets -->
+  <div class="doc-section" id="section-tickets">
+    <h2 class="section-title">13. Tickets to Create</h2>
+    <table class="doc-table">
+      <thead><tr><th>Ticket</th><th>Title</th><th>Effort</th><th>Dependencies</th></tr></thead>
+      <tbody>
+        <tr><td>T-083</td><td>Setup: Firebase Cloud Messaging for push notifications</td><td>M</td><td>None</td></tr>
+        <tr><td>T-084</td><td>Build: Notification scheduling engine (cadence logic)</td><td>M</td><td>T-083</td></tr>
+        <tr><td>T-085</td><td>Build: Funnel stage logic (A, B1, B2, C, D) based on capture + prayer + prompt response events</td><td>M</td><td>Analytics data</td></tr>
+        <tr><td>T-086</td><td>Build: Settings UI for notification preferences</td><td>S</td><td>T-083</td></tr>
+        <tr><td>T-087</td><td>Write: Generic notification templates (4 templates per segment)</td><td>S</td><td>T-085</td></tr>
+        <tr><td>T-088</td><td>Integrate: Analytics logging (notification events)</td><td>M</td><td>T-083, T-085</td></tr>
+        <tr><td>T-089</td><td>Test: Notification delivery on real devices</td><td>M</td><td>T-083 through T-088</td></tr>
+        <tr><td>T-090</td><td>Optimize: Send time based on user behavior</td><td>M</td><td>T-084, usage data</td></tr>
+        <tr><td>T-091</td><td>Polish: Edge cases, opt-out flows, error handling</td><td>M</td><td>All above</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:10px; font-size:13px; color:#666;">Estimated effort: 9 tickets, ~100–150 hours (3–4 weeks)</p>
+    <p style="font-size:13px; color:#c0392b; margin-top:6px;"><strong>Blocker:</strong> Pillar 3 (Soaking) must be complete and compelling before Pillar 8 ships.</p>
+  </div>
+
+  <!-- 14. Dependencies -->
+  <div class="doc-section" id="section-dependencies">
+    <h2 class="section-title">14. Dependencies &amp; Blockers</h2>
+    <table class="doc-table">
+      <thead><tr><th>Dependency</th><th>Status</th><th>Impact</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Pillar 3 (Soaking/Prayer)</strong></td><td>In design</td><td>Dwelling must exist and be compelling before notifications invite users back to it</td></tr>
+        <tr><td><strong>Pillar 2 (E2E Encryption)</strong></td><td>LOCKED</td><td>Determines privacy promise (metadata-only personalization)</td></tr>
+        <tr><td><strong>Analytics/UsageTracker</strong></td><td>In development</td><td>Need to track prayer + prompt response events to determine funnel stage</td></tr>
+        <tr><td><strong>Settings UI</strong></td><td>Part of Pillar 5</td><td>Need settings page for notification preferences</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 15. Risks -->
+  <div class="doc-section" id="section-risks">
+    <h2 class="section-title">15. Risks &amp; Constraints</h2>
+    <table class="doc-table">
+      <thead><tr><th>Risk</th><th>Impact</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Notification fatigue</strong></td><td>Users disable notifications, churn</td><td>Cap at 1–2/month; sparse is better than frequent</td></tr>
+        <tr><td><strong>Privacy backlash</strong></td><td>Users distrust Dwellable if notifications imply data access</td><td>Be transparent: "metadata only"; emphasize E2E encryption</td></tr>
+        <tr><td><strong>Generic notifications feel cold</strong></td><td>Low engagement, low conversion</td><td>Focus on tone and timing; avoid productivity language</td></tr>
+        <tr><td><strong>iOS notification suppression</strong></td><td>Some users' devices may suppress notifications</td><td>Design for low send frequency; respect user preferences</td></tr>
+        <tr><td><strong>Faith-app users may see notifications as pushy</strong></td><td>Increases churn risk</td><td>Test with pilot users; iterate messaging to be gentler</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 16. Open Questions -->
+  <div class="doc-section" id="section-questions">
+    <h2 class="section-title">16. Open Questions (To Resolve Before Tickets)</h2>
+    <ol style="padding-left: 18px;">
+      <li style="margin-bottom: 12px; font-size: 14px;">
+        <strong>Should we launch Pillar 8 with generic notifications only, or wait for better personalization?</strong><br>
+        <span style="color:#666;">— Decision: Ship generic first (Phases 1–3), validate if notifications drive return at all</span>
+      </li>
+      <li style="margin-bottom: 12px; font-size: 14px;">
+        <strong>How do we handle users who never engage with notifications?</strong><br>
+        <span style="color:#666;">— Strategy: After 3 consecutive "no clicks," soft pause for 2 weeks, then retry</span>
+      </li>
+      <li style="margin-bottom: 12px; font-size: 14px;">
+        <strong>Should onboarding explain why they're receiving notifications?</strong><br>
+        <span style="color:#666;">— Recommendation: Yes, brief tooltip explaining Pillar 8 purpose</span>
+      </li>
+      <li style="margin-bottom: 12px; font-size: 14px;">
+        <strong>Should notification frequency be user-configurable?</strong><br>
+        <span style="color:#666;">— Recommendation: Yes, in Settings (weekly, bi-weekly, monthly options)</span>
+      </li>
+    </ol>
+  </div>
+
+  <!-- 17. Summary -->
+  <div class="doc-section" id="section-summary">
+    <h2 class="section-title">Summary</h2>
+    <table class="doc-table">
+      <thead><tr><th>Aspect</th><th>Decision</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Goal</strong></td><td>Drive return + dwelling engagement (prayer, prompts, journal)</td></tr>
+        <tr><td><strong>Philosophy</strong></td><td>Invitations to dwell, not reminders</td></tr>
+        <tr><td><strong>Cadence</strong></td><td>1–2 push per month (very sparse); 1 in-app nudge at a time</td></tr>
+        <tr><td><strong>Funnel stages</strong></td><td>A (no captures), B1 (no dwelling), B2 (prompted, no prayer), C (prayed, quiet), D (actively dwelling)</td></tr>
+        <tr><td><strong>Personalization</strong></td><td>Metadata-based (due to E2E encryption)</td></tr>
+        <tr><td><strong>Opt model</strong></td><td>Opt-out (default on)</td></tr>
+        <tr><td><strong>Privacy</strong></td><td>E2E encryption maintained</td></tr>
+        <tr><td><strong>Tone</strong></td><td>Spiritual ("heart," "dwell"), not productivity ("streak")</td></tr>
+        <tr><td><strong>Key metric</strong></td><td>D7 retention &gt;35%, CTR &gt;40%</td></tr>
+        <tr><td><strong>Blocker</strong></td><td>Pillar 3 (Prayer/Dwelling) must ship and be compelling first</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top: 16px; font-size: 14px; color: #666;">
+      <strong>Status:</strong> Ready for implementation. T-083 is the first blocking ticket. However, Pillar 3 (Prayer/Dwelling) must ship first and prove compelling.
+    </p>
+  </div>
+
+</div><!-- /doc-wrapper -->
+
+<!-- RESTORE TOAST -->
+<div class="restore-toast" id="restore-toast"></div>
+
+<!-- FLOATING COMMENT BUTTON -->
+<div id="comment-btn" onclick="openCommentModal()">💬 Add Comment</div>
+
+<!-- COMMENT MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <h3>Add Comment</h3>
+    <div class="modal-quoted" id="modal-quoted"></div>
+    <textarea id="comment-input" placeholder="Your comment..."></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-submit" id="btn-submit" onclick="submitComment()">Add Comment</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────
+  // AGENT RESPONSES
+  // I (the agent) update this object in the file directly.
+  // Format: { "comment-id": { reply: "...", timestamp: "..." } }
+  // ─────────────────────────────────────────────
+  const agentResponses = {
+    "c_1778511668065_qd5sf": {
+      reply: "Loop confirmed — you comment, export, I respond, you refresh.\n\n✅ No doc change needed. Safe to delete.",
+      timestamp: "2026-05-11T15:10:00Z"
+    },
+    "c_1778511941961_ffysc": {
+      reply: "This stat is the anchor for the whole doc — 100% capture, 0% return is the exact problem Pillar 8 solves. Every notification design decision should trace back to it.\n\n✅ Stat kept in Section 2 as-is. No change needed. Safe to delete.",
+      timestamp: "2026-05-11T15:10:00Z"
+    },
+    "c_1778514252497_alct4": {
+      reply: "These are benchmark targets, not current measurements — we have no notification baseline yet. Once we ship:\n• D7 Retention: app opens within 7 days of notification ÷ users notified (FCM + app open event, joined on user ID)\n• Formation Engagement Rate: users who dwell in a given month ÷ total active users. General health metric, not notification-specific.\n• CTR: notification taps ÷ delivered. FCM reports natively.\n• Opt-out rate: users who disable push ÷ users who received at least one (tracked via iOS permission status on app open)\n\nThe 35%, 40%, 10% numbers are faith/wellness app benchmarks. Treat as hypotheses to validate, not commitments.\n\n✅ Targets remain in Section 3 as-is. Calculation method documented here. Safe to delete.",
+      timestamp: "2026-05-11T16:05:00Z"
+    },
+    "c_1778514844939_jtie8": {
+      reply: "Agreed — archetypes (Jotter, Soaker, Venter) are Post-MVP. The funnel structure was right; only the names were wrong.\n\n✅ Implemented: Section 5 rebuilt as funnel stages A, B1, B2, C, D — behavior only, no labels. Archetype assignment deferred to Post-MVP. Safe to delete.",
+      timestamp: "2026-05-11T16:05:00Z"
+    },
+    "c_1778514979788_tm3ln": {
+      reply: "Agreed — people will be delighted, not creeped out. The key design decision to watch after the LLM tournament: 'you reflected on your mom'-style personalization requires either server-side decryption (breaks E2E) or on-device inference. If we go server-side, we'll need to decide whether to carve out a readable 'last topic' metadata field or defer that personalization to Post-MVP.\n\n✅ Section 6 kept as-is — metadata-only for MVP, pending LLM tournament. No doc change needed. Safe to delete.",
+      timestamp: "2026-05-11T16:05:00Z"
+    },
+    "c_1778515040955_fzlhs": {
+      reply: "Push = user not in app, goal is re-engagement. In-app = user already in app, goal is contextual deepening. They have separate frequency caps and separate triggers.\n\n✅ Implemented: Push vs in-app distinction matrix and per-stage delivery rules are now in Section 5. Section 7 is a redirect to Section 5. Safe to delete.",
+      timestamp: "2026-05-11T16:05:00Z"
+    },
+    "c_1778516588676_2h9d1": {
+      reply: "Terminology map going forward:\n• 'Prayer' = the specific act of praying on a captured moment\n• 'Dwelling' = umbrella for all forms of going deeper (prompt response + prayer + journal return)\n• 'Soaking' = retired\n\n✅ Implemented: All instances of 'soaking' replaced throughout the doc. Safe to delete.",
+      timestamp: "2026-05-11T16:35:00Z"
+    },
+    "c_1778516750709_a1gf9": {
+      reply: "Yes — highest-signal notification we can send. Moment is fresh, they invested in capturing it, emotional context is still live.\n• Still in app after capture → in-app nudge immediately\n• Left without praying → push same evening or next morning (narrow window)\n\n✅ Implemented: Stage B1 in Section 5 covers this exact trigger and delivery. Safe to delete.",
+      timestamp: "2026-05-11T16:35:00Z"
+    },
+    "c_1778516862060_b05n2": {
+      reply: "'Dwelling' is already the product philosophy. The map:\n• Dwelling (umbrella): prompt response + prayer + journal return\n• Responding to a prompt = lightweight dwelling — signals the user is going deeper\n• For notifications: prompt responders get softer urgency (Stage B2) vs those who captured and left immediately (Stage B1)\n\n✅ Implemented: Dwelling defined as umbrella throughout. Stage B split into B1 and B2. Terminology updated across all sections. Safe to delete.",
+      timestamp: "2026-05-11T16:35:00Z"
+    },
+    "c_1778517040475_041vp": {
+      reply: "Responding to a prompt is NOT a notification trigger — it's a positive signal that reduces urgency. We don't interrupt someone who's already going deeper; we invite the next step.\n\nExpanded funnel: A → B1 → B2 → C → D. For MVP, a user's stage = their deepest action taken. Prayed once = Stage C, regardless of capture frequency.\n\n✅ Implemented: Sections 5 and 7 combined into 'Funnel Stages — Messaging & Delivery.' Stages A, B1, B2, C, D live there with copy, push triggers, and in-app placements together. Safe to delete.",
+      timestamp: "2026-05-11T16:35:00Z"
+    },
+    "c_1778533775222_bedut": {
+      reply: "'Push total' = fires exactly once, ever, for that trigger — no retry, no second chance regardless of outcome. 'Push max' = a ceiling; could fire fewer if timing conditions aren't met (e.g. user opens app before it fires).\n\nFor Stage A, 'total' is correct — Day 3 fires once and that window closes. Going forward: 'total' for one-time-ever triggers, 'max' for periodic caps (e.g. 1x/month max).\n\n✅ No doc change — language is intentional. Safe to delete.",
+      timestamp: "2026-05-11T22:30:00Z"
+    },
+    "c_1778534654482_px1ig": {
+      reply: "Agreed — removing it. B1 already handles weekly cadence for undiscovered prayer (fires after every unprayed capture), and B2 covers the prompted path. A standalone Discovery Push duplicates both and dilutes signal.\n\n✅ Implemented: Discovery Push row removed from quick reference table and detailed stages section. Safe to delete.",
+      timestamp: "2026-05-11T22:30:00Z"
+    },
+    "c_1778535037473_04yi6": {
+      reply: "Correct — prayer is invited after every capture, not just the first. The emotional window is always live right after a moment is captured. B1 trigger now fires on every capture that exits without prayer.\n\n✅ Implemented: B1 trigger and cool-off updated to reflect every unprayed capture. Safe to delete.",
+      timestamp: "2026-05-11T22:30:00Z"
+    },
+    "c_1778537773348_649ig": {
+      reply: "Locked. Dwelling (MVP) = praying on a captured moment OR returning to a journal entry (to edit, add context, or pray/journal from a notification). Responding to a prompt is NOT counted as dwelling — it's a positive engagement signal that reduces push urgency but does not advance someone's funnel stage.\n\n✅ Implemented: Dwelling definition updated in Section 5 intro and Formation Engagement Rate note in Section 3. Prompt response removed from the dwelling definition. Safe to delete.",
+      timestamp: "2026-05-11T22:30:00Z"
+    },
+    "c_1778538020833_e5xx3": {
+      reply: "Yes — the download is the highest intent signal we'll ever see from this person. Honoring that moment sets the tone before we ask anything of them.\n\nRecommendation: in-app only on first open (no push — they just created an account, push would be premature). Warm, not instructional. Something like: 'You're here. That took something. This space is yours.'\n\n✅ Implemented: Stage A0 in-app updated to include welcome/celebration as the first interaction before onboarding asks anything. Safe to delete.",
+      timestamp: "2026-05-11T22:30:00Z"
+    }
+  };
+
+  // ─────────────────────────────────────────────
+  // STATE
+  // ─────────────────────────────────────────────
+  const STORAGE_KEY = 'dwellable-notif-comments';
+  let pendingSelection = null;
+
+  function loadComments() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    catch(e) { return []; }
+  }
+
+  function saveComments(comments) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+    updateCommentCount();
+  }
+
+  function updateCommentCount() {
+    const comments = loadComments();
+    const el = document.getElementById('comment-count');
+    el.textContent = comments.length === 1 ? '1 comment' : `${comments.length} comments`;
+  }
+
+  // ─────────────────────────────────────────────
+  // TEXT SELECTION → FLOATING BUTTON
+  // ─────────────────────────────────────────────
+  document.addEventListener('mouseup', (e) => {
+    // Don't trigger inside modal or toolbar
+    if (e.target.closest('.modal-overlay, .toolbar, #comment-btn, .comment-thread')) return;
+
+    setTimeout(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.toString().trim().length < 2) {
+        hideCommentBtn();
+        return;
+      }
+
+      const selectedText = sel.toString().trim();
+      const range = sel.getRangeAt(0);
+
+      // Find which section we're in — fall back to any doc-section, then doc-wrapper
+      let anchorNode = range.commonAncestorContainer;
+      if (anchorNode.nodeType !== 1) anchorNode = anchorNode.parentElement;
+      const sectionEl = anchorNode.closest('[id^="section-"]')
+        || anchorNode.closest('.doc-section')
+        || anchorNode.closest('.doc-wrapper');
+
+      if (!sectionEl) { hideCommentBtn(); return; }
+
+      // Get text before/after for anchor
+      const fullText = sectionEl.innerText;
+      const selStart = fullText.indexOf(selectedText);
+      const textBefore = selStart >= 0 ? fullText.slice(Math.max(0, selStart - 40), selStart) : '';
+      const textAfter  = selStart >= 0 ? fullText.slice(selStart + selectedText.length, selStart + selectedText.length + 40) : '';
+
+      pendingSelection = {
+        selectedText,
+        textBefore,
+        textAfter,
+        sectionId: sectionEl.id
+      };
+
+      // Position button near selection (fixed = viewport-relative, no scroll offset)
+      const rect = range.getBoundingClientRect();
+      const btn = document.getElementById('comment-btn');
+      const btnW = 160;
+      const btnH = 38;
+      let btnLeft = Math.min(rect.left, window.innerWidth - btnW - 10);
+      let btnTop  = rect.bottom + 8;
+      // Flip above if it would go off bottom of viewport
+      if (btnTop + btnH > window.innerHeight - 10) btnTop = rect.top - btnH - 8;
+      btn.style.left = `${Math.max(10, btnLeft)}px`;
+      btn.style.top  = `${btnTop}px`;
+      btn.style.display = 'flex';
+    }, 10);
+  });
+
+  document.addEventListener('mousedown', (e) => {
+    if (!e.target.closest('#comment-btn, .modal-overlay')) {
+      hideCommentBtn();
+    }
+  });
+
+  function hideCommentBtn() {
+    document.getElementById('comment-btn').style.display = 'none';
+  }
+
+  // ─────────────────────────────────────────────
+  // MODAL
+  // ─────────────────────────────────────────────
+  function openCommentModal() {
+    hideCommentBtn();
+    if (!pendingSelection) return;
+
+    const preview = pendingSelection.selectedText.length > 120
+      ? pendingSelection.selectedText.slice(0, 120) + '…'
+      : pendingSelection.selectedText;
+
+    document.getElementById('modal-quoted').textContent = `"${preview}"`;
+    document.getElementById('comment-input').value = '';
+    document.getElementById('modal-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('comment-input').focus(), 100);
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+    pendingSelection = null;
+    window.getSelection()?.removeAllRanges();
+  }
+
+  document.getElementById('modal-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+
+  // ─────────────────────────────────────────────
+  // SUBMIT COMMENT
+  // ─────────────────────────────────────────────
+  function submitComment() {
+    const text = document.getElementById('comment-input').value.trim();
+    if (!text || !pendingSelection) return;
+
+    const comment = {
+      id: `c_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
+      selectedText: pendingSelection.selectedText,
+      textBefore:   pendingSelection.textBefore,
+      textAfter:    pendingSelection.textAfter,
+      sectionId:    pendingSelection.sectionId,
+      comment: text,
+      author: 'owner',
+      timestamp: new Date().toISOString()
+    };
+
+    const comments = loadComments();
+    comments.push(comment);
+    saveComments(comments);
+
+    closeModal();
+    applyHighlight(comment);
+    renderCommentThread(comment);
+  }
+
+  // ─────────────────────────────────────────────
+  // HIGHLIGHT
+  // ─────────────────────────────────────────────
+  function applyHighlight(comment) {
+    const section = document.getElementById(comment.sectionId)
+      || document.querySelector('.doc-wrapper');
+    if (!section) return;
+
+    // Walk all text nodes, find the selected text, wrap with extractContents
+    // (works even when selection spans multiple elements)
+    const walker = document.createTreeWalker(section, NodeFilter.SHOW_TEXT);
+    let node;
+    while (node = walker.nextNode()) {
+      if (node.parentElement.closest('mark')) continue; // already highlighted
+
+      const idx = node.nodeValue.indexOf(comment.selectedText);
+      if (idx === -1) continue;
+
+      try {
+        const range = document.createRange();
+        range.setStart(node, idx);
+        range.setEnd(node, idx + comment.selectedText.length);
+
+        const mark = document.createElement('mark');
+        mark.className = 'comment-mark';
+        mark.dataset.commentId = comment.id;
+        mark.title = 'Click to see comment';
+        mark.onclick = () => scrollToThread(comment.id);
+
+        // extractContents handles cross-element ranges safely
+        const fragment = range.extractContents();
+        mark.appendChild(fragment);
+        range.insertNode(mark);
+        break;
+      } catch(e) {
+        break; // highlight fails gracefully — comment thread still renders
+      }
+    }
+  }
+
+  function scrollToThread(commentId) {
+    const thread = document.querySelector(`[data-thread-id="${commentId}"]`);
+    if (thread) thread.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // ─────────────────────────────────────────────
+  // RENDER COMMENT THREAD
+  // ─────────────────────────────────────────────
+  function renderCommentThread(comment) {
+    // Don't duplicate
+    if (document.querySelector(`[data-thread-id="${comment.id}"]`)) return;
+
+    const section = document.getElementById(comment.sectionId);
+    if (!section) return;
+
+    const thread = document.createElement('div');
+    thread.className = 'comment-thread';
+    thread.dataset.threadId = comment.id;
+
+    // Owner comment card
+    thread.appendChild(buildCommentCard(comment, 'owner'));
+
+    // Agent response (if exists)
+    const agentResp = agentResponses[comment.id];
+    if (agentResp) {
+      thread.appendChild(buildAgentCard(agentResp, comment));
+    } else {
+      // Pending response placeholder
+      const pending = document.createElement('div');
+      pending.className = 'comment-card agent';
+      pending.style.opacity = '0.5';
+      pending.innerHTML = `<div class="comment-header">
+        <div class="avatar agent">AI</div>
+        <span class="comment-author agent">Agent</span>
+        <span class="comment-time">awaiting response</span>
+      </div>
+      <div class="comment-body" style="color:#aaa; font-style:italic;">No response yet. Export comments and share with agent.</div>`;
+      thread.appendChild(pending);
+    }
+
+    // Insert after section
+    section.parentNode.insertBefore(thread, section.nextSibling);
+  }
+
+  function buildCommentCard(comment, role) {
+    const card = document.createElement('div');
+    card.className = `comment-card ${role}`;
+
+    const time = new Date(comment.timestamp).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    });
+
+    card.innerHTML = `
+      <div class="comment-header">
+        <div class="avatar ${role}">${role === 'owner' ? 'KG' : 'AI'}</div>
+        <span class="comment-author ${role}">${role === 'owner' ? 'Kell' : 'Agent'}</span>
+        <span class="comment-time">${time}</span>
+      </div>
+      <div class="comment-quoted">"${comment.selectedText.slice(0, 100)}${comment.selectedText.length > 100 ? '…' : ''}"</div>
+      <div class="comment-body">${escapeHtml(comment.comment)}</div>
+      <div class="comment-actions">
+        <button class="btn-delete-comment" onclick="deleteComment('${comment.id}')">Delete</button>
+      </div>
+    `;
+    return card;
+  }
+
+  function buildAgentCard(resp, ownerComment) {
+    const card = document.createElement('div');
+    card.className = 'comment-card agent';
+
+    const time = new Date(resp.timestamp).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    });
+
+    card.innerHTML = `
+      <div class="comment-header">
+        <div class="avatar agent">AI</div>
+        <span class="comment-author agent">Agent</span>
+        <span class="comment-time">${time}</span>
+      </div>
+      <div class="comment-body">${escapeHtml(resp.reply)}</div>
+    `;
+    return card;
+  }
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/\n/g, '<br>');
+  }
+
+  // ─────────────────────────────────────────────
+  // DELETE COMMENT
+  // ─────────────────────────────────────────────
+  function deleteComment(id) {
+    if (!confirm('Delete this comment?')) return;
+
+    let comments = loadComments();
+    comments = comments.filter(c => c.id !== id);
+    saveComments(comments);
+
+    // Remove thread
+    const thread = document.querySelector(`[data-thread-id="${id}"]`);
+    if (thread) thread.remove();
+
+    // Remove highlight mark
+    const mark = document.querySelector(`mark[data-comment-id="${id}"]`);
+    if (mark) {
+      const parent = mark.parentNode;
+      while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+      parent.removeChild(mark);
+      parent.normalize();
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // RESTORE ON LOAD
+  // ─────────────────────────────────────────────
+  function restoreComments() {
+    const comments = loadComments();
+    comments.forEach(comment => {
+      applyHighlight(comment);
+      renderCommentThread(comment);
+    });
+    updateCommentCount();
+  }
+
+  // ─────────────────────────────────────────────
+  // EXPORT
+  // ─────────────────────────────────────────────
+  function exportComments() {
+    const comments = loadComments();
+    const now = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+
+    if (comments.length === 0) {
+      alert('No comments to export yet.');
+      return;
+    }
+
+    let output = `NOTIFICATIONS STRATEGY — COLLAB REVIEW EXPORT\n`;
+    output += `Exported: ${now}\n`;
+    output += `Total owner comments: ${comments.length}\n`;
+    output += `Agent responses: ${Object.keys(agentResponses).length}\n`;
+    output += `${'═'.repeat(60)}\n\n`;
+
+    // Group by section
+    const sections = {};
+    comments.forEach(c => {
+      if (!sections[c.sectionId]) sections[c.sectionId] = [];
+      sections[c.sectionId].push(c);
+    });
+
+    const sectionTitles = {
+      'section-overview':        '1. Overview',
+      'section-purpose':         '2. Product Purpose',
+      'section-success':         '3. Success Criteria',
+      'section-decisions':       '4. Design Decisions',
+      'section-segmentation':    '5. Funnel Stages — Messaging & Delivery',
+      'section-personalization': '6. Personalization Rules',
+      'section-frequency':       '5. Funnel Stages — Messaging & Delivery',
+      'section-privacy':         '8. Privacy & E2E Encryption',
+      'section-examples':        '9. Notification Examples',
+      'section-alternatives':    '10. Alternatives Considered',
+      'section-metrics':         '11. Metrics to Track',
+      'section-implementation':  '12. Implementation Approach',
+      'section-tickets':         '13. Tickets to Create',
+      'section-dependencies':    '14. Dependencies & Blockers',
+      'section-risks':           '15. Risks & Constraints',
+      'section-questions':       '16. Open Questions',
+      'section-summary':         'Summary'
+    };
+
+    Object.entries(sections).forEach(([sectionId, sectionComments]) => {
+      const title = sectionTitles[sectionId] || sectionId;
+      output += `SECTION: ${title}\n`;
+      output += `${'─'.repeat(50)}\n\n`;
+
+      sectionComments.forEach((c, i) => {
+        const time = new Date(c.timestamp).toLocaleString('en-US', {
+          month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+        });
+
+        output += `[OWNER COMMENT ${i + 1}] — ${time}\n`;
+        output += `Highlighted text: "${c.selectedText}"\n`;
+        output += `Comment: ${c.comment}\n`;
+
+        const agentResp = agentResponses[c.id];
+        if (agentResp) {
+          const aTime = new Date(agentResp.timestamp).toLocaleString('en-US', {
+            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+          });
+          output += `\n[AGENT RESPONSE] — ${aTime}\n`;
+          output += `${agentResp.reply}\n`;
+        } else {
+          output += `\n[AGENT RESPONSE] — Pending\n`;
+        }
+
+        output += `\n`;
+      });
+
+      output += `\n`;
+    });
+
+    // ── DOC EDITS DELTA ──────────────────────────
+    const editedSections = document.querySelectorAll('[data-original]');
+    if (editedSections.length > 0) {
+      output += `\n${'═'.repeat(60)}\nDOC EDITS (changed sections)\n${'═'.repeat(60)}\n\n`;
+      editedSections.forEach(section => {
+        const originalText = section.dataset.original
+          .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        const currentText = section.innerText.trim();
+        if (originalText !== currentText) {
+          const sectionTitle = section.querySelector('h2')?.innerText || section.id;
+          output += `SECTION: ${sectionTitle}\n`;
+          output += `─── ORIGINAL ─────────────────────\n${originalText}\n\n`;
+          output += `─── EDITED ───────────────────────\n${currentText}\n\n`;
+        }
+      });
+    }
+
+    output += `${'═'.repeat(60)}\n`;
+    output += `END OF EXPORT\n`;
+    output += `\nTo receive agent responses:\n`;
+    output += `Share this export with your agent. They will update the HTML file\n`;
+    output += `with replies in the agentResponses object. Refresh to see responses.\n`;
+
+    // Also export raw JSON for agent processing
+    const jsonPayload = {
+      exportedAt: new Date().toISOString(),
+      comments: comments,
+      agentResponses: agentResponses
+    };
+
+    output += `\n\n${'═'.repeat(60)}\nRAW JSON (for agent processing)\n${'═'.repeat(60)}\n`;
+    output += JSON.stringify(jsonPayload, null, 2);
+
+    const blob = new Blob([output], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NOTIF_COLLAB_COMMENTS_${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ─────────────────────────────────────────────
+  // BACKUP & RESTORE
+  // ─────────────────────────────────────────────
+  function backupData() {
+    const comments = loadComments();
+    const edits = loadEdits();
+    const payload = {
+      backedUpAt: new Date().toISOString(),
+      version: 1,
+      comments,
+      edits,
+      agentResponses
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NOTIF_REVIEW_BACKUP_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`✓ Backup saved — ${comments.length} comment${comments.length !== 1 ? 's' : ''}, ${Object.keys(edits).length} edited section${Object.keys(edits).length !== 1 ? 's' : ''}`);
+  }
+
+  function restoreFromBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!data.version || !Array.isArray(data.comments)) {
+          showToast('⚠️ Invalid backup file', true); return;
+        }
+        // Restore comments
+        saveComments(data.comments);
+        // Restore edits
+        if (data.edits) localStorage.setItem(EDITS_KEY, JSON.stringify(data.edits));
+        showToast(`✓ Restored ${data.comments.length} comment${data.comments.length !== 1 ? 's' : ''} — reloading…`);
+        setTimeout(() => location.reload(), 1200);
+      } catch(err) {
+        showToast('⚠️ Could not read backup file', true);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // reset so same file can be re-selected
+  }
+
+  function showToast(msg, isError = false) {
+    const toast = document.getElementById('restore-toast');
+    toast.textContent = msg;
+    toast.style.background = isError ? '#c0392b' : '#2d6a4f';
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 3000);
+  }
+
+  // ─────────────────────────────────────────────
+  // EDIT MODE + EDIT PERSISTENCE
+  // ─────────────────────────────────────────────
+  const EDITS_KEY = 'dwellable-notif-edits';
+  let editMode = false;
+
+  function loadEdits() {
+    try { return JSON.parse(localStorage.getItem(EDITS_KEY) || '{}'); }
+    catch(e) { return {}; }
+  }
+
+  function saveEdit(sectionId, html) {
+    const edits = loadEdits();
+    edits[sectionId] = html;
+    localStorage.setItem(EDITS_KEY, JSON.stringify(edits));
+  }
+
+  function restoreEdits() {
+    const edits = loadEdits();
+    Object.entries(edits).forEach(([id, html]) => {
+      const section = document.getElementById(id);
+      if (section) section.innerHTML = html;
+    });
+  }
+
+  function resetToSource() {
+    if (!confirm('Clear all cached edits and reload from source HTML? Your comments will be preserved.')) return;
+    localStorage.removeItem(EDITS_KEY);
+    location.reload();
+  }
+
+  function toggleEditMode() {
+    editMode = !editMode;
+    const btn = document.getElementById('btn-edit');
+    const sections = document.querySelectorAll('.doc-section');
+
+    if (editMode) {
+      // Snapshot originals before first edit (only if not already snapshotted)
+      sections.forEach(s => {
+        if (!s.dataset.original) s.dataset.original = s.innerHTML;
+      });
+      sections.forEach(s => {
+        s.setAttribute('contenteditable', 'true');
+        s.style.outline = '2px dashed rgba(201,178,124,0.4)';
+        // Save every keystroke to localStorage
+        s.addEventListener('input', () => saveEdit(s.id, s.innerHTML), { passive: true });
+      });
+      btn.textContent = '✓ Done Editing';
+      btn.classList.add('active');
+    } else {
+      sections.forEach(s => {
+        s.removeAttribute('contenteditable');
+        s.style.outline = '';
+      });
+      btn.textContent = '✏️ Edit Doc';
+      btn.classList.remove('active');
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // ALL TABLES — ADD / MOVE / DELETE / SAVE ROWS
+  // ─────────────────────────────────────────────
+  const TABLE_ROWS_KEY = 'dwellable-notif-table-rows';
+
+  function getTableId(table) {
+    if (!table.id) {
+      const all = Array.from(document.querySelectorAll('.doc-table'));
+      table.id = 'doc-table-' + all.indexOf(table);
+    }
+    return table.id;
+  }
+
+  function saveRowsForTable(table) {
+    const id = getTableId(table);
+    const all = JSON.parse(localStorage.getItem(TABLE_ROWS_KEY) || '{}');
+    all[id] = Array.from(table.querySelectorAll('.custom-row')).map(tr => {
+      const cells = tr.querySelectorAll('td[contenteditable]');
+      return Array.from(cells).map(td => td.textContent || '');
+    });
+    localStorage.setItem(TABLE_ROWS_KEY, JSON.stringify(all));
+  }
+
+  function addRowToTable(table, cellValues) {
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    const colCount = table.querySelector('thead tr')?.children.length || 4;
+    const dataColCount = colCount - 1; // last col is controls
+
+    const tr = document.createElement('tr');
+    tr.className = 'custom-row';
+
+    for (let i = 0; i < dataColCount; i++) {
+      const td = document.createElement('td');
+      td.contentEditable = 'true';
+      td.setAttribute('data-placeholder', table.querySelectorAll('thead th')[i]?.textContent || '');
+      td.textContent = cellValues ? (cellValues[i] || '') : '';
+      td.addEventListener('input', () => saveRowsForTable(table));
+      tr.appendChild(td);
+    }
+
+    const controlsTd = document.createElement('td');
+    controlsTd.className = 'row-controls';
+
+    const upBtn = document.createElement('button');
+    upBtn.textContent = '↑'; upBtn.title = 'Move up';
+    upBtn.addEventListener('click', () => { moveRow(tr, -1, table); });
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-row';
+    deleteBtn.textContent = '×'; deleteBtn.title = 'Delete';
+    deleteBtn.addEventListener('click', () => { tr.remove(); saveRowsForTable(table); });
+
+    const downBtn = document.createElement('button');
+    downBtn.textContent = '↓'; downBtn.title = 'Move down';
+    downBtn.addEventListener('click', () => { moveRow(tr, 1, table); });
+
+    controlsTd.append(upBtn, deleteBtn, downBtn);
+    tr.appendChild(controlsTd);
+    tbody.appendChild(tr);
+    saveRowsForTable(table);
+    if (!cellValues) tr.querySelectorAll('td[contenteditable]')[0]?.focus();
+  }
+
+  function moveRow(tr, direction, table) {
+    const tbody = tr.parentElement;
+    const rows = Array.from(tbody.children);
+    const idx = rows.indexOf(tr);
+    const target = rows[idx + direction];
+    if (!target) return;
+    if (direction === -1) tbody.insertBefore(tr, target);
+    else tbody.insertBefore(target, tr);
+    saveRowsForTable(table);
+  }
+
+  function initAllTableControls() {
+    const saved = JSON.parse(localStorage.getItem(TABLE_ROWS_KEY) || '{}');
+    document.querySelectorAll('.doc-table').forEach(table => {
+      // ensure last header col is the controls column
+      const thead = table.querySelector('thead tr');
+      if (thead && thead.lastElementChild?.textContent !== '') {
+        const th = document.createElement('th');
+        th.style.width = '28px';
+        thead.appendChild(th);
+      }
+
+      // add tfoot + button
+      let tfoot = table.querySelector('tfoot');
+      if (!tfoot) {
+        tfoot = document.createElement('tfoot');
+        table.appendChild(tfoot);
+      }
+      tfoot.innerHTML = '';
+      const tftr = document.createElement('tr');
+      tftr.className = 'tfoot-add-row';
+      const tftr_td = document.createElement('td');
+      const colCount = table.querySelector('thead tr')?.children.length || 5;
+      tftr_td.colSpan = colCount;
+      tftr_td.textContent = '+';
+      tftr_td.title = 'Add row';
+      tftr.appendChild(tftr_td);
+      tftr.addEventListener('click', () => addRowToTable(table));
+      tfoot.appendChild(tftr);
+
+      // restore saved rows
+      const id = getTableId(table);
+      (saved[id] || []).forEach(cells => addRowToTable(table, cells));
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // INIT
+  // ─────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    restoreEdits();          // section edits first — so highlights anchor to the edited text
+    restoreComments();       // then re-apply comment highlights on top
+    initAllTableControls();  // inject + row into every table, restore saved custom rows
+  });
+</script>
+</body>
+</html>

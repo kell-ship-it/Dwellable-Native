@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 10, 2026 (Session 2) — Pass 2 Formation Intelligence Articulation Complete; Formation Intelligence defined as cross-cutting lens (not pillar); MVP vs Post-MVP signal capture clarified across P0-P7; Trust Principle added; Next: Pass 3 Ticket Generation & Phase 2 Launch Planning
-**Status:** 72/96 tickets complete (75%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, P0-P4 skeleton + FI locked, P5-P7 FI clarified + locked, P8 ready for next session
+**Last Updated:** May 11, 2026 — Notifications Strategy Collab Review doc finalized: full playbook (A0–D stages) with when/why/where/cool-off, quick reference table, add-row feature across all tables, Section 5 parity cascade complete; Next: Finish Notifications strategy doc (remaining sections) then T-083–T-091 implementation tickets
+**Status:** 72/96 tickets complete (75%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, P0-P4 skeleton + FI locked, P5-P7 FI clarified + locked, Notifications strategy doc ~80% finalized
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
