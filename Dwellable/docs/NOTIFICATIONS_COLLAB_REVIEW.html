@@ -454,10 +454,46 @@
 
     <hr class="divider">
 
+    <h3 class="sub-title">User Segmentation Matrix — All Scenarios</h3>
+    <p><strong>How users flow through stages:</strong> Each row below represents a distinct scenario based on what the user has done (captured, prayed, journaled) and how recently. The asterisk (*) marks the <strong>signal we're optimizing for</strong> in that scenario — the gap we're trying to close with the notification.</p>
+    <table class="doc-table">
+      <thead>
+        <tr><th>Onboarding</th><th>Captured</th><th>Prayed</th><th>Journaled</th><th>Recent Activity</th><th>Stage</th><th>Signal*</th><th>Prompt</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>N*</td><td>—</td><td>—</td><td>—</td><td>—</td><td><strong>A0</strong></td><td>Incomplete setup</td><td>"Finish setting up your practice"</td>
+        </tr>
+        <tr>
+          <td>Y</td><td>N*</td><td>—</td><td>—</td><td>—</td><td><strong>A</strong></td><td>No captures</td><td>"Capture a moment you'd like to pray about"</td>
+        </tr>
+        <tr>
+          <td>Y</td><td>Y</td><td>N*</td><td>N</td><td>Y</td><td><strong>B1</strong></td><td>Not prayed</td><td>"Pray about this moment?"</td>
+        </tr>
+        <tr>
+          <td>Y</td><td>Y</td><td>N*</td><td>Y</td><td>Y</td><td><strong>C2</strong></td><td>Not prayed</td><td>"Would you like to pray about this moment?"</td>
+        </tr>
+        <tr>
+          <td>Y</td><td>Y</td><td>Y</td><td>N*</td><td>Y</td><td><strong>C1</strong></td><td>Not journaled</td><td>"Return to your prayer—what changed?"</td>
+        </tr>
+        <tr>
+          <td>Y</td><td>Y</td><td>Y</td><td>N*</td><td>N</td><td><strong>C1-Quiet</strong></td><td>Not journaled</td><td>"It's been a while—revisit your prayer"</td>
+        </tr>
+        <tr>
+          <td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>N*</td><td><strong>C3</strong></td><td>Inactive</td><td>"You've been quiet—return to dwelling"</td>
+        </tr>
+        <tr>
+          <td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y*</td><td><strong>D</strong></td><td>Actively dwelling</td><td>Re-engagement (1x/month if needed)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr class="divider">
+
     <h3 class="sub-title">Quick Reference — All Stages</h3>
     <table class="doc-table" id="quick-ref-table">
       <thead>
-        <tr><th>Stage</th><th>Behavioral Trigger</th><th>Example Message</th><th>Cool-off</th><th style="width:28px;"></th></tr>
+        <tr><th>Stage</th><th>Behavioral Trigger</th><th>Example Message</th><th>Cool-off</th><th>Phase</th><th style="width:28px;"></th></tr>
       </thead>
       <tbody>
         <tr>
@@ -465,6 +501,7 @@
           <td>Started onboarding, never completed</td>
           <td>"You started something. Finish setting up so we can meet you where you are."</td>
           <td>1 push max. Stop at Day 7 if no completion.</td>
+          <td><strong>MVP</strong></td>
           <td></td>
         </tr>
         <tr>
@@ -472,6 +509,7 @@
           <td>Onboarding complete; 0 moments captured<br><em>Push + in-app. If user responds to one, suppress the other.</em></td>
           <td><u>Brings dweller to capture</u><br>"What's something you'd like to remember from this week?"<br><em>Contextual to dweller's intent from onboarding</em></td>
           <td>1 push total. Suppress all after first capture.</td>
+          <td><strong>MVP</strong></td>
           <td></td>
         </tr>
         <tr>
@@ -479,6 +517,7 @@
           <td>Any capture that exits without prayer (fires after every unprayed capture, not just first)<br><em>Push + in-app. If user responds to one, suppress the other.</em></td>
           <td><u>Brings dweller to prayer</u><br>"You captured something earlier. When you're ready, would you like to pray on it?"<br><em>Or provide a snippet of the prayer.</em></td>
           <td>Push 1/week at 8am (dweller's time zone). After 4 no-clicks, expire. If they click but don't pray, continue weekly cadence.</td>
+          <td><strong>MVP</strong></td>
           <td></td>
         </tr>
         <tr>
@@ -486,6 +525,7 @@
           <td>≥1 capture + prompt response; 0 prayers recorded<br><em>Push + in-app. If user responds to one, suppress the other.</em></td>
           <td><u>Brings dweller to prayer</u><br>"You captured something earlier. When you're ready, would you like to pray on it?"<br><em>Or provide a snippet of the prayer.</em></td>
           <td>Push 1/week at 8am (dweller's time zone). After 4 no-clicks, expire. If they click but don't pray, continue weekly cadence.</td>
+          <td><strong>MVP</strong></td>
           <td></td>
         </tr>
         <tr>
@@ -497,6 +537,7 @@
             <u>Brings dweller to capture:</u><br>"Where's your heart at regarding {subject}?"
           </td>
           <td>In-app: once per prayer session. Push: 1/week at 8am (dweller's time zone). Stop after 2 ignores per C1 notif.</td>
+          <td><strong>MVP</strong></td>
           <td></td>
         </tr>
         <tr>
@@ -504,6 +545,7 @@
           <td>≥1 journal return; 0 prayers ever recorded</td>
           <td>"You've been reflecting. Ready to bring it to prayer?"</td>
           <td>1 push max in first month. Stop outbound if no action in 3 weeks.</td>
+          <td><strong>MVP</strong></td>
           <td></td>
         </tr>
         <tr>
@@ -511,13 +553,15 @@
           <td>Prayer + journal return on record; no dwelling in 14+ days</td>
           <td>"It's been a little while. How's your heart?"</td>
           <td>1x/month. Reduce to 1x/6 weeks after 3 no-clicks.</td>
+          <td><strong>MVP</strong></td>
           <td></td>
         </tr>
         <tr>
           <td><strong>D</strong></td>
           <td>Any dwelling act within last 7–10 days</td>
-          <td>MVP: no push. Stay silent — the product is working.</td>
+          <td>MVP: no push. Stay silent — the product is working.<br><br>Post-MVP: rare Formation Intelligence event only.</td>
           <td>MVP: 0 push. Post-MVP: 0–1 per quarter.</td>
+          <td>MVP: <strong>silence</strong><br>Post-MVP: <strong>FI-triggered</strong></td>
           <td></td>
         </tr>
       </tbody>
@@ -541,7 +585,8 @@
     <hr class="divider">
 
     <!-- ── STAGE A0 ───────────────────────────────── -->
-    <h3 class="sub-title">Stage A0 — Onboarded, incomplete setup</h3>
+    <h3 class="sub-title">Stage A0 — Onboarded, incomplete setup <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
+    <p><strong>Phase:</strong> MVP</p>
     <p><strong>Condition:</strong> Account partially created — started onboarding but did not complete (intent, support style, or theological framework not captured)</p>
     <p><strong>Why:</strong> Recover the install. They showed intent (downloaded, started) but didn't finish. Goal is not to pressure completion — it's to remind them why they came and make re-entry frictionless.</p>
     <p><strong>When to fire:</strong> Day 2 after install if onboarding is incomplete (push, 1x). On re-open (in-app, pick up where they left off).</p>
@@ -561,7 +606,8 @@
     <hr class="divider">
 
     <!-- ── STAGE A ───────────────────────────────── -->
-    <h3 class="sub-title">Stage A — Onboarded, no captures yet</h3>
+    <h3 class="sub-title">Stage A — Onboarded, no captures yet <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
+    <p><strong>Phase:</strong> MVP</p>
     <p><strong>Condition:</strong> Onboarding complete, 0 moments captured</p>
     <p><strong>Why:</strong> Drive the first capture — the first meaningful investment. Until someone captures, nothing else in the product has context to work with.</p>
     <p><strong>When to fire:</strong> Day 3 with no capture (push, 1x). Create tab empty state surfaces Day 1 (in-app).</p>
@@ -581,11 +627,12 @@
     <hr class="divider">
 
     <!-- ── STAGE B1 ───────────────────────────────── -->
-    <h3 class="sub-title">Stage B1 — Captured, no dwelling</h3>
+    <h3 class="sub-title">Stage B1 — Captured, no dwelling <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
+    <p><strong>Phase:</strong> MVP</p>
     <p><strong>Condition:</strong> Any capture that exits without prayer — fires after every unprayed capture, not just the first</p>
     <p><strong>Why:</strong> Prayer is invited after every capture. The emotional context is always live right after a moment is captured — that window should never close without an invitation.</p>
     <p><strong>When to fire:</strong> Same evening or next morning after any capture without prayer (push, within ~12 hours). Weekly cadence continues until prayer is recorded.</p>
-    <p><strong>Cool-off:</strong> Push + in-app. If user responds to one, suppress the other. Weekly push at 8am (dweller's time zone). After 4 no-clicks, expire. If they click but don't pray, continue weekly cadence.</p>
+    <p><strong>Cool-off:</strong> Push + in-app. If user responds to one, suppress the other. Weekly push at 8am (dweller's time zone) — at most 1 push/week regardless of capture volume (prolific capturers don't get multiple weekly pushes). After 4 no-clicks, expire. If they click but don't pray, continue weekly cadence.</p>
     <h4 class="sub-sub-title">Push</h4>
     <ul>
       <li>"You captured something earlier. When you're ready, would you like to pray on it?"</li>
@@ -602,13 +649,15 @@
     <hr class="divider">
 
     <!-- ── STAGE B2 ───────────────────────────────── -->
-    <h3 class="sub-title">Stage B2 — Captured, responded to prompt, no prayer</h3>
+    <h3 class="sub-title">Stage B2 — Captured, responded to prompt, no prayer <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
+    <p><strong>Phase:</strong> MVP</p>
     <p><strong>Condition:</strong> ≥1 moment captured, ≥1 prompt response, 0 prayers recorded</p>
     <p><strong>Why:</strong> They're already dwelling — responding to a prompt IS a form of dwelling. Tone is softer, urgency is lower. We're not pulling them in; we're inviting the next step.</p>
-    <p><strong>When to fire:</strong> 3–5 days after prompt response with no prayer (push). Today tab contextual on return (in-app).</p>
-    <p><strong>Cool-off:</strong> 1 push/month max. In-app shows once per return session. No stacking.</p>
+    <p><strong>When to fire:</strong> Same evening or next morning after capture with no prayer (push, within ~12 hours). Weekly cadence continues until prayer is recorded. Today tab contextual on return (in-app).</p>
+    <p><strong>Cool-off:</strong> Push + in-app. If user responds to one, suppress the other. Weekly push at 8am (dweller's time zone). After 4 no-clicks, expire. If they click but don't pray, continue weekly cadence. <em>(Matches B1 cadence — B2 differs only in tone and message variants, not delivery rhythm.)</em></p>
     <h4 class="sub-sub-title">Push</h4>
     <ul>
+      <li>"You captured something earlier. When you're ready, would you like to pray on it?"</li>
       <li>"Your moments have depth. Ready to bring them to prayer?"</li>
       <li>"You've been reflecting. How's your heart in prayer?"</li>
     </ul>
@@ -621,18 +670,22 @@
     <hr class="divider">
 
     <!-- ── STAGE C1 ───────────────────────────────── -->
-    <h3 class="sub-title">Stage C1 — First prayer, no journal return (L5a)</h3>
+    <h3 class="sub-title">Stage C1 — First prayer, no journal return (L5a) <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
+    <p><strong>Phase:</strong> MVP</p>
     <p><strong>Condition:</strong> ≥1 prayer recorded; has not returned to a journal entry; active within last 14 days</p>
     <p><strong>Why:</strong> They prayed but haven't seen what came from it. A journal entry was created after prayer — they may not know it's there, or haven't felt the pull to return. Goal: surface the connection between the moment they prayed and the artifact it generated.</p>
-    <p><strong>When to fire:</strong> Immediately after prayer closes (in-app — show the journal card before they exit). Push: 7 days after prayer with no journal return.</p>
-    <p><strong>Cool-off:</strong> In-app: once per prayer session. Push: 1x in first 30 days; after that, fold into Stage C3 if still quiet.</p>
+    <p><strong>When to fire:</strong> Immediately after prayer closes (in-app — show the journal card before they exit). Push: weekly cadence at 8am (dweller's time zone) starting 7 days after prayer with no journal return.</p>
+    <p><strong>Cool-off:</strong> In-app: once per prayer session. Push: 1/week at 8am (dweller's time zone). Stop after 2 ignores per C1 notif.</p>
     <h4 class="sub-sub-title">Push</h4>
+    <p>Three message variants — rotate or select contextually based on user data:</p>
     <ul>
-      <li>"You prayed over something. It's worth returning to — see what came from it."</li>
-      <li>"Something you prayed about is waiting for you."</li>
+      <li><strong>Brings dweller to journal:</strong> "You shared your heart earlier, and here's how we honored it..."  <em>(Surfaces the journal card; on first open, walks the user through journal features — edit, add context, reflect, pray.)</em></li>
+      <li><strong>Brings dweller to capture:</strong> "How have you been feeling since prayer?"</li>
+      <li><strong>Brings dweller to capture:</strong> "Where's your heart at regarding {subject}?"  <em>(Personalized variant — requires readable subject metadata; falls back to generic prompt if unavailable.)</em></li>
     </ul>
     <h4 class="sub-sub-title">In-App</h4>
     <p><strong>Placement:</strong> Immediately after prayer closes, before exiting prayer flow. Shows journal card generated from that prayer. Dismiss: journal entry opened.</p>
+    <p><strong>First-time experience:</strong> When the journal card surfaces for the first time, include a brief orientation — "here's what you can do with this." Show the available actions (edit, add context, reflect, pray). FTUE only; ongoing surfacing is the entry itself.</p>
     <ul>
       <li>"Your moment was written down. Want to see it?"</li>
       <li>"Here's what came from what you just brought to God." [surfaces journal card]</li>
@@ -641,11 +694,12 @@
     <hr class="divider">
 
     <!-- ── STAGE C2 ───────────────────────────────── -->
-    <h3 class="sub-title">Stage C2 — Journal return, no prayer (L5b)</h3>
+    <h3 class="sub-title">Stage C2 — Journal return, no prayer (L5b) <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
+    <p><strong>Phase:</strong> MVP</p>
     <p><strong>Condition:</strong> Has returned to ≥1 journal entry; 0 prayers ever recorded</p>
     <p><strong>Why:</strong> They found their way to the journal (likely through capturing and AI synthesis) but haven't discovered prayer. This is the journal-first path. Goal: invite prayer as the natural next step — not as something new, but as something that belongs alongside what they're already doing.</p>
     <p><strong>When to fire:</strong> After 2nd+ journal return with no prayer (in-app nudge below journal body). Push: 5–7 days after last journal activity with no prayer recorded.</p>
-    <p><strong>Cool-off:</strong> Push + in-app. If user responds to one, suppress the other. Weekly push at 8am (dweller's time zone). After 4 no-clicks, expire. Stop outbound if no action — await organic return.</p>
+    <p><strong>Cool-off:</strong> 1 push max in first month. Stop outbound if no action in 3 weeks — await organic return. In-app: shows once per journal entry session, no stacking. <em>(Sparser than B1/B2 — they've already found a dwelling path; prayer is the next step, not an urgent one.)</em></p>
     <h4 class="sub-sub-title">Push</h4>
     <ul>
       <li>"You've been reflecting. Ready to bring it to prayer?"</li>
@@ -661,7 +715,8 @@
     <hr class="divider">
 
     <!-- ── STAGE C3 ───────────────────────────────── -->
-    <h3 class="sub-title">Stage C3 — Prayed and returned to journal, now quiet</h3>
+    <h3 class="sub-title">Stage C3 — Prayed and returned to journal, now quiet <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
+    <p><strong>Phase:</strong> MVP</p>
     <p><strong>Condition:</strong> ≥1 prayer AND ≥1 journal return recorded; no dwelling of any kind in 14+ days</p>
     <p><strong>Why:</strong> They've completed the full loop. They know what dwelling looks like. Re-invite gently — not with instruction or explanation, just with presence. The tone is familiar, not pedagogical.</p>
     <p><strong>When to fire:</strong> 14+ days since last dwelling act (push). Today tab on return (in-app, oldest unprayed moment surfaced).</p>
@@ -681,7 +736,8 @@
     <hr class="divider">
 
     <!-- ── STAGE D ───────────────────────────────── -->
-    <h3 class="sub-title">Stage D — Actively dwelling</h3>
+    <h3 class="sub-title">Stage D — Actively dwelling <span style="color:#888;font-weight:400;font-size:13px;">— MVP: silence • Post-MVP: FI-triggered</span></h3>
+    <p><strong>Phase:</strong> MVP — silence (0 push). Post-MVP — Formation Intelligence-triggered push, 0–1 per quarter max.</p>
     <p><strong>Condition:</strong> Prayer, prompt response, or journal return within the past 7–10 days</p>
     <p><strong>Why:</strong> Don't interrupt what's working. The product experience is the nudge. Stay mostly silent — presence over prompting.</p>
     <p><strong>When to fire:</strong> MVP: no push. Post-MVP: rare high-signal Formation Intelligence event only. In-app: contextual prompts within prayer flow only.</p>
@@ -746,6 +802,14 @@
       <li>"You have unresponded moments. Ready to dwell?"</li>
       <li>"Your moments are waiting."</li>
     </ul>
+
+    <h3 class="sub-title">Open Item — Encryption Degree (Blocked)</h3>
+    <p><strong>🔲 TBD — blocked by LLM tournament outcome.</strong> Encryption/privacy/security will exist, but the degree is unresolved:</p>
+    <ul>
+      <li><strong>If server-side LLM (Gemini):</strong> We may carve out a readable metadata field (e.g. last topic/theme) to enable richer personalization. This relaxes E2E for that specific field. Explicit decision required.</li>
+      <li><strong>If on-device LLM (Mistral):</strong> Full E2E maintained. Rich personalization possible without server access to plaintext.</li>
+    </ul>
+    <p>Until the LLM tournament resolves, Section 6 remains metadata-only. The degree question opens after that decision.</p>
   </div>
 
 
@@ -767,28 +831,28 @@
   <div class="doc-section" id="section-examples">
     <h2 class="section-title">9. Notification Examples by Segment &amp; Type</h2>
 
-    <h3 class="sub-title">New User (Day 3, No Capture Yet)</h3>
+    <h3 class="sub-title">New User (Day 3, No Capture Yet) <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
     <div class="notif-example">Title: "Ready to capture what's on your heart?"
 Body: "Dwellable is a space to voice your faith, concerns, and breakthroughs.
        Start with your voice—no perfection needed."
 Action: Tap → Opens Create tab</div>
 
-    <h3 class="sub-title">Stage B1 — Every Unprayed Capture</h3>
+    <h3 class="sub-title">Stage B1 — Every Unprayed Capture <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
     <div class="notif-example">Title: "How has your heart been this week?"
 Body: "You have moments waiting. Ready to pray on one?"
 Action: Tap → Opens Today tab (shows recent moments)</div>
 
-    <h3 class="sub-title">Stage B2 — Responded to Prompt, No Prayer (Contextual)</h3>
+    <h3 class="sub-title">Stage B2 — Responded to Prompt, No Prayer (Contextual) <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
     <div class="notif-example">Title: "Your moments have depth."
 Body: "You've been reflecting. Ready to bring them to prayer?"
 Action: Tap → Opens Today tab</div>
 
-    <h3 class="sub-title">Stage C3 — Prayed and Returned to Journal, Now Quiet</h3>
+    <h3 class="sub-title">Stage C3 — Prayed and Returned to Journal, Now Quiet <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
     <div class="notif-example">Title: "It's been a little while. How's your heart?"
 Body: "You have moments worth returning to. Ready to dwell?"
 Action: Tap → Opens Today tab</div>
 
-    <h3 class="sub-title">Active Dweller (Rare, High-Signal)</h3>
+    <h3 class="sub-title">Active Dweller (Rare, High-Signal) <span style="color:#888;font-weight:400;font-size:13px;">— Post-MVP</span></h3>
     <div class="notif-example">Title: "You've been reflecting deeply on faith."
 Body: "Here's a pattern in your moments: growth through struggle.
        Want to explore more?"
@@ -803,7 +867,7 @@ Action: Tap → Opens Insights tab</div>
       <tbody>
         <tr><td><strong>Email notifications</strong></td><td>Reach more users, easier delivery</td><td>Email feels broadcast/impersonal; breaks intimacy of faith app</td></tr>
         <tr><td><strong>Daily notifications</strong></td><td>Higher engagement, more touchpoints</td><td>Too noisy; violates faith philosophy; causes fatigue</td></tr>
-        <tr><td><strong>Streak gamification</strong></td><td>Proven engagement driver in habit apps</td><td>Contradicts faith-based philosophy; turns formation into productivity</td></tr>
+        <tr><td><strong>Streak gamification</strong></td><td>Proven engagement driver in habit apps</td><td>Original: contradicts faith-based philosophy; turns formation into productivity. <strong>Under reconsideration</strong> — light-touch passive display (Formation Trends only) may work if framed as witnessing presence, not enforcing habit. Hard rules if pursued: no 'at risk' messaging, no push to preserve streak.</td></tr>
         <tr><td><strong>In-app badges/alerts</strong></td><td>Non-intrusive alternative to push</td><td>Requires app open; misses users who don't return</td></tr>
         <tr><td><strong>SMS notifications</strong></td><td>High delivery rate, direct</td><td>Too intrusive; breaches privacy; not all users want SMS</td></tr>
         <tr><td><strong>Notifications for all segments</strong></td><td>Maximize engagement</td><td>Wastes notifications on active users; causes churn</td></tr>
@@ -819,8 +883,15 @@ Action: Tap → Opens Insights tab</div>
     <table class="doc-table">
       <thead><tr><th>Metric</th><th>Definition</th><th>Success Target</th></tr></thead>
       <tbody>
-        <tr><td><strong>Click-through rate (CTR)</strong></td><td>% of delivered notifications that user clicks</td><td>&gt;40%</td></tr>
-        <tr><td><strong>Conversion rate</strong></td><td>% of clicks that lead to prayer</td><td>&gt;30%</td></tr>
+        <tr><td><strong>Push CTR → Prayer</strong></td><td>% of push notifications delivered that result in a prayer act</td><td>&gt;40%</td></tr>
+        <tr><td><strong>Push CTR → Capture</strong></td><td>% of push notifications delivered that result in a new capture</td><td>TBD (baseline first cohort)</td></tr>
+        <tr><td><strong>Push CTR → Journal Review</strong></td><td>% of push notifications delivered that result in a journal entry opened</td><td>TBD (baseline first cohort)</td></tr>
+        <tr><td><strong>In-App CTR → Prayer</strong></td><td>% of in-app nudges shown that result in a prayer act</td><td>&gt;40%</td></tr>
+        <tr><td><strong>In-App CTR → Capture</strong></td><td>% of in-app nudges shown that result in a new capture</td><td>TBD (baseline first cohort)</td></tr>
+        <tr><td><strong>In-App CTR → Journal Review</strong></td><td>% of in-app nudges shown that result in a journal entry opened</td><td>TBD (baseline first cohort)</td></tr>
+        <tr><td><strong>Conversion → Capture</strong></td><td>% of notification clicks/taps that lead to a new capture</td><td>TBD (baseline first cohort)</td></tr>
+        <tr><td><strong>Conversion → Prayer</strong></td><td>% of notification clicks/taps that lead to a completed prayer</td><td>&gt;30%</td></tr>
+        <tr><td><strong>Conversion → Journal Review</strong></td><td>% of notification clicks/taps that lead to a journal entry opened and read</td><td>TBD (baseline first cohort)</td></tr>
         <tr><td><strong>D7 Retention</strong></td><td>% of users returning within 7 days after notification</td><td>&gt;35%</td></tr>
         <tr><td><strong>Formation Engagement (post-notif)</strong></td><td>% of notified users who dwell within 3 days</td><td>&gt;25%</td></tr>
         <tr><td><strong>Opt-out rate</strong></td><td>% of users who disable notifications</td><td>&lt;10%</td></tr>
@@ -1046,6 +1117,66 @@ Action: Tap → Opens Insights tab</div>
     "c_1778538020833_e5xx3": {
       reply: "Yes — the download is the highest intent signal we'll ever see from this person. Honoring that moment sets the tone before we ask anything of them.\n\nRecommendation: in-app only on first open (no push — they just created an account, push would be premature). Warm, not instructional. Something like: 'You're here. That took something. This space is yours.'\n\n✅ Implemented: Stage A0 in-app updated to include welcome/celebration as the first interaction before onboarding asks anything. Safe to delete.",
       timestamp: "2026-05-11T22:30:00Z"
+    },
+    "c_1778602849475_glo2p": {
+      reply: "'1 push total' = fires exactly once, ever, for this trigger — no retry regardless of whether the user responds. Once the window closes, it's permanently closed. Used for Stage A because the moment a first capture is made, the trigger is resolved forever — there's no version of this notification that fires again.\n\nContrast with 'max': max is a ceiling for a period but fires fewer if the user acts first. Total means the opportunity expires regardless of outcome.\n\n✅ No doc change needed — language is intentional. Safe to delete.",
+      timestamp: "2026-05-12T20:00:00Z"
+    },
+    "c_1778602861325_d1192": {
+      reply: "'1 push max' = a ceiling for this trigger cycle — we won't exceed 1, but we'll skip it entirely if the user acts before the push is scheduled. For Stage A0, if the user completes onboarding before Day 2, the push never fires.\n\nThe distinction: 'total' closes the window permanently whether or not the user responds. 'Max' respects organic behavior — if they come back on their own, we don't interrupt.\n\n✅ No doc change needed — language is intentional. Safe to delete.",
+      timestamp: "2026-05-12T20:00:00Z"
+    },
+    "c_1778602912124_8ebsv": {
+      reply: "No pushback on the cadence — weekly is the minimum meaningful window for active discovery and the invite is specific enough to justify it. One thing worth locking explicitly: if a user captures multiple times in a week, B1 should still fire at most once per week — not once per capture. The condition fires after every unprayed capture, but the weekly push is the delivery cadence. Without this guard, a prolific capturer could get hit 3–4 times/week.\n\n✅ Recommendation: add 'at most 1 push/week regardless of capture volume' to the B1 cool-off. Doc update applied.",
+      timestamp: "2026-05-12T20:00:00Z"
+    },
+    "c_1778603024322_54bvo": {
+      reply: "Yes — C1 already has push. The table cell shows the in-app cool-off rule; the push (7 days after prayer with no journal return) lives in the detailed C1 section below the table. Both channels are active.\n\nIn-app fires immediately after prayer closes — shows the journal card before the user exits. Push fires 7 days later if they still haven't opened it. They're sequential, not competing.\n\nOne addition worth noting: when this journal card surfaces for the first time (in-app, post-prayer), it's the right moment for a brief orientation — 'here's what you can do with this' rather than just showing the entry. Edit, add context, reflect, pray. First-time experience, not ongoing UX. Flagged for journal return flow design.\n\n✅ Both channels confirmed for C1. No table change needed — detailed section already covers this. Safe to delete.",
+      timestamp: "2026-05-12T20:00:00Z"
+    },
+    "c_1778604236683_5jrrk": {
+      reply: "Stage D = the user is actively dwelling right now — prayer, prompt response, or journal return within the last 7–10 days. They're doing exactly what the app was built for.\n\nMVP: we send nothing. Sending a notification to someone who is actively dwelling is the definition of fatigue — it interrupts what's already working. The silence IS the product experience. Trust it.\n\nPost-MVP: one narrow exception — if Formation Intelligence detects a sustained high-signal pattern (e.g., the same theme surfacing across 3+ months of moments), that's worth surfacing once per quarter at most. Otherwise: stay quiet, let them go deep.\n\n✅ No doc change needed — the row is correct. Safe to delete.",
+      timestamp: "2026-05-12T20:00:00Z"
+    },
+    "c_1778604517298_41p8z": {
+      reply: "✅ Noted and locked in as a deliverable. After all stage cool-offs are finalized, I'll build a notification volume map showing: max sends per stage per month, worst-case concurrent notifications for a single active user, FCM cost estimate (free tier covers ~100K messages/month, well within MVP scale), and a risk matrix covering consumer experience thresholds and per-user cost at 1K / 10K / 100K users.\n\nThis will surface any compounding risk across stages — e.g. a user in B1 + C1 simultaneously. Safe to delete — will deliver this after cool-offs are locked.",
+      timestamp: "2026-05-12T20:00:00Z"
+    },
+    "c_1778605782567_j1wko": {
+      reply: "Agreed — degree of encryption is TBD and genuinely blocked by the LLM tournament outcome. The decision tree:\n\n• Server-side LLM (Gemini) → we'd need to carve out a readable metadata field (e.g. last topic/theme) to enable richer personalization. This relaxes E2E for that field specifically. Decision required.\n• On-device LLM (Mistral) → full E2E maintained. Rich personalization possible without server access to plaintext.\n\nUntil the LLM tournament resolves, Section 6 is correct as written (metadata-only). The degree question opens after that decision.\n\n✅ Implemented: open item added to Section 6. Safe to delete.",
+      timestamp: "2026-05-12T20:00:00Z"
+    },
+    "c_1778605856499_8cnqx": {
+      reply: "Worth reconsidering — IF the framing avoids loss aversion entirely. The original concern was productivity-gamification: streaks that make users feel punished for missing a day. That concern stands.\n\nBut there's a version that works in faith context: streaks that witness presence, not output. 'You've been here 7 days' feels different from '7-day streak — don't break it!' The first is a quiet celebration. The second is pressure.\n\nIf we go this direction, two hard rules:\n1. Streaks can celebrate, never threaten — no 'your streak is at risk' messaging, ever\n2. No push notifications to preserve a streak — passive display only (visible in Formation Trends, never pushed)\n\nThis keeps formation ≠ habit app while still honoring consistency. Worth revisiting as a Formation Trends design decision, not a notification decision.\n\n✅ Streak gamification row updated in Section 10 to reflect under reconsideration. Safe to delete.",
+      timestamp: "2026-05-12T20:00:00Z"
+    },
+    "c_1778606130829_szarn": {
+      reply: "Strong instinct — here's the external baseline data and cost framing:\n\nIndustry CTR benchmarks for push notifications:\n• General consumer apps: 2–5%\n• Wellness/mindfulness (Calm, Headspace): 7–12%\n• Habit apps (Fabulous, Streaks): 8–15%\n• Highly personalized, sparse, behavior-triggered: 15–25%\n\nOur >40% CTR target is above industry for a reason: sparse cadence (1–2/month vs. daily) + specific behavioral trigger (tied to a real action the user just took) + faith-context invitation tone. If we're right about those multipliers, 40% is achievable. If we're not, 15–20% is still a strong outcome.\n\nBuild cost estimate (T-083–T-091):\n• ~100–150 engineering hours\n• At $125–150/hr: $12,500–22,500 one-time build\n• FCM delivery: free up to ~100K messages/month (well within MVP)\n• Ongoing cost: essentially $0 at MVP scale\n\nROI argument: Phase 1 showed 0% return rate. If notifications drive even 10% of users to return once more per month — and each return session produces a prayer or journal interaction that deepens retention — the LTV impact dwarfs the build cost at any reasonable user scale. The harder question is whether the product experience (prayer, journal) is compelling enough to justify the return. That's the Pillar 3 blocker, not the notification build itself.\n\n✅ Success targets remain as benchmark hypotheses. Recommend adding this cost-benefit note to Section 3 or the Summary. Safe to delete.",
+      timestamp: "2026-05-12T20:00:00Z"
+    },
+    "c_1778606459064_re7dm": {
+      reply: "✅ Implemented. CTR expanded to track by channel (push vs in-app) AND by destination (prayer, capture, journal review) — six distinct signals: Push→Prayer, Push→Capture, Push→Journal, In-App→Prayer, In-App→Capture, In-App→Journal. This tells us not just if notifications work, but which channel drives which behavior. Critical for stage logic optimization over time. See updated Section 11.",
+      timestamp: "2026-05-12T20:00:00Z"
+    },
+    "c_1778612483376_n4s7o": {
+      reply: "✅ Implemented. Conversion rate now tracks three destinations separately: → Capture, → Prayer, → Journal Review. This mirrors the core dwelling loop and lets us measure which notifications complete which act. Targets for each destination are TBD — will calibrate after baseline data from first cohort. See updated Section 11.",
+      timestamp: "2026-05-12T20:00:00Z"
+    },
+    "c_1778613673059_49gil": {
+      reply: "'Generic' = template-only notifications. Same copy for everyone in a given funnel stage (e.g. all B1 users get the same set of 3 push message variants). No reference to specific moment content, user names, themes, or behavioral history beyond stage assignment.\n\nContrast with 'personalized' (Post-MVP if we go server-side LLM): notifications that reference what the user actually wrote, who they mentioned, what they've been reflecting on. Requires either readable metadata or on-device inference.\n\nMVP scope = generic only, segmented by funnel stage. We ship templates, validate that notifications drive return at all, then add personalization once the LLM path is locked.\n\n✅ Recommend adding this definition to Section 16 or a glossary. No other doc change needed. Safe to delete.",
+      timestamp: "2026-05-12T20:30:00Z"
+    },
+    "c_1778613805542_dd97b": {
+      reply: "Two distinct risks worth separating:\n\n1. **Per-user risk** (the user never engages): notifications cost trust budget — every unreceived/unclicked notification edges them closer to disabling or uninstalling. Auto-suppression handles this: 3 consecutive no-clicks → soft pause 2 weeks → retry. If still no engagement → stop outbound entirely, await organic return. This protects the user from us.\n\n2. **Aggregate risk** (notifications don't drive return for anyone): the whole feature fails its purpose. Different problem — solved by measuring CTR per stage and killing low-performers. If B1 push CTR is under 10% after 4 weeks, B1 push gets rewritten or retired.\n\nManual pause in Settings is necessary but not sufficient. Most users won't visit Settings to pause — they'll silently disable iOS notifications, which is permanent and invisible to us. Auto-suppression is the safety net for users who don't engage. Settings pause is for users who actively don't want notifications during a season (travel, grief, etc.).\n\n✅ Both controls needed. Recommend explicit auto-suppression flow in T-091 (edge cases) + Settings pause in T-086. Safe to delete.",
+      timestamp: "2026-05-12T20:30:00Z"
+    },
+    "c_1778613879173_zd7lu": {
+      reply: "✅ Locked. Adding as a feature requirement for the Onboarding Pillar:\n\nDuring onboarding, user is presented with an explicit 'Enable notifications' step:\n• Default: enabled (opt-out model — matches Section 4 decision)\n• Brief 1-line explanation: 'We'll only send sparse, gentle invitations to return when there's something worth coming back to.'\n• User can toggle off without leaving onboarding\n• Re-toggle available anytime in Settings → Notifications\n\nThis becomes part of Pillar 0 (Onboarding) feature scope, with the Settings control built in Pillar 8 (T-086). Will surface this for the Onboarding strategy doc when we revisit flags. Safe to delete.",
+      timestamp: "2026-05-12T20:30:00Z"
+    },
+    "c_1778613929239_j2jfh": {
+      reply: "✅ Locked. Notification frequency is user-configurable in Settings. Options:\n• Default (recommended) — uses funnel-stage cadence as defined in Section 5\n• Sparse — overrides to 1x/month max across all stages (suppresses B1/B2 weekly cadence)\n• Off — disables push entirely; in-app nudges remain (since they're contextual UI, not interruptions)\n\nT-086 (Settings UI for notification preferences) now owns this. Default option is the sane path; the other two are for users who want more control. No 'high frequency' option — we never offer cadences beyond what the doc defines. Safe to delete.",
+      timestamp: "2026-05-12T20:30:00Z"
     }
   };
 

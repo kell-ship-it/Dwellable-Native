@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 11, 2026 — Notifications Strategy Collab Review doc finalized: full playbook (A0–D stages) with when/why/where/cool-off, quick reference table, add-row feature across all tables, Section 5 parity cascade complete; Next: Finish Notifications strategy doc (remaining sections) then T-083–T-091 implementation tickets
-**Status:** 72/96 tickets complete (75%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, P0-P4 skeleton + FI locked, P5-P7 FI clarified + locked, Notifications strategy doc ~80% finalized
+**Last Updated:** May 12, 2026 — Notifications Strategy Collab Review doc: User Segmentation Matrix added (all 8 scenarios with single signal indicator per row), design questions locked (streaks removed, C1 variants clarified, A0 push strategy confirmed, C2 cadence set to 1-push-max-in-month at day 7), parity fixes complete between Quick Reference table and detail sections, MVP/Post-MVP phase indicators throughout; Next: Finish remaining doc sections, then generate T-083–T-091 implementation tickets
+**Status:** 72/96 tickets complete (75%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, P0-P4 skeleton + FI locked, P5-P7 FI clarified + locked, Notifications strategy doc ~85% finalized
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
