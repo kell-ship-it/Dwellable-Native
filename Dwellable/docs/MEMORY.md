@@ -2,7 +2,109 @@
 
 ## 🚨 Blocking Items
 
-**None currently.** Strategic foundation locked (April 27). Next session: operationalize into design guidelines.
+**None currently.** Pillar 8 (Notifications) implementation tickets locked (May 13). Next session: Engineering assignment + Phase 2 implementation sprint planning.
+
+---
+
+## Session: May 13, 2026 — Pillar 8 (Notifications) Strategy Finalized & Implementation Tickets Generated
+
+### 🎯 TL;DR
+**PILLAR 8 NOTIFICATIONS: STRATEGY COMPLETE & READY FOR ENGINEERING.** (1) **Finalized D-stage repeating loop MVP strategy:** From "silence" → "1 weekly activity-based push" with two locked copy variants for active dwellers. (2) **Updated encryption model:** From client-side E2E → server-side encryption (plaintext-readable by Dwellable, enabling immediate contextual notifications). (3) **Completed notification volume map:** Cost analysis shows FCM infrastructure is free at MVP scale (1K–100K users, stays within free tier). (4) **Generated T-083–T-091 implementation tickets** (9 tickets, ~100–150 hours): Infrastructure (T-083), scheduling engine (T-084), funnel segmentation (T-085), settings UI (T-086), templates (T-087), analytics (T-088), device testing (T-089), send-time optimization (T-090), edge cases (T-091). (5) **Created two detailed handoff documents:** NOTIFICATIONS_IMPLEMENTATION_SPECS.md (detailed AC for each ticket) + NOTIFICATIONS_ENGINEERING_HANDOFF.md (engineering quick-start guide). **Status: Ready for sprint planning and engineer assignment. Blocker: Pillar 3 (Prayer/Dwelling) must ship first and be compelling before Pillar 8 beta launches.**
+
+### What Was Done
+
+**1. D-Stage Repeating Loop — MVP DECISION LOCKED**
+- **Previous decision:** MVP silence (no notifications)
+- **New MVP decision:** 1 weekly activity-based push per active dweller
+- **Two locked push variants for D-stage (actively dwelling):**
+  - Variant 1: "Hey, how are you feeling since that prayer? Let's capture what you're processing."
+  - Variant 2: "A prayer from a few days ago — ready to go deeper? Let's journal about what you've processed."
+- **Rationale:** Early signal with minimal risk; validates if notifications drive return before investing in topic-aware Formation Intelligence
+- **Post-MVP:** Topic-aware notifications once Pillar 7 (Formation Intelligence) detects patterns
+
+**2. Encryption Model Updated — SERVER-SIDE (Not E2E)**
+- **Decision:** Use server-side encryption (plaintext readable by Dwellable team)
+- **Impact:** Immediately enables activity-based personalization without client-side analysis
+- **Privacy promise:** "Your moments are encrypted. Only you and Dwellable can see them. We protect them from hackers and external theft."
+- **User trust model:** Users care more about "Kell won't read my diary" than "OpenAI won't read my diary"
+- **Updated:** NOTIFICATIONS_COLLAB_REVIEW.html Sections 6 & 8 (Personalization Rules & Privacy)
+
+**3. Notification Volume Map — COMPLETE & COST-VALIDATED**
+- **Cost finding:** MVP infrastructure is essentially FREE
+  - 1K users: $0/month (free tier)
+  - 10K users: $0/month (free tier)
+  - 100K users: $0–100/month (still within free FCM tier)
+- **Concurrent load:** Worst case at 100K users = 10K–20K concurrent pushes (FCM handles millions/day)
+- **Per-user cost:** Negligible at MVP scale (~$0/user/month)
+- **Bottleneck:** Not cost; it's retention impact (do notifications actually drive return?)
+- **Document:** NOTIFICATIONS_COLLAB_REVIEW.html Section 11.5 (Notification Volume Map)
+
+**4. Implementation Tickets Generated — T-083 THROUGH T-091 (9 tickets)**
+
+| Ticket | Title | Effort | Week | Status |
+|--------|-------|--------|------|--------|
+| T-083 | Setup Firebase Cloud Messaging for iOS | 6–8h | 1 | 🔲 Not Started |
+| T-084 | Build notification scheduling engine (cadence logic) | 8–10h | 1–2 | 🔲 Not Started |
+| T-085 | Build funnel stage logic (A, B1, B2, C, D) for user segmentation | 6–8h | 1 | 🔲 Not Started |
+| T-086 | Build Settings UI for notification preferences | 4–6h | 1 | 🔲 Not Started |
+| T-087 | Write generic notification templates (4–5 per stage) | 3–4h | 1–2 | 🔲 Not Started |
+| T-088 | Integrate analytics logging for notification events | 4–6h | 2 | 🔲 Not Started |
+| T-089 | Test notification delivery on real devices (iPhone) | 6–8h | 3 | 🔲 Not Started |
+| T-090 | Optimize send time based on user behavior | 4–6h | 3 | 🔲 Not Started |
+| T-091 | Polish edge cases, opt-out flows, error handling | 6–8h | 3–4 | 🔲 Not Started |
+
+**Total Effort:** ~100–150 hours (3–4 weeks)
+
+**Critical Path:** T-083 → T-085 → T-087 → T-089  
+**Blocking items:** T-089 must pass before beta; T-091 before public release
+
+**5. Detailed Handoff Documents Created**
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| `NOTIFICATIONS_IMPLEMENTATION_SPECS.md` | Detailed AC, technical specs, testing strategy for each ticket | ✅ Complete |
+| `NOTIFICATIONS_ENGINEERING_HANDOFF.md` | Engineering quick-start: overview, decisions, risks, success criteria, questions | ✅ Complete |
+| `TICKETS.csv` | Updated with T-083–T-091 + effort estimates, dependencies, notes | ✅ Complete |
+
+### Key Decisions Finalized
+
+1. **MVP Strategy:** Generic (non-personalized) activity-based notifications only; topic-aware deferred to Post-MVP
+2. **Cadence:** Sparse (1–2/month per user); auto-suppression after 3 no-clicks
+3. **Permissions Model:** Opt-out (enabled by default; user disables in Settings or onboarding)
+4. **Tone:** Invitational + formation-centered ("How are you feeling?" not "3-day prayer streak!")
+5. **Privacy Model:** Server-side encryption (plaintext readable by Kell, protected from external theft)
+6. **Cost:** Infrastructure free at MVP scale (bottleneck is retention impact, not cost)
+
+### Dependencies & Blockers
+
+**Before T-083 starts:**
+- [ ] Pillar 0 (Onboarding) complete or in final sprint (onboarding step integration needed)
+- [ ] **Pillar 3 (Prayer/Dwelling) in beta and showing strong engagement** ← **HARD BLOCKER**
+- [ ] T-018/T-019 (Analytics) logging events for funnel segmentation
+- [ ] T-010 (SettingsView) exists; notification section can be added
+- [ ] Supabase backend team available for schema updates
+
+**Critical blocker:** Pillar 8 cannot ship until Pillar 3 is live and compelling. Notifications invite users back to pray; if prayer experience is weak, feature fails.
+
+### Files Modified/Created
+
+| File | Change | Status |
+|------|--------|--------|
+| `TICKETS.csv` | Added T-083–T-091 rows | ✅ Complete |
+| `NOTIFICATIONS_IMPLEMENTATION_SPECS.md` | Created (detailed technical specs) | ✅ Complete |
+| `NOTIFICATIONS_ENGINEERING_HANDOFF.md` | Created (engineering quick-start) | ✅ Complete |
+| `NOTIFICATIONS_COLLAB_REVIEW.html` (Section 5) | Updated D-stage from silence to weekly push | ✅ Complete |
+| `NOTIFICATIONS_COLLAB_REVIEW.html` (Section 6) | Updated encryption model to server-side | ✅ Complete |
+| `NOTIFICATIONS_COLLAB_REVIEW.html` (Section 8) | Updated privacy promise for server-side model | ✅ Complete |
+| `NOTIFICATIONS_COLLAB_REVIEW.html` (Section 11.5) | Created volume map with cost analysis | ✅ Complete |
+
+### Next Steps for Engineering
+
+1. **Sprint Planning:** Engineering lead reviews and confirms T-083–T-091 effort estimates
+2. **Resource Allocation:** Assign tickets (suggested: 2 engineers, 3–4 weeks)
+3. **T-089 Scheduling:** Plan real device testing (week 3)
+4. **Metrics Dashboard:** Set up tracking for delivery rate, CTR, D7 retention, opt-out rate
+5. **Pillar 3 Dependency:** Confirm Pillar 3 is in beta and compelling before T-083 kickoff
 
 ---
 

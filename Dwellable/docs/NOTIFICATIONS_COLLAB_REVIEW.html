@@ -584,171 +584,108 @@
 
     <hr class="divider">
 
-    <!-- ── STAGE A0 ───────────────────────────────── -->
-    <h3 class="sub-title">Stage A0 — Onboarded, incomplete setup <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
-    <p><strong>Phase:</strong> MVP</p>
-    <p><strong>Condition:</strong> Account partially created — started onboarding but did not complete (intent, support style, or theological framework not captured)</p>
-    <p><strong>Why:</strong> Recover the install. They showed intent (downloaded, started) but didn't finish. Goal is not to pressure completion — it's to remind them why they came and make re-entry frictionless.</p>
-    <p><strong>When to fire:</strong> Day 2 after install if onboarding is incomplete (push, 1x). On re-open (in-app, pick up where they left off).</p>
-    <p><strong>Cool-off:</strong> 1 push max. After Day 7 with no completion, stop all outbound — await organic return.</p>
-    <h4 class="sub-sub-title">Push</h4>
+    <h3 class="sub-title">Message Variants by Stage</h3>
+    <p><em>Conditions, triggers, cool-offs, and delivery windows are detailed in the Quick Reference table above. This section shows the message variants for each stage (organized by Push and In-App channels).</em></p>
+
+    <h4 class="sub-sub-title">Stage A0 — Onboarded, incomplete setup</h4>
+    <p><strong>Push:</strong></p>
     <ul>
       <li>"You started something. Finish setting up so we can meet you where you are."</li>
       <li>"Your Dwellable profile is almost ready — a few steps to make it yours."</li>
     </ul>
-    <h4 class="sub-sub-title">In-App</h4>
-    <p><strong>Placement:</strong> First screen on first open — before onboarding asks anything. Then resumes onboarding. Dismiss: onboarding completed.</p>
+    <p><strong>In-App</strong> (First screen on first open):</p>
     <ul>
       <li>"You're here. That took something. This space is yours."</li>
       <li>"Welcome back. Let's finish getting you set up." <em>(re-open)</em></li>
     </ul>
 
-    <hr class="divider">
-
-    <!-- ── STAGE A ───────────────────────────────── -->
-    <h3 class="sub-title">Stage A — Onboarded, no captures yet <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
-    <p><strong>Phase:</strong> MVP</p>
-    <p><strong>Condition:</strong> Onboarding complete, 0 moments captured</p>
-    <p><strong>Why:</strong> Drive the first capture — the first meaningful investment. Until someone captures, nothing else in the product has context to work with.</p>
-    <p><strong>When to fire:</strong> Day 3 with no capture (push, 1x). Create tab empty state surfaces Day 1 (in-app).</p>
-    <p><strong>Cool-off:</strong> 1 push total before first capture. Suppress all push after first capture is made. AI personalization of the first in-app prompt is MVP (not Post-MVP).</p>
-    <h4 class="sub-sub-title">Push</h4>
+    <h4 class="sub-sub-title">Stage A — Onboarded, no captures yet</h4>
+    <p><strong>Push:</strong></p>
     <ul>
       <li>"Ready to capture what's on your heart?"</li>
       <li>"What's something you'd like to remember from this week?"</li>
       <li>"Your voice is worth capturing."</li>
     </ul>
-    <h4 class="sub-sub-title">In-App</h4>
-    <p><strong>Placement:</strong> Create tab empty state (Day 1). Dismiss: first capture made.</p>
+    <p><strong>In-App</strong> (Create tab empty state):</p>
     <ul>
       <li>"Start by capturing a moment — a thought, a feeling, something that happened."</li>
     </ul>
 
-    <hr class="divider">
-
-    <!-- ── STAGE B1 ───────────────────────────────── -->
-    <h3 class="sub-title">Stage B1 — Captured, no dwelling <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
-    <p><strong>Phase:</strong> MVP</p>
-    <p><strong>Condition:</strong> Any capture that exits without prayer — fires after every unprayed capture, not just the first</p>
-    <p><strong>Why:</strong> Prayer is invited after every capture. The emotional context is always live right after a moment is captured — that window should never close without an invitation.</p>
-    <p><strong>When to fire:</strong> Same evening or next morning after any capture without prayer (push, within ~12 hours). Weekly cadence continues until prayer is recorded.</p>
-    <p><strong>Cool-off:</strong> Push + in-app. If user responds to one, suppress the other. Weekly push at 8am (dweller's time zone) — at most 1 push/week regardless of capture volume (prolific capturers don't get multiple weekly pushes). After 4 no-clicks, expire. If they click but don't pray, continue weekly cadence.</p>
-    <h4 class="sub-sub-title">Push</h4>
+    <h4 class="sub-sub-title">Stage B1 — Captured, no dwelling</h4>
+    <p><strong>Push:</strong></p>
     <ul>
       <li>"You captured something earlier. When you're ready, would you like to pray on it?"</li>
       <li>"How has your heart been this week? Anything to reflect on?"</li>
       <li>"Your moments are waiting. Ready to go deeper?"</li>
     </ul>
-    <h4 class="sub-sub-title">In-App</h4>
-    <p><strong>Placement:</strong> Immediately after capture, before exit. Today tab moment card on return. Dismiss: prayer started or prompt response submitted.</p>
+    <p><strong>In-App</strong> (Immediately after capture or in Today tab):</p>
     <ul>
       <li>"Would you like to take a moment to pray on what you just shared?"</li>
       <li>"You captured this — ready to pray on it?"</li>
     </ul>
 
-    <hr class="divider">
-
-    <!-- ── STAGE B2 ───────────────────────────────── -->
-    <h3 class="sub-title">Stage B2 — Captured, responded to prompt, no prayer <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
-    <p><strong>Phase:</strong> MVP</p>
-    <p><strong>Condition:</strong> ≥1 moment captured, ≥1 prompt response, 0 prayers recorded</p>
-    <p><strong>Why:</strong> They're already dwelling — responding to a prompt IS a form of dwelling. Tone is softer, urgency is lower. We're not pulling them in; we're inviting the next step.</p>
-    <p><strong>When to fire:</strong> Same evening or next morning after capture with no prayer (push, within ~12 hours). Weekly cadence continues until prayer is recorded. Today tab contextual on return (in-app).</p>
-    <p><strong>Cool-off:</strong> Push + in-app. If user responds to one, suppress the other. Weekly push at 8am (dweller's time zone). After 4 no-clicks, expire. If they click but don't pray, continue weekly cadence. <em>(Matches B1 cadence — B2 differs only in tone and message variants, not delivery rhythm.)</em></p>
-    <h4 class="sub-sub-title">Push</h4>
+    <h4 class="sub-sub-title">Stage B2 — Captured, responded to prompt, no prayer</h4>
+    <p><strong>Push</strong> (Softer tone; they're already dwelling via prompt response):</p>
     <ul>
       <li>"You captured something earlier. When you're ready, would you like to pray on it?"</li>
       <li>"Your moments have depth. Ready to bring them to prayer?"</li>
       <li>"You've been reflecting. How's your heart in prayer?"</li>
     </ul>
-    <h4 class="sub-sub-title">In-App</h4>
-    <p><strong>Placement:</strong> Today tab, below recent moment. Dismiss: prayer started.</p>
+    <p><strong>In-App</strong> (Today tab, below recent moment):</p>
     <ul>
       <li>"You've reflected on this — want to pray on it too?"</li>
     </ul>
 
-    <hr class="divider">
-
-    <!-- ── STAGE C1 ───────────────────────────────── -->
-    <h3 class="sub-title">Stage C1 — First prayer, no journal return (L5a) <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
-    <p><strong>Phase:</strong> MVP</p>
-    <p><strong>Condition:</strong> ≥1 prayer recorded; has not returned to a journal entry; active within last 14 days</p>
-    <p><strong>Why:</strong> They prayed but haven't seen what came from it. A journal entry was created after prayer — they may not know it's there, or haven't felt the pull to return. Goal: surface the connection between the moment they prayed and the artifact it generated.</p>
-    <p><strong>When to fire:</strong> Immediately after prayer closes (in-app — show the journal card before they exit). Push: weekly cadence at 8am (dweller's time zone) starting 7 days after prayer with no journal return.</p>
-    <p><strong>Cool-off:</strong> In-app: once per prayer session. Push: 1/week at 8am (dweller's time zone). Stop after 2 ignores per C1 notif.</p>
-    <h4 class="sub-sub-title">Push</h4>
-    <p>Three message variants — rotate or select contextually based on user data:</p>
+    <h4 class="sub-sub-title">Stage C1 — Prayed, no journal return</h4>
+    <p><strong>Push</strong> (Three variants — rotate or select based on recent activity):</p>
     <ul>
-      <li><strong>Brings dweller to journal:</strong> "You shared your heart earlier, and here's how we honored it..."  <em>(Surfaces the journal card; on first open, walks the user through journal features — edit, add context, reflect, pray.)</em></li>
-      <li><strong>Brings dweller to capture:</strong> "How have you been feeling since prayer?"</li>
-      <li><strong>Brings dweller to capture:</strong> "Where's your heart at regarding {subject}?"  <em>(Personalized variant — requires readable subject metadata; falls back to generic prompt if unavailable.)</em></li>
+      <li><strong>To journal:</strong> "You shared your heart earlier, and here's how we honored it..." <em>(Surfaces journal card with FTUE orientation on first open)</em></li>
+      <li><strong>To capture:</strong> "How have you been feeling since prayer?"</li>
+      <li><strong>To capture (personalized):</strong> "Where's your heart at regarding {subject}?" <em>(Requires readable metadata; falls back to generic)</em></li>
     </ul>
-    <h4 class="sub-sub-title">In-App</h4>
-    <p><strong>Placement:</strong> Immediately after prayer closes, before exiting prayer flow. Shows journal card generated from that prayer. Dismiss: journal entry opened.</p>
-    <p><strong>First-time experience:</strong> When the journal card surfaces for the first time, include a brief orientation — "here's what you can do with this." Show the available actions (edit, add context, reflect, pray). FTUE only; ongoing surfacing is the entry itself.</p>
+    <p><strong>In-App</strong> (Immediately after prayer closes):</p>
     <ul>
       <li>"Your moment was written down. Want to see it?"</li>
       <li>"Here's what came from what you just brought to God." [surfaces journal card]</li>
     </ul>
 
-    <hr class="divider">
-
-    <!-- ── STAGE C2 ───────────────────────────────── -->
-    <h3 class="sub-title">Stage C2 — Journal return, no prayer (L5b) <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
-    <p><strong>Phase:</strong> MVP</p>
-    <p><strong>Condition:</strong> Has returned to ≥1 journal entry; 0 prayers ever recorded</p>
-    <p><strong>Why:</strong> They found their way to the journal (likely through capturing and AI synthesis) but haven't discovered prayer. This is the journal-first path. Goal: invite prayer as the natural next step — not as something new, but as something that belongs alongside what they're already doing.</p>
-    <p><strong>When to fire:</strong> After 2nd+ journal return with no prayer (in-app nudge below journal body). Push: 5–7 days after last journal activity with no prayer recorded.</p>
-    <p><strong>Cool-off:</strong> 1 push max in first month. Stop outbound if no action in 3 weeks — await organic return. In-app: shows once per journal entry session, no stacking. <em>(Sparser than B1/B2 — they've already found a dwelling path; prayer is the next step, not an urgent one.)</em></p>
-    <h4 class="sub-sub-title">Push</h4>
+    <h4 class="sub-sub-title">Stage C2 — Journal return, no prayer</h4>
+    <p><strong>Push:</strong></p>
     <ul>
       <li>"You've been reflecting. Ready to bring it to prayer?"</li>
       <li>"Your journal has depth. Prayer is the next step, when you're ready."</li>
     </ul>
-    <h4 class="sub-sub-title">In-App</h4>
-    <p><strong>Placement:</strong> After reading a journal entry — below the journal body. Dismiss: prayer initiated.</p>
+    <p><strong>In-App</strong> (Below journal body after reading):</p>
     <ul>
       <li>"Want to pray on what you just read?"</li>
       <li>"This moment has been captured and reflected on. Prayer is the next step."</li>
     </ul>
 
-    <hr class="divider">
-
-    <!-- ── STAGE C3 ───────────────────────────────── -->
-    <h3 class="sub-title">Stage C3 — Prayed and returned to journal, now quiet <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
-    <p><strong>Phase:</strong> MVP</p>
-    <p><strong>Condition:</strong> ≥1 prayer AND ≥1 journal return recorded; no dwelling of any kind in 14+ days</p>
-    <p><strong>Why:</strong> They've completed the full loop. They know what dwelling looks like. Re-invite gently — not with instruction or explanation, just with presence. The tone is familiar, not pedagogical.</p>
-    <p><strong>When to fire:</strong> 14+ days since last dwelling act (push). Today tab on return (in-app, oldest unprayed moment surfaced).</p>
-    <p><strong>Cool-off:</strong> 1x/month. Reduce to 1x/6 weeks after 3 no-clicks.</p>
-    <h4 class="sub-sub-title">Push</h4>
+    <h4 class="sub-sub-title">Stage C3 — Quiet 14+ days</h4>
+    <p><strong>Push:</strong></p>
     <ul>
       <li>"It's been a little while. How's your heart?"</li>
       <li>"You have moments worth returning to. Ready to dwell?"</li>
       <li>"Whenever you're ready, your moments are here."</li>
     </ul>
-    <h4 class="sub-sub-title">In-App</h4>
-    <p><strong>Placement:</strong> Today tab, top of feed — oldest unprayed moment surfaced. Dismiss: any dwelling act.</p>
+    <p><strong>In-App</strong> (Today tab, oldest unprayed moment surfaced):</p>
     <ul>
       <li>"Whenever you're ready."</li>
     </ul>
 
-    <hr class="divider">
-
-    <!-- ── STAGE D ───────────────────────────────── -->
-    <h3 class="sub-title">Stage D — Actively dwelling <span style="color:#888;font-weight:400;font-size:13px;">— MVP: silence • Post-MVP: FI-triggered</span></h3>
-    <p><strong>Phase:</strong> MVP — silence (0 push). Post-MVP — Formation Intelligence-triggered push, 0–1 per quarter max.</p>
-    <p><strong>Condition:</strong> Prayer, prompt response, or journal return within the past 7–10 days</p>
-    <p><strong>Why:</strong> Don't interrupt what's working. The product experience is the nudge. Stay mostly silent — presence over prompting.</p>
-    <p><strong>When to fire:</strong> MVP: no push. Post-MVP: rare high-signal Formation Intelligence event only. In-app: contextual prompts within prayer flow only.</p>
-    <p><strong>Cool-off:</strong> MVP: 0 push. Post-MVP: 0–1 per quarter maximum.</p>
-    <h4 class="sub-sub-title">Push</h4>
-    <p>MVP: none. Post-MVP only:</p>
+    <h4 class="sub-sub-title">Stage D — Actively dwelling</h4>
+    <p><strong>Push — MVP (Activity-Based)</strong></p>
+    <p>Two locked variants — alternate weekly or select based on recent activity:</p>
     <ul>
+      <li><strong>Invite to capture:</strong> "Hey, how are you feeling since that prayer?" → CTA: "Let's capture what you're processing"</li>
+      <li><strong>Invite to prayer:</strong> "A prayer from a few days ago — ready to go deeper?" → CTA: "Let's pray about what you've processed"</li>
+    </ul>
+    <p><em>References activity type only (prayer/processing), not specific content. Gathers signal on which re-entry point users prefer.</em></p>
+    <p><strong>Push — Post-MVP (Topic-Aware)</strong></p>
+    <ul>
+      <li>"You've been reflecting on [topic]. How's that going? Ready to go deeper in prayer?"</li>
       <li>"Something keeps showing up in your moments — want to explore it?"</li>
     </ul>
-    <h4 class="sub-sub-title">In-App</h4>
-    <p><strong>Placement:</strong> Contextual prompts within prayer flow only. Post-MVP: Formation Intelligence insights surfaced on Today tab.</p>
 
     <hr class="divider">
 
@@ -779,52 +716,53 @@
 
   <!-- 6. Personalization Rules -->
   <div class="doc-section" id="section-personalization">
-    <h2 class="section-title">6. Personalization Rules (Metadata-Based, Due to E2E Encryption)</h2>
-    <p><strong>NOTE:</strong> Due to Pillar 2 (E2E Encryption), user moments are encrypted client-side. We cannot read plaintext. Therefore, notifications are personalized using <strong>metadata only</strong>, not moment content.</p>
+    <h2 class="section-title">6. Personalization Rules (Plaintext Readable, Server-Side Encryption)</h2>
+    <p><strong>NOTE:</strong> Moments are encrypted server-side (protected against external theft/breach). Dwellable can read plaintext for personalization, synthesis, and Formation Intelligence. Users trust Dwellable with their moments; encryption protects against hackers, not against Dwellable access.</p>
 
-    <h3 class="sub-title">What we CAN personalize (metadata)</h3>
+    <h3 class="sub-title">What we CAN personalize</h3>
     <ul>
       <li>✓ Timing (when user typically opens app)</li>
       <li>✓ Dwelling history (prayer vs. prompt preference)</li>
       <li>✓ Funnel stage (A–D)</li>
       <li>✓ Engagement frequency (# of moments captured, # of prayers, # of prompt responses)</li>
+      <li>✓ Moment themes ("You captured about faith") — plaintext readable</li>
+      <li>✓ Specific moment content (reference what user wrote) — plaintext readable</li>
     </ul>
 
-    <h3 class="sub-title">What we CANNOT personalize (encrypted)</h3>
+    <h3 class="sub-title">MVP Personalization Approach</h3>
     <ul>
-      <li>✗ Moment themes ("You captured about faith")</li>
-      <li>✗ Specific moment content (reference to what user wrote)</li>
+      <li><strong>A0–C3:</strong> Metadata + activity-type (funnel stage, engagement frequency)</li>
+      <li><strong>D (MVP):</strong> Activity-type references ("that prayer," "what you've processed") — simple, low-cost</li>
+      <li><strong>D (Post-MVP):</strong> Topic-aware ("You shared about faith. How's that going?") — requires plaintext processing, higher cost</li>
     </ul>
 
-    <h3 class="sub-title">Generic Fallbacks (Always Available)</h3>
+    <h3 class="sub-title">Privacy Transparency</h3>
     <ul>
-      <li>"How has your heart been this week? Anything to reflect on?"</li>
-      <li>"You have unresponded moments. Ready to dwell?"</li>
-      <li>"Your moments are waiting."</li>
+      <li>Moments are encrypted against external theft</li>
+      <li>Dwellable reads plaintext for personalization, synthesis, and Formation Intelligence</li>
+      <li>No third-party access (Google, OpenAI) to plaintext without explicit consent</li>
+      <li>Users trust Dwellable with their spiritual moments; this is the design choice that honors that trust</li>
     </ul>
-
-    <h3 class="sub-title">Open Item — Encryption Degree (Blocked)</h3>
-    <p><strong>🔲 TBD — blocked by LLM tournament outcome.</strong> Encryption/privacy/security will exist, but the degree is unresolved:</p>
-    <ul>
-      <li><strong>If server-side LLM (Gemini):</strong> We may carve out a readable metadata field (e.g. last topic/theme) to enable richer personalization. This relaxes E2E for that specific field. Explicit decision required.</li>
-      <li><strong>If on-device LLM (Mistral):</strong> Full E2E maintained. Rich personalization possible without server access to plaintext.</li>
-    </ul>
-    <p>Until the LLM tournament resolves, Section 6 remains metadata-only. The degree question opens after that decision.</p>
   </div>
 
 
   <!-- 8. Privacy -->
   <div class="doc-section" id="section-privacy">
-    <h2 class="section-title">8. Privacy &amp; E2E Encryption Implications</h2>
-    <p><strong>Privacy Promise (unchanged):</strong></p>
-    <p><em>"Your responses are end-to-end encrypted. We never see your moments."</em></p>
+    <h2 class="section-title">8. Privacy &amp; Server-Side Encryption</h2>
+    <p><strong>Privacy Promise (revised):</strong></p>
+    <p><em>"Your responses are encrypted. Only you and Dwellable can see your moments. We protect them from hackers and external theft."</em></p>
 
     <h3 class="sub-title">Notification Transparency</h3>
     <ul>
-      <li>Notifications are generated using metadata (timing, engagement patterns, segment)</li>
-      <li>Moments are encrypted; notifications do not reference plaintext content</li>
+      <li>MVP: Notifications reference activity type (prayer, processing) and engagement patterns</li>
+      <li>Post-MVP: Notifications reference themes and content from plaintext (e.g., "You shared about faith")</li>
+      <li>All personalization happens server-side with plaintext access</li>
+      <li>No third-party access to plaintext (Google, OpenAI) without explicit user consent</li>
       <li>Users can disable notifications entirely in settings</li>
     </ul>
+
+    <h3 class="sub-title">Trust Model</h3>
+    <p>User research from Phase 1 beta: Users care more about "Kell won't read my diary" than "OpenAI won't read my diary." Encryption protects against external theft; privacy promise reflects that we honor their trust by not exposing moments to third parties without consent.</p>
   </div>
 
   <!-- 9. Notification Examples -->
@@ -852,10 +790,26 @@ Action: Tap → Opens Today tab</div>
 Body: "You have moments worth returning to. Ready to dwell?"
 Action: Tap → Opens Today tab</div>
 
-    <h3 class="sub-title">Active Dweller (Rare, High-Signal) <span style="color:#888;font-weight:400;font-size:13px;">— Post-MVP</span></h3>
-    <div class="notif-example">Title: "You've been reflecting deeply on faith."
-Body: "Here's a pattern in your moments: growth through struggle.
-       Want to explore more?"
+    <h3 class="sub-title">Stage D — Actively Dwelling, Weekly Check-In <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
+    <div class="notif-example">Variant 1 — Invite to capture:
+Title: "Hey, how are you feeling since that prayer?"
+Body: "Let's capture what you're processing."
+Action: Tap → Opens Create tab
+
+Variant 2 — Invite to prayer:
+Title: "A prayer from a few days ago — ready to go deeper?"
+Body: "Let's pray about what you've processed."
+Action: Tap → Opens Today tab (shows recent captures)</div>
+
+    <h3 class="sub-title">Active Dweller — Topic-Aware Check-In <span style="color:#888;font-weight:400;font-size:13px;">— Post-MVP</span></h3>
+    <div class="notif-example">Title: "You've been reflecting on faith."
+Body: "How's that going? Ready to go deeper in prayer?"
+Action: Tap → Opens Today tab
+
+OR
+
+Title: "Something keeps showing up in your moments."
+Body: "Here's a pattern: growth through struggle. Want to explore it?"
 Action: Tap → Opens Insights tab</div>
   </div>
 
@@ -899,6 +853,65 @@ Action: Tap → Opens Insights tab</div>
         <tr><td><strong>Churn impact</strong></td><td>Change in churn rate before/after notifications</td><td>No increase</td></tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- 11.5. Notification Volume Map -->
+  <div class="doc-section" id="section-volume-map">
+    <h2 class="section-title">11.5. Notification Volume Map (MVP Scale &amp; Cost)</h2>
+
+    <h3 class="sub-title">Max Sends Per Stage Per Month</h3>
+    <table class="doc-table">
+      <thead><tr><th>Stage</th><th>Trigger Type</th><th>Max Sends/Month</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><strong>A0</strong></td><td>Incomplete onboarding</td><td>1</td><td>Day 2 only; stops at day 7</td></tr>
+        <tr><td><strong>A</strong></td><td>No captures yet</td><td>1</td><td>Day 3 only; stops after first capture</td></tr>
+        <tr><td><strong>B1/B2</strong></td><td>Unprayed capture</td><td>4</td><td>1/week max; stops after 4 no-clicks or prayer</td></tr>
+        <tr><td><strong>C1</strong></td><td>Prayed, no journal return</td><td>4</td><td>1/week starting day 7; stops after 2 ignores or journal return</td></tr>
+        <tr><td><strong>C2</strong></td><td>Journaled, no prayer</td><td>1</td><td>Max 1 in first month; stops at day 21 if no action</td></tr>
+        <tr><td><strong>C3</strong></td><td>Quiet 14+ days</td><td>1</td><td>1/month; reduces to 1/6 weeks after 3 no-clicks</td></tr>
+        <tr><td><strong>D</strong></td><td>Actively dwelling</td><td>4</td><td>1/week; MVP activity-based, Post-MVP topic-aware</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">Typical User Paths &amp; Push Volume</h3>
+    <table class="doc-table">
+      <thead><tr><th>User Journey Path</th><th>Duration</th><th>Total Pushes</th><th>Scenario</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Complete funnel → Active (D)</strong></td><td>28 days</td><td>8–12</td><td>Captures daily, prays weekly, journals, stays engaged</td></tr>
+        <tr><td><strong>Stalled at B1 (no prayer)</strong></td><td>30 days</td><td>6</td><td>Captures but never prays; B1 weekly for 4 weeks + A pushes</td></tr>
+        <tr><td><strong>Stalled at C1 (prayed, no journal)</strong></td><td>30 days</td><td>5–7</td><td>Prays but doesn't return to journal; C1 weekly x 3</td></tr>
+        <tr><td><strong>Drops after onboarding (A0/A)</strong></td><td>7 days</td><td>2</td><td>A0 push day 2, A push day 3; no further engagement</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">Worst-Case Concurrent Notifications</h3>
+    <ul>
+      <li><strong>Per single user:</strong> 1 push per weekly send window (e.g., Thursday 8am). No stacking — if user misses a push, next push replaces it.</li>
+      <li><strong>Global (at 10K users):</strong> Estimated 1K–2K concurrent pushes on any given day (out of 10K total users, ~20% in active notification-eligible stages). FCM queue handles this without issue.</li>
+      <li><strong>Global (at 100K users):</strong> Estimated 10K–20K concurrent pushes. Still well within FCM capacity (handles millions/day).</li>
+    </ul>
+
+    <h3 class="sub-title">Cost Analysis (MVP + Year 1)</h3>
+    <table class="doc-table">
+      <thead><tr><th>Scale</th><th>Pushes/Month</th><th>FCM Cost</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1K users</strong></td><td>2K–4K</td><td>$0</td><td>Free tier (FCM includes millions of messages)</td></tr>
+        <tr><td><strong>10K users</strong></td><td>20K–40K</td><td>$0</td><td>Free tier</td></tr>
+        <tr><td><strong>100K users</strong></td><td>200K–400K</td><td>$0–100/mo</td><td>Potentially enters paid tier (~$0.005 per message if needed, unlikely MVP)</td></tr>
+        <tr><td><strong>Year 1 (typical path 1K→10K)</strong></td><td>Avg 2K–20K</td><td>$0</td><td>Stays within free tier</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">Per-User Cost at Different Scales</h3>
+    <ul>
+      <li><strong>1K active users:</strong> ~$0/user/month (free tier)</li>
+      <li><strong>10K active users:</strong> ~$0/user/month (free tier)</li>
+      <li><strong>100K active users:</strong> ~$0.01–0.05/user/month (if paid tier needed; current estimate: unlikely)</li>
+    </ul>
+
+    <h3 class="sub-title">Summary</h3>
+    <p><strong>MVP notification infrastructure is essentially free.</strong> FCM's free tier covers millions of messages monthly. Even at 100K users with 4 pushes/user/month, cost stays negligible. No cost barrier to MVP launch or year-1 scaling.</p>
+    <p><strong>Bottleneck is not cost; it's ensuring notifications drive measurable retention impact.</strong> See Section 16 (Tests) for measurement plan.</p>
   </div>
 
   <!-- 12. Implementation -->

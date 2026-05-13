@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Code Tools — Workflow Enhancers</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #222;
+      --border: #2e2e2e;
+      --text: #e8e8e8;
+      --muted: #888;
+      --gold: #C9B27C;
+      --gold-dim: rgba(201,178,124,0.12);
+      --purple: #9b72f0;
+      --purple-dim: rgba(155,114,240,0.12);
+      --green: #4ade80;
+      --green-dim: rgba(74,222,128,0.1);
+      --blue: #60a5fa;
+      --blue-dim: rgba(96,165,250,0.1);
+      --red: #f87171;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── HERO ──────────────────────────────────── */
+    .hero {
+      padding: 80px 40px 60px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 span { color: var(--gold); }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 600px;
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .hero-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .hero-stat-num {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    .hero-stat-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── PATTERN CALLOUT ───────────────────────── */
+    .pattern-callout {
+      max-width: 900px;
+      margin: 48px auto;
+      padding: 0 40px;
+    }
+
+    .callout-box {
+      background: var(--gold-dim);
+      border: 1px solid rgba(201,178,124,0.25);
+      border-radius: 12px;
+      padding: 28px 32px;
+    }
+
+    .callout-box h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .callout-box p {
+      font-size: 14px;
+      color: #ccc;
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
+    .callout-box p:last-child { margin-bottom: 0; }
+
+    .callout-box strong { color: var(--gold); }
+
+    /* ── SECTION ───────────────────────────────── */
+    .section {
+      max-width: 900px;
+      margin: 0 auto 56px;
+      padding: 0 40px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .section-tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .tag-shareable { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+    .tag-collab    { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(155,114,240,0.2); }
+    .tag-reference { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+    .tag-review    { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(201,178,124,0.2); }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .section-desc {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    /* ── TOOL GRID ─────────────────────────────── */
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.15s, background 0.15s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tool-card:hover {
+      border-color: var(--gold);
+      background: var(--surface2);
+    }
+
+    .tool-card:hover .tool-arrow { opacity: 1; transform: translateX(0); }
+
+    .tool-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .tool-icon {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .tool-arrow {
+      font-size: 16px;
+      color: var(--gold);
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: opacity 0.15s, transform 0.15s;
+    }
+
+    .tool-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+    }
+
+    .tool-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .tool-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .tool-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .badge-shareable { background: var(--green-dim); color: var(--green); }
+    .badge-collab    { background: var(--purple-dim); color: var(--purple); }
+    .badge-reference { background: var(--blue-dim); color: var(--blue); }
+    .badge-review    { background: var(--gold-dim); color: var(--gold); }
+    .badge-specific  { background: rgba(136,136,136,0.12); color: var(--muted); }
+
+    .tool-file {
+      font-size: 10px;
+      color: #555;
+      font-family: 'SF Mono', monospace;
+      margin-left: auto;
+    }
+
+    /* ── FULL-WIDTH TOOL ───────────────────────── */
+    .tool-card-wide {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .tool-card-wide .tool-icon { font-size: 28px; flex-shrink: 0; }
+    .tool-card-wide .tool-body { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .tool-card-wide .tool-name { font-size: 16px; }
+    .tool-card-wide .tool-desc { font-size: 13px; }
+
+    /* ── HOW IT WORKS ──────────────────────────── */
+    .how-it-works {
+      max-width: 900px;
+      margin: 0 auto 56px;
+      padding: 0 40px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .step-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .step-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .step-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── DIVIDER ───────────────────────────────── */
+    .divider {
+      max-width: 900px;
+      margin: 0 auto 40px;
+      padding: 0 40px;
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── FOOTER ────────────────────────────────── */
+    footer {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 40px 60px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    footer strong { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">Claude Code — Workflow Tools</div>
+  <h1>Tools built to work<br>better with <span>Claude</span></h1>
+  <p>A collection of HTML utilities built during product development sessions to improve how humans and AI agents collaborate, review, and make decisions together.</p>
+  <div class="hero-meta">
+    <div class="hero-stat">
+      <div class="hero-stat-num">26</div>
+      <div class="hero-stat-label">Tools built</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">4</div>
+      <div class="hero-stat-label">Shareable patterns</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">8</div>
+      <div class="hero-stat-label">Pillars covered</div>
+    </div>
+  </div>
+</div>
+
+<!-- PATTERN CALLOUT -->
+<div class="pattern-callout">
+  <div class="callout-box">
+    <h2>The Meta Pattern</h2>
+    <p>Every tool here follows the same principle: <strong>Claude builds the interactive shell, you fill in the decisions.</strong> The HTML becomes a shared workspace — structured enough that Claude understands what you're reviewing, flexible enough that you can annotate, export, and iterate.</p>
+    <p>The most powerful tools below (marked <strong>Shareable</strong>) are not Dwellable-specific. They're reusable patterns any founder, PM, or engineer can adapt to work better with Claude.</p>
+  </div>
+</div>
+
+<!-- SHAREABLE TOOLS -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-tag tag-shareable">Shareable with Others</span>
+    <div class="section-title">General-Purpose Patterns</div>
+  </div>
+  <p class="section-desc">These tools are not Dwellable-specific. Anyone working with Claude can adapt them to their own product, project, or workflow.</p>
+
+  <div class="tool-grid">
+
+    <a class="tool-card tool-card-wide" href="NOTIFICATIONS_COLLAB_REVIEW.html" target="_blank">
+      <div class="tool-icon">💬</div>
+      <div class="tool-body">
+        <div class="tool-card-top">
+          <div class="tool-name">Collab Review Doc</div>
+          <div class="tool-arrow">→</div>
+        </div>
+        <div class="tool-desc">Highlight any text in a strategy doc, add a comment, export — and Claude responds inline. Gold for owner, purple for agent. Closest thing to Google Docs with an AI collaborator baked in. Works on any markdown-converted strategy doc.</div>
+        <div class="tool-footer">
+          <span class="tool-badge badge-shareable">Shareable</span>
+          <span class="tool-badge badge-collab">Collab Loop</span>
+          <span class="tool-file">NOTIFICATIONS_COLLAB_REVIEW.html</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="tool-card" href="FORMATION_INTELLIGENCE_LENS_REVIEW.html" target="_blank">
+      <div class="tool-card-top">
+        <div class="tool-icon">🔬</div>
+        <div class="tool-arrow">→</div>
+      </div>
+      <div class="tool-name">MVP vs Post-MVP Review</div>
+      <div class="tool-desc">Walk through every pillar/feature and define what you're capturing now (MVP) vs using later (Post-MVP). Exportable as markdown. Keeps scope creep out of the room.</div>
+      <div class="tool-footer">
+        <span class="tool-badge badge-shareable">Shareable</span>
+        <span class="tool-file">FORMATION_INTELLIGENCE_LENS_REVIEW.html</span>
+      </div>
+    </a>
+
+    <a class="tool-card" href="NOTIFICATIONS_STRATEGY_QUESTIONNAIRE.html" target="_blank">
+      <div class="tool-card-top">
+        <div class="tool-icon">📋</div>
+        <div class="tool-arrow">→</div>
+      </div>
+      <div class="tool-name">Strategy Questionnaire</div>
+      <div class="tool-desc">10 targeted questions on a strategic topic. Auto-saves responses to localStorage. Export all answers as a timestamped .txt for Claude to process and synthesize into a locked strategy doc.</div>
+      <div class="tool-footer">
+        <span class="tool-badge badge-shareable">Shareable</span>
+        <span class="tool-file">NOTIFICATIONS_STRATEGY_QUESTIONNAIRE.html</span>
+      </div>
+    </a>
+
+    <a class="tool-card" href="T-060_Phase2_Themes_1Pager.html" target="_blank">
+      <div class="tool-card-top">
+        <div class="tool-icon">📄</div>
+        <div class="tool-arrow">→</div>
+      </div>
+      <div class="tool-name">Strategic 1-Pager</div>
+      <div class="tool-desc">A clean, shareable single-page overview of a theme, initiative, or phase. Designed to be handed to stakeholders or teammates without needing context from the full project.</div>
+      <div class="tool-footer">
+        <span class="tool-badge badge-shareable">Shareable</span>
+        <span class="tool-file">T-060_Phase2_Themes_1Pager.html</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- HOW THE COLLAB LOOP WORKS -->
+<div class="how-it-works">
+  <div class="section-header">
+    <span class="section-tag tag-collab">Collab Loop</span>
+    <div class="section-title">How the Review → Respond Loop Works</div>
+  </div>
+  <p class="section-desc">The Collab Review Doc introduces a new pattern for working with Claude on strategy and design.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">STEP 01</div>
+      <div class="step-title">Open the doc in Safari</div>
+      <div class="step-desc">The strategy doc is pre-loaded as readable HTML. Read through it normally.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 02</div>
+      <div class="step-title">Highlight + Comment</div>
+      <div class="step-desc">Select any text. A "Add Comment" button appears. Type your question, challenge, or note. It saves automatically.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 03</div>
+      <div class="step-title">Export Comments</div>
+      <div class="step-desc">Hit Export. It downloads a .txt with every comment, the text it's anchored to, and its section. Share this with Claude.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 04</div>
+      <div class="step-title">Claude responds</div>
+      <div class="step-desc">Claude reads the export, writes responses, and updates the HTML file directly — adding responses into the agentResponses object.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 05</div>
+      <div class="step-title">Refresh to see replies</div>
+      <div class="step-desc">Refresh the browser. Agent responses appear inline in purple below each of your comments. Loop repeats.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- DESIGN REVIEW TOOLS -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-tag tag-review">Design Reviews</span>
+    <div class="section-title">Pillar Review Forms</div>
+  </div>
+  <p class="section-desc">Interactive approve/needs-change forms for reviewing pillar designs with Claude. Each form covers happy paths, locked decisions, and tentative items.</p>
+
+  <div class="tool-grid">
+
+    <a class="tool-card" href="REVIEW_P7_FORMATION_INTELLIGENCE.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">🧠</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P7: Formation Intelligence Review</div>
+      <div class="tool-desc">5 happy paths — theme detection, pattern surfacing, and intelligence layer. Approve/needs-change for each path.</div>
+      <div class="tool-footer"><span class="tool-badge badge-review">Review Form</span><span class="tool-file">REVIEW_P7_FORMATION_INTELLIGENCE.html</span></div>
+    </a>
+
+    <a class="tool-card" href="REVIEW_P6_SEARCH.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">🔍</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P6: Search & Discovery Review</div>
+      <div class="tool-desc">6 happy paths — full-text search, filters, mood/theme browse, pinning. Interactive approve/reject with notes.</div>
+      <div class="tool-footer"><span class="tool-badge badge-review">Review Form</span><span class="tool-file">REVIEW_P6_SEARCH.html</span></div>
+    </a>
+
+    <a class="tool-card" href="REVIEW_P5_THE_JOURNAL.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">📓</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P5: The Journal Review</div>
+      <div class="tool-desc">Journal synthesis + dwelling place design. Happy path review with contextual notes.</div>
+      <div class="tool-footer"><span class="tool-badge badge-review">Review Form</span><span class="tool-file">REVIEW_P5_THE_JOURNAL.html</span></div>
+    </a>
+
+    <a class="tool-card" href="REVIEW_P5_EDITING.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">✏️</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P5: Editing Review</div>
+      <div class="tool-desc">Headline editing, tag customization, mood assignment. Approve/reject each editing path.</div>
+      <div class="tool-footer"><span class="tool-badge badge-review">Review Form</span><span class="tool-file">REVIEW_P5_EDITING.html</span></div>
+    </a>
+
+    <a class="tool-card" href="REVIEW_P5_CLARIFICATIONS.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">🧩</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P5: Design Clarifications</div>
+      <div class="tool-desc">Captures design decisions and open questions for P5. Structured for back-and-forth with Claude.</div>
+      <div class="tool-footer"><span class="tool-badge badge-review">Review Form</span><span class="tool-file">REVIEW_P5_CLARIFICATIONS.html</span></div>
+    </a>
+
+    <a class="tool-card" href="REVIEW_P5_RECOMMENDATIONS.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">✅</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P5: Recommendations</div>
+      <div class="tool-desc">Agent recommendations for P5 design — formatted for founder review and approval.</div>
+      <div class="tool-footer"><span class="tool-badge badge-review">Review Form</span><span class="tool-file">REVIEW_P5_RECOMMENDATIONS.html</span></div>
+    </a>
+
+    <a class="tool-card" href="P4_FORMATION_INTELLIGENCE_REVIEW.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">📖</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P4: Formation Intelligence Review</div>
+      <div class="tool-desc">Review how journal synthesis ties into the Formation Intelligence layer. MVP vs future signal decisions.</div>
+      <div class="tool-footer"><span class="tool-badge badge-review">Review Form</span><span class="tool-file">P4_FORMATION_INTELLIGENCE_REVIEW.html</span></div>
+    </a>
+
+    <a class="tool-card" href="P5_FORMATION_INTELLIGENCE_REVIEW.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">🗂️</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P5: Formation Intelligence Review</div>
+      <div class="tool-desc">Formation Intelligence layer for editing/ownership pillar. What signals are captured vs acted on.</div>
+      <div class="tool-footer"><span class="tool-badge badge-review">Review Form</span><span class="tool-file">P5_FORMATION_INTELLIGENCE_REVIEW.html</span></div>
+    </a>
+
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- REFERENCE DOCS -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-tag tag-reference">Reference</span>
+    <div class="section-title">Session Summaries &amp; Overviews</div>
+  </div>
+  <p class="section-desc">Snapshot docs generated at the end of each working session. Use these to get oriented quickly at the start of a new session or share context with teammates.</p>
+
+  <div class="tool-grid">
+
+    <a class="tool-card" href="FILE_STRUCTURE_AND_WORKFLOW.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">🗺️</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">File Structure &amp; Workflow</div>
+      <div class="tool-desc">How the Dwellable docs folder is organized and how to navigate the project with Claude.</div>
+      <div class="tool-footer"><span class="tool-badge badge-reference">Reference</span></div>
+    </a>
+
+    <a class="tool-card" href="P0_SESSION_SUMMARY.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">📌</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P0: Session Summary</div>
+      <div class="tool-desc">Onboarding session deliverables, decisions made, and next steps. Good model for what a session summary should contain.</div>
+      <div class="tool-footer"><span class="tool-badge badge-reference">Reference</span></div>
+    </a>
+
+    <a class="tool-card" href="PILLAR5_FINAL_SUMMARY.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">📌</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P5: Final Summary</div>
+      <div class="tool-desc">Full session wrap-up for the Journal pillar. Locked decisions, open questions, and handoff notes.</div>
+      <div class="tool-footer"><span class="tool-badge badge-reference">Reference</span></div>
+    </a>
+
+    <a class="tool-card" href="REVIEW_P6_SUMMARY.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">📌</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P6: Search Summary</div>
+      <div class="tool-desc">Search & Discovery session wrap — verified decisions, integration notes with Formation Intelligence.</div>
+      <div class="tool-footer"><span class="tool-badge badge-reference">Reference</span></div>
+    </a>
+
+    <a class="tool-card" href="P0_SUMMARY.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">📎</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P0: Skeleton Summary</div>
+      <div class="tool-footer"><span class="tool-badge badge-specific">Dwellable</span></div>
+    </a>
+
+    <a class="tool-card" href="P1_SUMMARY.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">📎</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P1: Skeleton Summary</div>
+      <div class="tool-footer"><span class="tool-badge badge-specific">Dwellable</span></div>
+    </a>
+
+    <a class="tool-card" href="P2_SUMMARY.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">📎</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P2: Skeleton Summary</div>
+      <div class="tool-footer"><span class="tool-badge badge-specific">Dwellable</span></div>
+    </a>
+
+    <a class="tool-card" href="P3_SUMMARY.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">📎</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P3: Skeleton Summary</div>
+      <div class="tool-footer"><span class="tool-badge badge-specific">Dwellable</span></div>
+    </a>
+
+    <a class="tool-card" href="P4_SUMMARY.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">📎</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P4: Skeleton Summary</div>
+      <div class="tool-footer"><span class="tool-badge badge-specific">Dwellable</span></div>
+    </a>
+
+    <a class="tool-card" href="P0_FEATURE_FOUNDATION_MAPPING.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">🔗</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P0: Feature–Foundation Mapping</div>
+      <div class="tool-footer"><span class="tool-badge badge-specific">Dwellable</span></div>
+    </a>
+
+    <a class="tool-card" href="P0_FEATURE_RESEARCH_FINDINGS.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">🔎</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P0: Feature Research Findings</div>
+      <div class="tool-footer"><span class="tool-badge badge-specific">Dwellable</span></div>
+    </a>
+
+    <a class="tool-card" href="P0_ONBOARDING_FLOWS.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">🌀</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P0: Onboarding Flow Comparison</div>
+      <div class="tool-footer"><span class="tool-badge badge-specific">Dwellable</span></div>
+    </a>
+
+    <a class="tool-card" href="PILLAR5_SESSION_SUMMARY.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">📋</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P5: Interactive Session Summary</div>
+      <div class="tool-footer"><span class="tool-badge badge-specific">Dwellable</span></div>
+    </a>
+
+    <a class="tool-card" href="PILLAR_1_TEXT_CAPTURE_INTERFACE.html" target="_blank">
+      <div class="tool-card-top"><div class="tool-icon">🎙️</div><div class="tool-arrow">→</div></div>
+      <div class="tool-name">P1: Text Capture Interface</div>
+      <div class="tool-footer"><span class="tool-badge badge-specific">Dwellable</span></div>
+    </a>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>Built with <strong>Claude Code</strong> · Dwellable Native · May 2026</div>
+  <div style="color:#555; font-size:12px;">26 tools · Open any file in Safari to use it</div>
+</footer>
+
+</body>
+</html>
