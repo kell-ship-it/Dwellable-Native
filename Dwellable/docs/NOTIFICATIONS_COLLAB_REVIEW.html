@@ -454,115 +454,134 @@
 
     <hr class="divider">
 
-    <h3 class="sub-title">User Segmentation Matrix — All Scenarios</h3>
-    <p><strong>How users flow through stages:</strong> Each row below represents a distinct scenario based on what the user has done (captured, prayed, journaled) and how recently. The asterisk (*) marks the <strong>signal we're optimizing for</strong> in that scenario — the gap we're trying to close with the notification.</p>
-    <table class="doc-table">
+    <h3 class="sub-title">Complete Stage Reference — All Scenarios & Messaging</h3>
+    <p><em>One row = one complete stage understanding. Left columns show user condition (what they've done); right columns show notification specification (trigger, messaging, cool-off).</em></p>
+    <table class="doc-table" style="font-size: 13px; width: 100%; table-layout: auto;">
       <thead>
-        <tr><th>Onboarding</th><th>Captured</th><th>Prayed</th><th>Journaled</th><th>Recent Activity</th><th>Stage</th><th>Signal*</th><th>Prompt</th></tr>
+        <tr style="background: #f5f5f5;">
+          <th style="width: 8%;">Stage</th>
+          <th style="width: 8%;">Condition: Onboarding</th>
+          <th style="width: 8%;">Captured</th>
+          <th style="width: 8%;">Prayed</th>
+          <th style="width: 8%;">Journaled</th>
+          <th style="width: 10%;">Trigger / Signal</th>
+          <th style="width: 12%;">When to Fire</th>
+          <th style="width: 15%;">Push Variants (MVP)</th>
+          <th style="width: 12%;">In-App Variants</th>
+          <th style="width: 11%;">Cool-Off</th>
+        </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>N*</td><td>—</td><td>—</td><td>—</td><td>—</td><td><strong>A0</strong></td><td>Incomplete setup</td><td>"Finish setting up your practice"</td>
-        </tr>
-        <tr>
-          <td>Y</td><td>N*</td><td>—</td><td>—</td><td>—</td><td><strong>A</strong></td><td>No captures</td><td>"Capture a moment you'd like to pray about"</td>
-        </tr>
-        <tr>
-          <td>Y</td><td>Y</td><td>N*</td><td>N</td><td>Y</td><td><strong>B1</strong></td><td>Not prayed</td><td>"Pray about this moment?"</td>
-        </tr>
-        <tr>
-          <td>Y</td><td>Y</td><td>N*</td><td>Y</td><td>Y</td><td><strong>C2</strong></td><td>Not prayed</td><td>"Would you like to pray about this moment?"</td>
-        </tr>
-        <tr>
-          <td>Y</td><td>Y</td><td>Y</td><td>N*</td><td>Y</td><td><strong>C1</strong></td><td>Not journaled</td><td>"Return to your prayer—what changed?"</td>
-        </tr>
-        <tr>
-          <td>Y</td><td>Y</td><td>Y</td><td>N*</td><td>N</td><td><strong>C1-Quiet</strong></td><td>Not journaled</td><td>"It's been a while—revisit your prayer"</td>
-        </tr>
-        <tr>
-          <td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>N*</td><td><strong>C3</strong></td><td>Inactive</td><td>"You've been quiet—return to dwelling"</td>
-        </tr>
-        <tr>
-          <td>Y</td><td>Y</td><td>Y</td><td>Y</td><td>Y*</td><td><strong>D</strong></td><td>Actively dwelling</td><td>Re-engagement (1x/month if needed)</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <hr class="divider">
-
-    <h3 class="sub-title">Quick Reference — All Stages</h3>
-    <table class="doc-table" id="quick-ref-table">
-      <thead>
-        <tr><th>Stage</th><th>Behavioral Trigger</th><th>Example Message</th><th>Cool-off</th><th>Phase</th><th style="width:28px;"></th></tr>
-      </thead>
-      <tbody>
+        <!-- A0 -->
         <tr>
           <td><strong>A0</strong></td>
-          <td>Started onboarding, never completed</td>
-          <td>"You started something. Finish setting up so we can meet you where you are."</td>
+          <td>N* (incomplete)</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+          <td>Incomplete onboarding</td>
+          <td>Day 2 after install</td>
+          <td>• "You started something. Finish setting up so we can meet you where you are."<br>• "Your Dwellable profile is almost ready — a few steps to make it yours."</td>
+          <td>First screen, before onboarding resumes: "You're here. That took something. This space is yours." / "Welcome back. Let's finish getting you set up." (re-open)</td>
           <td>1 push max. Stop at Day 7 if no completion.</td>
-          <td><strong>MVP</strong></td>
-          <td></td>
         </tr>
+
+        <!-- A -->
         <tr>
           <td><strong>A</strong></td>
-          <td>Onboarding complete; 0 moments captured<br><em>Push + in-app. If user responds to one, suppress the other.</em></td>
-          <td><u>Brings dweller to capture</u><br>"What's something you'd like to remember from this week?"<br><em>Contextual to dweller's intent from onboarding</em></td>
+          <td>Y</td>
+          <td>N*</td>
+          <td>—</td>
+          <td>—</td>
+          <td>No captures (fresh start)</td>
+          <td>Day 3 with no capture</td>
+          <td>• "Ready to capture what's on your heart?"<br>• "What's something you'd like to remember from this week?"<br>• "Your voice is worth capturing."</td>
+          <td>Create tab empty state: "Start by capturing a moment — a thought, a feeling, something that happened."</td>
           <td>1 push total. Suppress all after first capture.</td>
-          <td><strong>MVP</strong></td>
-          <td></td>
         </tr>
+
+        <!-- B1 -->
         <tr>
           <td><strong>B1</strong></td>
-          <td>Any capture that exits without prayer (fires after every unprayed capture, not just first)<br><em>Push + in-app. If user responds to one, suppress the other.</em></td>
-          <td><u>Brings dweller to prayer</u><br>"You captured something earlier. When you're ready, would you like to pray on it?"<br><em>Or provide a snippet of the prayer.</em></td>
-          <td>Push 1/week at 8am (dweller's time zone). After 4 no-clicks, expire. If they click but don't pray, continue weekly cadence.</td>
-          <td><strong>MVP</strong></td>
-          <td></td>
+          <td>Y</td>
+          <td>Y</td>
+          <td>N* (fires after every unprayed capture)</td>
+          <td>N</td>
+          <td>Any capture exits without prayer</td>
+          <td>Same evening or next morning (~12h after capture)</td>
+          <td>• "You captured something earlier. When you're ready, would you like to pray on it?"<br>• "How has your heart been this week? Anything to reflect on?"<br>• "Your moments are waiting. Ready to go deeper?"</td>
+          <td>Immediately after capture, before exit: "Would you like to take a moment to pray on what you just shared?" / "You captured this — ready to pray on it?"</td>
+          <td>Push 1/week max (regardless of capture volume). After 4 no-clicks, expire. Continue weekly if click but no prayer.</td>
         </tr>
+
+        <!-- B2 -->
         <tr>
           <td><strong>B2</strong></td>
-          <td>≥1 capture + prompt response; 0 prayers recorded<br><em>Push + in-app. If user responds to one, suppress the other.</em></td>
-          <td><u>Brings dweller to prayer</u><br>"You captured something earlier. When you're ready, would you like to pray on it?"<br><em>Or provide a snippet of the prayer.</em></td>
-          <td>Push 1/week at 8am (dweller's time zone). After 4 no-clicks, expire. If they click but don't pray, continue weekly cadence.</td>
-          <td><strong>MVP</strong></td>
-          <td></td>
+          <td>Y</td>
+          <td>Y</td>
+          <td>N* (but prompted)</td>
+          <td>Y</td>
+          <td>Captured + prompted, no prayer (already dwelling via prompt)</td>
+          <td>Same evening or next morning (~12h after capture)</td>
+          <td>• "You captured something earlier. When you're ready, would you like to pray on it?"<br>• "Your moments have depth. Ready to bring them to prayer?"<br>• "You've been reflecting. How's your heart in prayer?"</td>
+          <td>Today tab, below recent moment: "You've reflected on this — want to pray on it too?"</td>
+          <td>Push 1/week max. After 4 no-clicks, expire. Continue weekly if click but no prayer. (Matches B1 cadence; softer tone.)</td>
         </tr>
+
+        <!-- C1 -->
         <tr>
           <td><strong>C1</strong></td>
-          <td>≥1 prayer recorded; has not returned to any journal entry</td>
-          <td>
-            <u>Brings dweller to journal:</u><br>"You shared your heart earlier, and here's how we honored it..."<br><br>
-            <u>Brings dweller to capture:</u><br>"How have you been feeling since prayer?"<br><br>
-            <u>Brings dweller to capture:</u><br>"Where's your heart at regarding {subject}?"
-          </td>
-          <td>In-app: once per prayer session. Push: 1/week at 8am (dweller's time zone). Stop after 2 ignores per C1 notif.</td>
-          <td><strong>MVP</strong></td>
-          <td></td>
+          <td>Y</td>
+          <td>Y</td>
+          <td>Y</td>
+          <td>N* (has not returned)</td>
+          <td>Prayed, never journaled (or journaled &lt;14d ago)</td>
+          <td>Push: 7 days after prayer with no journal return. In-App: immediately after prayer closes.</td>
+          <td>• To journal: "You shared your heart earlier, and here's how we honored it..."<br>• To capture: "How have you been feeling since prayer?"<br>• To capture (personalized): "Where's your heart at regarding {subject}?" (requires metadata)</td>
+          <td>After prayer closes, show journal card: "Your moment was written down. Want to see it?" / "Here's what came from what you just brought to God."</td>
+          <td>In-app: once per prayer session. Push: 1/week at 8am (dweller's timezone). Stop after 2 ignores.</td>
         </tr>
+
+        <!-- C2 -->
         <tr>
           <td><strong>C2</strong></td>
-          <td>≥1 journal return; 0 prayers ever recorded</td>
-          <td>"You've been reflecting. Ready to bring it to prayer?"</td>
-          <td>1 push max in first month. Stop outbound if no action in 3 weeks.</td>
-          <td><strong>MVP</strong></td>
-          <td></td>
+          <td>Y</td>
+          <td>Y</td>
+          <td>N*</td>
+          <td>Y (has journaled, but no prayer)</td>
+          <td>Journal-first path (returned to journal but never prayed)</td>
+          <td>After 2nd+ journal return with no prayer (in-app). Push: 5–7 days after last journal activity.</td>
+          <td>• "You've been reflecting. Ready to bring it to prayer?"<br>• "Your journal has depth. Prayer is the next step, when you're ready."</td>
+          <td>Below journal body after reading: "Want to pray on what you just read?" / "This moment has been captured and reflected on. Prayer is the next step."</td>
+          <td>1 push max in first month. Stop if no action in 3 weeks. In-app: once per journal session, no stacking. (Sparser than B1/B2.)</td>
         </tr>
+
+        <!-- C3 -->
         <tr>
           <td><strong>C3</strong></td>
-          <td>Prayer + journal return on record; no dwelling in 14+ days</td>
-          <td>"It's been a little while. How's your heart?"</td>
+          <td>Y</td>
+          <td>Y</td>
+          <td>Y</td>
+          <td>Y</td>
+          <td>Completed funnel, now quiet 14+ days</td>
+          <td>14+ days since last dwelling act</td>
+          <td>• "It's been a little while. How's your heart?"<br>• "You have moments worth returning to. Ready to dwell?"<br>• "Whenever you're ready, your moments are here."</td>
+          <td>Today tab, top of feed, oldest unprayed moment surfaced: "Whenever you're ready."</td>
           <td>1x/month. Reduce to 1x/6 weeks after 3 no-clicks.</td>
-          <td><strong>MVP</strong></td>
-          <td></td>
         </tr>
-        <tr>
+
+        <!-- D -->
+        <tr style="background: #fffacd;">
           <td><strong>D</strong></td>
-          <td>Any dwelling act within last 7–10 days</td>
-          <td>MVP: no push. Stay silent — the product is working.<br><br>Post-MVP: rare Formation Intelligence event only.</td>
-          <td>MVP: 0 push. Post-MVP: 0–1 per quarter.</td>
-          <td>MVP: <strong>silence</strong><br>Post-MVP: <strong>FI-triggered</strong></td>
-          <td></td>
+          <td>Y</td>
+          <td>Y</td>
+          <td>Y</td>
+          <td>Y</td>
+          <td>Actively dwelling: prayer/prompt/journal within last 7–10 days</td>
+          <td>Once per week (e.g., Thursday 8am dweller's timezone)</td>
+          <td><strong>MVP (Activity-Based):</strong><br>• "Hey, how are you feeling since that prayer?" → "Let's capture what you're processing"<br>• "A prayer from a few days ago — ready to go deeper?" → "Let's pray about what you've processed"<br><br><strong>Post-MVP (Topic-Aware):</strong><br>• "You've been reflecting on [topic]. How's that going? Ready to go deeper in prayer?"<br>• "Something keeps showing up in your moments — want to explore it?"</td>
+          <td>Contextual prompts within prayer flow only. Post-MVP: Formation Intelligence insights on Today tab.</td>
+          <td>MVP: 1 push/week max. Post-MVP: weekly + 0–1 FI-triggered per quarter. (Active dwelling = don't interrupt; silence is the product.)</td>
         </tr>
       </tbody>
     </table>
@@ -581,111 +600,6 @@
         <tr><td><strong>Opt-out</strong></td><td>iOS notification settings</td><td>N/A — contextual UI element</td></tr>
       </tbody>
     </table>
-
-    <hr class="divider">
-
-    <h3 class="sub-title">Message Variants by Stage</h3>
-    <p><em>Conditions, triggers, cool-offs, and delivery windows are detailed in the Quick Reference table above. This section shows the message variants for each stage (organized by Push and In-App channels).</em></p>
-
-    <h4 class="sub-sub-title">Stage A0 — Onboarded, incomplete setup</h4>
-    <p><strong>Push:</strong></p>
-    <ul>
-      <li>"You started something. Finish setting up so we can meet you where you are."</li>
-      <li>"Your Dwellable profile is almost ready — a few steps to make it yours."</li>
-    </ul>
-    <p><strong>In-App</strong> (First screen on first open):</p>
-    <ul>
-      <li>"You're here. That took something. This space is yours."</li>
-      <li>"Welcome back. Let's finish getting you set up." <em>(re-open)</em></li>
-    </ul>
-
-    <h4 class="sub-sub-title">Stage A — Onboarded, no captures yet</h4>
-    <p><strong>Push:</strong></p>
-    <ul>
-      <li>"Ready to capture what's on your heart?"</li>
-      <li>"What's something you'd like to remember from this week?"</li>
-      <li>"Your voice is worth capturing."</li>
-    </ul>
-    <p><strong>In-App</strong> (Create tab empty state):</p>
-    <ul>
-      <li>"Start by capturing a moment — a thought, a feeling, something that happened."</li>
-    </ul>
-
-    <h4 class="sub-sub-title">Stage B1 — Captured, no dwelling</h4>
-    <p><strong>Push:</strong></p>
-    <ul>
-      <li>"You captured something earlier. When you're ready, would you like to pray on it?"</li>
-      <li>"How has your heart been this week? Anything to reflect on?"</li>
-      <li>"Your moments are waiting. Ready to go deeper?"</li>
-    </ul>
-    <p><strong>In-App</strong> (Immediately after capture or in Today tab):</p>
-    <ul>
-      <li>"Would you like to take a moment to pray on what you just shared?"</li>
-      <li>"You captured this — ready to pray on it?"</li>
-    </ul>
-
-    <h4 class="sub-sub-title">Stage B2 — Captured, responded to prompt, no prayer</h4>
-    <p><strong>Push</strong> (Softer tone; they're already dwelling via prompt response):</p>
-    <ul>
-      <li>"You captured something earlier. When you're ready, would you like to pray on it?"</li>
-      <li>"Your moments have depth. Ready to bring them to prayer?"</li>
-      <li>"You've been reflecting. How's your heart in prayer?"</li>
-    </ul>
-    <p><strong>In-App</strong> (Today tab, below recent moment):</p>
-    <ul>
-      <li>"You've reflected on this — want to pray on it too?"</li>
-    </ul>
-
-    <h4 class="sub-sub-title">Stage C1 — Prayed, no journal return</h4>
-    <p><strong>Push</strong> (Three variants — rotate or select based on recent activity):</p>
-    <ul>
-      <li><strong>To journal:</strong> "You shared your heart earlier, and here's how we honored it..." <em>(Surfaces journal card with FTUE orientation on first open)</em></li>
-      <li><strong>To capture:</strong> "How have you been feeling since prayer?"</li>
-      <li><strong>To capture (personalized):</strong> "Where's your heart at regarding {subject}?" <em>(Requires readable metadata; falls back to generic)</em></li>
-    </ul>
-    <p><strong>In-App</strong> (Immediately after prayer closes):</p>
-    <ul>
-      <li>"Your moment was written down. Want to see it?"</li>
-      <li>"Here's what came from what you just brought to God." [surfaces journal card]</li>
-    </ul>
-
-    <h4 class="sub-sub-title">Stage C2 — Journal return, no prayer</h4>
-    <p><strong>Push:</strong></p>
-    <ul>
-      <li>"You've been reflecting. Ready to bring it to prayer?"</li>
-      <li>"Your journal has depth. Prayer is the next step, when you're ready."</li>
-    </ul>
-    <p><strong>In-App</strong> (Below journal body after reading):</p>
-    <ul>
-      <li>"Want to pray on what you just read?"</li>
-      <li>"This moment has been captured and reflected on. Prayer is the next step."</li>
-    </ul>
-
-    <h4 class="sub-sub-title">Stage C3 — Quiet 14+ days</h4>
-    <p><strong>Push:</strong></p>
-    <ul>
-      <li>"It's been a little while. How's your heart?"</li>
-      <li>"You have moments worth returning to. Ready to dwell?"</li>
-      <li>"Whenever you're ready, your moments are here."</li>
-    </ul>
-    <p><strong>In-App</strong> (Today tab, oldest unprayed moment surfaced):</p>
-    <ul>
-      <li>"Whenever you're ready."</li>
-    </ul>
-
-    <h4 class="sub-sub-title">Stage D — Actively dwelling</h4>
-    <p><strong>Push — MVP (Activity-Based)</strong></p>
-    <p>Two locked variants — alternate weekly or select based on recent activity:</p>
-    <ul>
-      <li><strong>Invite to capture:</strong> "Hey, how are you feeling since that prayer?" → CTA: "Let's capture what you're processing"</li>
-      <li><strong>Invite to prayer:</strong> "A prayer from a few days ago — ready to go deeper?" → CTA: "Let's pray about what you've processed"</li>
-    </ul>
-    <p><em>References activity type only (prayer/processing), not specific content. Gathers signal on which re-entry point users prefer.</em></p>
-    <p><strong>Push — Post-MVP (Topic-Aware)</strong></p>
-    <ul>
-      <li>"You've been reflecting on [topic]. How's that going? Ready to go deeper in prayer?"</li>
-      <li>"Something keeps showing up in your moments — want to explore it?"</li>
-    </ul>
 
     <hr class="divider">
 
