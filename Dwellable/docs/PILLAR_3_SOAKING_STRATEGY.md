@@ -108,6 +108,71 @@ P4 uses it:
 
 ---
 
+## Re-Dwelling & Multi-Session Soaking (MVP Clarification)
+
+**Critical Clarification for Entry Points (Today, Entries, Growth, Notifications):**
+
+P3 owns **not just post-capture prayer, but all prayer/soaking experiences** — regardless of entry point or timing.
+
+### When Re-Dwelling Happens
+
+Users initiate prayer/soaking in multiple contexts:
+
+| Context | Entry Point | Flow |
+|---------|------------|------|
+| **Post-capture** (same session) | Capture completion screen (P1) | User captures → CTA "Pray?" → Prayer → Journal synthesis |
+| **Daily invitation** | Today tab (unprayed moment) | User sees unprayed moment → taps → Soaking flow |
+| **Theme exploration** | Growth tab (tap a theme) | User sees theme → taps individual moment within theme → Soaking flow |
+| **Search/discovery** | Entries tab (tap moment) | User finds moment via search → taps moment detail → Soaking flow available |
+| **Notification trigger** (Post-MVP) | Push notification | User taps theme breakthrough notification → routed to moments → Soaking flow |
+
+### Re-Dwelling UX (MVP Scope)
+
+**Question: Is re-dwelling UX identical to post-capture soaking, or different?**
+
+**Answer (Locked):** Identical UX for MVP. Both use the same **Soaking Flow:**
+
+```
+┌────────────────────────────────┐
+│ SOAKING FLOW                   │
+├────────────────────────────────┤
+│ [Moment context] or            │
+│ [Theme context]                │
+│                                │
+│ Guided prayer (P3 generated)   │
+│ OR                             │
+│ Reflection prompts (P3 offered)│
+│                                │
+│ User selects: Prayer / Prompts │
+│ ↓                              │
+│ Reads/engages with content     │
+│ ↓                              │
+│ Completion signal: "Prayed"    │
+│ or "Reflected"                 │
+└────────────────────────────────┘
+```
+
+**Key difference:** Context passed into Soaking Flow varies by entry point:
+- **Post-capture:** Full conversation context (what they just shared)
+- **Re-dwelling from moment tap:** Moment summary + mood + date
+- **Re-dwelling from theme:** Theme name + all moments with that theme
+- **Re-dwelling from notification:** Notification-specific context ("You've been wrestling with anxiety")
+
+**Output is same:** "Prayed" signal added to moment, soaking_count increments, depth signal added to Formation Intelligence.
+
+### Multi-Dwelling on Same Moment (Post-MVP Consideration)
+
+**Question: Can user dwell on the same moment multiple times?**
+
+**Answer (MVP Deferred, Post-MVP Design):**
+- **MVP:** Users can only "Pray" once per moment (first engagement creates soaking signal)
+- **Post-MVP:** Enable re-soaking on same moment
+  - Track soaking_count (how many times user has prayed about this moment)
+  - Show "Dwell History" (all times user engaged with this moment)
+  - Each new soaking adds to formation intelligence (what changed? what deepened?)
+
+---
+
 ## User Experience (MVP)
 
 ### Happy Path

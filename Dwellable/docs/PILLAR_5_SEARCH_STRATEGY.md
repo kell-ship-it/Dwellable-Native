@@ -154,6 +154,115 @@ Pillar 5 consists of two phases: **v1 (Query & Filter)** and **future (Semantic 
 
 ---
 
+## Moment Detail View & Actions (MVP Clarification)
+
+**Critical for P5: When user taps an entry in search results, what UX do they see?**
+
+### Moment Detail View Layout (MVP)
+
+```
+┌──────────────────────────────────┐
+│ [Back] [Share/More]              │ (header)
+├──────────────────────────────────┤
+│ [MOMENT HEADLINE]                │
+│ Captured: May 10, 2026           │
+│ Mood: Peaceful, Grateful         │
+│ Tags: Family, Gratitude          │
+├──────────────────────────────────┤
+│                                  │
+│ [MOMENT BODY / JOURNAL CONTENT]  │
+│ (If journal synthesized, show    │
+│  full journal. If only raw       │
+│  moment, show transcript)        │
+│                                  │
+│ [Photos if any] (thumbnails)     │
+│                                  │
+├──────────────────────────────────┤
+│ Soaking Status:                  │
+│ □ Prayed / ✓ Prayed (badge)      │
+│                                  │
+│ [Prayer artifact if exists]      │
+│ (show prayer text user engaged   │
+│  with)                           │
+│                                  │
+├──────────────────────────────────┤
+│ [ACTION MENU] (3-dot or buttons) │
+│ • Pray/Reflect (if not yet)      │
+│ • Dwell again (if already done)  │
+│ • Edit Headline/Tags/Mood        │
+│ • View Photo Gallery (if photos) │
+│ • Delete (soft-delete)           │
+│ • More                           │
+└──────────────────────────────────┘
+```
+
+### Moment Detail View Features (MVP)
+
+**Display:**
+- **Headline** (from P4 synthesis)
+- **Metadata:** Capture date, mood(s), tags
+- **Content:** Full journal (if synthesized) OR raw moment transcript (if not yet journaled)
+- **Photos:** Thumbnail(s) if moment has photos (tap to expand gallery)
+- **Soaking status:** "Prayed" badge or "Not yet prayed"
+- **Prayer artifact:** If user prayed, show prayer text they engaged with
+
+**Actions on Moment (MVP):**
+
+| Action | Trigger | Destination | Use Case |
+|--------|---------|-------------|----------|
+| **Pray/Reflect** | Button or CTA | P3 Soaking Flow | User hasn't prayed yet; wants to pray now |
+| **Dwell Again** | "Pray again?" CTA | P3 Soaking Flow (re-soaking) | User already prayed; wants to dwell deeper (Post-MVP) |
+| **Edit** | Three-dot menu | Edit Modal | Change headline, tags, mood, photos |
+| **View Photos** | Tap photo thumbnail | Gallery View | See full-screen photos if moment has multiple |
+| **Delete** | Three-dot menu | Soft-delete confirmation | User deletes moment (recoverable within 30 days) |
+| **Share** | Share icon | Share sheet | Share moment text (Post-MVP: PDF export) |
+
+### Edit Modal (MVP)
+
+When user taps "Edit", opens modal allowing:
+- **Headline:** Edit title (same as P4 customization)
+- **Tags:** Add/remove tags (up to 2)
+- **Mood:** Select or add custom mood
+- **Photos:** Add/remove/reorder photos
+
+**Saves in-place** (updates the moment, creates audit trail for Post-MVP)
+
+### Photo Gallery (MVP)
+
+If moment has 1+ photos:
+- **Single photo:** Tap thumbnail to see full-screen
+- **Multiple photos:** Swipe left/right to navigate, pinch to zoom
+- **Metadata:** Show photo capture date if available
+- **Delete:** Long-press or "X" to remove photo (with confirmation)
+
+### Deletion Flow (MVP: Soft Delete)
+
+When user taps "Delete":
+
+```
+┌─────────────────────────────────┐
+│ Delete this moment?              │
+│                                 │
+│ You can recover within 30 days. │
+│ [Cancel] [Delete]               │
+└─────────────────────────────────┘
+```
+
+- **Confirmation:** Modal asking "Delete?" with 30-day recovery reminder
+- **Action:** Flags moment as `deleted: true`, stores `deletedAt: timestamp`
+- **Behavior:** Moment excluded from searches/lists, but data preserved for recovery
+- **Recovery (Post-MVP):** Entries tab shows "Trash" view where user can restore within 30 days
+
+### Theme Exploration from Moment (MVP)
+
+When user views a moment with tags/moods:
+- **Tap a tag:** Filters Entries view to show all moments with that tag
+- **Tap a mood:** Filters Entries view to show all moments with that mood
+- **Result:** User sees "All moments tagged 'Family'" or "All moments with 'Peaceful' mood"
+- **Cross-reference:** Links back to Growth tab theme view (same data, different entry point)
+
+---
+
 ## Competitor Research & Skeletal References
 
 ### Untold (Calendar + Entry List)

@@ -165,14 +165,131 @@ Plaintext displayed to user on screen only
 
 ---
 
+## Password Reset & Account Recovery (MVP Specification)
+
+**Critical interaction between P0 (Onboarding), P2 (Encryption), and Settings:**
+
+Password reset flows have deep implications for encryption key management. This section specifies how P2 handles password changes and account recovery while maintaining E2E encryption.
+
+### Encryption Key Derivation (All Flows)
+
+All password-related flows trigger the same key derivation process:
+
+```
+User enters password (in login, onboarding, password change, or password reset)
+    ↓
+EncryptionManager.deriveKey(password)
+    ↓
+Argon2id hash: password → 256-bit key (1 second delay on device)
+    ↓
+Key stored in iOS Keychain (isolated per app, OS-encrypted)
+    ↓
+All encrypt/decrypt operations use this key
+```
+
+**Key Principle:** The same password always derives the same key (Argon2id is deterministic with salt). This means:
+- User logs in on Device A with password X → derives key K1
+- User logs in on Device B with password X → derives same key K1 (would decrypt same data, IF key distribution existed in Phase 2)
+- User resets password to Y → derives key K2 (new key, different from K1)
+
+### Password Reset Security (Forgot Password Flow)
+
+**Entry point:** Login screen → "Forgot password?" → Email verification → New password
+
+**Step 1: Email Verification (Backend)**
+- Supabase generates secure reset token (JWT with 30-min expiry)
+- Reset token includes: user ID, email, purpose="password_reset", timestamp
+- Token sent via email (not stored server-side; generated on-demand)
+
+**Step 2: New Password Entry (Device)**
+- User clicks email link → app receives reset token
+- User enters new password + confirmation
+- App sends new password + reset token to backend
+
+**Step 3: Password Update & Key Re-derivation**
+- Backend validates reset token (expiry, signature, user match)
+- Backend updates Supabase auth table (new password hash)
+- **On user's device:** EncryptionManager re-derives key from new password
+- Old moments: Still encrypted with old key (see asymmetry note below)
+- New captures: Encrypted with new key
+
+**Critical Security Decision — No Re-encryption (MVP):**
+- When user resets password, should all old moments be re-encrypted with new key?
+  - ✅ Pro: All data uses same key (consistency)
+  - ❌ Con: Requires re-encrypting entire library (expensive, multi-minute operation)
+- **MVP Decision:** NO re-encryption. Accept asymmetry (old moments = old key, new moments = new key)
+- **Rationale:** Avoid UI freeze, expensive computation. Phase 2 implements key rotation if needed.
+- **User-facing impact:** Transparent. All decryption/encryption works seamlessly in app (EncryptionManager handles key switching).
+
+### Password Change Security (Settings Flow)
+
+**Entry point:** Settings → Security & Privacy → "Change Password"
+
+**Prerequisite:** User logged in + current password known
+
+**Step 1: Current Password Verification**
+- User enters current password
+- App hashes password locally (Argon2id) → compares against auth table
+- If mismatch: Show error, allow retry
+- If match: Proceed
+
+**Step 2: New Password Entry**
+- User enters new password + confirmation
+- Validation: 8+ chars, mixed case, number, symbol
+
+**Step 3: Update & Re-derivation**
+- Supabase auth table updated (new password hash)
+- EncryptionManager re-derives key from new password (1 second delay)
+- Same asymmetry as password reset: old moments use old key, new captures use new key
+
+**Keychain Storage (iOS Security)**
+- New derived key replaces old key in iOS Keychain
+- Keychain is encrypted by OS; isolated per app
+- User cannot access raw key (only through EncryptionManager)
+
+### Forgot Password & Data Loss (Privacy Trade-off)
+
+**Harsh truth:** If user forgets password and P2 stores key only on device (no cloud backup), user loses access to all encrypted moments.
+
+**Trade-off Decision:**
+- **Privacy first:** No key backup to cloud (E2E encryption only meaningful if key never leaves device)
+- **Consequence:** Forgotten password = lost data
+- **Acceptance:** Stated in P0 Onboarding Screen 6 ("We never see your moments") and Settings encryption explanation
+
+**Why Not Offer Password Recovery?**
+1. Server never has plaintext password → can't recover key
+2. Cloud key backup defeats E2E (server could theoretically decrypt)
+3. Biometric recovery (Face ID / Touch ID) only works on same device
+
+**User Communication (MVP):**
+- Onboarding Screen 5: Password field has strength indicator + "This password encrypts all your moments. Remember it!"
+- Onboarding Screen 6: "If you forget your password, we cannot recover your data. Only you hold the key."
+- Settings encryption explanation: "End-to-end encryption means we cannot help if you forget your password."
+
+### Account Lockout & Brute-force Protection (MVP Deferred)
+
+**Not implemented in MVP. Rationale:**
+
+Standard brute-force protection (lock account after N failed attempts) creates problems in E2E model:
+- Legitimate user tries to log in on new device → fails N times (different key derivation)
+- Account locks, but user has no way to unlock (we can't verify identity without password)
+
+**Current MVP approach:**
+- No account lockout. Unlimited login attempts allowed.
+- **Post-MVP consideration:** Rate limiting on auth endpoint (slow down attacker without locking user)
+
+---
+
 ## Security Exclusions & Deferred Decisions
 
 | Feature | Status | Reason |
 |---------|--------|--------|
 | **Server-side decryption** | ❌ Excluded | Defeats purpose of E2E; we never see plaintext |
 | **Cloud key backup** | ❌ Excluded | Key stays on device only; no cloud recovery |
-| **Password recovery** | ⏳ Deferred | Users lose access if forgotten (acceptable trade-off for privacy) |
+| **Data re-encryption on password change** | ⏳ Deferred | MVP: Accept asymmetry (old key/new key); Phase 2 implements key rotation |
 | **Multi-device sync** | ⏳ Deferred | Requires key distribution; Phase 2+ decision |
+| **Account lockout** | ⏳ Deferred | Brute-force protection conflicts with E2E; Phase 2 implements rate limiting |
+| **Biometric unlock** | ⏳ Deferred | Face ID / Touch ID integration (Phase 2+) |
 | **Zero-knowledge proof** | ❌ Excluded | Unnecessary complexity for MVP |
 | **Hardware key attestation** | ⏳ Deferred | Apple Secure Enclave integration (Phase 2+) |
 

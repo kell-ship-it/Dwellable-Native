@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 14, 2026 — Notifications Strategy Collab Review doc: ALL sections now aligned with final A–G stage reference table. Sections 4, 6, 9, 11.5, 12, 13, 16, and Summary updated: old stage names (A0/B1/B2/C1/C2/C3/D) replaced throughout; Section 9 examples completely rewritten with locked copy variants per stage; Section 16 open questions resolved (4 closed, 2 new genuine open items); Summary table now reflects full A–G taxonomy + universal 7am timing + mutually-suppressive parity model. T-084, T-085, T-087 descriptions updated to reflect final stage naming. Notifications strategy doc is now COMPLETE and ready for implementation.
-**Status:** 72/96 tickets complete (75%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, P0-P4 skeleton + FI locked, P5-P7 FI clarified + locked, Notifications strategy doc ✅ FULLY FINALIZED (all sections aligned with A–G stage table)
+**Last Updated:** May 14, 2026 (Evening) — T-092 Dependency Mapping Session Complete. Created DEPENDENCY_GRAPH.md with 10-section comprehensive Phase 2 implementation roadmap: visual diagram, dependency matrix, critical path (11-16 weeks), parallelizable work streams, MVP vs Post-MVP breakdown, Gantt-style sequencing, build order, risk dependencies, and owner assignments. All 9 pillars (P0-P8) + Authentication pillar now have complete strategy docs with locked Formation Intelligence sections. Next session: AI Capability Audit → SDK Selection → Testing Structure Setup.
+**Status:** 73/96 tickets complete (76%), 1 in progress (T-092), Build 107 on TestFlight, Phase 1 complete, P0-P8 strategy docs + Authentication pillar ✅ LOCKED, Dependency graph ✅ COMPLETE (partial T-092), Next: LLM selection tournament setup
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -485,17 +485,27 @@
 
 ### Phase 2 Launch Readiness (Strategic Planning)
 
-- [ ] **T-092:** Phase 2 Launch Readiness: Dependency mapping & integration plan 🔲 **NOT STARTED**
+- [x] **T-092:** Phase 2 Launch Readiness: Dependency mapping & integration plan 🔄 **IN PROGRESS**
   - **Purpose:** Map all Phase 2 blockers and integration points before launching parallel pillar implementation
   - **Deliverables:**
-    1. Pillar dependency graph (which pillar blocks others? what's critical path?)
-    2. Integration checklist (P0 → P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8)
-    3. LLM selection finalized (Gemini 2.0 Flash vs Mistral 7B for synthesis/themes)
-    4. Infrastructure readiness (Firebase, Rich Context system, E2E encryption T-062)
-    5. Team assignment & sprint plan (who owns which pillar?)
-    6. Beta cohort recruitment strategy (how many users? which segment first?)
-    7. Success metrics & measurement plan (WAR, Formation Engagement Rate, etc.)
-    8. Risk & mitigation plan (what breaks Phase 2? how do we prevent it?)
+    1. ✅ Pillar dependency graph (which pillar blocks others? what's critical path?) — COMPLETE
+       - Created `DEPENDENCY_GRAPH.md` with 10 comprehensive sections
+       - Visual diagram, dependency matrix, critical path (Auth → P0 → P1 → P3 → P4 → P6, 11-16 weeks)
+       - Parallelizable work streams identified (P2, Settings, P7, Today, Growth)
+       - MVP vs Post-MVP breakdown (10 core pillars, 3 deferred)
+       - Implementation sequencing (Gantt-style 14-week timeline)
+       - Risk dependencies table (8 critical blockers identified)
+       - Owner assignments (13 proposed roles)
+    2. ✅ Team assignment & sprint plan (who owns which pillar?) — COMPLETE (in Dependency Graph)
+       - Owner assignments section with 13 proposed roles across Auth, P0-P8, and support components
+       - Sprint phases defined with timeline
+    3. 🔲 LLM selection finalized (Gemini 2.0 Flash vs Mistral 7B) — **NEXT SESSION**
+       - Requires: AI Capability Audit across all pillars → SDK selection → testing structure
+    4. 🔲 Integration checklist (P0 → P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8) — DEFERRED
+    5. 🔲 Infrastructure readiness (Firebase, Rich Context system, E2E encryption T-062) — DEFERRED
+    6. 🔲 Beta cohort recruitment strategy (how many users? which segment first?) — DEFERRED
+    7. 🔲 Success metrics & measurement plan (WAR, Formation Engagement Rate, etc.) — DEFERRED
+    8. 🔲 Risk & mitigation plan (what breaks Phase 2? how do we prevent it?) — PARTIALLY COMPLETE (8 risks identified)
   - **Acceptance Criteria:**
     - Dependency graph shows clear sequencing (no circular dependencies)
     - LLM selection locked with integration plan

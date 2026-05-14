@@ -1311,25 +1311,6 @@
   </div>
 
 
-  <!-- 8. Privacy -->
-  <div class="doc-section" id="section-privacy">
-    <h2 class="section-title">8. Privacy &amp; Server-Side Encryption</h2>
-    <p><strong>Privacy Promise (revised):</strong></p>
-    <p><em>"Your responses are encrypted. Only you and Dwellable can see your moments. We protect them from hackers and external theft."</em></p>
-
-    <h3 class="sub-title">Notification Transparency</h3>
-    <ul>
-      <li>MVP: Notifications reference activity type (prayer, processing) and engagement patterns</li>
-      <li>Post-MVP: Notifications reference themes and content from plaintext (e.g., "You shared about faith")</li>
-      <li>All personalization happens server-side with plaintext access</li>
-      <li>No third-party access to plaintext (Google, OpenAI) without explicit user consent</li>
-      <li>Users can disable notifications entirely in settings</li>
-    </ul>
-
-    <h3 class="sub-title">Trust Model</h3>
-    <p>User research from Phase 1 beta: Users care more about "Kell won't read my diary" than "OpenAI won't read my diary." Encryption protects against external theft; privacy promise reflects that we honor their trust by not exposing moments to third parties without consent.</p>
-  </div>
-
   <!-- 9. Notification Examples -->
   <div class="doc-section" id="section-examples">
     <h2 class="section-title">9. Notification Examples by Stage &amp; Type</h2>
@@ -1422,223 +1403,6 @@ In-App: N/A — no interruption for active dwellers.
 Cadence: 7am next morning after prayer. 1/week max combined across F + G (shared ceiling with Stage F). No retry on dismiss/ignore — wait for next act or 14-day dormancy → Stage E.</div>
   </div>
 
-  <!-- 10. Alternatives -->
-  <div class="doc-section" id="section-alternatives">
-    <h2 class="section-title">10. Alternatives Considered (Not Chosen)</h2>
-    <table class="doc-table">
-      <thead><tr><th>Alternative</th><th>Why Considered</th><th>Why Not Chosen</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Email notifications</strong></td><td>Reach more users, easier delivery</td><td>Email feels broadcast/impersonal; breaks intimacy of faith app</td></tr>
-        <tr><td><strong>Daily notifications</strong></td><td>Higher engagement, more touchpoints</td><td>Too noisy; violates faith philosophy; causes fatigue</td></tr>
-        <tr><td><strong>Streak gamification</strong></td><td>Proven engagement driver in habit apps</td><td>Original: contradicts faith-based philosophy; turns formation into productivity. <strong>Under reconsideration</strong> — light-touch passive display (Formation Trends only) may work if framed as witnessing presence, not enforcing habit. Hard rules if pursued: no 'at risk' messaging, no push to preserve streak.</td></tr>
-        <tr><td><strong>In-app badges/alerts</strong></td><td>Non-intrusive alternative to push</td><td>Requires app open; misses users who don't return</td></tr>
-        <tr><td><strong>SMS notifications</strong></td><td>High delivery rate, direct</td><td>Too intrusive; breaches privacy; not all users want SMS</td></tr>
-        <tr><td><strong>Notifications for all segments</strong></td><td>Maximize engagement</td><td>Wastes notifications on active users; causes churn</td></tr>
-        <tr><td><strong>High frequency (daily or weekly)</strong></td><td>Drive habit formation</td><td>Contradicts "sparse, meaningful" philosophy; risks fatigue</td></tr>
-        <tr><td><strong>Opt-in model</strong></td><td>Safer from trust perspective</td><td>Lower adoption; users who need notifications most won't opt in</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- 11. Metrics -->
-  <div class="doc-section" id="section-metrics">
-    <h2 class="section-title">11. Metrics to Track</h2>
-    <table class="doc-table">
-      <thead><tr><th>Metric</th><th>Definition</th><th>Success Target</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Push CTR → Prayer</strong></td><td>% of push notifications delivered that result in a prayer act</td><td>&gt;40%</td></tr>
-        <tr><td><strong>Push CTR → Capture</strong></td><td>% of push notifications delivered that result in a new capture</td><td>TBD (baseline first cohort)</td></tr>
-        <tr><td><strong>Push CTR → Journal Review</strong></td><td>% of push notifications delivered that result in a journal entry opened</td><td>TBD (baseline first cohort)</td></tr>
-        <tr><td><strong>In-App CTR → Prayer</strong></td><td>% of in-app nudges shown that result in a prayer act</td><td>&gt;40%</td></tr>
-        <tr><td><strong>In-App CTR → Capture</strong></td><td>% of in-app nudges shown that result in a new capture</td><td>TBD (baseline first cohort)</td></tr>
-        <tr><td><strong>In-App CTR → Journal Review</strong></td><td>% of in-app nudges shown that result in a journal entry opened</td><td>TBD (baseline first cohort)</td></tr>
-        <tr><td><strong>Conversion → Capture</strong></td><td>% of notification clicks/taps that lead to a new capture</td><td>TBD (baseline first cohort)</td></tr>
-        <tr><td><strong>Conversion → Prayer</strong></td><td>% of notification clicks/taps that lead to a completed prayer</td><td>&gt;30%</td></tr>
-        <tr><td><strong>Conversion → Journal Review</strong></td><td>% of notification clicks/taps that lead to a journal entry opened and read</td><td>TBD (baseline first cohort)</td></tr>
-        <tr><td><strong>D7 Retention</strong></td><td>% of users returning within 7 days after notification</td><td>&gt;35%</td></tr>
-        <tr><td><strong>Formation Engagement (post-notif)</strong></td><td>% of notified users who dwell within 3 days</td><td>&gt;25%</td></tr>
-        <tr><td><strong>Opt-out rate</strong></td><td>% of users who disable notifications</td><td>&lt;10%</td></tr>
-        <tr><td><strong>Segment conversion</strong></td><td>% of new users → first capture after notification</td><td>&gt;20%</td></tr>
-        <tr><td><strong>Churn impact</strong></td><td>Change in churn rate before/after notifications</td><td>No increase</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- 11.5. Notification Volume Map -->
-  <div class="doc-section" id="section-volume-map">
-    <h2 class="section-title">11.5. Notification Volume Map (MVP Scale &amp; Cost)</h2>
-
-    <h3 class="sub-title">Max Sends Per Stage Per Month</h3>
-    <table class="doc-table">
-      <thead><tr><th>Stage</th><th>Trigger Type</th><th>Cadence</th><th>Max Sends/Month</th><th>Stop Condition</th></tr></thead>
-      <tbody>
-        <tr><td><strong>A</strong></td><td>Incomplete onboarding</td><td>1/week at 7am</td><td>4</td><td>Onboarding completes OR 4 consecutive ignored</td></tr>
-        <tr><td><strong>B</strong></td><td>No captures yet</td><td>1/week at 7am</td><td>4</td><td>First capture made OR 4 weeks no capture OR 2 push dismissals</td></tr>
-        <tr><td><strong>C</strong></td><td>Captured, no prayer</td><td>1/week at 7am (push + in-app)</td><td>4 push + up to 4 in-app</td><td>Prayer completed OR 4 cycles ignored/dismissed</td></tr>
-        <tr><td><strong>D</strong></td><td>Prayed, no journal return</td><td>Single-shot (1 push + 1 in-app total)</td><td>1 push + 1 in-app</td><td>Journal opened OR both expired without action — no retry</td></tr>
-        <tr><td><strong>E</strong></td><td>Dormant 14+ days</td><td>1/14 days</td><td>~2</td><td>User dwells (re-enters F or G) OR 3 consecutive ignored (reduces cadence further)</td></tr>
-        <tr><td><strong>F</strong></td><td>Just captured (post-loop)</td><td>1/week combined cap w/ G</td><td>1 (shared cap with G)</td><td>User prays (→ G), dismisses/ignores (no retry this week), or goes dormant 14+ days (→ E)</td></tr>
-        <tr><td><strong>G</strong></td><td>Just prayed (post-loop)</td><td>1/week combined cap w/ F</td><td>1 (shared cap with F)</td><td>User captures (→ F), dismisses/ignores (no retry this week), or goes dormant 14+ days (→ E)</td></tr>
-      </tbody>
-    </table>
-
-    <h3 class="sub-title">Typical User Paths &amp; Push Volume</h3>
-    <table class="doc-table">
-      <thead><tr><th>User Journey Path</th><th>Duration</th><th>Total Pushes</th><th>Scenario</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Complete funnel → Active F/G rhythm</strong></td><td>~7–14 days through funnel, then ongoing</td><td>3–5 funnel + 1/week ongoing (F/G)</td><td>Completes A → B → C → D in ~1 week, then enters healthy alternating F/G rhythm with 1 push/week ceiling</td></tr>
-        <tr><td><strong>Stalled at C (no prayer)</strong></td><td>30 days</td><td>~5–6</td><td>Captures but never prays; C fires weekly for 4 cycles + B pushes before first capture</td></tr>
-        <tr><td><strong>Stalled at D (prayed, no journal)</strong></td><td>7 days</td><td>1 push + 1 in-app</td><td>Prays but doesn't open journal; D fires once (single-shot), then expires — no further nudges for this prayer pair</td></tr>
-        <tr><td><strong>Drops after onboarding (Stage A)</strong></td><td>4 weeks</td><td>Up to 4</td><td>Never completes onboarding; A fires weekly until 4 cycles or completion</td></tr>
-        <tr><td><strong>Dormant dweller (Stage E)</strong></td><td>Ongoing at low cadence</td><td>~2/month</td><td>Was active, went quiet 14+ days; E fires every 14 days gently until re-engagement or 3 consecutive ignores</td></tr>
-      </tbody>
-    </table>
-
-    <h3 class="sub-title">Worst-Case Concurrent Notifications</h3>
-    <ul>
-      <li><strong>Per single user:</strong> 1 push per weekly send window (e.g., Thursday 8am). No stacking — if user misses a push, next push replaces it.</li>
-      <li><strong>Global (at 10K users):</strong> Estimated 1K–2K concurrent pushes on any given day (out of 10K total users, ~20% in active notification-eligible stages). FCM queue handles this without issue.</li>
-      <li><strong>Global (at 100K users):</strong> Estimated 10K–20K concurrent pushes. Still well within FCM capacity (handles millions/day).</li>
-    </ul>
-
-    <h3 class="sub-title">Cost Analysis (MVP + Year 1)</h3>
-    <table class="doc-table">
-      <thead><tr><th>Scale</th><th>Pushes/Month</th><th>FCM Cost</th><th>Notes</th></tr></thead>
-      <tbody>
-        <tr><td><strong>1K users</strong></td><td>2K–4K</td><td>$0</td><td>Free tier (FCM includes millions of messages)</td></tr>
-        <tr><td><strong>10K users</strong></td><td>20K–40K</td><td>$0</td><td>Free tier</td></tr>
-        <tr><td><strong>100K users</strong></td><td>200K–400K</td><td>$0–100/mo</td><td>Potentially enters paid tier (~$0.005 per message if needed, unlikely MVP)</td></tr>
-        <tr><td><strong>Year 1 (typical path 1K→10K)</strong></td><td>Avg 2K–20K</td><td>$0</td><td>Stays within free tier</td></tr>
-      </tbody>
-    </table>
-
-    <h3 class="sub-title">Per-User Cost at Different Scales</h3>
-    <ul>
-      <li><strong>1K active users:</strong> ~$0/user/month (free tier)</li>
-      <li><strong>10K active users:</strong> ~$0/user/month (free tier)</li>
-      <li><strong>100K active users:</strong> ~$0.01–0.05/user/month (if paid tier needed; current estimate: unlikely)</li>
-    </ul>
-
-    <h3 class="sub-title">Summary</h3>
-    <p><strong>MVP notification infrastructure is essentially free.</strong> FCM's free tier covers millions of messages monthly. Even at 100K users with 4 pushes/user/month, cost stays negligible. No cost barrier to MVP launch or year-1 scaling.</p>
-    <p><strong>Bottleneck is not cost; it's ensuring notifications drive measurable retention impact.</strong> See Section 16 (Tests) for measurement plan.</p>
-  </div>
-
-  <!-- 12. Implementation -->
-  <div class="doc-section" id="section-implementation">
-    <h2 class="section-title">12. Implementation Approach</h2>
-
-    <h3 class="sub-title">Phase 1: Infrastructure (Weeks 1–2)</h3>
-    <ul class="checklist">
-      <li>Set up push notification service (Firebase Cloud Messaging for iOS)</li>
-      <li>Build notification scheduling system</li>
-      <li>Implement opt-out/settings UI</li>
-      <li>Add analytics event logging</li>
-    </ul>
-
-    <h3 class="sub-title">Phase 2: User Segmentation (Weeks 2–3)</h3>
-    <ul class="checklist">
-      <li>Build logic to identify funnel stage (A, B, C, D, E, F, G) per user based on onboarding status, capture, prayer, journal, and time-since-last-activity signals</li>
-      <li>Store segment assignment in database</li>
-    </ul>
-
-    <h3 class="sub-title">Phase 3: Generic Notifications (Weeks 3–4)</h3>
-    <ul class="checklist">
-      <li>Write generic notification templates for each segment</li>
-      <li>Test delivery, timing, click behavior</li>
-      <li>Measure baseline CTR and conversion</li>
-    </ul>
-
-    <h3 class="sub-title">Phase 4: Timing Optimization (Weeks 5+)</h3>
-    <ul class="checklist">
-      <li>Analyze when users typically open app</li>
-      <li>Schedule notifications for optimal time</li>
-      <li>A/B test: fixed time vs. smart time</li>
-    </ul>
-  </div>
-
-  <!-- 13. Tickets -->
-  <div class="doc-section" id="section-tickets">
-    <h2 class="section-title">13. Tickets to Create</h2>
-    <table class="doc-table">
-      <thead><tr><th>Ticket</th><th>Title</th><th>Effort</th><th>Dependencies</th></tr></thead>
-      <tbody>
-        <tr><td>T-083</td><td>Setup: Firebase Cloud Messaging for push notifications</td><td>M</td><td>None</td></tr>
-        <tr><td>T-084</td><td>Build: Notification scheduling engine (cadence logic)</td><td>M</td><td>T-083</td></tr>
-        <tr><td>T-085</td><td>Build: Funnel stage logic (A, B, C, D, E, F, G) based on onboarding status, capture, prayer, journal return, and time-since-last-activity events</td><td>M</td><td>Analytics data</td></tr>
-        <tr><td>T-086</td><td>Build: Settings UI for notification preferences</td><td>S</td><td>T-083</td></tr>
-        <tr><td>T-087</td><td>Write: Generic notification templates (4 templates per segment)</td><td>S</td><td>T-085</td></tr>
-        <tr><td>T-088</td><td>Integrate: Analytics logging (notification events)</td><td>M</td><td>T-083, T-085</td></tr>
-        <tr><td>T-089</td><td>Test: Notification delivery on real devices</td><td>M</td><td>T-083 through T-088</td></tr>
-        <tr><td>T-090</td><td>Optimize: Send time based on user behavior</td><td>M</td><td>T-084, usage data</td></tr>
-        <tr><td>T-091</td><td>Polish: Edge cases, opt-out flows, error handling</td><td>M</td><td>All above</td></tr>
-      </tbody>
-    </table>
-    <p style="margin-top:10px; font-size:13px; color:#666;">Estimated effort: 9 tickets, ~100–150 hours (3–4 weeks)</p>
-    <p style="font-size:13px; color:#c0392b; margin-top:6px;"><strong>Blocker:</strong> Pillar 3 (Soaking) must be complete and compelling before Pillar 8 ships.</p>
-  </div>
-
-  <!-- 14. Dependencies -->
-  <div class="doc-section" id="section-dependencies">
-    <h2 class="section-title">14. Dependencies &amp; Blockers</h2>
-    <table class="doc-table">
-      <thead><tr><th>Dependency</th><th>Status</th><th>Impact</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Pillar 3 (Soaking/Prayer)</strong></td><td>In design</td><td>Dwelling must exist and be compelling before notifications invite users back to it</td></tr>
-        <tr><td><strong>Pillar 2 (E2E Encryption)</strong></td><td>LOCKED</td><td>Determines privacy promise (metadata-only personalization)</td></tr>
-        <tr><td><strong>Analytics/UsageTracker</strong></td><td>In development</td><td>Need to track prayer + prompt response events to determine funnel stage</td></tr>
-        <tr><td><strong>Settings UI</strong></td><td>Part of Pillar 5</td><td>Need settings page for notification preferences</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- 15. Risks -->
-  <div class="doc-section" id="section-risks">
-    <h2 class="section-title">15. Risks &amp; Constraints</h2>
-    <table class="doc-table">
-      <thead><tr><th>Risk</th><th>Impact</th><th>Mitigation</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Notification fatigue</strong></td><td>Users disable notifications, churn</td><td>Cap at 1–2/month; sparse is better than frequent</td></tr>
-        <tr><td><strong>Privacy backlash</strong></td><td>Users distrust Dwellable if notifications imply data access</td><td>Be transparent: "metadata only"; emphasize E2E encryption</td></tr>
-        <tr><td><strong>Generic notifications feel cold</strong></td><td>Low engagement, low conversion</td><td>Focus on tone and timing; avoid productivity language</td></tr>
-        <tr><td><strong>iOS notification suppression</strong></td><td>Some users' devices may suppress notifications</td><td>Design for low send frequency; respect user preferences</td></tr>
-        <tr><td><strong>Faith-app users may see notifications as pushy</strong></td><td>Increases churn risk</td><td>Test with pilot users; iterate messaging to be gentler</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- 16. Open Questions -->
-  <div class="doc-section" id="section-questions">
-    <h2 class="section-title">16. Open Questions</h2>
-    <p style="font-size:13px; color:#666; margin-bottom:14px;">Questions with ✅ are resolved and locked. Remaining open questions need resolution before ticket implementation begins.</p>
-    <ol style="padding-left: 18px;">
-      <li style="margin-bottom: 12px; font-size: 14px;">
-        <strong>✅ Should we launch Pillar 8 with generic notifications only, or wait for better personalization?</strong><br>
-        <span style="color:#2d6a4f;"><strong>Resolved:</strong> Ship locked MVP variants (generic, stage-specific copy) first. Validate that notifications drive return at all before adding personalization. Post-MVP topic-aware variants depend on LLM tournament outcome.</span>
-      </li>
-      <li style="margin-bottom: 12px; font-size: 14px;">
-        <strong>✅ How do we handle users who never engage with notifications?</strong><br>
-        <span style="color:#2d6a4f;"><strong>Resolved:</strong> Per-stage stop conditions are now locked in Section 5. Summary: most stages stop after 4 ignored cycles; Stage D is single-shot with no retry; Stage E reduces to pause after 3 consecutive ignores (42+ days). Settings manual pause always available via T-086.</span>
-      </li>
-      <li style="margin-bottom: 12px; font-size: 14px;">
-        <strong>✅ Should onboarding explain why they're receiving notifications?</strong><br>
-        <span style="color:#2d6a4f;"><strong>Resolved:</strong> Yes — Pillar 0 (Onboarding) now includes a dedicated Screen 6.5 between Privacy (Screen 6) and First Capture (Screen 7). Copy: "We'll only send sparse, gentle invitations when there's something worth coming back to." Opt-out model (default enabled). Filed into Pillar 0 strategy doc — see Cross-Pillar Requirements in Section 5.</span>
-      </li>
-      <li style="margin-bottom: 12px; font-size: 14px;">
-        <strong>✅ Should notification frequency be user-configurable?</strong><br>
-        <span style="color:#2d6a4f;"><strong>Resolved:</strong> Yes, via T-086 (Settings UI). Three modes: <strong>Default</strong> (all stage rules apply), <strong>Sparse</strong> (caps everything to 1x/month, suppresses F/G entirely), <strong>Off</strong> (push disabled; in-app contextual surfaces remain). A Sabbath / Quiet Days toggle will also be available for users observing a rest day.</span>
-      </li>
-      <li style="margin-bottom: 12px; font-size: 14px;">
-        <strong>⏳ LLM tournament outcome — effect on personalization depth</strong><br>
-        <span style="color:#666;">— <strong>Open:</strong> Post-MVP personalization (topic-aware copy for F/G and E alternation) requires a decision on whether to use a server-side LLM (Gemini — requires carving out a readable metadata field, relaxing E2E for that field) or on-device LLM (Mistral — full E2E, richer personalization without server access). Blocked until LLM tournament results are in. MVP ships with locked generic variants regardless.</span>
-      </li>
-      <li style="margin-bottom: 12px; font-size: 14px;">
-        <strong>⏳ Sabbath / Quiet Days toggle — implementation scope</strong><br>
-        <span style="color:#666;">— <strong>Open:</strong> T-086 (Settings UI) should include this toggle. Design decision needed: does "Quiet Day" suppress only push notifications, or also in-app contextual surfaces? And does the user set specific days, or flag an active period? Needs UX spec before T-086 begins.</span>
-      </li>
-    </ol>
-  </div>
-
   <!-- 17. Summary -->
   <div class="doc-section" id="section-summary">
     <h2 class="section-title">Summary</h2>
@@ -1671,6 +1435,230 @@ Cadence: 7am next morning after prayer. 1/week max combined across F + G (shared
       <strong>Status:</strong> Strategy locked. Section 5 stage reference table is the canonical spec. T-083 is the first implementation ticket. Pillar 3 (Soaking/Prayer) must ship first.
     </p>
   </div>
+
+  <!-- APPENDIX: Supporting Sections -->
+  <div class="doc-section" id="section-appendix" style="margin-top: 32px; padding-top: 32px; border-top: 2px solid #ddd;">
+    <h2 class="section-title" style="font-size: 20px; color: #1a5f4a;">Appendix: Supporting Sections</h2>
+    <p style="font-size: 13px; color: #666; margin-bottom: 24px;">Reference materials for extended context, alternatives considered, metrics, implementation details, and risks.</p>
+
+    <!-- A.1. Alternatives Considered -->
+    <div class="doc-section" id="section-alternatives">
+      <h3 class="section-title" style="font-size: 16px;">A.1. Alternatives Considered (Not Chosen)</h3>
+      <table class="doc-table">
+        <thead><tr><th>Alternative</th><th>Why Considered</th><th>Why Not Chosen</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Email notifications</strong></td><td>Reach more users, easier delivery</td><td>Email feels broadcast/impersonal; breaks intimacy of faith app</td></tr>
+          <tr><td><strong>Daily notifications</strong></td><td>Higher engagement, more touchpoints</td><td>Too noisy; violates faith philosophy; causes fatigue</td></tr>
+          <tr><td><strong>Streak gamification</strong></td><td>Proven engagement driver in habit apps</td><td>Original: contradicts faith-based philosophy; turns formation into productivity. <strong>Under reconsideration</strong> — light-touch passive display (Formation Trends only) may work if framed as witnessing presence, not enforcing habit. Hard rules if pursued: no 'at risk' messaging, no push to preserve streak.</td></tr>
+          <tr><td><strong>In-app badges/alerts</strong></td><td>Non-intrusive alternative to push</td><td>Requires app open; misses users who don't return</td></tr>
+          <tr><td><strong>SMS notifications</strong></td><td>High delivery rate, direct</td><td>Too intrusive; breaches privacy; not all users want SMS</td></tr>
+          <tr><td><strong>Notifications for all segments</strong></td><td>Maximize engagement</td><td>Wastes notifications on active users; causes churn</td></tr>
+          <tr><td><strong>High frequency (daily or weekly)</strong></td><td>Drive habit formation</td><td>Contradicts "sparse, meaningful" philosophy; risks fatigue</td></tr>
+          <tr><td><strong>Opt-in model</strong></td><td>Safer from trust perspective</td><td>Lower adoption; users who need notifications most won't opt in</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- A.2. Metrics -->
+    <div class="doc-section" id="section-metrics">
+      <h3 class="section-title" style="font-size: 16px;">A.2. Metrics to Track</h3>
+      <table class="doc-table">
+        <thead><tr><th>Metric</th><th>Definition</th><th>Success Target</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Push CTR → Prayer</strong></td><td>% of push notifications delivered that result in a prayer act</td><td>&gt;40%</td></tr>
+          <tr><td><strong>Push CTR → Capture</strong></td><td>% of push notifications delivered that result in a new capture</td><td>TBD (baseline first cohort)</td></tr>
+          <tr><td><strong>Push CTR → Journal Review</strong></td><td>% of push notifications delivered that result in a journal entry opened</td><td>TBD (baseline first cohort)</td></tr>
+          <tr><td><strong>In-App CTR → Prayer</strong></td><td>% of in-app nudges shown that result in a prayer act</td><td>&gt;40%</td></tr>
+          <tr><td><strong>In-App CTR → Capture</strong></td><td>% of in-app nudges shown that result in a new capture</td><td>TBD (baseline first cohort)</td></tr>
+          <tr><td><strong>In-App CTR → Journal Review</strong></td><td>% of in-app nudges shown that result in a journal entry opened</td><td>TBD (baseline first cohort)</td></tr>
+          <tr><td><strong>Conversion → Capture</strong></td><td>% of notification clicks/taps that lead to a new capture</td><td>TBD (baseline first cohort)</td></tr>
+          <tr><td><strong>Conversion → Prayer</strong></td><td>% of notification clicks/taps that lead to a completed prayer</td><td>&gt;30%</td></tr>
+          <tr><td><strong>Conversion → Journal Review</strong></td><td>% of notification clicks/taps that lead to a journal entry opened and read</td><td>TBD (baseline first cohort)</td></tr>
+          <tr><td><strong>D7 Retention</strong></td><td>% of users returning within 7 days after notification</td><td>&gt;35%</td></tr>
+          <tr><td><strong>Formation Engagement (post-notif)</strong></td><td>% of notified users who dwell within 3 days</td><td>&gt;25%</td></tr>
+          <tr><td><strong>Opt-out rate</strong></td><td>% of users who disable notifications</td><td>&lt;10%</td></tr>
+          <tr><td><strong>Segment conversion</strong></td><td>% of new users → first capture after notification</td><td>&gt;20%</td></tr>
+          <tr><td><strong>Churn impact</strong></td><td>Change in churn rate before/after notifications</td><td>No increase</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- A.3. Notification Volume Map -->
+    <div class="doc-section" id="section-volume-map">
+      <h3 class="section-title" style="font-size: 16px;">A.3. Notification Volume Map (MVP Scale &amp; Cost)</h3>
+
+      <h4 class="sub-title">Max Sends Per Stage Per Month</h4>
+      <table class="doc-table">
+        <thead><tr><th>Stage</th><th>Trigger Type</th><th>Cadence</th><th>Max Sends/Month</th><th>Stop Condition</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A</strong></td><td>Incomplete onboarding</td><td>1/week at 7am</td><td>4</td><td>Onboarding completes OR 4 consecutive ignored</td></tr>
+          <tr><td><strong>B</strong></td><td>No captures yet</td><td>1/week at 7am</td><td>4</td><td>First capture made OR 4 weeks no capture OR 2 push dismissals</td></tr>
+          <tr><td><strong>C</strong></td><td>Captured, no prayer</td><td>1/week at 7am (push + in-app)</td><td>4 push + up to 4 in-app</td><td>Prayer completed OR 4 cycles ignored/dismissed</td></tr>
+          <tr><td><strong>D</strong></td><td>Prayed, no journal return</td><td>Single-shot (1 push + 1 in-app total)</td><td>1 push + 1 in-app</td><td>Journal opened OR both expired without action — no retry</td></tr>
+          <tr><td><strong>E</strong></td><td>Dormant 14+ days</td><td>1/14 days</td><td>~2</td><td>User dwells (re-enters F or G) OR 3 consecutive ignored (reduces cadence further)</td></tr>
+          <tr><td><strong>F</strong></td><td>Just captured (post-loop)</td><td>1/week combined cap w/ G</td><td>1 (shared cap with G)</td><td>User prays (→ G), dismisses/ignores (no retry this week), or goes dormant 14+ days (→ E)</td></tr>
+          <tr><td><strong>G</strong></td><td>Just prayed (post-loop)</td><td>1/week combined cap w/ F</td><td>1 (shared cap with F)</td><td>User captures (→ F), dismisses/ignores (no retry this week), or goes dormant 14+ days (→ E)</td></tr>
+        </tbody>
+      </table>
+
+      <h4 class="sub-title">Typical User Paths &amp; Push Volume</h4>
+      <table class="doc-table">
+        <thead><tr><th>User Journey Path</th><th>Duration</th><th>Total Pushes</th><th>Scenario</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Complete funnel → Active F/G rhythm</strong></td><td>~7–14 days through funnel, then ongoing</td><td>3–5 funnel + 1/week ongoing (F/G)</td><td>Completes A → B → C → D in ~1 week, then enters healthy alternating F/G rhythm with 1 push/week ceiling</td></tr>
+          <tr><td><strong>Stalled at C (no prayer)</strong></td><td>30 days</td><td>~5–6</td><td>Captures but never prays; C fires weekly for 4 cycles + B pushes before first capture</td></tr>
+          <tr><td><strong>Stalled at D (prayed, no journal)</strong></td><td>7 days</td><td>1 push + 1 in-app</td><td>Prays but doesn't open journal; D fires once (single-shot), then expires — no further nudges for this prayer pair</td></tr>
+          <tr><td><strong>Drops after onboarding (Stage A)</strong></td><td>4 weeks</td><td>Up to 4</td><td>Never completes onboarding; A fires weekly until 4 cycles or completion</td></tr>
+          <tr><td><strong>Dormant dweller (Stage E)</strong></td><td>Ongoing at low cadence</td><td>~2/month</td><td>Was active, went quiet 14+ days; E fires every 14 days gently until re-engagement or 3 consecutive ignores</td></tr>
+        </tbody>
+      </table>
+
+      <h4 class="sub-title">Worst-Case Concurrent Notifications</h4>
+      <ul>
+        <li><strong>Per single user:</strong> 1 push per weekly send window (e.g., Thursday 8am). No stacking — if user misses a push, next push replaces it.</li>
+        <li><strong>Global (at 10K users):</strong> Estimated 1K–2K concurrent pushes on any given day (out of 10K total users, ~20% in active notification-eligible stages). FCM queue handles this without issue.</li>
+        <li><strong>Global (at 100K users):</strong> Estimated 10K–20K concurrent pushes. Still well within FCM capacity (handles millions/day).</li>
+      </ul>
+
+      <h4 class="sub-title">Cost Analysis (MVP + Year 1)</h4>
+      <table class="doc-table">
+        <thead><tr><th>Scale</th><th>Pushes/Month</th><th>FCM Cost</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>1K users</strong></td><td>2K–4K</td><td>$0</td><td>Free tier (FCM includes millions of messages)</td></tr>
+          <tr><td><strong>10K users</strong></td><td>20K–40K</td><td>$0</td><td>Free tier</td></tr>
+          <tr><td><strong>100K users</strong></td><td>200K–400K</td><td>$0–100/mo</td><td>Potentially enters paid tier (~$0.005 per message if needed, unlikely MVP)</td></tr>
+          <tr><td><strong>Year 1 (typical path 1K→10K)</strong></td><td>Avg 2K–20K</td><td>$0</td><td>Stays within free tier</td></tr>
+        </tbody>
+      </table>
+
+      <h4 class="sub-title">Per-User Cost at Different Scales</h4>
+      <ul>
+        <li><strong>1K active users:</strong> ~$0/user/month (free tier)</li>
+        <li><strong>10K active users:</strong> ~$0/user/month (free tier)</li>
+        <li><strong>100K active users:</strong> ~$0.01–0.05/user/month (if paid tier needed; current estimate: unlikely)</li>
+      </ul>
+
+      <h4 class="sub-title">Summary</h4>
+      <p><strong>MVP notification infrastructure is essentially free.</strong> FCM's free tier covers millions of messages monthly. Even at 100K users with 4 pushes/user/month, cost stays negligible. No cost barrier to MVP launch or year-1 scaling.</p>
+      <p><strong>Bottleneck is not cost; it's ensuring notifications drive measurable retention impact.</strong> See Appendix A.6 for measurement plan.</p>
+    </div>
+
+    <!-- A.4. Implementation -->
+    <div class="doc-section" id="section-implementation">
+      <h3 class="section-title" style="font-size: 16px;">A.4. Implementation Approach</h3>
+
+      <h4 class="sub-title">Phase 1: Infrastructure (Weeks 1–2)</h4>
+      <ul class="checklist">
+        <li>Set up push notification service (Firebase Cloud Messaging for iOS)</li>
+        <li>Build notification scheduling system</li>
+        <li>Implement opt-out/settings UI</li>
+        <li>Add analytics event logging</li>
+      </ul>
+
+      <h4 class="sub-title">Phase 2: User Segmentation (Weeks 2–3)</h4>
+      <ul class="checklist">
+        <li>Build logic to identify funnel stage (A, B, C, D, E, F, G) per user based on onboarding status, capture, prayer, journal, and time-since-last-activity signals</li>
+        <li>Store segment assignment in database</li>
+      </ul>
+
+      <h4 class="sub-title">Phase 3: Generic Notifications (Weeks 3–4)</h4>
+      <ul class="checklist">
+        <li>Write generic notification templates for each segment</li>
+        <li>Test delivery, timing, click behavior</li>
+        <li>Measure baseline CTR and conversion</li>
+      </ul>
+
+      <h4 class="sub-title">Phase 4: Timing Optimization (Weeks 5+)</h4>
+      <ul class="checklist">
+        <li>Analyze when users typically open app</li>
+        <li>Schedule notifications for optimal time</li>
+        <li>A/B test: fixed time vs. smart time</li>
+      </ul>
+    </div>
+
+    <!-- A.5. Tickets -->
+    <div class="doc-section" id="section-tickets">
+      <h3 class="section-title" style="font-size: 16px;">A.5. Tickets to Create</h3>
+      <table class="doc-table">
+        <thead><tr><th>Ticket</th><th>Title</th><th>Effort</th><th>Dependencies</th></tr></thead>
+        <tbody>
+          <tr><td>T-083</td><td>Setup: Firebase Cloud Messaging for push notifications</td><td>M</td><td>None</td></tr>
+          <tr><td>T-084</td><td>Build: Notification scheduling engine (cadence logic)</td><td>M</td><td>T-083</td></tr>
+          <tr><td>T-085</td><td>Build: Funnel stage logic (A, B, C, D, E, F, G) based on onboarding status, capture, prayer, journal return, and time-since-last-activity events</td><td>M</td><td>Analytics data</td></tr>
+          <tr><td>T-086</td><td>Build: Settings UI for notification preferences</td><td>S</td><td>T-083</td></tr>
+          <tr><td>T-087</td><td>Write: Generic notification templates (4 templates per segment)</td><td>S</td><td>T-085</td></tr>
+          <tr><td>T-088</td><td>Integrate: Analytics logging (notification events)</td><td>M</td><td>T-083, T-085</td></tr>
+          <tr><td>T-089</td><td>Test: Notification delivery on real devices</td><td>M</td><td>T-083 through T-088</td></tr>
+          <tr><td>T-090</td><td>Optimize: Send time based on user behavior</td><td>M</td><td>T-084, usage data</td></tr>
+          <tr><td>T-091</td><td>Polish: Edge cases, opt-out flows, error handling</td><td>M</td><td>All above</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:10px; font-size:13px; color:#666;">Estimated effort: 9 tickets, ~100–150 hours (3–4 weeks)</p>
+      <p style="font-size:13px; color:#c0392b; margin-top:6px;"><strong>Blocker:</strong> Pillar 3 (Soaking) must be complete and compelling before Pillar 8 ships.</p>
+    </div>
+
+    <!-- A.6. Dependencies -->
+    <div class="doc-section" id="section-dependencies">
+      <h3 class="section-title" style="font-size: 16px;">A.6. Dependencies &amp; Blockers</h3>
+      <table class="doc-table">
+        <thead><tr><th>Dependency</th><th>Status</th><th>Impact</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Pillar 3 (Soaking/Prayer)</strong></td><td>In design</td><td>Dwelling must exist and be compelling before notifications invite users back to it</td></tr>
+          <tr><td><strong>Pillar 2 (E2E Encryption)</strong></td><td>LOCKED</td><td>Determines privacy promise (metadata-only personalization)</td></tr>
+          <tr><td><strong>Analytics/UsageTracker</strong></td><td>In development</td><td>Need to track prayer + prompt response events to determine funnel stage</td></tr>
+          <tr><td><strong>Settings UI</strong></td><td>Part of Pillar 5</td><td>Need settings page for notification preferences</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- A.7. Risks -->
+    <div class="doc-section" id="section-risks">
+      <h3 class="section-title" style="font-size: 16px;">A.7. Risks &amp; Constraints</h3>
+      <table class="doc-table">
+        <thead><tr><th>Risk</th><th>Impact</th><th>Mitigation</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Notification fatigue</strong></td><td>Users disable notifications, churn</td><td>Cap at 1–2/month; sparse is better than frequent</td></tr>
+          <tr><td><strong>Privacy backlash</strong></td><td>Users distrust Dwellable if notifications imply data access</td><td>Be transparent: "metadata only"; emphasize E2E encryption</td></tr>
+          <tr><td><strong>Generic notifications feel cold</strong></td><td>Low engagement, low conversion</td><td>Focus on tone and timing; avoid productivity language</td></tr>
+          <tr><td><strong>iOS notification suppression</strong></td><td>Some users' devices may suppress notifications</td><td>Design for low send frequency; respect user preferences</td></tr>
+          <tr><td><strong>Faith-app users may see notifications as pushy</strong></td><td>Increases churn risk</td><td>Test with pilot users; iterate messaging to be gentler</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- A.8. Open Questions -->
+    <div class="doc-section" id="section-questions">
+      <h3 class="section-title" style="font-size: 16px;">A.8. Open Questions</h3>
+      <p style="font-size:13px; color:#666; margin-bottom:14px;">Questions with ✅ are resolved and locked. Remaining open questions need resolution before ticket implementation begins.</p>
+      <ol style="padding-left: 18px;">
+        <li style="margin-bottom: 12px; font-size: 14px;">
+          <strong>✅ Should we launch Pillar 8 with generic notifications only, or wait for better personalization?</strong><br>
+          <span style="color:#2d6a4f;"><strong>Resolved:</strong> Ship locked MVP variants (generic, stage-specific copy) first. Validate that notifications drive return at all before adding personalization. Post-MVP topic-aware variants depend on LLM tournament outcome.</span>
+        </li>
+        <li style="margin-bottom: 12px; font-size: 14px;">
+          <strong>✅ How do we handle users who never engage with notifications?</strong><br>
+          <span style="color:#2d6a4f;"><strong>Resolved:</strong> Per-stage stop conditions are now locked in Section 5. Summary: most stages stop after 4 ignored cycles; Stage D is single-shot with no retry; Stage E reduces to pause after 3 consecutive ignores (42+ days). Settings manual pause always available via T-086.</span>
+        </li>
+        <li style="margin-bottom: 12px; font-size: 14px;">
+          <strong>✅ Should onboarding explain why they're receiving notifications?</strong><br>
+          <span style="color:#2d6a4f;"><strong>Resolved:</strong> Yes — Pillar 0 (Onboarding) now includes a dedicated Screen 6.5 between Privacy (Screen 6) and First Capture (Screen 7). Copy: "We'll only send sparse, gentle invitations when there's something worth coming back to." Opt-out model (default enabled). Filed into Pillar 0 strategy doc — see Cross-Pillar Requirements in Section 5.</span>
+        </li>
+        <li style="margin-bottom: 12px; font-size: 14px;">
+          <strong>✅ Should notification frequency be user-configurable?</strong><br>
+          <span style="color:#2d6a4f;"><strong>Resolved:</strong> Yes, via T-086 (Settings UI). Three modes: <strong>Default</strong> (all stage rules apply), <strong>Sparse</strong> (caps everything to 1x/month, suppresses F/G entirely), <strong>Off</strong> (push disabled; in-app contextual surfaces remain). A Sabbath / Quiet Days toggle will also be available for users observing a rest day.</span>
+        </li>
+        <li style="margin-bottom: 12px; font-size: 14px;">
+          <strong>⏳ LLM tournament outcome — effect on personalization depth</strong><br>
+          <span style="color:#666;">— <strong>Open:</strong> Post-MVP personalization (topic-aware copy for F/G and E alternation) requires a decision on whether to use a server-side LLM (Gemini — requires carving out a readable metadata field, relaxing E2E for that field) or on-device LLM (Mistral — full E2E, richer personalization without server access). Blocked until LLM tournament results are in. MVP ships with locked generic variants regardless.</span>
+        </li>
+        <li style="margin-bottom: 12px; font-size: 14px;">
+          <strong>⏳ Sabbath / Quiet Days toggle — implementation scope</strong><br>
+          <span style="color:#666;">— <strong>Open:</strong> T-086 (Settings UI) should include this toggle. Design decision needed: does "Quiet Day" suppress only push notifications, or also in-app contextual surfaces? And does the user set specific days, or flag an active period? Needs UX spec before T-086 begins.</span>
+        </li>
+      </ol>
+    </div>
+
+  </div><!-- /appendix -->
 
 </div><!-- /doc-wrapper -->
 
@@ -2233,10 +2221,12 @@ Cadence: 7am next morning after prayer. 1/week max combined across F + G (shared
     output += `with replies in the agentResponses object. Refresh to see responses.\n`;
 
     // Also export raw JSON for agent processing
+    const edits = loadEdits();
     const jsonPayload = {
       exportedAt: new Date().toISOString(),
       comments: comments,
-      agentResponses: agentResponses
+      agentResponses: agentResponses,
+      edits: edits
     };
 
     output += `\n\n${'═'.repeat(60)}\nRAW JSON (for agent processing)\n${'═'.repeat(60)}\n`;

@@ -13,6 +13,37 @@
 
 ---
 
+## Formation Intelligence System
+
+**What Pillar 0 Is (in the Formation Intelligence System):**
+
+P0 is the **identity foundation** — it establishes who the user is before they capture anything. Without P0, we'd be a generic journaling app. With P0, we become a formation tool tailored to their journey.
+
+**What Pillar 0 Learns:**
+- **User's spiritual intent:** What brought them to Dwellable? (notice God, remember faithfulness, see patterns, mark seasons, etc.)
+- **User's prayer rhythm aspiration:** How often do they intend to dwell? (daily, a few times/week, unpredictable)
+- **User's theological framework:** What tradition do they come from? (Christianity vs. other faith, denominational/non-denominational)
+- **User's communication style:** How do they want to be supported? (direct/gentle, theological/pastoral, challenge/encouragement)
+- **User's baseline foundation:** Affirms "You are valuable and worthy" — this is the theological baseline that informs all future interactions
+
+**What System Infers:**
+- User's spiritual maturity level (language used, specificity of intent)
+- User's relationship to Scripture (are they wrestling? seeking? celebrating?)
+- User's expected engagement depth (daily dwellers vs. seasonal reflectors)
+- User's emotional readiness for spiritual formation work
+
+**How Pillar 0 Prepares Pillar 1 (Capture):**
+- **→ P1:** Name, intent, theology inform what kind of **prompts** to offer (P1 uses intent to contextualize moment-capture invitations)
+- **→ P3:** Prayer rhythm expectation informs **prayer depth + frequency** messaging
+- **→ All Pillars:** Identity baseline ("You are worthy") becomes the theological foundation that all personalized content references
+
+**Formation Intelligence Value:**
+- P0 transforms Dwellable from generic app → personal formation companion
+- Users are NOT starting from zero; they're starting from "You're valuable to God" (affirms before they even capture)
+- All downstream personalization (Rich Context, prompts, themes, notifications) traces back to who they told us they are in P0
+
+---
+
 ## Skeletal System Overview
 
 7-screen sequential flow that educates, collects intent data, and launches first capture:
