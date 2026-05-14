@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 12, 2026 — Notifications Strategy Collab Review doc: User Segmentation Matrix added (all 8 scenarios with single signal indicator per row), design questions locked (streaks removed, C1 variants clarified, A0 push strategy confirmed, C2 cadence set to 1-push-max-in-month at day 7), parity fixes complete between Quick Reference table and detail sections, MVP/Post-MVP phase indicators throughout; Next: Finish remaining doc sections, then generate T-083–T-091 implementation tickets
-**Status:** 72/96 tickets complete (75%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, P0-P4 skeleton + FI locked, P5-P7 FI clarified + locked, Notifications strategy doc ~85% finalized
+**Last Updated:** May 14, 2026 — Notifications Strategy Collab Review doc: ALL sections now aligned with final A–G stage reference table. Sections 4, 6, 9, 11.5, 12, 13, 16, and Summary updated: old stage names (A0/B1/B2/C1/C2/C3/D) replaced throughout; Section 9 examples completely rewritten with locked copy variants per stage; Section 16 open questions resolved (4 closed, 2 new genuine open items); Summary table now reflects full A–G taxonomy + universal 7am timing + mutually-suppressive parity model. T-084, T-085, T-087 descriptions updated to reflect final stage naming. Notifications strategy doc is now COMPLETE and ready for implementation.
+**Status:** 72/96 tickets complete (75%), 0 in progress, Build 107 on TestFlight, Phase 1 complete, P0-P4 skeleton + FI locked, P5-P7 FI clarified + locked, Notifications strategy doc ✅ FULLY FINALIZED (all sections aligned with A–G stage table)
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -424,12 +424,12 @@
   - Dependencies: T-083
   - Priority: HIGH
 
-- [ ] **T-085:** Build: User segmentation logic (new, non-soaker, occasional, active) 🔲 **NOT STARTED**
-  - Logic to identify segment: new users, non-soakers, occasional soakers, active dwellers
-  - Store segment assignment in database
-  - Update segment on each user interaction
+- [ ] **T-085:** Build: Funnel stage logic (A, B, C, D, E, F, G) for user segmentation 🔲 **NOT STARTED**
+  - Logic to identify stage per user based on: onboarding status, capture history, prayer history, journal return, and time-since-last-activity
+  - A = incomplete onboarding; B = no captures; C = captured/no prayer; D = prayed/no journal return; E = dormant 14+ days; F = just captured (post-loop, ≤13 days); G = just prayed (post-loop, ≤13 days)
+  - Store stage assignment in database; update on each user event
   - Estimated effort: M (12-15 hours)
-  - Dependencies: Analytics data
+  - Dependencies: Analytics data (T-018/T-019), T-083
   - Priority: HIGH
 
 - [ ] **T-086:** Build: Settings UI for notification preferences 🔲 **NOT STARTED**

@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complete Stage Reference — Preview</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #fafafa;
+    color: #222;
+    margin: 0;
+    padding: 0;
+    line-height: 1.4;
+  }
+
+  /* TOOLBAR */
+  .toolbar {
+    background: #1a1a1a;
+    color: white;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .toolbar-title { font-weight: 600; font-size: 14px; }
+  .comment-count { font-size: 13px; color: #aaa; margin-left: 8px; }
+  .toolbar-spacer { flex: 1; }
+  .btn {
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #2a2a2a;
+    color: #ddd;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: #3a3a3a; border-color: #666; color: white; }
+  .btn-edit.active { background: #2d6a4f; border-color: #4ade80; color: #4ade80; }
+  .btn-export { background: #c9b27c; color: #1a1a1a; border-color: #c9b27c; font-weight: 600; }
+  .btn-export:hover { background: #b8a06b; color: #1a1a1a; }
+  .btn-danger { color: #f87171; }
+  .btn-danger:hover { color: #fca5a5; }
+
+  /* CONTENT */
+  .wrapper {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 8px 0; }
+  .intro {
+    font-size: 14px; color: #555; margin-bottom: 24px; font-style: italic;
+  }
+
+  /* TABLE */
+  .table-wrap {
+    overflow-x: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 1400px;
+  }
+  thead tr { background: #2c3e50; color: white; }
+  th {
+    text-align: left;
+    padding: 12px 10px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    vertical-align: top;
+  }
+  th:last-child { border-right: none; }
+  td {
+    padding: 14px 10px;
+    border-bottom: 1px solid #eee;
+    border-right: 1px solid #f0f0f0;
+    vertical-align: top;
+    line-height: 1.45;
+  }
+  td:last-child { border-right: none; }
+  tbody tr:hover { background: #fafafa; }
+  tbody tr.stage-d { background: #fffacd; }
+  tbody tr.stage-d:hover { background: #fff5b0; }
+  .stage-label { font-weight: 700; font-size: 18px; color: #2c3e50; display: block; }
+  .stage-subtitle {
+    display: block;
+    font-weight: 600;
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 4px;
+    font-style: italic;
+    line-height: 1.3;
+  }
+  .condition-cell { text-align: center; font-weight: 600; color: #444; }
+  .condition-cell.yes { color: #27ae60; }
+  .condition-cell.no { color: #c0392b; }
+  .condition-cell.signal { color: #c0392b; font-weight: 700; }
+  ul.variant-list { margin: 0; padding-left: 16px; }
+  ul.variant-list li { margin-bottom: 6px; }
+  .channel-label {
+    font-weight: 600; color: #2c3e50; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    display: block; margin-bottom: 4px; margin-top: 8px;
+  }
+  .channel-label:first-child { margin-top: 0; }
+  em { color: #888; font-size: 12px; }
+  .tap-flow {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: #eef5fb;
+    border-left: 3px solid #4a90c2;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    color: #2c4a66;
+  }
+  .tap-flow-label {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-size: 10px;
+    color: #4a90c2;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  /* CHANNEL STRATEGY (parity logic) */
+  .channel-strategy {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: #e6f5ee;
+    border-left: 3px solid #2d6a4f;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    color: #1e4d36;
+  }
+  .channel-strategy-label {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-size: 10px;
+    color: #2d6a4f;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .channel-strategy ul {
+    margin: 4px 0 0 0;
+    padding-left: 16px;
+  }
+  .channel-strategy li { margin-bottom: 3px; }
+  .channel-strategy strong { color: #1e4d36; }
+
+  /* OUTCOME BLOCKS within Channel Strategy */
+  .strategy-outcome {
+    margin-top: 8px;
+    padding: 6px 8px;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #d1e7dd;
+  }
+  .strategy-outcome:first-of-type { margin-top: 6px; }
+  .outcome-label {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-bottom: 4px;
+  }
+  .outcome-label.tap     { background: #2d6a4f; color: white; }
+  .outcome-label.dismiss { background: #fef3c7; color: #92400e; }
+  .outcome-label.ignore  { background: #fee2e2; color: #991b1b; }
+  .outcome-label.act-app { background: #dbeafe; color: #1e40af; }
+  .outcome-label.expire  { background: #e5e7eb; color: #374151; }
+  .strategy-outcome ul {
+    margin: 2px 0 0 0;
+    padding-left: 14px;
+  }
+  .strategy-outcome li { margin-bottom: 2px; font-size: 11.5px; }
+  .strategy-outcome .lands {
+    font-size: 11.5px;
+    color: #1e4d36;
+    margin-top: 2px;
+  }
+  .strategy-outcome .lands strong { color: #144d33; }
+
+  /* TRIGGER-TO PILL */
+  .trigger-to {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1e40af;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .trigger-to::before {
+    content: "→ Encouraging: ";
+    color: #1e40af;
+    opacity: 0.8;
+  }
+
+  /* GOAL / INTENT BOX */
+  .stage-goal {
+    background: #f3e8ff;
+    border-left: 3px solid #8b5cf6;
+    padding: 8px 10px;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #5b21b6;
+  }
+  .stage-goal-label {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-size: 10px;
+    color: #8b5cf6;
+    display: block;
+    margin-bottom: 3px;
+  }
+  .stage-goal strong { color: #4c1d95; }
+
+  /* N/A IN-APP NOTE */
+  .na-note {
+    font-style: italic;
+    color: #888;
+    font-size: 12px;
+    padding: 8px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    border-left: 3px solid #ccc;
+  }
+
+  /* GLOBAL PARITY BANNER */
+  .parity-banner {
+    background: linear-gradient(90deg, #e6f5ee, #f0faf5);
+    border: 1px solid #2d6a4f;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #1e4d36;
+    line-height: 1.5;
+  }
+  .parity-banner strong { color: #144d33; }
+  .parity-banner-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  /* EDIT MODE */
+  body.edit-mode td {
+    background: #fffdf5;
+    cursor: text;
+  }
+  body.edit-mode td[contenteditable="true"]:focus {
+    outline: 2px solid #c9b27c;
+    background: #fff8e1 !important;
+  }
+  body.edit-mode tbody tr.stage-d td { background: #fffacd; }
+
+  /* DELETE ROW BUTTON */
+  .delete-row-btn {
+    display: none;
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 6px;
+    transition: all 0.15s;
+  }
+  .delete-row-btn:hover {
+    background: #b91c1c;
+    color: white;
+    border-color: #b91c1c;
+    transform: scale(1.1);
+  }
+  body.edit-mode .delete-row-btn { display: inline-block; }
+
+  /* COMMENT HIGHLIGHT */
+  mark.comment-mark {
+    background: rgba(201, 178, 124, 0.4);
+    padding: 1px 2px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  mark.comment-mark:hover { background: rgba(201, 178, 124, 0.65); }
+
+  /* COMMENT FLOATING BUTTON */
+  #comment-btn {
+    position: fixed;
+    z-index: 200;
+    background: #2c2418;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    align-items: center;
+    gap: 6px;
+  }
+  #comment-btn:hover { background: #3d3028; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+  }
+  .modal-box h3 { margin: 0 0 12px 0; font-size: 16px; }
+  .modal-quoted {
+    background: #f5f3ef;
+    border-left: 3px solid #c9b27c;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-style: italic;
+    color: #555;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+  }
+  textarea:focus { outline: 2px solid #c9b27c; border-color: #c9b27c; }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .btn-cancel {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .btn-submit {
+    padding: 8px 16px;
+    border: none;
+    background: #c9b27c;
+    color: #1a1a1a;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .btn-submit:hover { background: #b8a06b; }
+
+  /* COMMENT THREADS */
+  .comment-threads {
+    margin-top: 32px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    padding: 20px;
+  }
+  .comment-threads h2 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    color: #2c3e50;
+  }
+  .comment-thread {
+    border-left: 3px solid #c9b27c;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: #faf8f3;
+    border-radius: 0 6px 6px 0;
+  }
+  .comment-quoted-thread {
+    background: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-style: italic;
+    color: #777;
+    margin-bottom: 8px;
+  }
+  .comment-body { font-size: 14px; color: #2c2420; line-height: 1.5; }
+  .comment-meta {
+    font-size: 11px;
+    color: #888;
+    margin-top: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .btn-delete-comment {
+    background: none;
+    border: 1px solid #e0c4c4;
+    color: #c0392b;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .btn-delete-comment:hover { background: #fdecea; }
+
+  /* LEGEND */
+  .legend {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #666;
+    padding: 12px 16px;
+    background: #f4f4f4;
+    border-radius: 6px;
+  }
+  .legend strong { color: #333; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2d6a4f;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 400;
+    display: none;
+    font-size: 14px;
+  }
+  .toast.show { display: block; animation: toastIn 0.25s ease; }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translate(-50%, 12px); }
+    to   { opacity: 1; transform: translate(-50%, 0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <span class="toolbar-title">📋 Stage Reference Preview</span>
+  <span class="comment-count" id="comment-count">0 comments</span>
+  <div class="toolbar-spacer"></div>
+  <button class="btn btn-edit" id="btn-edit" onclick="toggleEditMode()">✏️ Edit Table</button>
+  <button class="btn btn-export" onclick="exportAll()">↓ Export Edits + Comments</button>
+  <button class="btn btn-danger" onclick="resetAll()" title="Clear all edits and comments">↺ Reset</button>
+</div>
+
+<div class="wrapper">
+  <h1>Complete Stage Reference — All Scenarios & Messaging</h1>
+  <p class="intro">One row = one complete stage understanding. Left columns show user condition (what they've done); right columns show the notification specification (trigger, messaging, cool-off). <strong>Select any text to add a comment. Click "Edit Table" to modify content directly.</strong></p>
+
+  <!-- STEWARDING & DWELLING TAXONOMY (LOCKED) -->
+  <div style="background: #fdf4ff; border: 1px solid #d8b4fe; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; font-size: 13px; color: #581c87; line-height: 1.5;">
+    <span style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px; color: #581c87;">📖 Terminology (Locked)</span>
+
+    <div style="background: white; border-left: 3px solid #a855f7; padding: 8px 12px; margin-top: 6px; border-radius: 0 4px 4px 0;">
+      <strong style="color: #581c87;">Stewarding</strong> — the umbrella entry act
+      <ul style="margin: 4px 0 0 0; padding-left: 18px;">
+        <li><strong>Capturing a moment</strong> (no prompt engagement) — the user is "stewarding" what's on their heart but not yet going deeper.</li>
+      </ul>
+    </div>
+
+    <div style="background: white; border-left: 3px solid #a855f7; padding: 8px 12px; margin-top: 8px; border-radius: 0 4px 4px 0;">
+      <strong style="color: #581c87;">Dwelling</strong> — three forms, ranked from deepest to lightest
+      <ol style="margin: 4px 0 0 0; padding-left: 22px;">
+        <li><strong>Praying</strong> on a captured moment — <em>highest form of dwelling</em></li>
+        <li><strong>Capturing + responding to prompts</strong> — <em>2nd highest form</em> (capture deepened by prompt engagement)</li>
+        <li><strong>Editing a journal entry</strong> — <em>3rd highest form</em></li>
+      </ol>
+    </div>
+
+    <p style="margin: 10px 0 0 0; font-size: 12px;"><strong>Retired terms:</strong> "Soaking" (use "dwelling"). <strong>Parked:</strong> "Reflecting vs Dwelling" relationship — revisit later.</p>
+
+    <div style="margin-top: 10px; padding: 8px 12px; background: #fef3c7; border-left: 3px solid #f59e0b; border-radius: 0 4px 4px 0; font-size: 12px; color: #78350f;">
+      <strong>⚠️ Important Scope Clarification:</strong> This taxonomy describes <strong>product-level user-action precedence</strong> (which acts count as deeper engagement). It does <strong>NOT route notifications</strong>. Specifically: <strong>prompt response is form #2 dwelling for product purposes, but has zero influence on notification timing, copy, or routing.</strong> Whether a user responded to prompts or not, the notification engine treats them the same. The stage table below reflects only notification-relevant signals (capture, prayer, journal return).
+    </div>
+  </div>
+
+  <!-- PILLAR DEPENDENCIES -->
+  <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; font-size: 13px; color: #7f1d1d; line-height: 1.5;">
+    <span style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px; color: #7f1d1d;">📌 Cross-Pillar Requirements (Flow Back to Other Pillars)</span>
+    This notification strategy <strong>depends on</strong> these requirements being locked into other pillars. They surfaced during this strategy work and need to be formalized:
+    <ul style="margin: 6px 0 0 0; padding-left: 18px;">
+      <li><strong>Pillar 0 (Onboarding):</strong> Must mandate <strong>first capture before app navigation</strong>. User cannot bypass capture to access broader app features. Without this, Stage B's "push only / no in-app parity" assumption breaks. <span style="background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 3px; font-weight: 700; font-size: 11px;">✓ FILED INTO PILLAR 0 STRATEGY DOC</span></li>
+      <li><strong>Pillar 4 (Journal):</strong> Journal entries can only exist as <strong>AI synthesis from prayer</strong>. No standalone journal creation. This is why C2 (journaled-without-prayer) was removed — logically impossible.</li>
+      <li><strong>Pillar 0 (Onboarding) — Screen 6.5 Notification Permission:</strong> Standalone screen between Privacy (Screen 6) and First Capture (Screen 7). Opt-out model; if user declines, no notifications fire ever (Pillar 8 engine respects OS permission flag). <span style="background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 3px; font-weight: 700; font-size: 11px;">✓ FILED INTO PILLAR 0 STRATEGY DOC</span></li>
+      <li><strong>T-086 (Settings UI):</strong> Three notification modes — <strong>Default</strong> (all stage rules apply), <strong>Sparse</strong> (caps everything to 1x/month, suppresses F/G entirely), <strong>Off</strong> (push disabled; in-app stays). Add <strong>Sabbath / Quiet Days toggle</strong> for users observing a rest day.</li>
+    </ul>
+  </div>
+
+  <div style="background: #faf5e6; border: 1px solid #c9b27c; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; font-size: 13px; color: #5a4a1f; line-height: 1.5;">
+    <span style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px; color: #5a4a1f;">⏱ 7-Day Funnel Window (Design Philosophy)</span>
+    A dweller can complete the full funnel — capture → prayer → journal return — within <strong>~3 days</strong> if they engage with each notification. The <strong>7-day window</strong> is the buffer.
+    <ul style="margin: 8px 0 0 0; padding-left: 18px;">
+      <li><strong>Day 1:</strong> Stage B push fires → user captures.</li>
+      <li><strong>Day 2 (~12h after capture):</strong> Stage C push fires → user prays.</li>
+      <li><strong>Day 3 (8am after prayer):</strong> Stage D push fires → user returns to journal.</li>
+      <li><strong>Day 7:</strong> If user is still in B/C/D, soft-escalate or pause — respect their pace.</li>
+    </ul>
+    <em>This window is a Pillar 0/1 design principle. The stage table below enforces it through cool-off windows aligned with the 7-day frame.</em>
+  </div>
+
+  <div class="parity-banner">
+    <span class="parity-banner-title">🟢 Channel Strategy — Mutually-Suppressive Parity (Global Rule)</span>
+    When a stage has <strong>both push + in-app variants</strong>, they operate as <strong>mutually suppressive</strong>. Each push has <em>three possible user outcomes</em>, each with a distinct consequence:
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
+      <div style="background: white; border: 1px solid #2d6a4f; padding: 8px; border-radius: 4px;">
+        <span class="outcome-label tap">📲 Tap</span>
+        <div style="font-size: 12px; margin-top: 4px;">App opens to the intended action. <strong>If user completes the action</strong> → cycle ends. <strong>If user exits without acting</strong> → in-app remains suppressed for 24h; next push fires per cool-off.</div>
+      </div>
+      <div style="background: white; border: 1px solid #f59e0b; padding: 8px; border-radius: 4px;">
+        <span class="outcome-label dismiss">✗ Dismiss</span>
+        <div style="font-size: 12px; margin-top: 4px;">User actively swipes/clears push. In-app surfaces on <strong>next organic app open within 24h</strong>.</div>
+      </div>
+      <div style="background: white; border: 1px solid #dc2626; padding: 8px; border-radius: 4px;">
+        <span class="outcome-label ignore">⌖ Ignore</span>
+        <div style="font-size: 12px; margin-top: 4px;">Push neither tapped nor dismissed (sits unread). In-app surfaces on <strong>next organic open within 7d window</strong>.</div>
+      </div>
+    </div>
+    <div style="margin-top: 10px; font-size: 12px;">
+      <strong>Two additional global rules:</strong>
+      <ul style="margin: 4px 0 0 0; padding-left: 18px;">
+        <li><strong>User acts on in-app first (before push fires)</strong> → next scheduled push for that cycle is suppressed.</li>
+        <li><strong>24h with no engagement on either surface</strong> → both expire; new cycle starts at next interval.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px;">
+    <div style="font-weight: 700; font-size: 13px; color: #374151; margin-bottom: 8px;">📍 Stage Map — Plain English (Trigger → What We Encourage)</div>
+    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
+      <div style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #2c3e50;">A</div>
+        <div style="color: #6b7280; font-style: italic; font-size: 11px; margin-top: 2px;">Incomplete onboarding<br><strong style="color:#1e40af;">→ Onboard</strong></div>
+      </div>
+      <div style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #2c3e50;">B</div>
+        <div style="color: #6b7280; font-style: italic; font-size: 11px; margin-top: 2px;">No captures yet<br><strong style="color:#1e40af;">→ Capture</strong></div>
+      </div>
+      <div style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #2c3e50;">C</div>
+        <div style="color: #6b7280; font-style: italic; font-size: 11px; margin-top: 2px;">Captured, no prayer<br><strong style="color:#1e40af;">→ Pray</strong></div>
+      </div>
+      <div style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #2c3e50;">D</div>
+        <div style="color: #6b7280; font-style: italic; font-size: 11px; margin-top: 2px;">Prayed, no journal return<br><strong style="color:#1e40af;">→ Return to journal</strong></div>
+      </div>
+      <div style="padding: 8px; border: 1px solid #fcd34d; background: #fef9c3; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #92400e;">E</div>
+        <div style="color: #78350f; font-style: italic; font-size: 11px; margin-top: 2px;"><strong>Dormant</strong> (quiet 14+ days)<br><strong style="color:#92400e;">→ Return to dwell</strong></div>
+      </div>
+      <div style="padding: 8px; border: 1px solid #4ade80; background: #f0fdf4; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #166534;">F</div>
+        <div style="color: #14532d; font-style: italic; font-size: 11px; margin-top: 2px;"><strong>Just captured</strong> (post-loop)<br><strong style="color:#166534;">→ Pray</strong></div>
+      </div>
+      <div style="padding: 8px; border: 1px solid #4ade80; background: #f0fdf4; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #166534;">G</div>
+        <div style="color: #14532d; font-style: italic; font-size: 11px; margin-top: 2px;"><strong>Just prayed</strong> (post-loop)<br><strong style="color:#166534;">→ Capture</strong></div>
+      </div>
+    </div>
+    <div style="margin-top: 10px; font-size: 12px; color: #6b7280; line-height: 1.5;">
+      <strong>F &amp; G — the active rhythm:</strong> Once a user completes the full loop, they alternate between F and G. Captured something → <strong>F</strong> nudges them to pray. Prayed something → <strong>G</strong> nudges them to capture. No more journal prompts post-loop — journal experience has no recurring dwelling feature.<br>
+      <strong>E vs F/G:</strong> All three are "post-loop" stages. <strong>F/G active window = last 13 days</strong>. <strong>E triggers at 14+ days</strong> with no activity. No gap — F/G's 13-day window meets E's 14-day threshold exactly.
+    </div>
+  </div>
+
+  <div class="table-wrap" id="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 60px;">Stage</th>
+          <th style="width: 80px;">Onboarding</th>
+          <th style="width: 80px;">Captured</th>
+          <th style="width: 80px;">Prayed</th>
+          <th style="width: 80px;">Journaled</th>
+          <th style="width: 160px;">Trigger / Signal</th>
+          <th style="width: 160px;">When to Fire</th>
+          <th style="width: 280px;">Push Variants (MVP)</th>
+          <th style="width: 240px;">In-App Variants</th>
+          <th style="width: 180px;">Cool-Off</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+
+        <!-- A (was A0) -->
+        <tr data-stage="A">
+          <td><button class="delete-row-btn" onclick="deleteRow(this, 'A')" title="Delete this row">×</button><span class="stage-label">A</span><span class="stage-subtitle">Incomplete onboarding</span></td>
+          <td class="condition-cell signal">N*</td>
+          <td class="condition-cell">—</td>
+          <td class="condition-cell">—</td>
+          <td class="condition-cell">—</td>
+          <td>
+            <span class="trigger-to">Complete onboarding</span><br>
+            Incomplete onboarding
+          </td>
+          <td>Next morning at <strong>7am</strong> (dweller's timezone) after install. Same time each week thereafter.</td>
+          <td>
+            <span class="channel-label">Push</span>
+            <ul class="variant-list">
+              <li>"You started something. Finish setting up so we can meet you where you are."</li>
+              <li>"Your Dwellable profile is almost ready — a few steps to make it yours."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Opens app. Resumes onboarding from last completed step. No re-entry friction.
+            </div>
+          </td>
+          <td>
+            <div class="na-note">
+              <strong>N/A</strong> — User is unable to see in-app notifications without completing onboarding. App features are gated until onboarding is complete.
+            </div>
+          </td>
+          <td>
+            <strong>1 push/week at 7am for up to 4 weeks max.</strong> Stop after onboarding completes OR 4 weekly pushes ignored.
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Push Only</span>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on:</strong> Welcome screen, then resumes onboarding from last completed step.</div>
+                <ul>
+                  <li><strong>If completes onboarding:</strong> Exits A. Advances to Stage B.</li>
+                  <li><strong>If exits without completing:</strong> Remains in A. Next push fires next week, same 7am slot.</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Dismisses or Ignores</span>
+                <div class="lands">Next push fires <strong>7 days later at 7am</strong>. Continues weekly up to 4 cycles. After 4 ignored, stop all outbound — await organic return.</div>
+              </div>
+
+              <div class="lands" style="margin-top: 8px; font-style: italic;">
+                No in-app parity — app features gated until onboarding completes. Tone stays gentle across all 4 weeks — never escalating ("Your space is still here" rather than "You haven't finished").
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- B (was A) -->
+        <tr data-stage="B">
+          <td><button class="delete-row-btn" onclick="deleteRow(this, 'B')" title="Delete this row">×</button><span class="stage-label">B</span><span class="stage-subtitle">No captures yet</span></td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell signal">N*</td>
+          <td class="condition-cell">—</td>
+          <td class="condition-cell">—</td>
+          <td>
+            <span class="trigger-to">First capture</span><br>
+            No captures (fresh start)
+          </td>
+          <td>Next morning at <strong>7am</strong> (dweller's timezone) after onboarding completion with no capture.</td>
+          <td>
+            <span class="channel-label">Push</span>
+            <ul class="variant-list">
+              <li>"Ready to capture what's on your heart?"</li>
+              <li>"What's something you'd like to remember from this week?"</li>
+              <li>"Your voice is worth capturing."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Lands <strong>directly in Capture flow</strong> — voice-first interface auto-opens. User does <strong>not</strong> land on Create tab, because they cannot navigate freely until first capture is recorded. Personalized prompt (from onboarding intent) displays above the mic.
+            </div>
+          </td>
+          <td>
+            <div class="na-note">
+              <strong>N/A</strong> — Onboarding mandates first capture (see Pillar 0/1 for enforcement). User cannot access in-app surfaces without first capture, so no in-app variant is needed for Stage A.
+            </div>
+          </td>
+          <td>
+            <strong>1 push/week at 7am.</strong> Stop after first capture OR 4 weeks of no capturing OR user dismisses push 2 times.
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Push Only</span>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on:</strong> <strong>Capture flow directly</strong> (not Create tab) — voice-first interface auto-opens with personalized prompt from onboarding intent. User cannot navigate to other app surfaces until first capture is made.</div>
+                <ul>
+                  <li><strong>If captures:</strong> Exits B. Advances to Stage C.</li>
+                  <li><strong>If exits without capturing:</strong> Remains in B. Next push fires next week, same 7am slot.</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Dismisses Push</span>
+                <div class="lands">Counts as 1 dismissal. After <strong>2 dismissals</strong>, stop all outbound — await organic return.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label ignore">⌖ If User Ignores Push</span>
+                <div class="lands">Next push fires 7 days later. Continues weekly up to 4 cycles. After 4 weeks ignored, stop all outbound.</div>
+              </div>
+
+              <div class="lands" style="margin-top: 8px; font-style: italic;">
+                No in-app parity — onboarding mandates first capture (Pillar 0/1 enforcement). User cannot navigate the app freely until first capture is recorded.<br><br>
+                <strong>Pillar 1 fallback:</strong> If the mandate is ever softened (e.g., for returning users), a glowing icon on the capture button can signal "come to capture" without requiring a notification.
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- C (was B1) -->
+        <tr data-stage="C">
+          <td><button class="delete-row-btn" onclick="deleteRow(this, 'C')" title="Delete this row">×</button><span class="stage-label">C</span><span class="stage-subtitle">Captured, no prayer</span></td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell signal">N*</td>
+          <td class="condition-cell no">N</td>
+          <td>
+            <span class="trigger-to">Pray on the capture</span><br>
+            User onboarded + captured but no prayer. OR onboarded + captured + visited journal but no prayer. Trigger fires after first capture + user abandons capture-to-pray flow without praying.
+          </td>
+          <td>Next morning at <strong>7am</strong> (dweller's timezone) after capture. Same time each week thereafter until cycle ends.</td>
+          <td>
+            <span class="channel-label">Push</span>
+            <ul class="variant-list">
+              <li>"You captured something earlier. When you're ready, would you like to pray on it?"</li>
+              <li>"How has your heart been this week? Anything to reflect on?"</li>
+              <li>"Your moments are waiting. Ready to go deeper?"</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Opens Today tab. Most recent unprayed moment highlighted at top. Tap moment → enters Prayer flow on that moment.
+            </div>
+          </td>
+          <td>
+            <span class="channel-label">Today tab, on next organic open (post-push window)</span>
+            <ul class="variant-list">
+              <li>"You captured this — ready to pray on it?"</li>
+              <li>"Your moments are waiting."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ User Flow</span>
+              Surfaces on Today tab moment card if push was dismissed/ignored and user opens app organically. Tap → Prayer flow on that moment. Note: the "immediately after capture" prompt is a <strong>flow step</strong> (Pillar 1/3), not a notification.
+            </div>
+          </td>
+          <td>
+            <strong>Push + in-app parity, 1/week at 7am for up to 4 cycles.</strong> Stop conditions: <strong>(a)</strong> Prayer completed, OR <strong>(b)</strong> 4 weeks of ignored/dismissed nudges (notif cycle naturally expires).
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Mutually Suppressive (with 10-min recovery)</span>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on:</strong> Today tab with the captured moment surfaced at top.</div>
+                <ul>
+                  <li><strong>If prays:</strong> C cycle <strong>ends</strong>. User advances to Stage D.</li>
+                  <li><strong>If exits without praying:</strong> Tap counts as engagement, but cycle CONTINUES — next push still fires next week. Click alone doesn't stop the cycle, only prayer completion does.</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Clears/Dismisses Push</span>
+                <div class="lands"><strong>In-app nudge fires on Today tab 10 minutes later</strong> (catch them while attention is on the phone). If user doesn't open app within 10 min, in-app waits silently for next organic open within 24h. <em>Note: 10-min window is a test variable — may widen to 30-60 min if opt-outs spike.</em></div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label ignore">⌖ If User Ignores Push</span>
+                <div class="lands">Counts as 1 of 4 ignored cycles. Next push fires <strong>7 days later</strong> at same 7am slot. In-app moment card may surface on Today tab on next organic open within 7d.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label act-app">🟦 If User Prays via In-App First (before push fires)</span>
+                <div class="lands"><strong>C cycle ends naturally.</strong> User advances to Stage D (prayer recorded, no journal return yet).</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label expire">⏱ Stop Conditions</span>
+                <div class="lands">Cycle terminates only on: <strong>(a)</strong> Prayer completed (success exit), OR <strong>(b)</strong> 4 weeks of ignored/dismissed nudges (notif naturally expires). Click without prayer does NOT stop the cycle — we keep nudging.</div>
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- D (was C1) -->
+        <tr data-stage="D">
+          <td><button class="delete-row-btn" onclick="deleteRow(this, 'D')" title="Delete this row">×</button><span class="stage-label">D</span><span class="stage-subtitle">Prayed, no journal return</span></td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell signal">N*</td>
+          <td>
+            <span class="trigger-to">Return to journal</span><br>
+            Onboarded + captured first moment + prayed; abandons app but has yet to visit their journal.
+          </td>
+          <td>
+            <strong>Push:</strong> Next morning at <strong>7am</strong> (dweller's timezone) after first prayer with no journal return. Weekly cadence up to 4 cycles.<br>
+            <strong>In-App:</strong> Immediately after prayer closes (journal card surfaces in Prayer flow — this is a flow handoff, not a notification).
+          </td>
+          <td>
+            <span class="channel-label">Push (single variant — locked for MVP)</span>
+            <ul class="variant-list">
+              <li><strong>To journal:</strong> "You shared your heart earlier, and here's how we honored it..."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Opens the journal entry generated from the user's first prayer. <strong>First time:</strong> FTUE walkthrough (edit, add context, reflect, pray). Subsequent: opens journal entry directly.
+            </div>
+          </td>
+          <td>
+            <span class="channel-label">Journal card surfaces at end of Prayer flow (FTUE on first time)</span>
+            <ul class="variant-list">
+              <li>"Your moment was written down. Want to see it?"</li>
+              <li>"Here's what came from what you just brought to God." [surfaces journal card]</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ User Flow</span>
+              Journal card surfaces at end of Prayer flow before user exits. Tap → opens the journal entry generated by their first prayer (FTUE on first time). Dismiss → returns to Today tab.
+            </div>
+          </td>
+          <td>
+            <strong>Strict limit: 1 push + 1 in-app total, then stop.</strong> No retries — D is single-shot per prayer/journal pair. Push fires 7am next morning after prayer (if no journal return). In-app journal card surfaces at end of Prayer flow (flow handoff). If either is ignored/dismissed without journal return, D cycle expires.
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Mutually Suppressive (with flow-handoff caveat)</span>
+
+              <div class="strategy-outcome" style="background: #fef9c3; border-color: #fbbf24;">
+                <span class="outcome-label" style="background: #f59e0b; color: white;">⚡ Flow Step First</span>
+                <div class="lands">In-app journal card surfaces at end of Prayer flow <strong>before any push fires</strong> — it's a natural flow handoff, not a notification. Push only fires if user dismisses/exits without opening the journal.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on:</strong> The journal entry generated from their first prayer (FTUE walkthrough on first time).</div>
+                <ul>
+                  <li><strong>If user opens journal (any engagement):</strong> Counts as journal return. D cycle <strong>ends</strong>. User advances to Stage F (active dwelling).</li>
+                  <li><strong>If user just glances and exits:</strong> Still counts as return (opening = engagement). D complete.</li>
+                  <li><strong>In-app journal card for this prayer:</strong> suppressed (the push tap supersedes it).</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Dismisses Push</span>
+                <div class="lands">In-app journal card still appears at end of Prayer flow (it's a flow handoff). No re-push for this prayer.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label ignore">⌖ If User Ignores Push (1x)</span>
+                <div class="lands">Push <strong>expires</strong>. No re-pushing for the same prayer/journal pair. Await organic return.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label act-app">🟦 If User Opens Journal via In-App Card First (post-prayer)</span>
+                <div class="lands"><strong>D cycle ends naturally.</strong> Journal return recorded. User advances to Stage F (active dwelling). Push suppression is implicit — there's nothing left to push for.</div>
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- C2 REMOVED: Logically impossible state given Pillar 4 design (journal = post-prayer AI synthesis; can't journal without praying first) -->
+
+        <!-- E (was C3) -->
+        <tr data-stage="E" style="background: #fef9c3;">
+          <td><button class="delete-row-btn" onclick="deleteRow(this, 'E')" title="Delete this row">×</button><span class="stage-label">E</span><span class="stage-subtitle"><strong>Dormant</strong> — was active, now quiet 14+ days</span></td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell signal">Y*</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td>
+            <span class="trigger-to">Return (MVP: capture)</span><br>
+            Completed full loop, now quiet 14+ days. <strong>MVP:</strong> invite back via capture (simple universal entry point).<br><br>
+            <em style="font-size:11px;"><strong>Post-MVP:</strong> Apply F/G-style alternation — if last act was capture, invite prayer; if last act was prayer, invite capture. Same 14-day cadence.</em>
+          </td>
+          <td>14+ days since last dwelling act, then 14-day cadence thereafter.</td>
+          <td>
+            <span class="channel-label">Push — MVP (Capture-Oriented)</span>
+            <ul class="variant-list">
+              <li>"It's been a little while. What's been on your heart lately?"</li>
+              <li>"Your space is still here. Anything worth capturing?"</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Lands directly in Capture flow — voice-first interface auto-opens with gentle prompt. No pressure messaging, no streak nudges.
+            </div>
+            <span class="channel-label">Push — Post-MVP (Alternation)</span>
+            <ul class="variant-list">
+              <li><em>If last act was prayer:</em> "How are you feeling since that prayer? Anything new to capture?"</li>
+              <li><em>If last act was capture:</em> "That moment you captured — ready to pray on it?"</li>
+            </ul>
+          </td>
+          <td>
+            <span class="channel-label">Today tab, gentle re-entry hint</span>
+            <ul class="variant-list">
+              <li>"What's been on your heart?"</li>
+              <li>"Whenever you're ready."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ User Flow</span>
+              Soft hint on Today tab at top of feed. Tap → opens Capture flow (MVP) OR contextual landing based on last act (Post-MVP).
+            </div>
+          </td>
+          <td>
+            <strong>1x/14 days.</strong> Gentle cadence — designed for re-engagement, not nagging.
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Mutually Suppressive</span>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on (MVP):</strong> Capture flow directly — voice-first interface auto-opens with gentle framing. <strong>Post-MVP:</strong> Capture flow OR Today tab depending on last activity (alternation logic).</div>
+                <ul>
+                  <li><strong>If user dwells (captures, prays, or returns to journal):</strong> Exits E. Returns to active Stage F or G dwelling.</li>
+                  <li><strong>If user opens and exits without dwelling:</strong> Still in E. Next push 14 days later.</li>
+                  <li><strong>In-app moment card:</strong> suppressed for current session.</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Dismisses Push</span>
+                <div class="lands">In-app moment card surfaces on Today tab on <strong>next organic open within 24h</strong>.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label ignore">⌖ If User Ignores Push</span>
+                <div class="lands">Wait full 14 days, then retry. After 3 consecutive ignored pushes (42+ days), reduce cadence further or pause entirely.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label act-app">🟦 If User Dwells via Organic Open (before push fires)</span>
+                <div class="lands"><strong>E cycle ends naturally.</strong> User returns to Stage F or G (active dwelling). Push suppression is implicit.</div>
+              </div>
+
+              <div class="strategy-outcome" style="background: #f3e8ff; border-color: #c4b5fd;">
+                <span class="outcome-label" style="background: #7c3aed; color: white;">🔮 Post-MVP: F/G-Style Alternation</span>
+                <div class="lands">Apply the F/G alternation logic at 14-day cadence: if user's last activity was <strong>capture</strong> → invite <strong>prayer</strong>. If last was <strong>prayer</strong> → invite <strong>capture</strong>. Same supplementary-activity logic as F/G, just sparser timing for dormant users.</div>
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- F: Just Captured (active engagement post-loop) — invite to pray -->
+        <tr class="stage-d" data-stage="F" style="background: #f0fdf4;">
+          <td><button class="delete-row-btn" onclick="deleteRow(this, 'F')" title="Delete this row">×</button><span class="stage-label">F</span><span class="stage-subtitle"><strong>Just captured</strong> (post-loop, ≤13d) — invite to pray</span></td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td>
+            <span class="trigger-to">Pray on the recent capture</span><br>
+            User has completed the full loop at least once. Their <strong>most recent activity was a capture</strong> (within the last <strong>13 days</strong>). Trigger fires the morning after a fresh capture from a post-loop user. Sustains the alternating rhythm: <strong>captured → pray</strong>.<br>
+            <em style="font-size:11px;">Note: Capture isn't dwelling — it's the umbrella entry. But it signals active engagement, which F/G sustain.</em>
+          </td>
+          <td>Next morning at <strong>7am</strong> (dweller's timezone) after capture. <strong>1/week max combined across F + G</strong> — see practical example in Cool-Off cell.</td>
+          <td>
+            <span class="channel-label">Push — MVP (single locked variant)</span>
+            <ul class="variant-list">
+              <li>"How is that moment sitting with you? Let's pray about it."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Opens Today tab with the recent capture surfaced at top. Tap the moment → enters Prayer flow on that capture.
+            </div>
+            <span class="channel-label">Push — Post-MVP (Topic-Aware)</span>
+            <ul class="variant-list">
+              <li>"You captured something about [theme]. Ready to bring it to prayer?"</li>
+            </ul>
+          </td>
+          <td>
+            <span class="channel-label">N/A — MVP</span>
+            <div class="na-note">
+              <strong>No in-app interruption.</strong> Active dwellers shouldn't be nudged inside the app — silence is the product. Post-MVP: Formation Intelligence may surface insights on Today tab.
+            </div>
+          </td>
+          <td>
+            <strong>1 push/week max combined across F + G.</strong> A user who both captures and prays in the same week gets at most 1 nudge total.
+            <div class="channel-strategy" style="background: #f3e8ff; border-color: #c4b5fd;">
+              <span class="channel-strategy-label" style="color: #7c3aed;">💡 Practical Example — "Combined Cap" in Action</span>
+              <div class="lands">
+                <strong>Maria — healthy F/G dweller:</strong>
+                <ul>
+                  <li><strong>Mon:</strong> Maria captures a moment.</li>
+                  <li><strong>Tue 7am:</strong> F push fires → "How is that moment sitting with you?"</li>
+                  <li><strong>Tue evening:</strong> Maria taps push, prays. User transitions F → G.</li>
+                  <li><strong>Wed 7am:</strong> G push would normally fire... <strong>BUT it's suppressed</strong> because F already fired this calendar week.</li>
+                  <li><strong>Next Mon:</strong> G can now fire (new week).</li>
+                </ul>
+                <strong>Net effect:</strong> healthy alternating dwellers see at most 1 push/week, often 0 (if they're alternating organically without prompts). This is a <strong>ceiling, not a baseline</strong>.
+              </div>
+            </div>
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Push Only (MVP)</span>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on:</strong> Today tab with the recent capture surfaced.</div>
+                <ul>
+                  <li><strong>If prays:</strong> Most recent act is now prayer → transitions to <strong>Stage G</strong> (will get a capture invite later, but only if combined-cap allows).</li>
+                  <li><strong>If exits without praying:</strong> Still in F. Next push waits until next calendar week.</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Dismisses or Ignores</span>
+                <div class="lands">No retry this week. Wait for next dwelling act to re-evaluate stage. After 14+ days of inactivity → transitions to Stage E (Dormant).</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label act-app">🟦 If User Prays via Organic Open (before push fires)</span>
+                <div class="lands"><strong>F cycle ends naturally.</strong> User transitions to <strong>Stage G</strong>. Push suppression is implicit.</div>
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- G: Just Prayed (active dwelling post-loop) — invite to capture -->
+        <tr class="stage-d" data-stage="G" style="background: #f0fdf4;">
+          <td><button class="delete-row-btn" onclick="deleteRow(this, 'G')" title="Delete this row">×</button><span class="stage-label">G</span><span class="stage-subtitle"><strong>Just prayed</strong> (post-loop, ≤13d) — invite to capture</span></td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td>
+            <span class="trigger-to">Capture next moment</span><br>
+            User has completed the full loop at least once. Their <strong>most recent dwelling act was a prayer</strong> (within the last <strong>13 days</strong>). Trigger fires the morning after a fresh prayer from a post-loop dweller. Sustains the alternating rhythm: <strong>prayed → capture</strong>.<br>
+            <em style="font-size:11px;">Note: Prayer IS dwelling (per the locked terminology — see top of page).</em>
+          </td>
+          <td>Next morning at <strong>7am</strong> (dweller's timezone) after prayer. <strong>1/week max combined across F + G</strong> — see practical example in F's Cool-Off cell.</td>
+          <td>
+            <span class="channel-label">Push — MVP (single locked variant)</span>
+            <ul class="variant-list">
+              <li>"Hey, how are you feeling since that prayer? Let's capture what you're processing."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Opens Capture flow directly with prompt referencing recent prayer activity (activity type only, no specific content). Voice-first interface auto-opens.
+            </div>
+            <span class="channel-label">Push — Post-MVP (Topic-Aware)</span>
+            <ul class="variant-list">
+              <li>"You've been reflecting on [theme] in prayer. How is that sitting today? Capture what's surfacing."</li>
+            </ul>
+          </td>
+          <td>
+            <span class="channel-label">N/A — MVP</span>
+            <div class="na-note">
+              <strong>No in-app interruption.</strong> Active dwellers shouldn't be nudged inside the app — silence is the product. Post-MVP: Formation Intelligence may surface insights on Today tab.
+            </div>
+          </td>
+          <td>
+            1 push/week max (combined cap across F + G — a user who both captures and prays in the same week gets at most 1 nudge).
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Push Only (MVP)</span>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on:</strong> Capture flow directly, voice-first interface auto-opens with prompt referencing recent prayer.</div>
+                <ul>
+                  <li><strong>If captures:</strong> Most recent act is now capture → transitions to <strong>Stage F</strong> (will get a prayer invite later).</li>
+                  <li><strong>If exits without capturing:</strong> Still in G. Next push waits until cool-off elapses (or alternate trigger fires).</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Dismisses or Ignores</span>
+                <div class="lands">No retry. Wait for next dwelling act to re-evaluate stage. After 14+ days of inactivity → transitions to Stage E (Dormant).</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label act-app">🟦 If User Captures via Organic Open (before push fires)</span>
+                <div class="lands"><strong>G cycle ends naturally.</strong> User transitions to <strong>Stage F</strong> (just captured → next nudge will be to pray). Push suppression is implicit.</div>
+              </div>
+
+              <div class="lands" style="margin-top: 8px; font-style: italic;">
+                F ↔ G alternation: each act flips the user to the other stage. No journal prompts post-loop (no recurring dwelling feature in the journal experience).
+              </div>
+            </div>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    <strong>Legend:</strong> &nbsp;
+    <strong style="color: #c0392b;">N*</strong> = the signal we're optimizing for (gap we're closing) &nbsp; · &nbsp;
+    <strong style="color: #27ae60;">Y</strong> = condition met &nbsp; · &nbsp;
+    <strong style="color: #c0392b;">N</strong> = condition not met &nbsp; · &nbsp;
+    <strong>—</strong> = N/A for this stage &nbsp; · &nbsp;
+    <span style="background: #fef9c3; padding: 2px 8px; border-radius: 4px;">Yellow row</span> = Stage E (Dormant, 14+ days) &nbsp; · &nbsp;
+    <span style="background: #f0fdf4; padding: 2px 8px; border-radius: 4px;">Green rows</span> = Stages F & G (Active rhythm, ≤13 days — MVP locked)
+  </div>
+
+  <!-- COMMENT THREADS -->
+  <div class="comment-threads" id="comment-threads" style="display: none;">
+    <h2>💬 Comments</h2>
+    <div id="threads-list"></div>
+  </div>
+</div>
+
+<!-- FLOATING COMMENT BUTTON -->
+<div id="comment-btn" onclick="openCommentModal()">💬 Add Comment</div>
+
+<!-- COMMENT MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <h3>Add Comment</h3>
+    <div class="modal-quoted" id="modal-quoted"></div>
+    <textarea id="comment-input" placeholder="Your comment..."></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-submit" onclick="submitComment()">Add Comment</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ─────────────────────────────────────────────
+  // STORAGE KEYS (separate from main collab doc)
+  // ─────────────────────────────────────────────
+  const COMMENTS_KEY = 'dwellable-stage-preview-comments';
+  const EDITS_KEY = 'dwellable-stage-preview-edits-v12'; // Stage B aligned to 4-week cadence (channel strategy matches new cool-off)
+  const OLD_EDITS_KEY = 'dwellable-stage-preview-edits-v11'; // archived (recoverable)
+  let pendingSelection = null;
+
+  // ─────────────────────────────────────────────
+  // INITIAL STATE
+  // ─────────────────────────────────────────────
+  const ORIGINAL_HTML = document.getElementById('table-body').innerHTML;
+
+  function loadComments() {
+    try { return JSON.parse(localStorage.getItem(COMMENTS_KEY) || '[]'); }
+    catch(e) { return []; }
+  }
+  function saveComments(c) {
+    localStorage.setItem(COMMENTS_KEY, JSON.stringify(c));
+    updateCommentCount();
+  }
+  function updateCommentCount() {
+    const c = loadComments();
+    document.getElementById('comment-count').textContent =
+      c.length === 1 ? '1 comment' : `${c.length} comments`;
+  }
+
+  // ─────────────────────────────────────────────
+  // EDIT MODE
+  // ─────────────────────────────────────────────
+  function toggleEditMode() {
+    const body = document.body;
+    const btn = document.getElementById('btn-edit');
+    const cells = document.querySelectorAll('#table-body td');
+    const isEditing = body.classList.toggle('edit-mode');
+
+    if (isEditing) {
+      btn.classList.add('active');
+      btn.textContent = '✓ Done Editing';
+      cells.forEach(c => c.contentEditable = 'true');
+      showToast('Edit mode ON. Click cells to edit. Changes auto-save.');
+    } else {
+      btn.classList.remove('active');
+      btn.textContent = '✏️ Edit Table';
+      cells.forEach(c => c.contentEditable = 'false');
+      saveEdits();
+      showToast('Edit mode OFF. Edits saved locally.');
+    }
+  }
+
+  function saveEdits() {
+    const html = document.getElementById('table-body').innerHTML;
+    localStorage.setItem(EDITS_KEY, html);
+  }
+
+  function loadEdits() {
+    const saved = localStorage.getItem(EDITS_KEY);
+    if (saved) {
+      document.getElementById('table-body').innerHTML = saved;
+    }
+  }
+
+  // Auto-save edits as user types
+  document.addEventListener('input', (e) => {
+    if (e.target.closest('#table-body') && document.body.classList.contains('edit-mode')) {
+      clearTimeout(window._saveTimer);
+      window._saveTimer = setTimeout(saveEdits, 500);
+    }
+  });
+
+  // ─────────────────────────────────────────────
+  // INJECT DELETE BUTTONS (works even if old HTML is in localStorage)
+  // ─────────────────────────────────────────────
+  function ensureDeleteButtons() {
+    const rows = document.querySelectorAll('#table-body tr[data-stage]');
+    rows.forEach(row => {
+      const stageId = row.dataset.stage;
+      const firstCell = row.querySelector('td:first-child');
+      if (!firstCell) return;
+      // If button already exists, skip
+      if (firstCell.querySelector('.delete-row-btn')) return;
+      // Create button
+      const btn = document.createElement('button');
+      btn.className = 'delete-row-btn';
+      btn.title = 'Delete this row';
+      btn.textContent = '×';
+      btn.onclick = () => deleteRow(btn, stageId);
+      // Insert at beginning of cell
+      firstCell.insertBefore(btn, firstCell.firstChild);
+    });
+  }
+
+  // ─────────────────────────────────────────────
+  // DELETE ROW
+  // ─────────────────────────────────────────────
+  window.deleteRow = function(btn, stageId) {
+    if (!confirm(`Delete Stage ${stageId}? This will also remove any comments tied to it. You can use Reset to restore everything.`)) return;
+
+    const row = btn.closest('tr');
+    if (!row) return;
+
+    // Remove any comments associated with this stage
+    let comments = loadComments();
+    const beforeCount = comments.length;
+    comments = comments.filter(c => c.stageId !== stageId);
+    if (comments.length !== beforeCount) {
+      saveComments(comments);
+      renderAllThreads();
+    }
+
+    // Remove the row
+    row.remove();
+
+    // Persist the change
+    saveEdits();
+
+    showToast(`Stage ${stageId} deleted. ${beforeCount - comments.length > 0 ? `Removed ${beforeCount - comments.length} associated comment(s).` : ''}`);
+  };
+
+  // ─────────────────────────────────────────────
+  // TEXT SELECTION → FLOATING COMMENT BUTTON
+  // ─────────────────────────────────────────────
+  document.addEventListener('mouseup', (e) => {
+    if (e.target.closest('.modal-overlay, .toolbar, #comment-btn, .comment-thread')) return;
+    // Don't show comment button while in edit mode
+    if (document.body.classList.contains('edit-mode')) return;
+
+    setTimeout(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.toString().trim().length < 2) {
+        hideCommentBtn();
+        return;
+      }
+
+      const selectedText = sel.toString().trim();
+      const range = sel.getRangeAt(0);
+
+      // Find the row this selection is in
+      let node = range.commonAncestorContainer;
+      if (node.nodeType !== 1) node = node.parentElement;
+      const rowEl = node.closest('tr[data-stage]');
+      const stageId = rowEl ? rowEl.dataset.stage : 'general';
+
+      pendingSelection = { selectedText, stageId };
+
+      const rect = range.getBoundingClientRect();
+      const btn = document.getElementById('comment-btn');
+      const btnW = 160, btnH = 38;
+      let btnLeft = Math.min(rect.left, window.innerWidth - btnW - 10);
+      let btnTop = rect.bottom + 8;
+      if (btnTop + btnH > window.innerHeight - 10) btnTop = rect.top - btnH - 8;
+      btn.style.left = `${Math.max(10, btnLeft)}px`;
+      btn.style.top = `${btnTop}px`;
+      btn.style.display = 'flex';
+    }, 10);
+  });
+
+  document.addEventListener('mousedown', (e) => {
+    if (!e.target.closest('#comment-btn, .modal-overlay')) hideCommentBtn();
+  });
+
+  function hideCommentBtn() {
+    document.getElementById('comment-btn').style.display = 'none';
+  }
+
+  // ─────────────────────────────────────────────
+  // MODAL
+  // ─────────────────────────────────────────────
+  function openCommentModal() {
+    hideCommentBtn();
+    if (!pendingSelection) return;
+    const preview = pendingSelection.selectedText.length > 120
+      ? pendingSelection.selectedText.slice(0, 120) + '…'
+      : pendingSelection.selectedText;
+    document.getElementById('modal-quoted').textContent = `"${preview}" (Stage ${pendingSelection.stageId})`;
+    document.getElementById('comment-input').value = '';
+    document.getElementById('modal-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('comment-input').focus(), 100);
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+    pendingSelection = null;
+    window.getSelection()?.removeAllRanges();
+  }
+
+  document.getElementById('modal-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+
+  // ─────────────────────────────────────────────
+  // SUBMIT COMMENT
+  // ─────────────────────────────────────────────
+  function submitComment() {
+    const text = document.getElementById('comment-input').value.trim();
+    if (!text || !pendingSelection) return;
+
+    const comment = {
+      id: `c_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      selectedText: pendingSelection.selectedText,
+      stageId: pendingSelection.stageId,
+      comment: text,
+      timestamp: new Date().toISOString()
+    };
+
+    const comments = loadComments();
+    comments.push(comment);
+    saveComments(comments);
+
+    closeModal();
+    applyHighlight(comment);
+    renderAllThreads();
+    showToast('Comment added.');
+  }
+
+  // ─────────────────────────────────────────────
+  // HIGHLIGHT IN TABLE
+  // ─────────────────────────────────────────────
+  function applyHighlight(comment) {
+    const row = document.querySelector(`tr[data-stage="${comment.stageId}"]`);
+    if (!row) return;
+    const walker = document.createTreeWalker(row, NodeFilter.SHOW_TEXT);
+    let node;
+    while (node = walker.nextNode()) {
+      if (node.parentElement.closest('mark')) continue;
+      const idx = node.nodeValue.indexOf(comment.selectedText);
+      if (idx === -1) continue;
+      try {
+        const range = document.createRange();
+        range.setStart(node, idx);
+        range.setEnd(node, idx + comment.selectedText.length);
+        const mark = document.createElement('mark');
+        mark.className = 'comment-mark';
+        mark.dataset.commentId = comment.id;
+        mark.title = 'Click to scroll to comment';
+        mark.onclick = () => scrollToThread(comment.id);
+        const fragment = range.extractContents();
+        mark.appendChild(fragment);
+        range.insertNode(mark);
+        break;
+      } catch(e) { break; }
+    }
+  }
+
+  function scrollToThread(id) {
+    const t = document.querySelector(`[data-thread-id="${id}"]`);
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // ─────────────────────────────────────────────
+  // RENDER COMMENT THREADS
+  // ─────────────────────────────────────────────
+  function renderAllThreads() {
+    const comments = loadComments();
+    const list = document.getElementById('threads-list');
+    const wrap = document.getElementById('comment-threads');
+
+    list.innerHTML = '';
+    if (comments.length === 0) {
+      wrap.style.display = 'none';
+      return;
+    }
+    wrap.style.display = 'block';
+
+    comments.forEach(c => {
+      const time = new Date(c.timestamp).toLocaleString('en-US', {
+        month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+      });
+      const div = document.createElement('div');
+      div.className = 'comment-thread';
+      div.dataset.threadId = c.id;
+      div.innerHTML = `
+        <div class="comment-quoted-thread">"${escapeHtml(c.selectedText.slice(0, 200))}${c.selectedText.length > 200 ? '…' : ''}" — <strong>Stage ${escapeHtml(c.stageId)}</strong></div>
+        <div class="comment-body">${escapeHtml(c.comment)}</div>
+        <div class="comment-meta">
+          <span>${time}</span>
+          <button class="btn-delete-comment" onclick="deleteComment('${c.id}')">Delete</button>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  function deleteComment(id) {
+    if (!confirm('Delete this comment?')) return;
+    let comments = loadComments();
+    comments = comments.filter(c => c.id !== id);
+    saveComments(comments);
+    const mark = document.querySelector(`mark[data-comment-id="${id}"]`);
+    if (mark) {
+      const parent = mark.parentNode;
+      while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+      parent.removeChild(mark);
+      parent.normalize();
+    }
+    renderAllThreads();
+    showToast('Comment deleted.');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+  }
+
+  // ─────────────────────────────────────────────
+  // EXPORT (edits + comments)
+  // ─────────────────────────────────────────────
+  function exportAll() {
+    const comments = loadComments();
+    const edits = localStorage.getItem(EDITS_KEY);
+    const hasEdits = edits && edits !== ORIGINAL_HTML;
+    const now = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+
+    if (comments.length === 0 && !hasEdits) {
+      alert('No edits or comments to export yet.');
+      return;
+    }
+
+    let output = `STAGE REFERENCE TABLE — PREVIEW EXPORT\n`;
+    output += `Exported: ${now}\n`;
+    output += `Comments: ${comments.length} · Edits: ${hasEdits ? 'YES' : 'NONE'}\n`;
+    output += `${'═'.repeat(70)}\n\n`;
+
+    // COMMENTS SECTION
+    if (comments.length > 0) {
+      output += `┌─────────────────────────────────────────────────────────────────┐\n`;
+      output += `│  COMMENTS (${comments.length})                                                       │\n`;
+      output += `└─────────────────────────────────────────────────────────────────┘\n\n`;
+
+      // Group by stage
+      const byStage = {};
+      comments.forEach(c => {
+        if (!byStage[c.stageId]) byStage[c.stageId] = [];
+        byStage[c.stageId].push(c);
+      });
+
+      Object.keys(byStage).sort().forEach(stage => {
+        output += `── STAGE ${stage} ${'─'.repeat(Math.max(2, 60 - stage.length))}\n\n`;
+        byStage[stage].forEach((c, i) => {
+          const time = new Date(c.timestamp).toLocaleString('en-US', {
+            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+          });
+          output += `  Comment ${i + 1} · ${time}\n`;
+          output += `  Quote: "${c.selectedText}"\n`;
+          output += `  Note:  ${c.comment.replace(/\n/g, '\n         ')}\n\n`;
+        });
+      });
+    }
+
+    // EDITS SECTION (text-based diff)
+    if (hasEdits) {
+      output += `\n┌─────────────────────────────────────────────────────────────────┐\n`;
+      output += `│  CURRENT TABLE STATE (after edits)                              │\n`;
+      output += `└─────────────────────────────────────────────────────────────────┘\n\n`;
+
+      const rows = document.querySelectorAll('#table-body tr');
+      rows.forEach(row => {
+        const stage = row.dataset.stage || '?';
+        output += `── STAGE ${stage} ${'─'.repeat(Math.max(2, 60 - stage.length))}\n\n`;
+        const cells = row.querySelectorAll('td');
+        const headers = ['Stage', 'Onboarding', 'Captured', 'Prayed', 'Journaled',
+                         'Trigger/Signal', 'When to Fire', 'Push Variants', 'In-App Variants', 'Cool-Off'];
+        cells.forEach((cell, i) => {
+          const label = headers[i] || `Col ${i}`;
+          const text = cell.innerText.trim().replace(/\n+/g, '\n         ');
+          output += `  ${label}:\n         ${text}\n\n`;
+        });
+      });
+    }
+
+    output += `\n${'═'.repeat(70)}\n`;
+    output += `End of export. Send this file back to agent for response.\n`;
+
+    // Download as .txt
+    const blob = new Blob([output], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `stage-table-export-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Exported! Check your Downloads folder.');
+  }
+
+  // ─────────────────────────────────────────────
+  // RESET ALL
+  // ─────────────────────────────────────────────
+  function resetAll() {
+    if (!confirm('Reset all edits and comments? This cannot be undone.')) return;
+    localStorage.removeItem(COMMENTS_KEY);
+    localStorage.removeItem(EDITS_KEY);
+    document.getElementById('table-body').innerHTML = ORIGINAL_HTML;
+    document.querySelectorAll('mark.comment-mark').forEach(m => {
+      const p = m.parentNode;
+      while (m.firstChild) p.insertBefore(m.firstChild, m);
+      p.removeChild(m);
+      p.normalize();
+    });
+    renderAllThreads();
+    updateCommentCount();
+    showToast('All edits and comments cleared.');
+  }
+
+  // ─────────────────────────────────────────────
+  // TOAST
+  // ─────────────────────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ─────────────────────────────────────────────
+  // INIT
+  // ─────────────────────────────────────────────
+  // Show notice if user has v1 edits archived (not auto-loaded)
+  const oldEdits = localStorage.getItem(OLD_EDITS_KEY);
+  if (oldEdits && !localStorage.getItem(EDITS_KEY)) {
+    setTimeout(() => {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:#fef9c3;border:1px solid #f59e0b;padding:12px 16px;margin:0 24px 16px;border-radius:8px;font-size:13px;color:#78350f;display:flex;align-items:center;gap:12px;';
+      banner.innerHTML = `
+        <span>📋 <strong>v11 Update:</strong> (1) <strong>Notification permission slot locked</strong> as Screen 6.5 in Pillar 0 (between Privacy and First Capture). If user declines, no notifications fire ever. (2) <strong>Scope clarification added</strong> to Terminology box: prompt response is form #2 dwelling for product purposes but has ZERO influence on notification routing. Retracted earlier "Stage B2 might come back" suggestion.</span>
+        <button onclick="restoreOldEdits()" style="padding:6px 12px;background:#f59e0b;color:white;border:none;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;">Restore v10 Edits</button>
+        <button onclick="this.parentElement.remove()" style="padding:6px 12px;background:white;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;font-size:12px;">Dismiss</button>
+      `;
+      document.querySelector('.wrapper').insertBefore(banner, document.querySelector('.wrapper').firstChild);
+    }, 100);
+  }
+
+  window.restoreOldEdits = function() {
+    if (!confirm('Restoring your old edits will replace the new tap-flow layout. Continue?')) return;
+    const old = localStorage.getItem(OLD_EDITS_KEY);
+    if (old) {
+      localStorage.setItem(EDITS_KEY, old);
+      location.reload();
+    }
+  };
+
+  loadEdits();
+  ensureDeleteButtons(); // inject delete buttons after edits load
+  updateCommentCount();
+  loadComments().forEach(c => applyHighlight(c));
+  renderAllThreads();
+</script>
+
+</body>
+</html>

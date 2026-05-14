@@ -16,7 +16,7 @@
       --agent-border: #7c3aed;
       --agent-mark: rgba(124,58,237,0.15);
       --agent-avatar: #7c3aed;
-      --doc-width: 820px;
+      --doc-width: 1500px;
       --toolbar-h: 56px;
     }
 
@@ -352,6 +352,217 @@
       color: #bbb;
       font-size: 13px;
     }
+
+    /* ── STAGE REFERENCE TABLE (Section 5) ───────────────────────────── */
+    .stage-label { font-weight: 700; font-size: 18px; color: #2c3e50; display: block; }
+    .stage-subtitle {
+      display: block;
+      font-weight: 600;
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 4px;
+      font-style: italic;
+      line-height: 1.3;
+    }
+    .condition-cell { text-align: center; font-weight: 600; color: #444; }
+    .condition-cell.yes { color: #27ae60; }
+    .condition-cell.no { color: #c0392b; }
+    .condition-cell.signal { color: #c0392b; font-weight: 700; }
+    ul.variant-list { margin: 0; padding-left: 16px; }
+    ul.variant-list li { margin-bottom: 6px; }
+    .channel-label {
+      font-weight: 600; color: #2c3e50; font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.3px;
+      display: block; margin-bottom: 4px; margin-top: 8px;
+    }
+    .channel-label:first-child { margin-top: 0; }
+    .tap-flow {
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: #eef5fb;
+      border-left: 3px solid #4a90c2;
+      border-radius: 0 4px 4px 0;
+      font-size: 12px;
+      color: #2c4a66;
+    }
+    .tap-flow-label {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-size: 10px;
+      color: #4a90c2;
+      display: block;
+      margin-bottom: 3px;
+    }
+    .channel-strategy {
+      margin-top: 10px;
+      padding: 8px 10px;
+      background: #e6f5ee;
+      border-left: 3px solid #2d6a4f;
+      border-radius: 0 4px 4px 0;
+      font-size: 12px;
+      color: #1e4d36;
+    }
+    .channel-strategy-label {
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-size: 10px;
+      color: #2d6a4f;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .channel-strategy ul { margin: 4px 0 0 0; padding-left: 16px; }
+    .channel-strategy li { margin-bottom: 3px; }
+    .channel-strategy strong { color: #1e4d36; }
+    .strategy-outcome {
+      margin-top: 8px;
+      padding: 6px 8px;
+      background: white;
+      border-radius: 4px;
+      border: 1px solid #d1e7dd;
+    }
+    .strategy-outcome:first-of-type { margin-top: 6px; }
+    .outcome-label {
+      display: inline-block;
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 7px;
+      border-radius: 3px;
+      margin-bottom: 4px;
+    }
+    .outcome-label.tap     { background: #2d6a4f; color: white; }
+    .outcome-label.dismiss { background: #fef3c7; color: #92400e; }
+    .outcome-label.ignore  { background: #fee2e2; color: #991b1b; }
+    .outcome-label.act-app { background: #dbeafe; color: #1e40af; }
+    .outcome-label.expire  { background: #e5e7eb; color: #374151; }
+    .strategy-outcome ul { margin: 2px 0 0 0; padding-left: 14px; }
+    .strategy-outcome li { margin-bottom: 2px; font-size: 11.5px; }
+    .strategy-outcome .lands { font-size: 11.5px; color: #1e4d36; margin-top: 2px; }
+    .strategy-outcome .lands strong { color: #144d33; }
+    .trigger-to {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1e40af;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .trigger-to::before { content: "→ Encouraging: "; color: #1e40af; opacity: 0.8; }
+    .na-note {
+      font-style: italic;
+      color: #888;
+      font-size: 12px;
+      padding: 8px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      border-left: 3px solid #ccc;
+    }
+    .parity-banner {
+      background: linear-gradient(90deg, #e6f5ee, #f0faf5);
+      border: 1px solid #2d6a4f;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #1e4d36;
+      line-height: 1.5;
+    }
+    .parity-banner strong { color: #144d33; }
+    .parity-banner-title {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    /* ── Stage Reference Table — strong borders for legibility ───── */
+    #section-segmentation .table-wrap {
+      overflow-x: auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 2px solid #2c3e50;
+      margin: 12px 0;
+    }
+    #section-segmentation .table-wrap table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 1400px;
+      table-layout: fixed;
+    }
+    #section-segmentation .table-wrap th {
+      position: relative;
+    }
+    #section-segmentation .col-resizer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 8px;
+      height: 100%;
+      cursor: col-resize;
+      user-select: none;
+      z-index: 10;
+      background: transparent;
+      transition: background 0.15s;
+    }
+    #section-segmentation .col-resizer:hover,
+    #section-segmentation .col-resizer.resizing {
+      background: rgba(201, 178, 124, 0.6);
+    }
+    body.col-resizing,
+    body.col-resizing * {
+      cursor: col-resize !important;
+      user-select: none !important;
+    }
+    /* Allow cell content to wrap with fixed layout */
+    #section-segmentation .table-wrap td {
+      overflow: hidden;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    #section-segmentation .table-wrap thead tr {
+      background: #2c3e50;
+      color: white;
+    }
+    #section-segmentation .table-wrap th {
+      text-align: left;
+      padding: 12px 10px;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-right: 2px solid #1a2733;
+      border-bottom: 2px solid #1a2733;
+      vertical-align: top;
+      color: white;
+      background: #2c3e50;
+    }
+    #section-segmentation .table-wrap th:last-child { border-right: none; }
+    #section-segmentation .table-wrap td {
+      padding: 14px 12px;
+      border-right: 2px solid #cbd5e1;
+      border-bottom: 3px solid #94a3b8;
+      vertical-align: top;
+      line-height: 1.45;
+      background: white;
+    }
+    #section-segmentation .table-wrap td:last-child { border-right: none; }
+    #section-segmentation .table-wrap tbody tr:last-child td { border-bottom: none; }
+    #section-segmentation .table-wrap tbody tr:hover td { background: #f8fafc; }
+    #section-segmentation .table-wrap tbody tr[data-stage="E"] td { background: #fef9c3; }
+    #section-segmentation .table-wrap tbody tr[data-stage="E"]:hover td { background: #fef08a; }
+    #section-segmentation .table-wrap tbody tr[data-stage="F"] td,
+    #section-segmentation .table-wrap tbody tr[data-stage="G"] td { background: #f0fdf4; }
+    #section-segmentation .table-wrap tbody tr[data-stage="F"]:hover td,
+    #section-segmentation .table-wrap tbody tr[data-stage="G"]:hover td { background: #dcfce7; }
   </style>
 </head>
 <body>
@@ -432,10 +643,10 @@
     <table class="doc-table">
       <thead><tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr></thead>
       <tbody>
-        <tr><td><strong>Frequency</strong></td><td>Stage-dependent (B1/B2: weekly; C3: 1x/month; D: none)</td><td>Cadence scales with urgency — active discovery stages warrant weekly; re-engagement is sparse; dwelling needs silence</td></tr>
+        <tr><td><strong>Frequency</strong></td><td>Stage-dependent: A/B/C — 1/week (up to 4 cycles); D — 1 push + 1 in-app total (single-shot); E — 1/14 days; F/G — 1/week combined cap</td><td>Cadence scales with urgency — new-user funnel stages warrant weekly nudges; D is single-shot to avoid nagging; E is sparse re-engagement; F/G are healthy rhythm maintenance with a combined ceiling</td></tr>
         <tr><td><strong>Opt model</strong></td><td>Opt-out (default on)</td><td>Maximizes reach; users can disable if unwanted; easier to adopt than opt-in</td></tr>
         <tr><td><strong>Personalization</strong></td><td>Yes, contextual (metadata-based)</td><td>Generic notifications feel cold; personalized by user segment + behavior</td></tr>
-        <tr><td><strong>Timing</strong></td><td>User's typical app-open time</td><td>Better engagement; respects user's natural rhythm</td></tr>
+        <tr><td><strong>Timing</strong></td><td>Universal 7am (dweller's local timezone) across all stages</td><td>Predictable, gentle morning invitation — not keyed to app-open behavior (which we don't know for new users), and avoids odd-hour interruptions</td></tr>
         <tr><td><strong>Message tone</strong></td><td>Invitation, not reminder</td><td>"Ready to reflect?" not "You haven't used the app"</td></tr>
         <tr><td><strong>No streaks</strong></td><td>Avoid gamification</td><td>Aligns with faith-based philosophy; formation ≠ productivity</td></tr>
         <tr><td><strong>Push + in-app (no email)</strong></td><td>Native push + in-app nudge; if user responds to one, suppress the other</td><td>More immediate; respects privacy (email = broadcast); in-app reinforces without double-firing</td></tr>
@@ -443,189 +654,628 @@
     </table>
   </div>
 
-  <!-- 5. Funnel Stages — Messaging & Delivery (combined with former Section 7) -->
+  <!-- 5. Funnel Stages — Complete Stage Reference (final v12) -->
   <div class="doc-section" id="section-segmentation">
-    <h2 class="section-title">5. Funnel Stages — Notification Playbook</h2>
+    <h2 class="section-title">5. Funnel Stages — Complete Stage Reference</h2>
+    <p><em>One row = one complete stage understanding. Left columns show user condition (what they've done); right columns show the notification specification (trigger, messaging, cool-off).</em></p>
 
-    <p>We segment by <strong>where someone is in the funnel</strong> — not by who we think they are. Archetypes are Post-MVP.</p>
-    <p><strong>Funnel:</strong> Onboarded → Captures → Responds to Prompt → Prays → Returns to Journal → Consistent Dwelling</p>
-    <p><strong>Dwelling (MVP)</strong> = praying on a captured moment OR returning to a journal entry (to edit, add context, or pray/journal from a notification). Responding to a prompt is <em>not</em> counted as dwelling — it's a positive signal that reduces notification urgency but does not advance funnel stage. A user's funnel stage is determined by the deepest dwelling act they've taken.</p>
-    <p>Each stage below specifies: <strong>Condition</strong> (who this applies to), <strong>Why</strong> (intervention goal), <strong>When to fire</strong> (timing trigger), and <strong>Cool-off</strong> (suppression rules) — followed by Push and In-App message options.</p>
+  <!-- STEWARDING & DWELLING TAXONOMY (LOCKED) -->
+  <div style="background: #fdf4ff; border: 1px solid #d8b4fe; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; font-size: 13px; color: #581c87; line-height: 1.5;">
+    <span style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px; color: #581c87;">📖 Terminology (Locked)</span>
 
-    <hr class="divider">
+    <div style="background: white; border-left: 3px solid #a855f7; padding: 8px 12px; margin-top: 6px; border-radius: 0 4px 4px 0;">
+      <strong style="color: #581c87;">Stewarding</strong> — the umbrella entry act
+      <ul style="margin: 4px 0 0 0; padding-left: 18px;">
+        <li><strong>Capturing a moment</strong> (no prompt engagement) — the user is "stewarding" what's on their heart but not yet going deeper.</li>
+      </ul>
+    </div>
 
-    <h3 class="sub-title">Complete Stage Reference — All Scenarios & Messaging</h3>
-    <p><em>One row = one complete stage understanding. Left columns show user condition (what they've done); right columns show notification specification (trigger, messaging, cool-off).</em></p>
-    <table class="doc-table" style="font-size: 13px; width: 100%; table-layout: auto;">
+    <div style="background: white; border-left: 3px solid #a855f7; padding: 8px 12px; margin-top: 8px; border-radius: 0 4px 4px 0;">
+      <strong style="color: #581c87;">Dwelling</strong> — three forms, ranked from deepest to lightest
+      <ol style="margin: 4px 0 0 0; padding-left: 22px;">
+        <li><strong>Praying</strong> on a captured moment — <em>highest form of dwelling</em></li>
+        <li><strong>Capturing + responding to prompts</strong> — <em>2nd highest form</em> (capture deepened by prompt engagement)</li>
+        <li><strong>Editing a journal entry</strong> — <em>3rd highest form</em></li>
+      </ol>
+    </div>
+
+    <p style="margin: 10px 0 0 0; font-size: 12px;"><strong>Retired terms:</strong> "Soaking" (use "dwelling"). <strong>Parked:</strong> "Reflecting vs Dwelling" relationship — revisit later.</p>
+
+    <div style="margin-top: 10px; padding: 8px 12px; background: #fef3c7; border-left: 3px solid #f59e0b; border-radius: 0 4px 4px 0; font-size: 12px; color: #78350f;">
+      <strong>⚠️ Important Scope Clarification:</strong> This taxonomy describes <strong>product-level user-action precedence</strong> (which acts count as deeper engagement). It does <strong>NOT route notifications</strong>. Specifically: <strong>prompt response is form #2 dwelling for product purposes, but has zero influence on notification timing, copy, or routing.</strong> Whether a user responded to prompts or not, the notification engine treats them the same. The stage table below reflects only notification-relevant signals (capture, prayer, journal return).
+    </div>
+  </div>
+
+  <!-- PILLAR DEPENDENCIES -->
+  <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; font-size: 13px; color: #7f1d1d; line-height: 1.5;">
+    <span style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px; color: #7f1d1d;">📌 Cross-Pillar Requirements (Flow Back to Other Pillars)</span>
+    This notification strategy <strong>depends on</strong> these requirements being locked into other pillars. They surfaced during this strategy work and need to be formalized:
+    <ul style="margin: 6px 0 0 0; padding-left: 18px;">
+      <li><strong>Pillar 0 (Onboarding):</strong> Must mandate <strong>first capture before app navigation</strong>. User cannot bypass capture to access broader app features. Without this, Stage B's "push only / no in-app parity" assumption breaks. <span style="background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 3px; font-weight: 700; font-size: 11px;">✓ FILED INTO PILLAR 0 STRATEGY DOC</span></li>
+      <li><strong>Pillar 4 (Journal):</strong> Journal entries can only exist as <strong>AI synthesis from prayer</strong>. No standalone journal creation. This is why C2 (journaled-without-prayer) was removed — logically impossible.</li>
+      <li><strong>Pillar 0 (Onboarding) — Screen 6.5 Notification Permission:</strong> Standalone screen between Privacy (Screen 6) and First Capture (Screen 7). Opt-out model; if user declines, no notifications fire ever (Pillar 8 engine respects OS permission flag). <span style="background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 3px; font-weight: 700; font-size: 11px;">✓ FILED INTO PILLAR 0 STRATEGY DOC</span></li>
+      <li><strong>T-086 (Settings UI):</strong> Three notification modes — <strong>Default</strong> (all stage rules apply), <strong>Sparse</strong> (caps everything to 1x/month, suppresses F/G entirely), <strong>Off</strong> (push disabled; in-app stays). Add <strong>Sabbath / Quiet Days toggle</strong> for users observing a rest day.</li>
+    </ul>
+  </div>
+
+  <div style="background: #faf5e6; border: 1px solid #c9b27c; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; font-size: 13px; color: #5a4a1f; line-height: 1.5;">
+    <span style="font-weight: 700; font-size: 14px; display: block; margin-bottom: 6px; color: #5a4a1f;">⏱ 7-Day Funnel Window (Design Philosophy)</span>
+    A dweller can complete the full funnel — capture → prayer → journal return — within <strong>~3 days</strong> if they engage with each notification. The <strong>7-day window</strong> is the buffer.
+    <ul style="margin: 8px 0 0 0; padding-left: 18px;">
+      <li><strong>Day 1:</strong> Stage B push fires → user captures.</li>
+      <li><strong>Day 2 (~12h after capture):</strong> Stage C push fires → user prays.</li>
+      <li><strong>Day 3 (8am after prayer):</strong> Stage D push fires → user returns to journal.</li>
+      <li><strong>Day 7:</strong> If user is still in B/C/D, soft-escalate or pause — respect their pace.</li>
+    </ul>
+    <em>This window is a Pillar 0/1 design principle. The stage table below enforces it through cool-off windows aligned with the 7-day frame.</em>
+  </div>
+
+  <div class="parity-banner">
+    <span class="parity-banner-title">🟢 Channel Strategy — Mutually-Suppressive Parity (Global Rule)</span>
+    When a stage has <strong>both push + in-app variants</strong>, they operate as <strong>mutually suppressive</strong>. Each push has <em>three possible user outcomes</em>, each with a distinct consequence:
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
+      <div style="background: white; border: 1px solid #2d6a4f; padding: 8px; border-radius: 4px;">
+        <span class="outcome-label tap">📲 Tap</span>
+        <div style="font-size: 12px; margin-top: 4px;">App opens to the intended action. <strong>If user completes the action</strong> → cycle ends. <strong>If user exits without acting</strong> → in-app remains suppressed for 24h; next push fires per cool-off.</div>
+      </div>
+      <div style="background: white; border: 1px solid #f59e0b; padding: 8px; border-radius: 4px;">
+        <span class="outcome-label dismiss">✗ Dismiss</span>
+        <div style="font-size: 12px; margin-top: 4px;">User actively swipes/clears push. In-app surfaces on <strong>next organic app open within 24h</strong>.</div>
+      </div>
+      <div style="background: white; border: 1px solid #dc2626; padding: 8px; border-radius: 4px;">
+        <span class="outcome-label ignore">⌖ Ignore</span>
+        <div style="font-size: 12px; margin-top: 4px;">Push neither tapped nor dismissed (sits unread). In-app surfaces on <strong>next organic open within 7d window</strong>.</div>
+      </div>
+    </div>
+    <div style="margin-top: 10px; font-size: 12px;">
+      <strong>Two additional global rules:</strong>
+      <ul style="margin: 4px 0 0 0; padding-left: 18px;">
+        <li><strong>User acts on in-app first (before push fires)</strong> → next scheduled push for that cycle is suppressed.</li>
+        <li><strong>24h with no engagement on either surface</strong> → both expire; new cycle starts at next interval.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px;">
+    <div style="font-weight: 700; font-size: 13px; color: #374151; margin-bottom: 8px;">📍 Stage Map — Plain English (Trigger → What We Encourage)</div>
+    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
+      <div style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #2c3e50;">A</div>
+        <div style="color: #6b7280; font-style: italic; font-size: 11px; margin-top: 2px;">Incomplete onboarding<br><strong style="color:#1e40af;">→ Onboard</strong></div>
+      </div>
+      <div style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #2c3e50;">B</div>
+        <div style="color: #6b7280; font-style: italic; font-size: 11px; margin-top: 2px;">No captures yet<br><strong style="color:#1e40af;">→ Capture</strong></div>
+      </div>
+      <div style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #2c3e50;">C</div>
+        <div style="color: #6b7280; font-style: italic; font-size: 11px; margin-top: 2px;">Captured, no prayer<br><strong style="color:#1e40af;">→ Pray</strong></div>
+      </div>
+      <div style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #2c3e50;">D</div>
+        <div style="color: #6b7280; font-style: italic; font-size: 11px; margin-top: 2px;">Prayed, no journal return<br><strong style="color:#1e40af;">→ Return to journal</strong></div>
+      </div>
+      <div style="padding: 8px; border: 1px solid #fcd34d; background: #fef9c3; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #92400e;">E</div>
+        <div style="color: #78350f; font-style: italic; font-size: 11px; margin-top: 2px;"><strong>Dormant</strong> (quiet 14+ days)<br><strong style="color:#92400e;">→ Return to dwell</strong></div>
+      </div>
+      <div style="padding: 8px; border: 1px solid #4ade80; background: #f0fdf4; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #166534;">F</div>
+        <div style="color: #14532d; font-style: italic; font-size: 11px; margin-top: 2px;"><strong>Just captured</strong> (post-loop)<br><strong style="color:#166534;">→ Pray</strong></div>
+      </div>
+      <div style="padding: 8px; border: 1px solid #4ade80; background: #f0fdf4; border-radius: 4px; font-size: 12px;">
+        <div style="font-weight: 700; font-size: 16px; color: #166534;">G</div>
+        <div style="color: #14532d; font-style: italic; font-size: 11px; margin-top: 2px;"><strong>Just prayed</strong> (post-loop)<br><strong style="color:#166534;">→ Capture</strong></div>
+      </div>
+    </div>
+    <div style="margin-top: 10px; font-size: 12px; color: #6b7280; line-height: 1.5;">
+      <strong>F &amp; G — the active rhythm:</strong> Once a user completes the full loop, they alternate between F and G. Captured something → <strong>F</strong> nudges them to pray. Prayed something → <strong>G</strong> nudges them to capture. No more journal prompts post-loop — journal experience has no recurring dwelling feature.<br>
+      <strong>E vs F/G:</strong> All three are "post-loop" stages. <strong>F/G active window = last 13 days</strong>. <strong>E triggers at 14+ days</strong> with no activity. No gap — F/G's 13-day window meets E's 14-day threshold exactly.
+    </div>
+  </div>
+
+  <div class="table-wrap" id="table-container">
+    <table>
       <thead>
-        <tr style="background: #f5f5f5;">
-          <th style="width: 8%;">Stage</th>
-          <th style="width: 8%;">Condition: Onboarding</th>
-          <th style="width: 8%;">Captured</th>
-          <th style="width: 8%;">Prayed</th>
-          <th style="width: 8%;">Journaled</th>
-          <th style="width: 10%;">Trigger / Signal</th>
-          <th style="width: 12%;">When to Fire</th>
-          <th style="width: 15%;">Push Variants (MVP)</th>
-          <th style="width: 12%;">In-App Variants</th>
-          <th style="width: 11%;">Cool-Off</th>
+        <tr>
+          <th style="width: 60px;">Stage</th>
+          <th style="width: 70px;">Onboarding</th>
+          <th style="width: 70px;">Captured</th>
+          <th style="width: 70px;">Prayed</th>
+          <th style="width: 70px;">Journaled</th>
+          <th style="width: 180px;">Trigger / Signal</th>
+          <th style="width: 160px;">When to Fire</th>
+          <th style="width: 460px;">Variants (Push + In-App)</th>
+          <th style="width: 220px;">Cool-Off</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- A0 -->
-        <tr>
-          <td><strong>A0</strong></td>
-          <td>N* (incomplete)</td>
-          <td>—</td>
-          <td>—</td>
-          <td>—</td>
-          <td>Incomplete onboarding</td>
-          <td>Day 2 after install</td>
-          <td>• "You started something. Finish setting up so we can meet you where you are."<br>• "Your Dwellable profile is almost ready — a few steps to make it yours."</td>
-          <td>First screen, before onboarding resumes: "You're here. That took something. This space is yours." / "Welcome back. Let's finish getting you set up." (re-open)</td>
-          <td>1 push max. Stop at Day 7 if no completion.</td>
+      <tbody id="table-body">
+
+        <!-- A (was A0) -->
+        <tr data-stage="A">
+          <td><span class="stage-label">A</span><span class="stage-subtitle">Incomplete onboarding</span></td>
+          <td class="condition-cell signal">N*</td>
+          <td class="condition-cell">—</td>
+          <td class="condition-cell">—</td>
+          <td class="condition-cell">—</td>
+          <td>
+            <span class="trigger-to">Complete onboarding</span><br>
+            Incomplete onboarding
+          </td>
+          <td>Next morning at <strong>7am</strong> (dweller's timezone) after install. Same time each week thereafter.</td>
+          <td>
+            <span class="channel-label">Push</span>
+            <ul class="variant-list">
+              <li>"You started something. Finish setting up so we can meet you where you are."</li>
+              <li>"Your Dwellable profile is almost ready — a few steps to make it yours."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Opens app. Resumes onboarding from last completed step. No re-entry friction.
+            </div>
+            <hr style="border: none; border-top: 2px dashed #cbd5e1; margin: 14px 0 12px 0;">
+            <div class="na-note">
+              <strong>N/A</strong> — User is unable to see in-app notifications without completing onboarding. App features are gated until onboarding is complete.
+            </div>
+          </td>
+          <td>
+            <strong>1 push/week at 7am for up to 4 weeks max.</strong> Stop after onboarding completes OR 4 weekly pushes ignored.
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Push Only</span>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on:</strong> Welcome screen, then resumes onboarding from last completed step.</div>
+                <ul>
+                  <li><strong>If completes onboarding:</strong> Exits A. Advances to Stage B.</li>
+                  <li><strong>If exits without completing:</strong> Remains in A. Next push fires next week, same 7am slot.</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Dismisses or Ignores</span>
+                <div class="lands">Next push fires <strong>7 days later at 7am</strong>. Continues weekly up to 4 cycles. After 4 ignored, stop all outbound — await organic return.</div>
+              </div>
+
+              <div class="lands" style="margin-top: 8px; font-style: italic;">
+                No in-app parity — app features gated until onboarding completes. Tone stays gentle across all 4 weeks — never escalating ("Your space is still here" rather than "You haven't finished").
+              </div>
+            </div>
+          </td>
         </tr>
 
-        <!-- A -->
-        <tr>
-          <td><strong>A</strong></td>
-          <td>Y</td>
-          <td>N*</td>
-          <td>—</td>
-          <td>—</td>
-          <td>No captures (fresh start)</td>
-          <td>Day 3 with no capture</td>
-          <td>• "Ready to capture what's on your heart?"<br>• "What's something you'd like to remember from this week?"<br>• "Your voice is worth capturing."</td>
-          <td>Create tab empty state: "Start by capturing a moment — a thought, a feeling, something that happened."</td>
-          <td>1 push total. Suppress all after first capture.</td>
+        <!-- B (was A) -->
+        <tr data-stage="B">
+          <td><span class="stage-label">B</span><span class="stage-subtitle">No captures yet</span></td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell signal">N*</td>
+          <td class="condition-cell">—</td>
+          <td class="condition-cell">—</td>
+          <td>
+            <span class="trigger-to">First capture</span><br>
+            No captures (fresh start)
+          </td>
+          <td>Next morning at <strong>7am</strong> (dweller's timezone) after onboarding completion with no capture.</td>
+          <td>
+            <span class="channel-label">Push</span>
+            <ul class="variant-list">
+              <li>"Ready to capture what's on your heart?"</li>
+              <li>"What's something you'd like to remember from this week?"</li>
+              <li>"Your voice is worth capturing."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Lands <strong>directly in Capture flow</strong> — voice-first interface auto-opens. User does <strong>not</strong> land on Create tab, because they cannot navigate freely until first capture is recorded. Personalized prompt (from onboarding intent) displays above the mic.
+            </div>
+            <hr style="border: none; border-top: 2px dashed #cbd5e1; margin: 14px 0 12px 0;">
+            <div class="na-note">
+              <strong>N/A</strong> — Onboarding mandates first capture (see Pillar 0/1 for enforcement). User cannot access in-app surfaces without first capture, so no in-app variant is needed for Stage A.
+            </div>
+          </td>
+          <td>
+            <strong>1 push/week at 7am.</strong> Stop after first capture OR 4 weeks of no capturing OR user dismisses push 2 times.
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Push Only</span>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on:</strong> <strong>Capture flow directly</strong> (not Create tab) — voice-first interface auto-opens with personalized prompt from onboarding intent. User cannot navigate to other app surfaces until first capture is made.</div>
+                <ul>
+                  <li><strong>If captures:</strong> Exits B. Advances to Stage C.</li>
+                  <li><strong>If exits without capturing:</strong> Remains in B. Next push fires next week, same 7am slot.</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Dismisses Push</span>
+                <div class="lands">Counts as 1 dismissal. After <strong>2 dismissals</strong>, stop all outbound — await organic return.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label ignore">⌖ If User Ignores Push</span>
+                <div class="lands">Next push fires 7 days later. Continues weekly up to 4 cycles. After 4 weeks ignored, stop all outbound.</div>
+              </div>
+
+              <div class="lands" style="margin-top: 8px; font-style: italic;">
+                No in-app parity — onboarding mandates first capture (Pillar 0/1 enforcement). User cannot navigate the app freely until first capture is recorded.<br><br>
+                <strong>Pillar 1 fallback:</strong> If the mandate is ever softened (e.g., for returning users), a glowing icon on the capture button can signal "come to capture" without requiring a notification.
+              </div>
+            </div>
+          </td>
         </tr>
 
-        <!-- B1 -->
-        <tr>
-          <td><strong>B1</strong></td>
-          <td>Y</td>
-          <td>Y</td>
-          <td>N* (fires after every unprayed capture)</td>
-          <td>N</td>
-          <td>Any capture exits without prayer</td>
-          <td>Same evening or next morning (~12h after capture)</td>
-          <td>• "You captured something earlier. When you're ready, would you like to pray on it?"<br>• "How has your heart been this week? Anything to reflect on?"<br>• "Your moments are waiting. Ready to go deeper?"</td>
-          <td>Immediately after capture, before exit: "Would you like to take a moment to pray on what you just shared?" / "You captured this — ready to pray on it?"</td>
-          <td>Push 1/week max (regardless of capture volume). After 4 no-clicks, expire. Continue weekly if click but no prayer.</td>
+        <!-- C (was B1) -->
+        <tr data-stage="C">
+          <td><span class="stage-label">C</span><span class="stage-subtitle">Captured, no prayer</span></td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell signal">N*</td>
+          <td class="condition-cell no">N</td>
+          <td>
+            <span class="trigger-to">Pray on the capture</span><br>
+            User onboarded + captured but no prayer. OR onboarded + captured + visited journal but no prayer. Trigger fires after first capture + user abandons capture-to-pray flow without praying.
+          </td>
+          <td>Next morning at <strong>7am</strong> (dweller's timezone) after capture. Same time each week thereafter until cycle ends.</td>
+          <td>
+            <span class="channel-label">Push</span>
+            <ul class="variant-list">
+              <li>"You captured something earlier. When you're ready, would you like to pray on it?"</li>
+              <li>"How has your heart been this week? Anything to reflect on?"</li>
+              <li>"Your moments are waiting. Ready to go deeper?"</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Opens Today tab. Most recent unprayed moment highlighted at top. Tap moment → enters Prayer flow on that moment.
+            </div>
+            <hr style="border: none; border-top: 2px dashed #cbd5e1; margin: 14px 0 12px 0;">
+            <span class="channel-label">Today tab, on next organic open (post-push window)</span>
+            <ul class="variant-list">
+              <li>"You captured this — ready to pray on it?"</li>
+              <li>"Your moments are waiting."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ User Flow</span>
+              Surfaces on Today tab moment card if push was dismissed/ignored and user opens app organically. Tap → Prayer flow on that moment. Note: the "immediately after capture" prompt is a <strong>flow step</strong> (Pillar 1/3), not a notification.
+            </div>
+          </td>
+          <td>
+            <strong>Push + in-app parity, 1/week at 7am for up to 4 cycles.</strong> Stop conditions: <strong>(a)</strong> Prayer completed, OR <strong>(b)</strong> 4 weeks of ignored/dismissed nudges (notif cycle naturally expires).
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Mutually Suppressive (with 10-min recovery)</span>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on:</strong> Today tab with the captured moment surfaced at top.</div>
+                <ul>
+                  <li><strong>If prays:</strong> C cycle <strong>ends</strong>. User advances to Stage D.</li>
+                  <li><strong>If exits without praying:</strong> Tap counts as engagement, but cycle CONTINUES — next push still fires next week. Click alone doesn't stop the cycle, only prayer completion does.</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Clears/Dismisses Push</span>
+                <div class="lands"><strong>In-app nudge fires on Today tab 10 minutes later</strong> (catch them while attention is on the phone). If user doesn't open app within 10 min, in-app waits silently for next organic open within 24h. <em>Note: 10-min window is a test variable — may widen to 30-60 min if opt-outs spike.</em></div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label ignore">⌖ If User Ignores Push</span>
+                <div class="lands">Counts as 1 of 4 ignored cycles. Next push fires <strong>7 days later</strong> at same 7am slot. In-app moment card may surface on Today tab on next organic open within 7d.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label act-app">🟦 If User Prays via In-App First (before push fires)</span>
+                <div class="lands"><strong>C cycle ends naturally.</strong> User advances to Stage D (prayer recorded, no journal return yet).</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label expire">⏱ Stop Conditions</span>
+                <div class="lands">Cycle terminates only on: <strong>(a)</strong> Prayer completed (success exit), OR <strong>(b)</strong> 4 weeks of ignored/dismissed nudges (notif naturally expires). Click without prayer does NOT stop the cycle — we keep nudging.</div>
+              </div>
+            </div>
+          </td>
         </tr>
 
-        <!-- B2 -->
-        <tr>
-          <td><strong>B2</strong></td>
-          <td>Y</td>
-          <td>Y</td>
-          <td>N* (but prompted)</td>
-          <td>Y</td>
-          <td>Captured + prompted, no prayer (already dwelling via prompt)</td>
-          <td>Same evening or next morning (~12h after capture)</td>
-          <td>• "You captured something earlier. When you're ready, would you like to pray on it?"<br>• "Your moments have depth. Ready to bring them to prayer?"<br>• "You've been reflecting. How's your heart in prayer?"</td>
-          <td>Today tab, below recent moment: "You've reflected on this — want to pray on it too?"</td>
-          <td>Push 1/week max. After 4 no-clicks, expire. Continue weekly if click but no prayer. (Matches B1 cadence; softer tone.)</td>
+        <!-- D (was C1) -->
+        <tr data-stage="D">
+          <td><span class="stage-label">D</span><span class="stage-subtitle">Prayed, no journal return</span></td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell signal">N*</td>
+          <td>
+            <span class="trigger-to">Return to journal</span><br>
+            Onboarded + captured first moment + prayed; abandons app but has yet to visit their journal.
+          </td>
+          <td>
+            <strong>Push:</strong> Next morning at <strong>7am</strong> (dweller's timezone) after first prayer with no journal return. Weekly cadence up to 4 cycles.<br>
+            <strong>In-App:</strong> Immediately after prayer closes (journal card surfaces in Prayer flow — this is a flow handoff, not a notification).
+          </td>
+          <td>
+            <span class="channel-label">Push (single variant — locked for MVP)</span>
+            <ul class="variant-list">
+              <li><strong>To journal:</strong> "You shared your heart earlier, and here's how we honored it..."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Opens the journal entry generated from the user's first prayer. <strong>First time:</strong> FTUE walkthrough (edit, add context, reflect, pray). Subsequent: opens journal entry directly.
+            </div>
+            <hr style="border: none; border-top: 2px dashed #cbd5e1; margin: 14px 0 12px 0;">
+            <span class="channel-label">Journal card surfaces at end of Prayer flow (FTUE on first time)</span>
+            <ul class="variant-list">
+              <li>"Your moment was written down. Want to see it?"</li>
+              <li>"Here's what came from what you just brought to God." [surfaces journal card]</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ User Flow</span>
+              Journal card surfaces at end of Prayer flow before user exits. Tap → opens the journal entry generated by their first prayer (FTUE on first time). Dismiss → returns to Today tab.
+            </div>
+          </td>
+          <td>
+            <strong>Strict limit: 1 push + 1 in-app total, then stop.</strong> No retries — D is single-shot per prayer/journal pair. Push fires 7am next morning after prayer (if no journal return). In-app journal card surfaces at end of Prayer flow (flow handoff). If either is ignored/dismissed without journal return, D cycle expires.
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Mutually Suppressive (with flow-handoff caveat)</span>
+
+              <div class="strategy-outcome" style="background: #fef9c3; border-color: #fbbf24;">
+                <span class="outcome-label" style="background: #f59e0b; color: white;">⚡ Flow Step First</span>
+                <div class="lands">In-app journal card surfaces at end of Prayer flow <strong>before any push fires</strong> — it's a natural flow handoff, not a notification. Push only fires if user dismisses/exits without opening the journal.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on:</strong> The journal entry generated from their first prayer (FTUE walkthrough on first time).</div>
+                <ul>
+                  <li><strong>If user opens journal (any engagement):</strong> Counts as journal return. D cycle <strong>ends</strong>. User advances to Stage F (active dwelling).</li>
+                  <li><strong>If user just glances and exits:</strong> Still counts as return (opening = engagement). D complete.</li>
+                  <li><strong>In-app journal card for this prayer:</strong> suppressed (the push tap supersedes it).</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Dismisses Push</span>
+                <div class="lands">In-app journal card still appears at end of Prayer flow (it's a flow handoff). No re-push for this prayer.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label ignore">⌖ If User Ignores Push (1x)</span>
+                <div class="lands">Push <strong>expires</strong>. No re-pushing for the same prayer/journal pair. Await organic return.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label act-app">🟦 If User Opens Journal via In-App Card First (post-prayer)</span>
+                <div class="lands"><strong>D cycle ends naturally.</strong> Journal return recorded. User advances to Stage F (active dwelling). Push suppression is implicit — there's nothing left to push for.</div>
+              </div>
+            </div>
+          </td>
         </tr>
 
-        <!-- C1 -->
-        <tr>
-          <td><strong>C1</strong></td>
-          <td>Y</td>
-          <td>Y</td>
-          <td>Y</td>
-          <td>N* (has not returned)</td>
-          <td>Prayed, never journaled (or journaled &lt;14d ago)</td>
-          <td>Push: 7 days after prayer with no journal return. In-App: immediately after prayer closes.</td>
-          <td>• To journal: "You shared your heart earlier, and here's how we honored it..."<br>• To capture: "How have you been feeling since prayer?"<br>• To capture (personalized): "Where's your heart at regarding {subject}?" (requires metadata)</td>
-          <td>After prayer closes, show journal card: "Your moment was written down. Want to see it?" / "Here's what came from what you just brought to God."</td>
-          <td>In-app: once per prayer session. Push: 1/week at 8am (dweller's timezone). Stop after 2 ignores.</td>
+        <!-- C2 REMOVED: Logically impossible state given Pillar 4 design (journal = post-prayer AI synthesis; can't journal without praying first) -->
+
+        <!-- E (was C3) -->
+        <tr data-stage="E" style="background: #fef9c3;">
+          <td><span class="stage-label">E</span><span class="stage-subtitle"><strong>Dormant</strong> — was active, now quiet 14+ days</span></td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell signal">Y*</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td>
+            <span class="trigger-to">Return (MVP: capture)</span><br>
+            Completed full loop, now quiet 14+ days. <strong>MVP:</strong> invite back via capture (simple universal entry point).<br><br>
+            <em style="font-size:11px;"><strong>Post-MVP:</strong> Apply F/G-style alternation — if last act was capture, invite prayer; if last act was prayer, invite capture. Same 14-day cadence.</em>
+          </td>
+          <td>14+ days since last dwelling act, then 14-day cadence thereafter.</td>
+          <td>
+            <span class="channel-label">Push — MVP (Capture-Oriented)</span>
+            <ul class="variant-list">
+              <li>"It's been a little while. What's been on your heart lately?"</li>
+              <li>"Your space is still here. Anything worth capturing?"</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Lands directly in Capture flow — voice-first interface auto-opens with gentle prompt. No pressure messaging, no streak nudges.
+            </div>
+            <span class="channel-label">Push — Post-MVP (Alternation)</span>
+            <ul class="variant-list">
+              <li><em>If last act was prayer:</em> "How are you feeling since that prayer? Anything new to capture?"</li>
+              <li><em>If last act was capture:</em> "That moment you captured — ready to pray on it?"</li>
+            </ul>
+            <hr style="border: none; border-top: 2px dashed #cbd5e1; margin: 14px 0 12px 0;">
+            <span class="channel-label">Today tab, gentle re-entry hint</span>
+            <ul class="variant-list">
+              <li>"What's been on your heart?"</li>
+              <li>"Whenever you're ready."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ User Flow</span>
+              Soft hint on Today tab at top of feed. Tap → opens Capture flow (MVP) OR contextual landing based on last act (Post-MVP).
+            </div>
+          </td>
+          <td>
+            <strong>1x/14 days.</strong> Gentle cadence — designed for re-engagement, not nagging.
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Mutually Suppressive</span>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on (MVP):</strong> Capture flow directly — voice-first interface auto-opens with gentle framing. <strong>Post-MVP:</strong> Capture flow OR Today tab depending on last activity (alternation logic).</div>
+                <ul>
+                  <li><strong>If user dwells (captures, prays, or returns to journal):</strong> Exits E. Returns to active Stage F or G dwelling.</li>
+                  <li><strong>If user opens and exits without dwelling:</strong> Still in E. Next push 14 days later.</li>
+                  <li><strong>In-app moment card:</strong> suppressed for current session.</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Dismisses Push</span>
+                <div class="lands">In-app moment card surfaces on Today tab on <strong>next organic open within 24h</strong>.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label ignore">⌖ If User Ignores Push</span>
+                <div class="lands">Wait full 14 days, then retry. After 3 consecutive ignored pushes (42+ days), reduce cadence further or pause entirely.</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label act-app">🟦 If User Dwells via Organic Open (before push fires)</span>
+                <div class="lands"><strong>E cycle ends naturally.</strong> User returns to Stage F or G (active dwelling). Push suppression is implicit.</div>
+              </div>
+
+              <div class="strategy-outcome" style="background: #f3e8ff; border-color: #c4b5fd;">
+                <span class="outcome-label" style="background: #7c3aed; color: white;">🔮 Post-MVP: F/G-Style Alternation</span>
+                <div class="lands">Apply the F/G alternation logic at 14-day cadence: if user's last activity was <strong>capture</strong> → invite <strong>prayer</strong>. If last was <strong>prayer</strong> → invite <strong>capture</strong>. Same supplementary-activity logic as F/G, just sparser timing for dormant users.</div>
+              </div>
+            </div>
+          </td>
         </tr>
 
-        <!-- C2 -->
-        <tr>
-          <td><strong>C2</strong></td>
-          <td>Y</td>
-          <td>Y</td>
-          <td>N*</td>
-          <td>Y (has journaled, but no prayer)</td>
-          <td>Journal-first path (returned to journal but never prayed)</td>
-          <td>After 2nd+ journal return with no prayer (in-app). Push: 5–7 days after last journal activity.</td>
-          <td>• "You've been reflecting. Ready to bring it to prayer?"<br>• "Your journal has depth. Prayer is the next step, when you're ready."</td>
-          <td>Below journal body after reading: "Want to pray on what you just read?" / "This moment has been captured and reflected on. Prayer is the next step."</td>
-          <td>1 push max in first month. Stop if no action in 3 weeks. In-app: once per journal session, no stacking. (Sparser than B1/B2.)</td>
+        <!-- F: Just Captured (active engagement post-loop) — invite to pray -->
+        <tr class="stage-d" data-stage="F" style="background: #f0fdf4;">
+          <td><span class="stage-label">F</span><span class="stage-subtitle"><strong>Just captured</strong> (post-loop, ≤13d) — invite to pray</span></td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td>
+            <span class="trigger-to">Pray on the recent capture</span><br>
+            User has completed the full loop at least once. Their <strong>most recent activity was a capture</strong> (within the last <strong>13 days</strong>). Trigger fires the morning after a fresh capture from a post-loop user. Sustains the alternating rhythm: <strong>captured → pray</strong>.<br>
+            <em style="font-size:11px;">Note: Capture isn't dwelling — it's the umbrella entry. But it signals active engagement, which F/G sustain.</em>
+          </td>
+          <td>Next morning at <strong>7am</strong> (dweller's timezone) after capture. <strong>1/week max combined across F + G</strong> — see practical example in Cool-Off cell.</td>
+          <td>
+            <span class="channel-label">Push — MVP (single locked variant)</span>
+            <ul class="variant-list">
+              <li>"How is that moment sitting with you? Let's pray about it."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Opens Today tab with the recent capture surfaced at top. Tap the moment → enters Prayer flow on that capture.
+            </div>
+            <span class="channel-label">Push — Post-MVP (Topic-Aware)</span>
+            <ul class="variant-list">
+              <li>"You captured something about [theme]. Ready to bring it to prayer?"</li>
+            </ul>
+            <hr style="border: none; border-top: 2px dashed #cbd5e1; margin: 14px 0 12px 0;">
+            <span class="channel-label">N/A — MVP</span>
+            <div class="na-note">
+              <strong>No in-app interruption.</strong> Active dwellers shouldn't be nudged inside the app — silence is the product. Post-MVP: Formation Intelligence may surface insights on Today tab.
+            </div>
+          </td>
+          <td>
+            <strong>1 push/week max combined across F + G.</strong> A user who both captures and prays in the same week gets at most 1 nudge total.
+            <div class="channel-strategy" style="background: #f3e8ff; border-color: #c4b5fd;">
+              <span class="channel-strategy-label" style="color: #7c3aed;">💡 Practical Example — "Combined Cap" in Action</span>
+              <div class="lands">
+                <strong>Maria — healthy F/G dweller:</strong>
+                <ul>
+                  <li><strong>Mon:</strong> Maria captures a moment.</li>
+                  <li><strong>Tue 7am:</strong> F push fires → "How is that moment sitting with you?"</li>
+                  <li><strong>Tue evening:</strong> Maria taps push, prays. User transitions F → G.</li>
+                  <li><strong>Wed 7am:</strong> G push would normally fire... <strong>BUT it's suppressed</strong> because F already fired this calendar week.</li>
+                  <li><strong>Next Mon:</strong> G can now fire (new week).</li>
+                </ul>
+                <strong>Net effect:</strong> healthy alternating dwellers see at most 1 push/week, often 0 (if they're alternating organically without prompts). This is a <strong>ceiling, not a baseline</strong>.
+              </div>
+            </div>
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Push Only (MVP)</span>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on:</strong> Today tab with the recent capture surfaced.</div>
+                <ul>
+                  <li><strong>If prays:</strong> Most recent act is now prayer → transitions to <strong>Stage G</strong> (will get a capture invite later, but only if combined-cap allows).</li>
+                  <li><strong>If exits without praying:</strong> Still in F. Next push waits until next calendar week.</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Dismisses or Ignores</span>
+                <div class="lands">No retry this week. Wait for next dwelling act to re-evaluate stage. After 14+ days of inactivity → transitions to Stage E (Dormant).</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label act-app">🟦 If User Prays via Organic Open (before push fires)</span>
+                <div class="lands"><strong>F cycle ends naturally.</strong> User transitions to <strong>Stage G</strong>. Push suppression is implicit.</div>
+              </div>
+            </div>
+          </td>
         </tr>
 
-        <!-- C3 -->
-        <tr>
-          <td><strong>C3</strong></td>
-          <td>Y</td>
-          <td>Y</td>
-          <td>Y</td>
-          <td>Y</td>
-          <td>Completed funnel, now quiet 14+ days</td>
-          <td>14+ days since last dwelling act</td>
-          <td>• "It's been a little while. How's your heart?"<br>• "You have moments worth returning to. Ready to dwell?"<br>• "Whenever you're ready, your moments are here."</td>
-          <td>Today tab, top of feed, oldest unprayed moment surfaced: "Whenever you're ready."</td>
-          <td>1x/month. Reduce to 1x/6 weeks after 3 no-clicks.</td>
+        <!-- G: Just Prayed (active dwelling post-loop) — invite to capture -->
+        <tr class="stage-d" data-stage="G" style="background: #f0fdf4;">
+          <td><span class="stage-label">G</span><span class="stage-subtitle"><strong>Just prayed</strong> (post-loop, ≤13d) — invite to capture</span></td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td class="condition-cell yes">Y</td>
+          <td>
+            <span class="trigger-to">Capture next moment</span><br>
+            User has completed the full loop at least once. Their <strong>most recent dwelling act was a prayer</strong> (within the last <strong>13 days</strong>). Trigger fires the morning after a fresh prayer from a post-loop dweller. Sustains the alternating rhythm: <strong>prayed → capture</strong>.<br>
+            <em style="font-size:11px;">Note: Prayer IS dwelling (per the locked terminology — see top of page).</em>
+          </td>
+          <td>Next morning at <strong>7am</strong> (dweller's timezone) after prayer. <strong>1/week max combined across F + G</strong> — see practical example in F's Cool-Off cell.</td>
+          <td>
+            <span class="channel-label">Push — MVP (single locked variant)</span>
+            <ul class="variant-list">
+              <li>"Hey, how are you feeling since that prayer? Let's capture what you're processing."</li>
+            </ul>
+            <div class="tap-flow">
+              <span class="tap-flow-label">→ On Tap</span>
+              Opens Capture flow directly with prompt referencing recent prayer activity (activity type only, no specific content). Voice-first interface auto-opens.
+            </div>
+            <span class="channel-label">Push — Post-MVP (Topic-Aware)</span>
+            <ul class="variant-list">
+              <li>"You've been reflecting on [theme] in prayer. How is that sitting today? Capture what's surfacing."</li>
+            </ul>
+            <hr style="border: none; border-top: 2px dashed #cbd5e1; margin: 14px 0 12px 0;">
+            <span class="channel-label">N/A — MVP</span>
+            <div class="na-note">
+              <strong>No in-app interruption.</strong> Active dwellers shouldn't be nudged inside the app — silence is the product. Post-MVP: Formation Intelligence may surface insights on Today tab.
+            </div>
+          </td>
+          <td>
+            1 push/week max (combined cap across F + G — a user who both captures and prays in the same week gets at most 1 nudge).
+            <div class="channel-strategy">
+              <span class="channel-strategy-label">→ Channel Strategy: Push Only (MVP)</span>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label tap">📲 If User Taps Push</span>
+                <div class="lands"><strong>Lands on:</strong> Capture flow directly, voice-first interface auto-opens with prompt referencing recent prayer.</div>
+                <ul>
+                  <li><strong>If captures:</strong> Most recent act is now capture → transitions to <strong>Stage F</strong> (will get a prayer invite later).</li>
+                  <li><strong>If exits without capturing:</strong> Still in G. Next push waits until cool-off elapses (or alternate trigger fires).</li>
+                </ul>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label dismiss">✗ If User Dismisses or Ignores</span>
+                <div class="lands">No retry. Wait for next dwelling act to re-evaluate stage. After 14+ days of inactivity → transitions to Stage E (Dormant).</div>
+              </div>
+
+              <div class="strategy-outcome">
+                <span class="outcome-label act-app">🟦 If User Captures via Organic Open (before push fires)</span>
+                <div class="lands"><strong>G cycle ends naturally.</strong> User transitions to <strong>Stage F</strong> (just captured → next nudge will be to pray). Push suppression is implicit.</div>
+              </div>
+
+              <div class="lands" style="margin-top: 8px; font-style: italic;">
+                F ↔ G alternation: each act flips the user to the other stage. No journal prompts post-loop (no recurring dwelling feature in the journal experience).
+              </div>
+            </div>
+          </td>
         </tr>
 
-        <!-- D -->
-        <tr style="background: #fffacd;">
-          <td><strong>D</strong></td>
-          <td>Y</td>
-          <td>Y</td>
-          <td>Y</td>
-          <td>Y</td>
-          <td>Actively dwelling: prayer/prompt/journal within last 7–10 days</td>
-          <td>Once per week (e.g., Thursday 8am dweller's timezone)</td>
-          <td><strong>MVP (Activity-Based):</strong><br>• "Hey, how are you feeling since that prayer?" → "Let's capture what you're processing"<br>• "A prayer from a few days ago — ready to go deeper?" → "Let's pray about what you've processed"<br><br><strong>Post-MVP (Topic-Aware):</strong><br>• "You've been reflecting on [topic]. How's that going? Ready to go deeper in prayer?"<br>• "Something keeps showing up in your moments — want to explore it?"</td>
-          <td>Contextual prompts within prayer flow only. Post-MVP: Formation Intelligence insights on Today tab.</td>
-          <td>MVP: 1 push/week max. Post-MVP: weekly + 0–1 FI-triggered per quarter. (Active dwelling = don't interrupt; silence is the product.)</td>
-        </tr>
       </tbody>
     </table>
+  </div>
 
-    <hr class="divider">
-
-    <h3 class="sub-title">Push vs In-App — Core Distinction</h3>
-    <table class="doc-table">
-      <thead><tr><th></th><th>Push</th><th>In-App</th></tr></thead>
-      <tbody>
-        <tr><td><strong>When it fires</strong></td><td>User is NOT in the app</td><td>User is actively in the app</td></tr>
-        <tr><td><strong>Intent</strong></td><td>Re-engagement (bring them back)</td><td>Contextual deepening (guide them further)</td></tr>
-        <tr><td><strong>Investment prerequisite</strong></td><td>≥1 meaningful action before pushing</td><td>None — can surface Day 1</td></tr>
-        <tr><td><strong>Frequency cap</strong></td><td>1–2 per user per month (global)</td><td>1 active nudge at a time; dismiss on action</td></tr>
-        <tr><td><strong>Timing control</strong></td><td>We schedule it</td><td>Triggered by in-session behavior</td></tr>
-        <tr><td><strong>Opt-out</strong></td><td>iOS notification settings</td><td>N/A — contextual UI element</td></tr>
-      </tbody>
-    </table>
-
-    <hr class="divider">
-
-    <!-- ── DORMANCY RESET ───────────────────────────────── -->
-    <h3 class="sub-title">Dormancy Reset Rule</h3>
-    <p>Any user who reaches Stage D (actively dwelling) and then goes quiet for 14+ consecutive days is automatically routed to Stage C3 notification logic. No penalty framing — the same gentle re-invite applies regardless of how active they were before.</p>
-    <p>The transition is invisible to the user. Functionally: Stage D check runs daily; if last dwelling act is 14+ days ago, switch to C3 rules. Escalation follows normal C3 cool-off from that point.</p>
-
-    <hr class="divider">
-
-    <h3 class="sub-title">Global Frequency Caps</h3>
-    <ul>
-      <li><strong>Push:</strong> Max 1–2 per user per month across all stages — <em>exception: B1/B2 operate on weekly cadence (prayer is time-sensitive; caps don't override active discovery stages)</em></li>
-      <li><strong>In-App:</strong> 1 active nudge visible at a time; no stacking; dismiss on action</li>
-    </ul>
-
-    <h3 class="sub-title">Optimal Push Send Time</h3>
-    <ul>
-      <li><strong>Primary:</strong> User's typical app-open time (inferred from usage data)</li>
-      <li><strong>Fallback:</strong> 9am local time if usage pattern is unclear</li>
-      <li><strong>Blackout:</strong> Never between 10pm–7am local time</li>
-    </ul>
-
-    <hr class="divider">
-
-    <p><em>Note: Archetype labels are deferred to Post-MVP. The data from stages A0–D will surface the real patterns. We name them then, not now.</em></p>
+  <div class="legend">
+    <strong>Legend:</strong> &nbsp;
+    <strong style="color: #c0392b;">N*</strong> = the signal we're optimizing for (gap we're closing) &nbsp; · &nbsp;
+    <strong style="color: #27ae60;">Y</strong> = condition met &nbsp; · &nbsp;
+    <strong style="color: #c0392b;">N</strong> = condition not met &nbsp; · &nbsp;
+    <strong>—</strong> = N/A for this stage &nbsp; · &nbsp;
+    <span style="background: #fef9c3; padding: 2px 8px; border-radius: 4px;">Yellow row</span> = Stage E (Dormant, 14+ days) &nbsp; · &nbsp;
+    <span style="background: #f0fdf4; padding: 2px 8px; border-radius: 4px;">Green rows</span> = Stages F & G (Active rhythm, ≤13 days — MVP locked)
+  </div>
   </div>
 
   <!-- 6. Personalization Rules -->
@@ -635,9 +1285,9 @@
 
     <h3 class="sub-title">What we CAN personalize</h3>
     <ul>
-      <li>✓ Timing (when user typically opens app)</li>
+      <li>✓ Timing (universal 7am in dweller's timezone — see Section 4)</li>
       <li>✓ Dwelling history (prayer vs. prompt preference)</li>
-      <li>✓ Funnel stage (A–D)</li>
+      <li>✓ Funnel stage (A–G)</li>
       <li>✓ Engagement frequency (# of moments captured, # of prayers, # of prompt responses)</li>
       <li>✓ Moment themes ("You captured about faith") — plaintext readable</li>
       <li>✓ Specific moment content (reference what user wrote) — plaintext readable</li>
@@ -645,9 +1295,10 @@
 
     <h3 class="sub-title">MVP Personalization Approach</h3>
     <ul>
-      <li><strong>A0–C3:</strong> Metadata + activity-type (funnel stage, engagement frequency)</li>
-      <li><strong>D (MVP):</strong> Activity-type references ("that prayer," "what you've processed") — simple, low-cost</li>
-      <li><strong>D (Post-MVP):</strong> Topic-aware ("You shared about faith. How's that going?") — requires plaintext processing, higher cost</li>
+      <li><strong>Stages A–D (new-user funnel):</strong> Metadata + activity-type (funnel stage, engagement frequency) — no content references</li>
+      <li><strong>Stage D (MVP):</strong> Activity-type references ("that prayer," "what you've processed") — single locked copy variant; low-cost</li>
+      <li><strong>Stages F/G — Post-MVP:</strong> Topic-aware ("You captured something about [theme]. Ready to bring it to prayer?") — requires plaintext processing, higher cost; locked variant ships in MVP</li>
+      <li><strong>Stage E — Post-MVP alternation:</strong> If last act was capture → invite prayer; if last act was prayer → invite capture. Same 14-day cadence as MVP E, but context-aware copy.</li>
     </ul>
 
     <h3 class="sub-title">Privacy Transparency</h3>
@@ -681,50 +1332,94 @@
 
   <!-- 9. Notification Examples -->
   <div class="doc-section" id="section-examples">
-    <h2 class="section-title">9. Notification Examples by Segment &amp; Type</h2>
+    <h2 class="section-title">9. Notification Examples by Stage &amp; Type</h2>
+    <p style="font-size:13px; color:#666; margin-bottom:16px;">All MVP push variants are locked per the stage reference table (Section 5). Post-MVP variants are noted separately.</p>
 
-    <h3 class="sub-title">New User (Day 3, No Capture Yet) <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
-    <div class="notif-example">Title: "Ready to capture what's on your heart?"
-Body: "Dwellable is a space to voice your faith, concerns, and breakthroughs.
-       Start with your voice—no perfection needed."
-Action: Tap → Opens Create tab</div>
+    <h3 class="sub-title">Stage A — Incomplete Onboarding <span style="color:#888;font-weight:400;font-size:13px;">— Push Only (no in-app)</span></h3>
+    <div class="notif-example">Variant 1:
+Title: "You started something."
+Body: "Finish setting up so we can meet you where you are."
+Action: Tap → Resumes onboarding from last completed step
 
-    <h3 class="sub-title">Stage B1 — Every Unprayed Capture <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
-    <div class="notif-example">Title: "How has your heart been this week?"
-Body: "You have moments waiting. Ready to pray on one?"
-Action: Tap → Opens Today tab (shows recent moments)</div>
+Variant 2:
+Title: "Your Dwellable profile is almost ready."
+Body: "A few steps to make it yours."
+Action: Tap → Resumes onboarding from last completed step
 
-    <h3 class="sub-title">Stage B2 — Responded to Prompt, No Prayer (Contextual) <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
-    <div class="notif-example">Title: "Your moments have depth."
-Body: "You've been reflecting. Ready to bring them to prayer?"
-Action: Tap → Opens Today tab</div>
+Cadence: 7am next morning after install. Weekly for up to 4 cycles. Stops on onboarding completion or 4 ignored.</div>
 
-    <h3 class="sub-title">Stage C3 — Prayed and Returned to Journal, Now Quiet <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
-    <div class="notif-example">Title: "It's been a little while. How's your heart?"
-Body: "You have moments worth returning to. Ready to dwell?"
-Action: Tap → Opens Today tab</div>
+    <h3 class="sub-title">Stage B — No Captures Yet <span style="color:#888;font-weight:400;font-size:13px;">— Push Only (no in-app)</span></h3>
+    <div class="notif-example">Variant 1: "Ready to capture what's on your heart?"
+Variant 2: "What's something you'd like to remember from this week?"
+Variant 3: "Your voice is worth capturing."
+Action: Tap → Lands directly in Capture flow (voice-first, auto-opens). Personalized prompt from onboarding intent displayed above mic.
 
-    <h3 class="sub-title">Stage D — Actively Dwelling, Weekly Check-In <span style="color:#888;font-weight:400;font-size:13px;">— MVP</span></h3>
-    <div class="notif-example">Variant 1 — Invite to capture:
-Title: "Hey, how are you feeling since that prayer?"
-Body: "Let's capture what you're processing."
-Action: Tap → Opens Create tab
+Cadence: 7am next morning after onboarding with no capture. 1/week for up to 4 cycles. Stops on first capture or 2 push dismissals.</div>
 
-Variant 2 — Invite to prayer:
-Title: "A prayer from a few days ago — ready to go deeper?"
-Body: "Let's pray about what you've processed."
-Action: Tap → Opens Today tab (shows recent captures)</div>
+    <h3 class="sub-title">Stage C — Captured, No Prayer <span style="color:#888;font-weight:400;font-size:13px;">— Push + In-App (mutually suppressive)</span></h3>
+    <div class="notif-example">Push variants:
+Variant 1: "You captured something earlier. When you're ready, would you like to pray on it?"
+Variant 2: "How has your heart been this week? Anything to reflect on?"
+Variant 3: "Your moments are waiting. Ready to go deeper?"
+Push tap → Opens Today tab, most recent unprayed moment at top. Tap moment → Prayer flow.
 
-    <h3 class="sub-title">Active Dweller — Topic-Aware Check-In <span style="color:#888;font-weight:400;font-size:13px;">— Post-MVP</span></h3>
-    <div class="notif-example">Title: "You've been reflecting on faith."
-Body: "How's that going? Ready to go deeper in prayer?"
-Action: Tap → Opens Today tab
+In-App (Today tab card — surfaces after push dismissed/ignored, next organic open):
+"You captured this — ready to pray on it?"
+"Your moments are waiting."
+Tap → Prayer flow on that moment.
 
-OR
+Cadence: Push fires 7am next morning after capture. 1/week, up to 4 cycles. Stops on prayer completion or 4 ignored/dismissed.</div>
 
-Title: "Something keeps showing up in your moments."
-Body: "Here's a pattern: growth through struggle. Want to explore it?"
-Action: Tap → Opens Insights tab</div>
+    <h3 class="sub-title">Stage D — Prayed, No Journal Return <span style="color:#888;font-weight:400;font-size:13px;">— Single-shot: 1 push + 1 in-app (mutually suppressive)</span></h3>
+    <div class="notif-example">Push (locked single variant):
+Title: "You shared your heart earlier, and here's how we honored it..."
+Action: Tap → Opens journal entry generated from their prayer (FTUE walkthrough on first time).
+
+In-App (journal card at end of Prayer flow — fires before push):
+"Your moment was written down. Want to see it?"
+"Here's what came from what you just brought to God." [surfaces journal card]
+
+Cadence: Push fires 7am next morning after prayer (if no journal return). 1 push + 1 in-app total — no retries. D cycle ends on journal return or expiry.</div>
+
+    <h3 class="sub-title">Stage E — Dormant (14+ days quiet) <span style="color:#888;font-weight:400;font-size:13px;">— Push + In-App (mutually suppressive)</span></h3>
+    <div class="notif-example">Push — MVP (capture-oriented):
+Variant 1: "It's been a little while. What's been on your heart lately?"
+Variant 2: "Your space is still here. Anything worth capturing?"
+Action: Tap → Lands directly in Capture flow, voice-first, gentle prompt.
+
+In-App (Today tab hint):
+"What's been on your heart?" / "Whenever you're ready."
+Tap → Opens Capture flow (MVP).
+
+Push — Post-MVP (alternation):
+If last act was prayer: "How are you feeling since that prayer? Anything new to capture?"
+If last act was capture: "That moment you captured — ready to pray on it?"
+
+Cadence: 1/14 days. After 3 consecutive ignored pushes (42+ days), reduce further or pause entirely.</div>
+
+    <h3 class="sub-title">Stage F — Just Captured (post-loop, ≤13 days) <span style="color:#888;font-weight:400;font-size:13px;">— Push Only, no in-app (active dwellers)</span></h3>
+    <div class="notif-example">Push — MVP (locked single variant):
+"How is that moment sitting with you? Let's pray about it."
+Action: Tap → Opens Today tab with recent capture at top. Tap moment → Prayer flow.
+
+Push — Post-MVP (topic-aware):
+"You captured something about [theme]. Ready to bring it to prayer?"
+
+In-App: N/A — no interruption for active dwellers.
+
+Cadence: 7am next morning after capture. 1/week max combined across F + G. No retry on dismiss/ignore — wait for next act or 14-day dormancy → Stage E.</div>
+
+    <h3 class="sub-title">Stage G — Just Prayed (post-loop, ≤13 days) <span style="color:#888;font-weight:400;font-size:13px;">— Push Only, no in-app (active dwellers)</span></h3>
+    <div class="notif-example">Push — MVP (locked single variant):
+"Hey, how are you feeling since that prayer? Let's capture what you're processing."
+Action: Tap → Opens Capture flow directly, voice-first, prompt referencing recent prayer.
+
+Push — Post-MVP (topic-aware):
+"You've been reflecting on [theme] in prayer. How is that sitting today? Capture what's surfacing."
+
+In-App: N/A — no interruption for active dwellers.
+
+Cadence: 7am next morning after prayer. 1/week max combined across F + G (shared ceiling with Stage F). No retry on dismiss/ignore — wait for next act or 14-day dormancy → Stage E.</div>
   </div>
 
   <!-- 10. Alternatives -->
@@ -775,15 +1470,15 @@ Action: Tap → Opens Insights tab</div>
 
     <h3 class="sub-title">Max Sends Per Stage Per Month</h3>
     <table class="doc-table">
-      <thead><tr><th>Stage</th><th>Trigger Type</th><th>Max Sends/Month</th><th>Notes</th></tr></thead>
+      <thead><tr><th>Stage</th><th>Trigger Type</th><th>Cadence</th><th>Max Sends/Month</th><th>Stop Condition</th></tr></thead>
       <tbody>
-        <tr><td><strong>A0</strong></td><td>Incomplete onboarding</td><td>1</td><td>Day 2 only; stops at day 7</td></tr>
-        <tr><td><strong>A</strong></td><td>No captures yet</td><td>1</td><td>Day 3 only; stops after first capture</td></tr>
-        <tr><td><strong>B1/B2</strong></td><td>Unprayed capture</td><td>4</td><td>1/week max; stops after 4 no-clicks or prayer</td></tr>
-        <tr><td><strong>C1</strong></td><td>Prayed, no journal return</td><td>4</td><td>1/week starting day 7; stops after 2 ignores or journal return</td></tr>
-        <tr><td><strong>C2</strong></td><td>Journaled, no prayer</td><td>1</td><td>Max 1 in first month; stops at day 21 if no action</td></tr>
-        <tr><td><strong>C3</strong></td><td>Quiet 14+ days</td><td>1</td><td>1/month; reduces to 1/6 weeks after 3 no-clicks</td></tr>
-        <tr><td><strong>D</strong></td><td>Actively dwelling</td><td>4</td><td>1/week; MVP activity-based, Post-MVP topic-aware</td></tr>
+        <tr><td><strong>A</strong></td><td>Incomplete onboarding</td><td>1/week at 7am</td><td>4</td><td>Onboarding completes OR 4 consecutive ignored</td></tr>
+        <tr><td><strong>B</strong></td><td>No captures yet</td><td>1/week at 7am</td><td>4</td><td>First capture made OR 4 weeks no capture OR 2 push dismissals</td></tr>
+        <tr><td><strong>C</strong></td><td>Captured, no prayer</td><td>1/week at 7am (push + in-app)</td><td>4 push + up to 4 in-app</td><td>Prayer completed OR 4 cycles ignored/dismissed</td></tr>
+        <tr><td><strong>D</strong></td><td>Prayed, no journal return</td><td>Single-shot (1 push + 1 in-app total)</td><td>1 push + 1 in-app</td><td>Journal opened OR both expired without action — no retry</td></tr>
+        <tr><td><strong>E</strong></td><td>Dormant 14+ days</td><td>1/14 days</td><td>~2</td><td>User dwells (re-enters F or G) OR 3 consecutive ignored (reduces cadence further)</td></tr>
+        <tr><td><strong>F</strong></td><td>Just captured (post-loop)</td><td>1/week combined cap w/ G</td><td>1 (shared cap with G)</td><td>User prays (→ G), dismisses/ignores (no retry this week), or goes dormant 14+ days (→ E)</td></tr>
+        <tr><td><strong>G</strong></td><td>Just prayed (post-loop)</td><td>1/week combined cap w/ F</td><td>1 (shared cap with F)</td><td>User captures (→ F), dismisses/ignores (no retry this week), or goes dormant 14+ days (→ E)</td></tr>
       </tbody>
     </table>
 
@@ -791,10 +1486,11 @@ Action: Tap → Opens Insights tab</div>
     <table class="doc-table">
       <thead><tr><th>User Journey Path</th><th>Duration</th><th>Total Pushes</th><th>Scenario</th></tr></thead>
       <tbody>
-        <tr><td><strong>Complete funnel → Active (D)</strong></td><td>28 days</td><td>8–12</td><td>Captures daily, prays weekly, journals, stays engaged</td></tr>
-        <tr><td><strong>Stalled at B1 (no prayer)</strong></td><td>30 days</td><td>6</td><td>Captures but never prays; B1 weekly for 4 weeks + A pushes</td></tr>
-        <tr><td><strong>Stalled at C1 (prayed, no journal)</strong></td><td>30 days</td><td>5–7</td><td>Prays but doesn't return to journal; C1 weekly x 3</td></tr>
-        <tr><td><strong>Drops after onboarding (A0/A)</strong></td><td>7 days</td><td>2</td><td>A0 push day 2, A push day 3; no further engagement</td></tr>
+        <tr><td><strong>Complete funnel → Active F/G rhythm</strong></td><td>~7–14 days through funnel, then ongoing</td><td>3–5 funnel + 1/week ongoing (F/G)</td><td>Completes A → B → C → D in ~1 week, then enters healthy alternating F/G rhythm with 1 push/week ceiling</td></tr>
+        <tr><td><strong>Stalled at C (no prayer)</strong></td><td>30 days</td><td>~5–6</td><td>Captures but never prays; C fires weekly for 4 cycles + B pushes before first capture</td></tr>
+        <tr><td><strong>Stalled at D (prayed, no journal)</strong></td><td>7 days</td><td>1 push + 1 in-app</td><td>Prays but doesn't open journal; D fires once (single-shot), then expires — no further nudges for this prayer pair</td></tr>
+        <tr><td><strong>Drops after onboarding (Stage A)</strong></td><td>4 weeks</td><td>Up to 4</td><td>Never completes onboarding; A fires weekly until 4 cycles or completion</td></tr>
+        <tr><td><strong>Dormant dweller (Stage E)</strong></td><td>Ongoing at low cadence</td><td>~2/month</td><td>Was active, went quiet 14+ days; E fires every 14 days gently until re-engagement or 3 consecutive ignores</td></tr>
       </tbody>
     </table>
 
@@ -842,7 +1538,7 @@ Action: Tap → Opens Insights tab</div>
 
     <h3 class="sub-title">Phase 2: User Segmentation (Weeks 2–3)</h3>
     <ul class="checklist">
-      <li>Build logic to identify funnel stage (A, B1, B2, C, D) per user</li>
+      <li>Build logic to identify funnel stage (A, B, C, D, E, F, G) per user based on onboarding status, capture, prayer, journal, and time-since-last-activity signals</li>
       <li>Store segment assignment in database</li>
     </ul>
 
@@ -869,7 +1565,7 @@ Action: Tap → Opens Insights tab</div>
       <tbody>
         <tr><td>T-083</td><td>Setup: Firebase Cloud Messaging for push notifications</td><td>M</td><td>None</td></tr>
         <tr><td>T-084</td><td>Build: Notification scheduling engine (cadence logic)</td><td>M</td><td>T-083</td></tr>
-        <tr><td>T-085</td><td>Build: Funnel stage logic (A, B1, B2, C, D) based on capture + prayer + prompt response events</td><td>M</td><td>Analytics data</td></tr>
+        <tr><td>T-085</td><td>Build: Funnel stage logic (A, B, C, D, E, F, G) based on onboarding status, capture, prayer, journal return, and time-since-last-activity events</td><td>M</td><td>Analytics data</td></tr>
         <tr><td>T-086</td><td>Build: Settings UI for notification preferences</td><td>S</td><td>T-083</td></tr>
         <tr><td>T-087</td><td>Write: Generic notification templates (4 templates per segment)</td><td>S</td><td>T-085</td></tr>
         <tr><td>T-088</td><td>Integrate: Analytics logging (notification events)</td><td>M</td><td>T-083, T-085</td></tr>
@@ -913,23 +1609,32 @@ Action: Tap → Opens Insights tab</div>
 
   <!-- 16. Open Questions -->
   <div class="doc-section" id="section-questions">
-    <h2 class="section-title">16. Open Questions (To Resolve Before Tickets)</h2>
+    <h2 class="section-title">16. Open Questions</h2>
+    <p style="font-size:13px; color:#666; margin-bottom:14px;">Questions with ✅ are resolved and locked. Remaining open questions need resolution before ticket implementation begins.</p>
     <ol style="padding-left: 18px;">
       <li style="margin-bottom: 12px; font-size: 14px;">
-        <strong>Should we launch Pillar 8 with generic notifications only, or wait for better personalization?</strong><br>
-        <span style="color:#666;">— Decision: Ship generic first (Phases 1–3), validate if notifications drive return at all</span>
+        <strong>✅ Should we launch Pillar 8 with generic notifications only, or wait for better personalization?</strong><br>
+        <span style="color:#2d6a4f;"><strong>Resolved:</strong> Ship locked MVP variants (generic, stage-specific copy) first. Validate that notifications drive return at all before adding personalization. Post-MVP topic-aware variants depend on LLM tournament outcome.</span>
       </li>
       <li style="margin-bottom: 12px; font-size: 14px;">
-        <strong>How do we handle users who never engage with notifications?</strong><br>
-        <span style="color:#666;">— Strategy: After 3 consecutive "no clicks," soft pause for 2 weeks, then retry</span>
+        <strong>✅ How do we handle users who never engage with notifications?</strong><br>
+        <span style="color:#2d6a4f;"><strong>Resolved:</strong> Per-stage stop conditions are now locked in Section 5. Summary: most stages stop after 4 ignored cycles; Stage D is single-shot with no retry; Stage E reduces to pause after 3 consecutive ignores (42+ days). Settings manual pause always available via T-086.</span>
       </li>
       <li style="margin-bottom: 12px; font-size: 14px;">
-        <strong>Should onboarding explain why they're receiving notifications?</strong><br>
-        <span style="color:#666;">— Recommendation: Yes, brief tooltip explaining Pillar 8 purpose</span>
+        <strong>✅ Should onboarding explain why they're receiving notifications?</strong><br>
+        <span style="color:#2d6a4f;"><strong>Resolved:</strong> Yes — Pillar 0 (Onboarding) now includes a dedicated Screen 6.5 between Privacy (Screen 6) and First Capture (Screen 7). Copy: "We'll only send sparse, gentle invitations when there's something worth coming back to." Opt-out model (default enabled). Filed into Pillar 0 strategy doc — see Cross-Pillar Requirements in Section 5.</span>
       </li>
       <li style="margin-bottom: 12px; font-size: 14px;">
-        <strong>Should notification frequency be user-configurable?</strong><br>
-        <span style="color:#666;">— Recommendation: Yes, in Settings (weekly, bi-weekly, monthly options)</span>
+        <strong>✅ Should notification frequency be user-configurable?</strong><br>
+        <span style="color:#2d6a4f;"><strong>Resolved:</strong> Yes, via T-086 (Settings UI). Three modes: <strong>Default</strong> (all stage rules apply), <strong>Sparse</strong> (caps everything to 1x/month, suppresses F/G entirely), <strong>Off</strong> (push disabled; in-app contextual surfaces remain). A Sabbath / Quiet Days toggle will also be available for users observing a rest day.</span>
+      </li>
+      <li style="margin-bottom: 12px; font-size: 14px;">
+        <strong>⏳ LLM tournament outcome — effect on personalization depth</strong><br>
+        <span style="color:#666;">— <strong>Open:</strong> Post-MVP personalization (topic-aware copy for F/G and E alternation) requires a decision on whether to use a server-side LLM (Gemini — requires carving out a readable metadata field, relaxing E2E for that field) or on-device LLM (Mistral — full E2E, richer personalization without server access). Blocked until LLM tournament results are in. MVP ships with locked generic variants regardless.</span>
+      </li>
+      <li style="margin-bottom: 12px; font-size: 14px;">
+        <strong>⏳ Sabbath / Quiet Days toggle — implementation scope</strong><br>
+        <span style="color:#666;">— <strong>Open:</strong> T-086 (Settings UI) should include this toggle. Design decision needed: does "Quiet Day" suppress only push notifications, or also in-app contextual surfaces? And does the user set specific days, or flag an active period? Needs UX spec before T-086 begins.</span>
       </li>
     </ol>
   </div>
@@ -940,20 +1645,30 @@ Action: Tap → Opens Insights tab</div>
     <table class="doc-table">
       <thead><tr><th>Aspect</th><th>Decision</th></tr></thead>
       <tbody>
-        <tr><td><strong>Goal</strong></td><td>Drive return + dwelling engagement (prayer, prompts, journal)</td></tr>
-        <tr><td><strong>Philosophy</strong></td><td>Invitations to dwell, not reminders</td></tr>
-        <tr><td><strong>Cadence</strong></td><td>1–2 push per month (very sparse); 1 in-app nudge at a time</td></tr>
-        <tr><td><strong>Funnel stages</strong></td><td>A (no captures), B1 (no dwelling), B2 (prompted, no prayer), C (prayed, quiet), D (actively dwelling)</td></tr>
-        <tr><td><strong>Personalization</strong></td><td>Metadata-based (due to E2E encryption)</td></tr>
-        <tr><td><strong>Opt model</strong></td><td>Opt-out (default on)</td></tr>
-        <tr><td><strong>Privacy</strong></td><td>E2E encryption maintained</td></tr>
-        <tr><td><strong>Tone</strong></td><td>Spiritual ("heart," "dwell"), not productivity ("streak")</td></tr>
-        <tr><td><strong>Key metric</strong></td><td>D7 retention &gt;35%, CTR &gt;40%</td></tr>
-        <tr><td><strong>Blocker</strong></td><td>Pillar 3 (Prayer/Dwelling) must ship and be compelling first</td></tr>
+        <tr><td><strong>Goal</strong></td><td>Drive return + dwelling engagement (prayer, journal return) through sparse, contextual invitations</td></tr>
+        <tr><td><strong>Philosophy</strong></td><td>Invitations to dwell, not reminders. Silence is a feature for active dwellers.</td></tr>
+        <tr><td><strong>Timing</strong></td><td>Universal 7am in the dweller's local timezone across all stages</td></tr>
+        <tr><td><strong>Cadence</strong></td><td>Stage-dependent: A/B/C — 1/week (up to 4 cycles); D — 1 push + 1 in-app, single-shot, no retries; E — 1/14 days; F/G — 1/week combined cap (both stages share the ceiling)</td></tr>
+        <tr><td><strong>Funnel stages (A–G)</strong></td><td>
+          <strong>A</strong> — Incomplete onboarding → encourage completion<br>
+          <strong>B</strong> — Onboarded, no captures → first capture<br>
+          <strong>C</strong> — Captured, no prayer → pray on the moment<br>
+          <strong>D</strong> — Prayed, no journal return → return to journal (single-shot)<br>
+          <strong>E</strong> — Dormant 14+ days → gentle re-entry (capture, MVP)<br>
+          <strong>F</strong> — Just captured, post-loop (≤13 days) → pray on it<br>
+          <strong>G</strong> — Just prayed, post-loop (≤13 days) → capture next moment
+        </td></tr>
+        <tr><td><strong>Parity model</strong></td><td>Mutually-suppressive push + in-app for stages C, D, E. Push only for A, B, F, G (no in-app for new-user gating or active dwellers).</td></tr>
+        <tr><td><strong>Personalization</strong></td><td>MVP: generic locked variants per stage (metadata + activity-type). Post-MVP: topic-aware (blocked by LLM tournament outcome).</td></tr>
+        <tr><td><strong>Opt model</strong></td><td>Opt-out (default on). Screen 6.5 in onboarding. Settings modes: Default / Sparse / Off + Sabbath toggle (T-086).</td></tr>
+        <tr><td><strong>Privacy</strong></td><td>Server-side encryption; Dwellable reads plaintext for personalization. No third-party access without consent.</td></tr>
+        <tr><td><strong>Tone</strong></td><td>Spiritual ("heart," "dwell"), grace-based ("no guilt, no streaks"), invitational — never urgent or threatening</td></tr>
+        <tr><td><strong>Key metrics</strong></td><td>D7 retention &gt;35%; CTR &gt;40%; opt-out rate &lt;10%; Formation Engagement Rate (% dwelling) &gt;20%</td></tr>
+        <tr><td><strong>Blocker</strong></td><td>Pillar 3 (Prayer/Dwelling) must ship and be compelling before Pillar 8 goes live. Without a compelling prayer experience, notifications just invite users back to nothing.</td></tr>
       </tbody>
     </table>
     <p style="margin-top: 16px; font-size: 14px; color: #666;">
-      <strong>Status:</strong> Ready for implementation. T-083 is the first blocking ticket. However, Pillar 3 (Prayer/Dwelling) must ship first and prove compelling.
+      <strong>Status:</strong> Strategy locked. Section 5 stage reference table is the canonical spec. T-083 is the first implementation ticket. Pillar 3 (Soaking/Prayer) must ship first.
     </p>
   </div>
 
@@ -1448,9 +2163,9 @@ Action: Tap → Opens Insights tab</div>
       'section-purpose':         '2. Product Purpose',
       'section-success':         '3. Success Criteria',
       'section-decisions':       '4. Design Decisions',
-      'section-segmentation':    '5. Funnel Stages — Messaging & Delivery',
+      'section-segmentation':    '5. Funnel Stages — Complete Stage Reference',
       'section-personalization': '6. Personalization Rules',
-      'section-frequency':       '5. Funnel Stages — Messaging & Delivery',
+      'section-frequency':       '5. Funnel Stages — Complete Stage Reference',
       'section-privacy':         '8. Privacy & E2E Encryption',
       'section-examples':        '9. Notification Examples',
       'section-alternatives':    '10. Alternatives Considered',
@@ -1594,7 +2309,7 @@ Action: Tap → Opens Insights tab</div>
   // ─────────────────────────────────────────────
   // EDIT MODE + EDIT PERSISTENCE
   // ─────────────────────────────────────────────
-  const EDITS_KEY = 'dwellable-notif-edits';
+  const EDITS_KEY = 'dwellable-notif-edits-v2'; // bumped after Section 5 rewrite to force fresh load
   let editMode = false;
 
   function loadEdits() {
@@ -1653,7 +2368,7 @@ Action: Tap → Opens Insights tab</div>
   // ─────────────────────────────────────────────
   // ALL TABLES — ADD / MOVE / DELETE / SAVE ROWS
   // ─────────────────────────────────────────────
-  const TABLE_ROWS_KEY = 'dwellable-notif-table-rows';
+  const TABLE_ROWS_KEY = 'dwellable-notif-table-rows-v2'; // bumped after Section 5 rewrite to force fresh load
 
   function getTableId(table) {
     if (!table.id) {
@@ -1761,12 +2476,91 @@ Action: Tap → Opens Insights tab</div>
   }
 
   // ─────────────────────────────────────────────
+  // STAGE TABLE COLUMN RESIZING
+  // ─────────────────────────────────────────────
+  const COL_WIDTHS_KEY = 'dwellable-notif-stage-col-widths';
+
+  function loadColWidths() {
+    try { return JSON.parse(localStorage.getItem(COL_WIDTHS_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+
+  function saveColWidths(widths) {
+    localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(widths));
+  }
+
+  function initStageTableResizing() {
+    const table = document.querySelector('#section-segmentation .table-wrap table');
+    if (!table) return;
+
+    const headers = table.querySelectorAll('thead th');
+    const savedWidths = loadColWidths();
+
+    headers.forEach((th, idx) => {
+      // Apply any saved width
+      if (savedWidths[idx]) th.style.width = savedWidths[idx] + 'px';
+
+      // Don't add a handle on the last column (no right neighbor)
+      if (idx === headers.length - 1) return;
+
+      const resizer = document.createElement('div');
+      resizer.className = 'col-resizer';
+      resizer.setAttribute('title', 'Drag to resize column');
+      th.appendChild(resizer);
+
+      let startX = 0;
+      let startWidth = 0;
+
+      resizer.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        startX = e.pageX;
+        startWidth = th.offsetWidth;
+        resizer.classList.add('resizing');
+        document.body.classList.add('col-resizing');
+
+        function onMove(e2) {
+          const diff = e2.pageX - startX;
+          const newWidth = Math.max(50, startWidth + diff);
+          th.style.width = newWidth + 'px';
+        }
+
+        function onUp() {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          resizer.classList.remove('resizing');
+          document.body.classList.remove('col-resizing');
+
+          // Persist
+          const widths = loadColWidths();
+          widths[idx] = th.offsetWidth;
+          saveColWidths(widths);
+        }
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+
+      // Double-click resets this column to its initial inline width
+      resizer.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        th.style.width = '';
+        const widths = loadColWidths();
+        delete widths[idx];
+        saveColWidths(widths);
+      });
+    });
+  }
+
+  // ─────────────────────────────────────────────
   // INIT
   // ─────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
-    restoreEdits();          // section edits first — so highlights anchor to the edited text
-    restoreComments();       // then re-apply comment highlights on top
-    initAllTableControls();  // inject + row into every table, restore saved custom rows
+    restoreEdits();              // section edits first — so highlights anchor to the edited text
+    restoreComments();           // then re-apply comment highlights on top
+    initAllTableControls();      // inject + row into every table, restore saved custom rows
+    initStageTableResizing();    // make Section 5 stage table columns drag-resizable
   });
 </script>
 </body>

@@ -77,17 +77,52 @@
 - **Purpose:** Establish privacy trust + legal compliance + differentiation (vs. generic apps that monitor user data)
 - **Time on screen:** 20-30 seconds
 
-### Screen 7: **First Capture**
+### Screen 6.5: **Notification Permission** 🔔
+- **Copy:** "We'll only send sparse, gentle invitations when there's something worth coming back to."
+- **Action:** Two options:
+  - "Enable notifications" → Triggers iOS native permission prompt (default path; encouraged)
+  - "Not now" → Skip; user can re-enable later in Settings
+- **Default:** Enabled (opt-out model — historically yields 70%+ adoption vs <30% for opt-in)
+- **🔒 If user declines:** No notifications will be sent — ever. The user can re-enable in Settings, but Pillar 8's notification engine will respect the OS permission flag and skip all push triggers for this user. In-app surfaces (Today tab cards, flow handoffs) remain functional since those are UI, not notifications.
+- **Purpose:** Establish notification consent before first capture (so Pillar 8 can fire Stage B push if user abandons before Screen 7).
+- **Time on screen:** 10-15 seconds
+
+### Screen 7: **First Capture** 🔒 *MANDATORY*
 - **Copy:** "Let's capture your first moment."
 - **Action:** Two buttons:
   - "Voice record" → Launches CaptureView (microphone focused)
   - "Type instead" → Launches TypeFlowView (text entry)
-- **Purpose:** Immediate action (don't drop to home screen with empty gallery)
+- **Purpose:** Immediate action (don't drop to home screen with empty gallery).
+- **🔒 MANDATE (Locked):** User **cannot bypass first capture** to access other app surfaces. No "skip for now" option. No back-button escape route to home/list views. Onboarding is not complete — and app navigation is not unlocked — until at least one moment is captured.
 - **Outcome:** User either:
-  - Records a moment (momentum-building)
-  - Types a moment (low-friction entry)
+  - Records a moment (momentum-building) → Onboarding complete → unlock full app
+  - Types a moment (low-friction entry) → Onboarding complete → unlock full app
   - Either path activates LocalStorageManager (offline-capable) + SyncManager
+  - **If user abandons app before capture:** Account is created but app remains gated on next open. Stage A push (from Pillar 8) re-invites them to complete capture.
+- **Fallback (if mandate ever softens):** Show a glowing icon on the Capture button as a persistent visual nudge ("come here next"). Not implemented in MVP.
 - **Time on screen:** Variable (5 minutes average for first moment)
+
+---
+
+## 🔒 Locked Cross-Pillar Requirements (Flow-Back from Other Strategies)
+
+These requirements surfaced during work on other pillars and have been **filed into Pillar 0** as hard requirements. They are not optional and cannot be softened in MVP without ripple effects to dependent pillars.
+
+### Requirement #1: First Capture Is Mandatory in Onboarding
+- **Source:** Pillar 8 (Notifications) strategy — May 13, 2026
+- **What:** Screen 7 must block app navigation until first capture is recorded. No skip option.
+- **Why:** Without this mandate, Stage B's "Push only / no in-app parity" assumption breaks. The notification model assumes the user cannot encounter app surfaces (e.g., Today tab, Create tab empty state) without having captured at least once. Softening this requires re-architecting Stage B to include in-app variants.
+- **Implementation note:** No "skip for now" link, no back-button escape. The only forward path from Screen 7 is `record voice` or `type instead`. Until capture is recorded, the user cannot reach the Today tab, Journal tab, or Settings.
+- **Fallback (if ever softened):** Glowing icon on the Capture button as persistent visual nudge. Not in MVP.
+- **Status:** ✅ Locked — applied to Screen 7 above.
+
+### Requirement #2: Notification Permission Request Timing
+- **Source:** Pillar 8 (Notifications) strategy — handoff via T-086
+- **What:** Onboarding explicitly requests notification permission with brief framing: *"We'll only send sparse, gentle invitations when there's something worth coming back to."* Default: enabled (opt-out model).
+- **Why:** Pillar 8 success depends on adoption; opt-out historically yields 70%+ adoption vs <30% for opt-in.
+- **Where:** Standalone **Screen 6.5** (between Privacy and First Capture). Single screen, ~10-15 seconds.
+- **If user declines:** No notifications fire — ever. User can re-enable in Settings. Pillar 8's engine respects the OS permission flag and skips all push triggers for declined users. In-app UI surfaces remain functional.
+- **Status:** ✅ Locked — applied as Screen 6.5 above.
 
 ---
 
@@ -107,7 +142,7 @@
 
 | Question | Status | Next Step |
 |----------|--------|-----------|
-| **What if user completes onboarding but never captures?** | Deferred to Phase 2 (Pillar 8 — Notifications) | Design post-onboarding nudge timing and copy |
+| **What if user completes onboarding but never captures?** | ✅ **RESOLVED via mandate** (Screen 7 now blocks app navigation until first capture). Pillar 8 Stage B push handles users who abandon before capture. | n/a — locked |
 | **Should users be able to edit Intent/Rhythm after onboarding?** | Deferred to Settings design | Design Settings flow for preference updates |
 | **How granular should Intent options be?** | Needs user testing | Validate if current 4 options resonate; consider adding/removing based on beta feedback |
 | **Recovery flow if user forgets password?** | Blocked by T-062 (E2E Encryption) | Design recovery UX that doesn't compromise encryption |
