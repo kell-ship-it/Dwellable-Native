@@ -126,6 +126,36 @@ Source of truth for all tickets: `TICKETS.md` and `TICKETS.csv`
 
 ---
 
+## Dashboard Population (MOMENTS_DASHBOARD.html)
+
+**When Kell says "populate the moments dashboard" or similar:**
+
+1. **Do NOT create fake sample data.** Query Supabase for real Phase 1 pilot data immediately.
+2. **Project ID:** `lhcjobrtmbawlhjyodxz`
+3. **Query to execute:**
+   ```sql
+   SELECT 
+     u.id, 
+     u.email, 
+     COUNT(m.id) as moment_count,
+     COALESCE(SUM(CASE WHEN m.audio_url IS NOT NULL THEN 1 ELSE 0 END), 0) as voice_count,
+     COALESCE(SUM(CASE WHEN m.audio_url IS NULL AND m.body IS NOT NULL THEN 1 ELSE 0 END), 0) as text_count,
+     COALESCE(COUNT(DISTINCT ue.id), 0) as session_count,
+     MIN(m.created_at) as first_moment_created,
+     MAX(m.created_at) as last_moment_created
+   FROM public.users u
+   LEFT JOIN public.moments m ON u.id = m.user_id
+   LEFT JOIN public.usage_events ue ON u.id = ue.user_id AND ue.event_type = 'session_start'
+   GROUP BY u.id, u.email
+   ORDER BY moment_count DESC, u.email ASC
+   ```
+4. **Replace** the `const users = [...]` array in `MOMENTS_DASHBOARD.html` with results
+5. **Convert timestamps** to ISO format (append Z for UTC)
+
+**Key:** Voice captures detected by `audio_url IS NOT NULL`; text captures by `audio_url IS NULL AND body IS NOT NULL`.
+
+---
+
 ## CRITICAL: Honesty Rule
 
 **Never claim you have tested, verified, or run something unless you have actually done it.**

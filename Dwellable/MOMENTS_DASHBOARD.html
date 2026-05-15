@@ -159,12 +159,155 @@
 <script>
     let chartType = null, chartDaily = null;
 
-    async function load() {
-        try {
-            const response = await fetch('dashboard-data.json');
-            if (!response.ok) throw new Error('Failed to load dashboard data');
-            const users = await response.json();
+    const users = [
+  {
+    "email": "kell@pilot.dwellable.com",
+    "moment_count": 92,
+    "voice_count": 48,
+    "text_count": 44,
+    "session_count": 0,
+    "first_moment_created": "2026-03-19T15:00:52Z",
+    "last_moment_created": "2026-05-14T12:07:00Z"
+  },
+  {
+    "email": "testing@pilot.dwellable.com",
+    "moment_count": 25,
+    "voice_count": 8,
+    "text_count": 17,
+    "session_count": 0,
+    "first_moment_created": "2026-03-23T19:19:16Z",
+    "last_moment_created": "2026-03-23T23:57:24Z"
+  },
+  {
+    "email": "tony@pilot.dwellable.com",
+    "moment_count": 13,
+    "voice_count": 11,
+    "text_count": 2,
+    "session_count": 0,
+    "first_moment_created": "2026-03-28T17:25:23Z",
+    "last_moment_created": "2026-05-11T11:29:30Z"
+  },
+  {
+    "email": "Ludwin@pilot.com",
+    "moment_count": 11,
+    "voice_count": 0,
+    "text_count": 11,
+    "session_count": 0,
+    "first_moment_created": "2026-04-05T20:29:41Z",
+    "last_moment_created": "2026-05-06T01:40:24Z"
+  },
+  {
+    "email": "christina@pilot.dwellable.com",
+    "moment_count": 7,
+    "voice_count": 0,
+    "text_count": 7,
+    "session_count": 0,
+    "first_moment_created": "2026-03-27T22:09:41Z",
+    "last_moment_created": "2026-04-03T07:26:15Z"
+  },
+  {
+    "email": "greg@pilot.dwellable.com",
+    "moment_count": 6,
+    "voice_count": 4,
+    "text_count": 2,
+    "session_count": 0,
+    "first_moment_created": "2026-04-03T23:14:08Z",
+    "last_moment_created": "2026-04-19T12:13:29Z"
+  },
+  {
+    "email": "jacin@pilot.dwellable.com",
+    "moment_count": 5,
+    "voice_count": 3,
+    "text_count": 2,
+    "session_count": 0,
+    "first_moment_created": "2026-03-29T17:08:18Z",
+    "last_moment_created": "2026-04-03T14:58:45Z"
+  },
+  {
+    "email": "bruce@pilot.dwellable.com",
+    "moment_count": 3,
+    "voice_count": 0,
+    "text_count": 3,
+    "session_count": 0,
+    "first_moment_created": "2026-04-08T22:26:37Z",
+    "last_moment_created": "2026-04-17T15:46:54Z"
+  },
+  {
+    "email": "aaron@pilot.dwellable.com",
+    "moment_count": 2,
+    "voice_count": 1,
+    "text_count": 1,
+    "session_count": 0,
+    "first_moment_created": "2026-04-02T02:33:33Z",
+    "last_moment_created": "2026-04-08T19:38:19Z"
+  },
+  {
+    "email": "clay@pilot.dwellable.com",
+    "moment_count": 2,
+    "voice_count": 2,
+    "text_count": 0,
+    "session_count": 0,
+    "first_moment_created": "2026-03-29T20:22:10Z",
+    "last_moment_created": "2026-04-03T17:13:53Z"
+  },
+  {
+    "email": "jesus@test.dwellable.com",
+    "moment_count": 2,
+    "voice_count": 1,
+    "text_count": 1,
+    "session_count": 0,
+    "first_moment_created": "2026-03-27T19:46:15Z",
+    "last_moment_created": "2026-03-28T04:30:19Z"
+  },
+  {
+    "email": "Bryce@pilot.dwellable.com",
+    "moment_count": 1,
+    "voice_count": 1,
+    "text_count": 0,
+    "session_count": 0,
+    "first_moment_created": "2026-04-01T14:27:22Z",
+    "last_moment_created": "2026-04-01T14:27:22Z"
+  },
+  {
+    "email": "michael@pilot.dwellable.com",
+    "moment_count": 1,
+    "voice_count": 1,
+    "text_count": 0,
+    "session_count": 0,
+    "first_moment_created": "2026-04-15T22:13:00Z",
+    "last_moment_created": "2026-04-15T22:13:00Z"
+  },
+  {
+    "email": "testing2@pilot.dwellable.com",
+    "moment_count": 1,
+    "voice_count": 1,
+    "text_count": 0,
+    "session_count": 0,
+    "first_moment_created": "2026-03-23T21:32:00Z",
+    "last_moment_created": "2026-03-23T21:32:00Z"
+  },
+  {
+    "email": "ludwin@pilot.dwellable.com",
+    "moment_count": 0,
+    "voice_count": 0,
+    "text_count": 0,
+    "session_count": 0,
+    "first_moment_created": null,
+    "last_moment_created": null
+  },
+  {
+    "email": "susie@pilot.dwellable.com",
+    "moment_count": 0,
+    "voice_count": 0,
+    "text_count": 0,
+    "session_count": 0,
+    "first_moment_created": null,
+    "last_moment_created": null
+  }
+];
 
+    function load() {
+        try {
             renderMetrics(users);
             renderCharts(users);
             renderParticipants(users);
@@ -181,14 +324,17 @@
     function renderMetrics(users) {
         const totalMoments = users.reduce((sum, u) => sum + u.moment_count, 0);
         const activeUsers = users.filter(u => u.moment_count > 0).length;
+        const totalUsers = users.length;
+        const totalVoice = users.reduce((sum, u) => sum + (u.voice_count || 0), 0);
+        const voicePercentage = totalMoments > 0 ? Math.round((totalVoice / totalMoments) * 100) : 0;
 
         document.getElementById('m-total').textContent = totalMoments;
-        document.getElementById('m-total-sub').textContent = `${activeUsers} users active`;
-        document.getElementById('m-users').textContent = activeUsers;
-        document.getElementById('m-users-sub').textContent = `of ${users.length} invited`;
-        document.getElementById('m-sessions').textContent = '—';
-        document.getElementById('m-sessions-sub').textContent = 'from live data';
-        document.getElementById('m-voice').textContent = '—';
+        document.getElementById('m-total-sub').textContent = `from ${totalUsers} users`;
+        document.getElementById('m-users').textContent = totalUsers;
+        document.getElementById('m-users-sub').textContent = `${activeUsers} active`;
+        document.getElementById('m-sessions').textContent = users.reduce((sum, u) => sum + (u.session_count || 0), 0);
+        document.getElementById('m-sessions-sub').textContent = 'total sessions';
+        document.getElementById('m-voice').textContent = voicePercentage + '%';
     }
 
     function renderCharts(users) {
