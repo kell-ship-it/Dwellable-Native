@@ -1,7 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 14, 2026 (Late Evening) — Dashboard Population Utility Complete. Queried real Phase 1 pilot data from Supabase (171 moments, 14 active users, 92 from lead pilot), updated MOMENTS_DASHBOARD.html with actual engagement metrics. Added dashboard population workflow to memory system + AGENT_GUIDELINES.md for future reference (prevents repeat discovery cycles). T-092 partially complete: DEPENDENCY_GRAPH.md ✅, next: LLM selection tournament, infrastructure audit, beta cohort strategy.
-**Status:** 73/96 tickets complete (76%), 1 in progress (T-092), Build 107 on TestFlight, Phase 1 complete, Dashboard live with real pilot data, Next: LLM selection + infrastructure readiness audit
+**Last Updated:** May 15, 2026 — Formation Intelligence Framework Complete. Consolidated LLM_RESEARCH.md + LLM_TOURNAMENT_FINAL.md + Reflective Intelligence Framework into unified FORMATION_INTELLIGENCE_STRATEGY.md (10 sections: P0-P8 overview, Reflective Density Model, Prompt Orchestration, LLM selection, Testing Protocol). LLM selection finalized: Groq Llama 3 70B (MVP $0 cost) + GPT-4o mini (post-MVP $0.10-0.15/user). Discovered clean sequencing: User Scenarios → Acceptance Criteria → Flow Specs → Tool Audit → Infrastructure Audit (not reversed). T-092 evolving: next session starts P0 User Scenarios + Acceptance Criteria.
+**Status:** 74/96 tickets complete (77%), 1 in progress (T-092), Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Next: P0 User Scenarios + Acceptance Criteria for all 9 pillars
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -485,27 +485,36 @@
 
 ### Phase 2 Launch Readiness (Strategic Planning)
 
-- [x] **T-092:** Phase 2 Launch Readiness: Dependency mapping & integration plan 🔄 **IN PROGRESS**
-  - **Purpose:** Map all Phase 2 blockers and integration points before launching parallel pillar implementation
+- [x] **T-092:** Phase 2 Launch Readiness: Dependency mapping & LLM selection → User Scenarios 🔄 **IN PROGRESS**
+  - **Purpose:** Establish clean sequencing for Phase 2 design/build: User Scenarios → Acceptance Criteria → Flow Specs → Tools/Cost → Infrastructure
   - **Deliverables:**
     1. ✅ Pillar dependency graph (which pillar blocks others? what's critical path?) — COMPLETE
        - Created `DEPENDENCY_GRAPH.md` with 10 comprehensive sections
        - Visual diagram, dependency matrix, critical path (Auth → P0 → P1 → P3 → P4 → P6, 11-16 weeks)
        - Parallelizable work streams identified (P2, Settings, P7, Today, Growth)
        - MVP vs Post-MVP breakdown (10 core pillars, 3 deferred)
-       - Implementation sequencing (Gantt-style 14-week timeline)
-       - Risk dependencies table (8 critical blockers identified)
        - Owner assignments (13 proposed roles)
-    2. ✅ Team assignment & sprint plan (who owns which pillar?) — COMPLETE (in Dependency Graph)
-       - Owner assignments section with 13 proposed roles across Auth, P0-P8, and support components
-       - Sprint phases defined with timeline
-    3. 🔲 LLM selection finalized (Gemini 2.0 Flash vs Mistral 7B) — **NEXT SESSION**
-       - Requires: AI Capability Audit across all pillars → SDK selection → testing structure
-    4. 🔲 Integration checklist (P0 → P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8) — DEFERRED
-    5. 🔲 Infrastructure readiness (Firebase, Rich Context system, E2E encryption T-062) — DEFERRED
-    6. 🔲 Beta cohort recruitment strategy (how many users? which segment first?) — DEFERRED
-    7. 🔲 Success metrics & measurement plan (WAR, Formation Engagement Rate, etc.) — DEFERRED
-    8. 🔲 Risk & mitigation plan (what breaks Phase 2? how do we prevent it?) — PARTIALLY COMPLETE (8 risks identified)
+    2. ✅ Formation Intelligence Framework (P0-P8 integrated) — COMPLETE
+       - Consolidated `FORMATION_INTELLIGENCE_STRATEGY.md` (10 sections)
+       - P0-P8 detailed breakdown: what each pillar learns, infers, how it prepares next
+       - Reflective Density Model (8 levels L1-L8 with foundational baseline L2-L4)
+       - Prompt Orchestration Logic (3-stage adaptive system with personalization)
+       - LLM Testing Protocol (3 scenarios, 6 evaluation criteria)
+    3. ✅ LLM selection finalized — COMPLETE
+       - MVP: Groq Llama 3 70B ($0, free tier, 7-day trial covers Phase 2)
+       - Post-MVP: OpenAI GPT-4o mini ($0.10-0.15/user/month at scale)
+       - Provider integration: Vercel AI SDK (single-parameter swap, zero refactoring)
+       - Break-even: 2% trial-to-subscriber conversion at $9.99/month pricing ✅
+       - Quality frameworks locked: Prompt quality (brief + contextual + conversational + emotionally present)
+       - Reflection quality: 8-level model with acceptable baseline
+    4. 🔲 **User Scenarios + Acceptance Criteria (P0-P8)** — **NEXT SESSION STARTS HERE**
+       - P0 (Onboarding): 3-4 user journeys + 6-8 acceptance criteria
+       - P1-P8: Same structure (one doc per pillar)
+       - Flow specs, tool audit, and cost calculation emerge from scenarios
+    5. 🔲 Cost review ticket (T-093) — Pre-infrastructure audit validation per pillar
+    6. 🔲 Infrastructure readiness (Supabase, E2E encryption T-062, Rich Context system) — DEFERRED to post-infra-audit
+    7. 🔲 Beta cohort recruitment strategy (how many users? which segment first?) — DEFERRED
+    8. 🔲 LLM Live API Testing (Groq vs GPT-4o mini in real Dwellable environment) — DEFERRED to post-infra-audit
   - **Acceptance Criteria:**
     - Dependency graph shows clear sequencing (no circular dependencies)
     - LLM selection locked with integration plan
