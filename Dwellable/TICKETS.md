@@ -1,6 +1,6 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 15, 2026 — Formation Intelligence Framework Complete. Consolidated LLM_RESEARCH.md + LLM_TOURNAMENT_FINAL.md + Reflective Intelligence Framework into unified FORMATION_INTELLIGENCE_STRATEGY.md (10 sections: P0-P8 overview, Reflective Density Model, Prompt Orchestration, LLM selection, Testing Protocol). LLM selection finalized: Groq Llama 3 70B (MVP $0 cost) + GPT-4o mini (post-MVP $0.10-0.15/user). Discovered clean sequencing: User Scenarios → Acceptance Criteria → Flow Specs → Tool Audit → Infrastructure Audit (not reversed). T-092 evolving: next session starts P0 User Scenarios + Acceptance Criteria.
+**Last Updated:** May 15, 2026 — Formation Intelligence Framework Complete. Consolidated LLM_RESEARCH.md + LLM_TOURNAMENT_FINAL.md + Reflective Intelligence Framework into unified FORMATION_INTELLIGENCE_STRATEGY.md (10 sections: P0-P8 overview, Reflective Density Model, Prompt Orchestration, LLM selection, Testing Protocol). LLM selection finalized: Groq Llama 3 70B (primary, $0 cost, aiming to sustain long-term) with OpenAI GPT-4o mini as backup ($0.10-0.15/user if needed). Discovered clean sequencing: User Scenarios → Acceptance Criteria → Flow Specs → Tool Audit → Infrastructure Audit (not reversed). T-092 evolving: next session starts P0 User Scenarios + Acceptance Criteria.
 **Status:** 74/96 tickets complete (77%), 1 in progress (T-092), Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Next: P0 User Scenarios + Acceptance Criteria for all 9 pillars
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
@@ -501,10 +501,10 @@
        - Prompt Orchestration Logic (3-stage adaptive system with personalization)
        - LLM Testing Protocol (3 scenarios, 6 evaluation criteria)
     3. ✅ LLM selection finalized — COMPLETE
-       - MVP: Groq Llama 3 70B ($0, free tier, 7-day trial covers Phase 2)
-       - Post-MVP: OpenAI GPT-4o mini ($0.10-0.15/user/month at scale)
+       - Primary: Groq Llama 3 70B ($0, free tier, aiming to sustain as main LLM)
+       - Backup: OpenAI GPT-4o mini ($0.10-0.15/user/month if Groq doesn't meet requirements)
        - Provider integration: Vercel AI SDK (single-parameter swap, zero refactoring)
-       - Break-even: 2% trial-to-subscriber conversion at $9.99/month pricing ✅
+       - Break-even: $0 Groq sustains profitability; GPT fallback remains affordable
        - Quality frameworks locked: Prompt quality (brief + contextual + conversational + emotionally present)
        - Reflection quality: 8-level model with acceptable baseline
     4. 🔲 **User Scenarios + Acceptance Criteria (P0-P8)** — **NEXT SESSION STARTS HERE**

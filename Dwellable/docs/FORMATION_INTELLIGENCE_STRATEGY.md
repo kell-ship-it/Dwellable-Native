@@ -286,11 +286,11 @@ Next time these users capture:
 
 ### Executive Summary
 
-**CHAMPION: Groq Llama 3 70B (MVP) → OpenAI GPT-4o mini (Post-MVP)**
+**PRIMARY: Groq Llama 3 70B (Main Strategy) | BACKUP: OpenAI GPT-4o mini (Fallback)**
 
-- **MVP Trial Period (7 days free):** Groq Llama 3 70B — $0/user
-- **Post-MVP Paid Phase (monthly subscription):** OpenAI GPT-4o mini — ~$0.10–0.15/user/month
-- **At Scale (10K+ users):** Evaluate self-hosting or partnership options
+- **Primary Strategy (All Phases):** Groq Llama 3 70B — $0/user (free tier, aiming to sustain as main LLM long-term)
+- **Backup Option (if Groq doesn't meet requirements):** OpenAI GPT-4o mini — ~$0.10–0.15/user/month (fallback for quality/reliability)
+- **At Scale (10K+ users):** Evaluate self-hosting or partnership options if Groq sustains
 
 ### Why This Pairing
 
@@ -316,9 +316,9 @@ Next time these users capture:
 - Excellent instruction-following for prompts
 
 **Strategy:**
-1. **Trial users:** Groq (free tier, experience high-quality prayers)
-2. **Convert to paid:** Switch to GPT-4o mini (marginal cost, highest quality)
-3. **Break-even:** ~$0/trial cost + ~$0.10 first-month cost = profitable even at 2% conversion
+1. **All users (MVP → Beyond):** Groq Llama 3 70B (free, aiming to sustain as primary LLM)
+2. **If Groq testing fails:** Fallback to GPT-4o mini (paid, highest quality alternative)
+3. **Break-even:** $0 Groq cost sustains profitability. GPT-4o mini fallback remains <$0.15/user if needed
 
 ### Implementation Approach: Vercel AI SDK
 
