@@ -2,7 +2,148 @@
 
 ## 🚨 Blocking Items
 
-**None currently.** Pillar 8 (Notifications) implementation tickets locked (May 13). Next session: Engineering assignment + Phase 2 implementation sprint planning.
+**None currently.** Phase 2 strategy + architecture fully locked through May 15, 2026. Founder paused Dwellable May 16–June 30 to work on another project. **Resumed June 30, 2026.** Next work: Notion workspace as single source of truth + begin Phase 2 implementation (Auth → P0 → P1 → P2 → P3 → P4 → P6 critical path).
+
+> **⚠️ MEMORY GAP NOTICE (reconstructed June 30, 2026):** MEMORY.md had a narrative gap between May 8–15. The actual work from those days was fully captured in the `/docs/` strategy files but never summarized here, which caused later confusion (e.g. the LLM decision and the pillar renumbering were "lost"). The sessions below were **reconstructed from the dated `/docs/` files** on June 30. **Lesson: `/docs/` is the source of truth for decisions; MEMORY.md must summarize + index it at every session close, or the narrative desyncs from reality.** See [Source-of-Truth Index] at bottom.
+
+---
+
+## Session: June 30, 2026 — Notion Workspace as Single Source of Truth + Memory Reconstruction
+
+### 🎯 TL;DR
+Resumed Dwellable after a 6-week pause (worked another project May 16–Jun 30). Built a **Notion workspace** to be the browsable single source of truth, discovered a serious **memory-desync problem**, and fixed it. Root cause: `/docs/` holds the real decisions but MEMORY.md never summarized May 8–15, so decisions (LLM choice, pillar renumbering, notifications reframe) appeared "lost."
+
+### What Was Done
+**1. Notion workspace built** — 4 top areas: Protocol (startup/closeout/file hierarchy/credentials/version history), Sessions (by year), Tickets (database + views), Strategy/PRD.
+**2. Strategy/PRD organized** into two parents: **Roadmap** (Phases: Return → Dwelling → Community) and **Pillars** (P0–P8 + Architecture Overview). Added a "Phases vs Pillars" explainer (shared "P" was the confusion).
+**3. Memory reconstruction** — Recovered missing sessions May 8, 10, 11, 14, 15 into MEMORY.md from the dated `/docs/` files. Added a permanent **📑 Source-of-Truth Index** (bottom of MEMORY) mapping every decision → its doc.
+**4. LLM decision corrected everywhere** — Confirmed actual choice is **Groq Llama 3 70B (free, no-training privacy) → OpenAI GPT-4o mini backup**, superseding the old `LLM_TOURNAMENT_FINAL.md` (Gemini→Mistral). Created a Notion "LLM Decision (LOCKED)" page.
+**5. All 9 pillar pages rewritten** with correct May-10 numbering (fixed mislabels: P2 was "Storage & Sync"→Security; P4 was "Analytics"→Journal Creation & Ownership; P5/P6/P7 shifted).
+**6. Added ticket T-094** — Create "Tech Stack per Pillar" reference doc (no consolidated per-pillar stack exists today; ARCHITECTURE.md is Phase-1-only/global).
+
+### Key Learning
+**`/docs/` is the source of truth; MEMORY.md must summarize + index it at every close, or the narrative desyncs.** This session existed because that didn't happen for May 8–15.
+
+### 🚨 NEXT SESSION OBJECTIVE
+**Primary:** Resume **T-092** — write **P0 User Scenarios + Acceptance Criteria** (3–4 journeys + 6–8 ACs for Onboarding), then proceed pillar-by-pillar (P1–P8). Sequencing: User Scenarios → Acceptance Criteria → Flow Specs → Tool Audit → Infrastructure Audit.
+**Also queued:** T-094 (Tech Stack per Pillar doc), populate Notion Tickets DB from `TICKET_MAP_COMPREHENSIVE.md` (96 tickets).
+
+---
+
+## Session: May 15, 2026 — 🏆 Formation Intelligence System LOCKED + LLM Decision Finalized (RECONSTRUCTED)
+
+**Source:** `FORMATION_INTELLIGENCE_STRATEGY.md` (Status: 🏆 INTEGRATED & LOCKED)
+
+### 🎯 TL;DR
+The entire Formation Intelligence system (P0–P8) was integrated and locked, and the **real LLM decision was made** — superseding the May 7 LLM_TOURNAMENT_FINAL.md (Gemini→Mistral) recommendation.
+
+### LLM Decision — ACTUAL & FINAL ✅
+**PRIMARY: Groq Llama 3 70B (free tier) → BACKUP: OpenAI GPT-4o mini (paid fallback)**
+- **Groq Llama 3 70B:** $0/user (14,400 req/day, 6,000 TPM free tier). Superior *poetic/narrative* quality for prayers + reflections. **Explicit no-data-training privacy guarantee** — aligns with Dwellable's E2E encryption philosophy. 800ms latency.
+- **OpenAI GPT-4o mini:** ~$0.10–0.15/user/mo fallback. Better for logical *synthesis* (P4 journals). Used only if Groq fails quality/reliability bar.
+- **Why this over Gemini→Mistral:** Cost-effectiveness + privacy were the deciding factors. Groq's free tier + no-training guarantee beat Gemini's free tier. Swappable via **Vercel AI SDK** (single-parameter swap, no refactor).
+- **Validation gate:** LLM testing protocol (T-093) must run before MVP — 3 scenarios × both models, measuring reflective-density detection accuracy (>85%), engagement hold (>4 prompts), adaptation, authenticity.
+
+### Reflective Density Model (8 Levels) — LOCKED
+L1 Event Logging → L2 Emotional Labeling → L3 Situational Specificity → L4 Meaning/Interpretation → L5 Pattern Recognition → L6 Self-Awareness/Ownership → L7 Tension Tolerance → L8 Transformational Integration. **MVMR (Minimum Viable Meaningful Reflection) = L2+L3+L4.** Prompt orchestration adapts depth per-user via 3 stages (Baseline Enrichment → Missing Layer Detection → Adaptive Escalation).
+
+### Rich Context System
+LLM personalizes using metadata + themes only (NEVER plaintext): user intent (P0), archetype (P1, Jotter/Venter/Processor), prayer rhythm (P0), past 10 moments (themes only), detected themes (P7), edits/tags (P5). **Encryption preserved end-to-end.**
+
+### Next Session Objective (as of May 15)
+Execute LLM testing protocol (T-093) to confirm Groq → GPT-4o mini before Phase 2 build begins.
+
+---
+
+## Session: May 14, 2026 — Phase 2 Launch Readiness: Dependency Graph + Supporting Pillars (RECONSTRUCTED)
+
+**Source:** `DEPENDENCY_GRAPH.md`, `CROSS_PILLAR_DESIGN_QUESTIONS.md`, `PILLAR_AUTHENTICATION_STRATEGY.md`, `PILLAR_GROWTH_STRATEGY.md`, `PILLAR_SETTINGS_STRATEGY.md`, `PILLAR_TODAY_STRATEGY.md`
+
+### 🎯 TL;DR
+Mapped the full Phase 2 build sequence (T-092 Launch Readiness) and added the **supporting pillars** that aren't part of the numbered core: Auth (gatekeeper), Settings, Today Tab, Growth Tab.
+
+### Critical Path → MVP (11–16 weeks)
+`Auth → P0 (Onboarding) → P1 (Capture) → P3 (Soaking) → P4 (Journal) → P6 (Menu Bar) → MVP LAUNCH`
+
+### Parallelizable (alongside critical path)
+P2 (Encryption), Settings, Today Tab, P7 (Formation Intel, starts mid-P4), Growth Tab.
+
+### Deferred to Post-MVP (Phase 2.1)
+P5 (Search), P8 (Notifications), Account Deletion. Phase 2.2: multi-device sync, open-ended prayer, email verification, biometric unlock, data export.
+
+### Top Risk Blockers
+LLM selection lock (resolved May 15), Supabase auth setup, P2 encryption (T-062) before P1 ships data, theme-detection accuracy (impacts P8 notifications).
+
+---
+
+## Session: May 11, 2026 — Pillar 9: Notifications Reframe via Formation Intelligence Lens (RECONSTRUCTED)
+
+**Source:** `PILLAR_9_NOTIFICATIONS_FORMATION_INTELLIGENCE.md`, `FORMATION_INTELLIGENCE_LENS_REVIEW.html` (May 10)
+
+### 🎯 TL;DR
+Reframed Notifications from **"Invitations to Return"** (engagement: CTR, D7) → **"Invitations to Notice"** (formation: spiritual discernment). This *extends* the basic Pillar 8 strategy rather than replacing it.
+
+### Four Formation-Aligned Notification Types
+1. **Archetype-Affirming** (P1 signal): affirm user's natural style (Jotter/Venter/Processor) — don't change them.
+2. **Breakthrough Recognition** (P4+P6): celebrate mood/tone shifts ("Two weeks ago you were wrestling; this week your tone changed").
+3. **Theme Emergence** (P6+P7): invite noticing patterns ("You've reflected on doubt 4 times — what do you notice?").
+4. **Contemplative Rhythm** (P7): honor user's pace ("You usually capture on Mondays — no pressure").
+
+### Privacy Constraint Held
+All four work on **metadata only** (mood tags, theme names, frequency, timing) — never encrypted plaintext. Can say "relational moments are emerging as a theme," cannot say "you wrote about your brother."
+
+### Open Question (carried)
+Launch with generic notifications (T-083–T-091) first, then layer Formation Intelligence in Phase 2+? Recommendation: yes — P6/P7 must ship before formation-aligned notifications can work.
+
+---
+
+## Session: May 10, 2026 — 🏆 Pillar Architecture COMPLETE + Major Renumbering (RECONSTRUCTED)
+
+**Source:** `PILLAR_ARCHITECTURE_COMPLETE.md` (Status: ✅ P0–P7 Complete), plus 10 pillar strategy docs updated same day
+
+### 🎯 TL;DR
+The full 8-pillar Formation Intelligence architecture (P0–P7, with P8 deferred) was locked. **This session RENUMBERED the pillars** — the single biggest source of later confusion.
+
+### ⚠️ CRITICAL — Pillar Renumbering (May 10)
+| New # | Pillar | Change |
+|-------|--------|--------|
+| P0 | Onboarding | unchanged |
+| P1 | Capture (Voice + Text) | unchanged |
+| P2 | Security & Privacy (E2E Encryption) | unchanged |
+| P3 | Soaking / Responding to Captures | unchanged |
+| **P4** | **Journal Creation & Ownership** | **MERGED** old "Journal Creation" + old "Editing (Pillar 5)" into one unified 9-step pillar |
+| **P5** | Search & Discovery | relabeled from old P6 |
+| **P6** | Formation Intelligence (Patterns) | relabeled from old P7 |
+| **P7** | Beta & Marketing | relabeled from old P8 |
+| **P8** | Notifications & Nudges | **DEFERRED to Post-MVP**, relabeled from old P9 |
+
+**Deprecated files:** `PILLAR_4_JOURNAL_CREATION_STRATEGY.md` + `PILLAR_5_EDITING_STRATEGY.md` (merged into P4).
+
+> NOTE: `DEPENDENCY_GRAPH.md` (May 14) uses a slightly different working map where P6 = Menu Bar and Formation Intelligence sits at P7 — because the *menu bar* and *supporting tabs* were added to the build plan. Treat ARCHITECTURE_COMPLETE (product pillars) and DEPENDENCY_GRAPH (build sequence) as two lenses on the same system.
+
+### Cross-Pillar Principles Locked
+- **Trust Principle:** every interaction builds/breaks trust; accuracy > feature richness.
+- **Rich Context:** personalization from history + themes (metadata only).
+- **Encryption:** AES-256-GCM + Argon2id, client-side, key never leaves device.
+- **Soft Delete:** 30-day recovery window.
+
+### Pillar 4 Unified Happy Path (9 steps)
+Capture → Confirmation → Guided Prayer → Background Synthesis → Dwelling Place tab → Edit Headline → Tags (max 2) → Mood (8 preset + 1 custom) → Finalize & Save. <2s synthesis, <5min customization.
+
+---
+
+## Session: May 8, 2026 — Pillar 5 (Editing) Strategy Locked (RECONSTRUCTED)
+
+**Source:** `P5_EDITING_STRATEGY.md` (Status: ✅ LOCKED)
+
+### 🎯 TL;DR
+Editing strategy (headlines, tags, moods) locked. Shortly after, on May 10, this was **merged into the unified Pillar 4 (Journal Creation & Ownership)** during the renumbering.
+
+### Decisions
+- Headlines: user-editable, 4–6 word auto-suggestion as starting point.
+- Tags: max 2, auto-suggested + custom allowed.
+- Moods: 8 preset + 1 custom, generates personalized mood message.
+- Photos: add/remove. Soft delete with 30-day recovery.
 
 ---
 
@@ -2010,3 +2151,45 @@ Identified critical gap in session continuity: "Next Session Opener" documentati
 ---
 
 Last updated: May 7, 2026, Session Close
+
+---
+
+# 📑 Source-of-Truth Index (added June 30, 2026)
+
+**Why this exists:** MEMORY.md is a *narrative summary*. The authoritative decisions live in `/docs/` strategy files. When the two desync (as happened May 8–15), decisions appear "lost." Always cross-check this index. Each file's own `Updated:` line is the canonical date.
+
+### Strategy & Architecture (the spine)
+- `PILLAR_ARCHITECTURE_COMPLETE.md` (May 10) — **master overview of all pillars P0–P8** + renumbering
+- `FORMATION_INTELLIGENCE_STRATEGY.md` (May 15) — **LOCKED FI system + LLM decision + Reflective Density Model**
+- `DEPENDENCY_GRAPH.md` (May 14) — build sequence, critical path, owner assignments
+- `CROSS_PILLAR_DESIGN_QUESTIONS.md` (May 14) — open cross-pillar questions
+- `TICKET_MAP_COMPREHENSIVE.md` (May 7) — all 96 tickets
+- `PRD.md` (May 4), `VISION.md` (Apr 29), `SKELETON_DIAGRAM.md` (May 7)
+
+### LLM Decision (⚠️ read the RIGHT one)
+- ✅ `FORMATION_INTELLIGENCE_STRATEGY.md` §V (May 15) — **ACTUAL final: Groq Llama 3 70B → OpenAI GPT-4o mini**
+- ⛔ `LLM_TOURNAMENT_FINAL.md` (May 7) — SUPERSEDED (Gemini→Mistral). Kept for history only.
+- `LLM_RESEARCH.md` (May 6), `SEARCH_STRATEGY_ANALYSIS.md` (May 5) — supporting research
+
+### Per-Pillar Strategy Docs (current numbering)
+- P0 Onboarding: `PILLAR_ONBOARDING_STRATEGY.md` (May 5) + `ONBOARDING_DESIGN_GUIDELINES.md` (Apr 29) + `P0_ONBOARDING_FLOWS.md`
+- P1 Capture: `PILLAR_1_CAPTURE_STRATEGY.md` (May 5)
+- P2 Security: `PILLAR_2_SECURITY_STRATEGY.md` (May 10) + PRD §Pillar 2
+- P3 Soaking: `PILLAR_3_SOAKING_STRATEGY.md` (May 10)
+- P4 Journal+Ownership: `PILLAR_4_JOURNAL_CREATION_AND_OWNERSHIP_STRATEGY.md` (May 10) — merges deprecated `PILLAR_4_JOURNAL_CREATION_STRATEGY.md` + `PILLAR_5_EDITING_STRATEGY.md`
+- P5 Search: `P6_SEARCH_STRATEGY.md` / `PILLAR_6_SEARCH_STRATEGY.md` (May 10)
+- P6 Formation Intel: `P7_FORMATION_INTELLIGENCE_STRATEGY.md` / `PILLAR_7_FORMATION_INTELLIGENCE_STRATEGY.md` (May 10)
+- P7 Beta & Marketing: `P8_BETA_MARKETING_STRATEGY.md` / `PILLAR_8_BETA_MARKETING_STRATEGY.md` (May 10)
+- P8 Notifications (deferred): `NOTIFICATIONS_PILLAR.md` (May 4, basic) → `PILLAR_9_NOTIFICATIONS_FORMATION_INTELLIGENCE.md` (May 11, formation reframe) + `NOTIFICATIONS_ENGINEERING_HANDOFF.md` + `NOTIFICATIONS_IMPLEMENTATION_SPECS.md` (T-083–T-091)
+
+### Supporting Pillars (added May 14, not in core numbering)
+- `PILLAR_AUTHENTICATION_STRATEGY.md`, `PILLAR_SETTINGS_STRATEGY.md`, `PILLAR_TODAY_STRATEGY.md`, `PILLAR_GROWTH_STRATEGY.md`, `PILLAR_6_MENU_BAR_STRATEGY.md` (all May 14/6)
+
+### Timeline at a glance
+- **Mar–Apr:** Phase 1 app (capture, sync, TestFlight) + early Phase 2 research
+- **May 4–7:** Pillar strategies drafted, LLM tournament (superseded), ticket map, skeleton
+- **May 8–15:** Architecture renumbered & locked, FI system locked, **real LLM decision**, notifications reframe, dependency graph
+- **May 16–Jun 30:** ⏸️ Founder on another project (no Dwellable work)
+- **Jun 30:** Resumed — Notion workspace as single source of truth; MEMORY gap reconstructed
+
+Last reconstructed: June 30, 2026

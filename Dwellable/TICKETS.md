@@ -1,7 +1,9 @@
 # Dwellable Native — Full Ticket Registry
 
 **Last Updated:** May 15, 2026 — Formation Intelligence Framework Complete. Consolidated LLM_RESEARCH.md + LLM_TOURNAMENT_FINAL.md + Reflective Intelligence Framework into unified FORMATION_INTELLIGENCE_STRATEGY.md (10 sections: P0-P8 overview, Reflective Density Model, Prompt Orchestration, LLM selection, Testing Protocol). LLM selection finalized: Groq Llama 3 70B (primary, $0 cost, aiming to sustain long-term) with OpenAI GPT-4o mini as backup ($0.10-0.15/user if needed). Discovered clean sequencing: User Scenarios → Acceptance Criteria → Flow Specs → Tool Audit → Infrastructure Audit (not reversed). T-092 evolving: next session starts P0 User Scenarios + Acceptance Criteria.
-**Status:** 74/96 tickets complete (77%), 1 in progress (T-092), Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Next: P0 User Scenarios + Acceptance Criteria for all 9 pillars
+**Status:** 74/97 tickets complete (76%), 1 in progress (T-092), Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked. Next: P0 User Scenarios + Acceptance Criteria for all 9 pillars.
+
+**June 30, 2026 session:** Built Notion workspace as single source of truth (Protocol / Sessions / Tickets / Strategy-PRD). Reconstructed missing MEMORY sessions (May 8–15) + added Source-of-Truth Index. Corrected LLM decision in Notion (Groq Llama 3 70B → GPT-4o mini, superseding the old Gemini→Mistral doc). Rewrote all 9 pillar pages with correct May-10 numbering + organized into Roadmap (phases) and Pillars parents. Added T-094 (Tech Stack per Pillar doc).
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -524,6 +526,17 @@
   - **Dependencies:** All pillar strategy docs complete (P0-P8)
   - **Priority:** CRITICAL (blocks all Phase 2 implementation)
   - **Must complete before:** T-093 (first implementation ticket)
+
+- [ ] **T-094:** Create "Tech Stack per Pillar" reference doc 🔲 **NOT STARTED**
+  - **Purpose:** Consolidate the technical stack for each pillar into ONE view. Today it's scattered across 9 pillar strategy docs + FORMATION_INTELLIGENCE_STRATEGY.md (LLM) + PILLAR_2 (encryption) + DEPENDENCY_GRAPH (owners). ARCHITECTURE.md is Phase-1-only and global.
+  - **Deliverables:**
+    1. One table, one row per pillar (P0–P8), columns: Frontend · Backend/Data · LLM · Encryption · Key Services · Notable components
+    2. Notion page under Strategy/PRD → Pillars (next to Architecture Overview)
+    3. Matching `TECH_STACK_BY_PILLAR.md` in /docs so source of truth stays in repo
+  - **Source material:** each PILLAR_*_STRATEGY.md "Technical Architecture" section; LLM = Groq Llama 3 70B → GPT-4o mini (Vercel AI SDK); encryption = AES-256-GCM + Argon2id (P2)
+  - **Estimated effort:** S (2-3 hours)
+  - **Priority:** 🟡 MEDIUM (reference/clarity; not build-blocking)
+  - **Raised:** June 30, 2026 session
 
 ### LLM Research Documentation
 
