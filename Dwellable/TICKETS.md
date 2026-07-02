@@ -1,8 +1,8 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** July 2, 2026 — Session start protocol complete. Fixed critical git blocker: 7 orphaned worktrees from previous sessions were corrupting git operations. Removed worktrees + ran `git worktree prune`. Git fully operational. Confirmed T-092 (P0 User Scenarios + Acceptance Criteria) as next session objective. Ready to proceed with Phase 2 design work.
+**Last Updated:** July 2, 2026 (session end) — Finalized critical design decisions for Phase 2. Updated Pillar 0 - Onboarding with Privacy Screen 6 finalization + comment resolutions. Updated Pillar 1 with two-journey documentation (mandatory first capture vs optional ongoing capture). Created NOTION_SAFETY_RULES.md to prevent future discussion orphaning incidents. Established Notion as authoritative source of truth. **Next session objective:** Gather acceptance criteria + system design specs for all pillars (P0-P8).
 
-**Status:** 74/97 tickets complete (76%), 1 in progress (T-092), Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as source-of-truth. Next: P0 User Scenarios + Acceptance Criteria for all 9 pillars (T-092).
+**Status:** 74/97 tickets complete (76%), 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 next), Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth with safety rules established. Next session: Gather acceptance criteria + system design specifications for Pillars 0-8 (T-092 deliverable 4).
 
 **June 30, 2026 session:** Built Notion workspace as single source of truth (Protocol / Sessions / Tickets / Strategy-PRD). Reconstructed missing MEMORY sessions (May 8–15) + added Source-of-Truth Index. Corrected LLM decision in Notion (Groq Llama 3 70B → GPT-4o mini, superseding the old Gemini→Mistral doc). Rewrote all 9 pillar pages with correct May-10 numbering + organized into Roadmap (phases) and Pillars parents. Added T-094 (Tech Stack per Pillar doc).
 
@@ -512,10 +512,11 @@
        - Break-even: $0 Groq sustains profitability; GPT fallback remains affordable
        - Quality frameworks locked: Prompt quality (brief + contextual + conversational + emotionally present)
        - Reflection quality: 8-level model with acceptable baseline
-    4. 🔲 **User Scenarios + Acceptance Criteria (P0-P8)** — **NEXT SESSION STARTS HERE**
+    4. 🔲 **User Scenarios + Acceptance Criteria (P0-P8)** — **NEXT SESSION STARTS HERE** (July 3, 2026)
        - P0 (Onboarding): 3-4 user journeys + 6-8 acceptance criteria
        - P1-P8: Same structure (one doc per pillar)
        - Flow specs, tool audit, and cost calculation emerge from scenarios
+       - **July 2 prep work:** Finalized P0 design decisions (account creation timing, privacy language). Updated P1 with two-journey documentation (mandatory first capture vs optional ongoing). Established Notion safety protocols.
     5. 🔲 Cost review ticket (T-093) — Pre-infrastructure audit validation per pillar
     6. 🔲 Infrastructure readiness (Supabase, E2E encryption T-062, Rich Context system) — DEFERRED to post-infra-audit
     7. 🔲 Beta cohort recruitment strategy (how many users? which segment first?) — DEFERRED
