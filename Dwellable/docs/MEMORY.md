@@ -2,7 +2,7 @@
 
 ## 🚨 Blocking Items
 
-**Comment #4 on Pillar 0 (Notion) — awaiting Kell decision on account-creation ordering (Option A / B / C).** All other Phase 2 strategy locked. Next work after #4 resolves: continue Pillar 0 Comments #5–#7, then resume T-092 (P0 User Scenarios).
+**Comments #5, #6, #7 on Pillar 0 (Notion)** — Comments #1–#4 resolved. Next work: resolve final three Pillar 0 comments, then begin T-092 (P0 User Scenarios).
 
 > **⚠️ MEMORY GAP NOTICE (reconstructed June 30, 2026):** MEMORY.md had a narrative gap between May 8–15. The actual work from those days was fully captured in the `/docs/` strategy files but never summarized here, which caused later confusion (e.g. the LLM decision and the pillar renumbering were "lost"). The sessions below were **reconstructed from the dated `/docs/` files** on June 30. **Lesson: `/docs/` is the source of truth for decisions; MEMORY.md must summarize + index it at every session close, or the narrative desyncs from reality.** See [Source-of-Truth Index] at bottom.
 
@@ -32,18 +32,18 @@ Resumed the 7-comment Pillar 0 Notion review paused mid-July 2 morning session. 
 - Cross-Pillar Requirements surfaced by the table (P0 mandate, Screen 6.5, P4 journal-from-prayer-only, T-086 Settings modes)
 - `NOTIFICATIONS_COLLAB_REVIEW.html` added to Sources line as "canonical Stage A–G funnel spec, v12 locked"
 
-### Comment #4 — Started, Not Yet Resolved
-"Prioritizing first capture over acct creation?" — Kell is questioning the current locked flow (Account at Screen 5 before First Capture). Laid out 3 options with tradeoffs (A. current, B. account after first capture+journal, C. hybrid soft prompt). Recommended Option B with a specific gate ("Save it to keep coming back") — awaiting Kell's decision before locking. **Session paused here for git commit.**
+### Comment #4 — RESOLVED ✅
+"Prioritizing first capture over account creation?" — Kell explored three options (A. current, B. account post-journal, C. hybrid). **Locked Option A** (Account at Screen 5, before First Capture). Rationale: zero data loss risk, clean E2E encryption, satisfies Pillar 8 dependency, screens 1–5 lean enough that time-to-value isn't compromised (real euphoria moment is Journal synthesis post-prayer anyway). **Privacy Screen 6 rewritten** with explicit, honest language: "When you're ready to dwell, we temporarily decrypt your moments—just for you—to support your spiritual formation and invite you back to what matters." Theologically grounded + technically honest about temporary decryption for Formation Intelligence. **ToS/Privacy Policy action:** Add law enforcement language ("except as legally required") for subpoena/disclosure scenarios.
 
 ### Key Learning
 Same pattern as June 30 reconstruction: **local `docs/` files are the source of truth; Notion pillar pages were incomplete summaries.** Fixed for Pillar 8 today by embedding the canonical A–G table. Pillar 9/10/11 didn't exist in Notion at all before today. Recommend: next session, audit remaining pillars for parity.
 
 ### 🚨 Next Session Objective
-**Resume Comment #4 on Pillar 0** — Kell decides Option A / B / C for account creation ordering, then reply in Notion + update Pillar 0 flow if the lock changes. Then continue Comments #5, #6, #7 on Pillar 0.
+**Resume Pillar 0 Comments #5, #6, #7** — Comments #1–#4 resolved. Lock the remaining three comments on Pillar 0, then move to T-092 (P0 User Scenarios + Acceptance Criteria).
 
 ### Outstanding
-- Pillar 0 Notion comments **#4, #5, #6, #7** remain unresolved
-- Comment #4 has a real strategic flow-flip pending Kell's decision
+- Pillar 0 Notion comments **#5, #6, #7** remain unresolved
+- **Action:** Add law enforcement/subpoena language to ToS + Privacy Policy (linked from Comment #4)
 
 ---
 
