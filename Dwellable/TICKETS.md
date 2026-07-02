@@ -1,9 +1,12 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** May 15, 2026 — Formation Intelligence Framework Complete. Consolidated LLM_RESEARCH.md + LLM_TOURNAMENT_FINAL.md + Reflective Intelligence Framework into unified FORMATION_INTELLIGENCE_STRATEGY.md (10 sections: P0-P8 overview, Reflective Density Model, Prompt Orchestration, LLM selection, Testing Protocol). LLM selection finalized: Groq Llama 3 70B (primary, $0 cost, aiming to sustain long-term) with OpenAI GPT-4o mini as backup ($0.10-0.15/user if needed). Discovered clean sequencing: User Scenarios → Acceptance Criteria → Flow Specs → Tool Audit → Infrastructure Audit (not reversed). T-092 evolving: next session starts P0 User Scenarios + Acceptance Criteria.
-**Status:** 74/97 tickets complete (76%), 1 in progress (T-092), Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked. Next: P0 User Scenarios + Acceptance Criteria for all 9 pillars.
+**Last Updated:** July 2, 2026 — Session start protocol complete. Fixed critical git blocker: 7 orphaned worktrees from previous sessions were corrupting git operations. Removed worktrees + ran `git worktree prune`. Git fully operational. Confirmed T-092 (P0 User Scenarios + Acceptance Criteria) as next session objective. Ready to proceed with Phase 2 design work.
+
+**Status:** 74/97 tickets complete (76%), 1 in progress (T-092), Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as source-of-truth. Next: P0 User Scenarios + Acceptance Criteria for all 9 pillars (T-092).
 
 **June 30, 2026 session:** Built Notion workspace as single source of truth (Protocol / Sessions / Tickets / Strategy-PRD). Reconstructed missing MEMORY sessions (May 8–15) + added Source-of-Truth Index. Corrected LLM decision in Notion (Groq Llama 3 70B → GPT-4o mini, superseding the old Gemini→Mistral doc). Rewrote all 9 pillar pages with correct May-10 numbering + organized into Roadmap (phases) and Pillars parents. Added T-094 (Tech Stack per Pillar doc).
+
+**July 2, 2026 session (this session):** Executed Founder Start Protocol (prayer, affirmation, agent blessing). Executed Agent Startup Protocol (loaded strategic docs, displayed ticket table). Diagnosed and fixed git blocker: orphaned worktrees → pruned. Ready to start T-092.
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
