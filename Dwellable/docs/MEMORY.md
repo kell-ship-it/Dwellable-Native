@@ -2,9 +2,48 @@
 
 ## 🚨 Blocking Items
 
-**None currently.** Phase 2 strategy + architecture fully locked through May 15, 2026. Founder paused Dwellable May 16–June 30 to work on another project. **Resumed June 30, 2026.** Next work: Notion workspace as single source of truth + begin Phase 2 implementation (Auth → P0 → P1 → P2 → P3 → P4 → P6 critical path).
+**Comment #4 on Pillar 0 (Notion) — awaiting Kell decision on account-creation ordering (Option A / B / C).** All other Phase 2 strategy locked. Next work after #4 resolves: continue Pillar 0 Comments #5–#7, then resume T-092 (P0 User Scenarios).
 
 > **⚠️ MEMORY GAP NOTICE (reconstructed June 30, 2026):** MEMORY.md had a narrative gap between May 8–15. The actual work from those days was fully captured in the `/docs/` strategy files but never summarized here, which caused later confusion (e.g. the LLM decision and the pillar renumbering were "lost"). The sessions below were **reconstructed from the dated `/docs/` files** on June 30. **Lesson: `/docs/` is the source of truth for decisions; MEMORY.md must summarize + index it at every session close, or the narrative desyncs from reality.** See [Source-of-Truth Index] at bottom.
+
+---
+
+## Session: July 2, 2026 (afternoon) — Pillar 0 Comment Resolution (#1–#3) + Supporting Pillars → Notion + Pillar 8 Canonical Stage Table
+
+### 🎯 TL;DR
+Resumed the 7-comment Pillar 0 Notion review paused mid-July 2 morning session. Resolved comments **#1 (already done), #2, and #3**. Created **three new Notion pillar pages** (Pillar 9 - Account Profile, Pillar 10 - Today, Pillar 11 - Growth) to mirror the local strategy docs that had no Notion parity. Discovered that Pillar 8 - Notifications in Notion was missing the **canonical Stage A–G funnel table** from `NOTIFICATIONS_COLLAB_REVIEW.html` (v12, locked) — rebuilt it into Pillar 8 as a proper Notion table with 7 columns × 7 stages. Same source-of-truth desync pattern flagged in the June 30 memory reconstruction.
+
+### What Was Done
+
+**1. Comment #2 (Pillar 0) resolved** — "How will users change this data post onboarding?" → Answered via Pillar 9 (Account Profile): Settings → Account & Profile edits Intent Statement; Settings → Preferences edits Prayer Frequency; Email display-only for MVP (recovery risk).
+
+**2. Three supporting pillar pages created in Notion:**
+- **Pillar 9 - Account Profile** (was "Settings" — renamed by Kell mid-session) — mirrors `PILLAR_SETTINGS_STRATEGY.md`
+- **Pillar 10 - Today** — mirrors `PILLAR_TODAY_STRATEGY.md`
+- **Pillar 11 - Growth** — mirrors `PILLAR_GROWTH_STRATEGY.md`
+
+**3. Comment #3 (Pillar 0) resolved** — "Are we providing a notif for those that download app but abandon onboarding?" → Answered with **Stage A** spec (7am next-morning push, weekly, 4-week cap, exact copy variants). Retrieved from `NOTIFICATIONS_COLLAB_REVIEW.html` — this was the source-of-truth gap.
+
+**4. Pillar 8 Notion page restructured** — added:
+- 📖 Terminology lock (Stewarding vs. 3 forms of Dwelling; "Soaking" retired)
+- 🗺️ Full A–G stage reference as a proper Notion table (7 columns × 7 rows: Stage / Condition / Fires / Push Copy / On Tap / Cadence / In-App)
+- 7-Day Funnel Window design philosophy
+- Global Channel Strategy rules (mutually-suppressive push + in-app)
+- Cross-Pillar Requirements surfaced by the table (P0 mandate, Screen 6.5, P4 journal-from-prayer-only, T-086 Settings modes)
+- `NOTIFICATIONS_COLLAB_REVIEW.html` added to Sources line as "canonical Stage A–G funnel spec, v12 locked"
+
+### Comment #4 — Started, Not Yet Resolved
+"Prioritizing first capture over acct creation?" — Kell is questioning the current locked flow (Account at Screen 5 before First Capture). Laid out 3 options with tradeoffs (A. current, B. account after first capture+journal, C. hybrid soft prompt). Recommended Option B with a specific gate ("Save it to keep coming back") — awaiting Kell's decision before locking. **Session paused here for git commit.**
+
+### Key Learning
+Same pattern as June 30 reconstruction: **local `docs/` files are the source of truth; Notion pillar pages were incomplete summaries.** Fixed for Pillar 8 today by embedding the canonical A–G table. Pillar 9/10/11 didn't exist in Notion at all before today. Recommend: next session, audit remaining pillars for parity.
+
+### 🚨 Next Session Objective
+**Resume Comment #4 on Pillar 0** — Kell decides Option A / B / C for account creation ordering, then reply in Notion + update Pillar 0 flow if the lock changes. Then continue Comments #5, #6, #7 on Pillar 0.
+
+### Outstanding
+- Pillar 0 Notion comments **#4, #5, #6, #7** remain unresolved
+- Comment #4 has a real strategic flow-flip pending Kell's decision
 
 ---
 
