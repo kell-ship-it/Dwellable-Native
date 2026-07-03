@@ -1,8 +1,8 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** July 3, 2026 (session end) — Built comprehensive P0 (Onboarding) user scenarios + acceptance criteria in Notion (12 scenarios, journey-based AC). Locked P0/P1 boundary: P0 = Screens 1-7, P1 = Screen 8 (First Capture) + all capture mechanics. **Next session objective:** Build P1 (Capture) user scenarios + acceptance criteria, same rigor as P0.
+**Last Updated:** July 3, 2026 (session end — extended) — Completed P0 comment resolution (8 comments → 6 questions locked for Stages 1 & 2). Locked P0 abandonment/re-entry logic: pre-account users restart from Screen 1 + in-app "Continue Onboarding" prompt; post-account users direct-resume at exact screen + differentiated messaging. Intent/Rhythm selections persist downstream. **Next session objective:** Complete Stage 3 (Context Propagation) — lock S3.1 (Intent usage), S3.2 (Rhythm usage), S3.3 (skip/fallback behavior).
 
-**Status:** 74/97 tickets complete (76%), 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0 done, P1-P8 remain), Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth with safety rules established. Next session: P1 (Capture) user scenarios + acceptance criteria.
+**Status:** 74/97 tickets complete (76%), 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0 complete + Stages 1-2 locked, Stage 3 + P1-P8 remain). Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth with Comment Resolution table + Questions table. Next session: Stage 3 Context Propagation.
 
 **June 30, 2026 session:** Built Notion workspace as single source of truth (Protocol / Sessions / Tickets / Strategy-PRD). Reconstructed missing MEMORY sessions (May 8–15) + added Source-of-Truth Index. Corrected LLM decision in Notion (Groq Llama 3 70B → GPT-4o mini, superseding the old Gemini→Mistral doc). Rewrote all 9 pillar pages with correct May-10 numbering + organized into Roadmap (phases) and Pillars parents. Added T-094 (Tech Stack per Pillar doc).
 
