@@ -1,12 +1,14 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** July 2, 2026 (session end) — Finalized critical design decisions for Phase 2. Updated Pillar 0 - Onboarding with Privacy Screen 6 finalization + comment resolutions. Updated Pillar 1 with two-journey documentation (mandatory first capture vs optional ongoing capture). Created NOTION_SAFETY_RULES.md to prevent future discussion orphaning incidents. Established Notion as authoritative source of truth. **Next session objective:** Gather acceptance criteria + system design specs for all pillars (P0-P8).
+**Last Updated:** July 3, 2026 (session end) — Built comprehensive P0 (Onboarding) user scenarios + acceptance criteria in Notion (12 scenarios, journey-based AC). Locked P0/P1 boundary: P0 = Screens 1-7, P1 = Screen 8 (First Capture) + all capture mechanics. **Next session objective:** Build P1 (Capture) user scenarios + acceptance criteria, same rigor as P0.
 
-**Status:** 74/97 tickets complete (76%), 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 next), Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth with safety rules established. Next session: Gather acceptance criteria + system design specifications for Pillars 0-8 (T-092 deliverable 4).
+**Status:** 74/97 tickets complete (76%), 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0 done, P1-P8 remain), Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth with safety rules established. Next session: P1 (Capture) user scenarios + acceptance criteria.
 
 **June 30, 2026 session:** Built Notion workspace as single source of truth (Protocol / Sessions / Tickets / Strategy-PRD). Reconstructed missing MEMORY sessions (May 8–15) + added Source-of-Truth Index. Corrected LLM decision in Notion (Groq Llama 3 70B → GPT-4o mini, superseding the old Gemini→Mistral doc). Rewrote all 9 pillar pages with correct May-10 numbering + organized into Roadmap (phases) and Pillars parents. Added T-094 (Tech Stack per Pillar doc).
 
-**July 2, 2026 session (this session):** Executed Founder Start Protocol (prayer, affirmation, agent blessing). Executed Agent Startup Protocol (loaded strategic docs, displayed ticket table). Diagnosed and fixed git blocker: orphaned worktrees → pruned. Ready to start T-092.
+**July 2, 2026 session:** Executed Founder Start Protocol (prayer, affirmation, agent blessing). Executed Agent Startup Protocol (loaded strategic docs, displayed ticket table). Diagnosed and fixed git blocker: orphaned worktrees → pruned. Ready to start T-092.
+
+**July 3, 2026 session (this session):** Built T-092 deliverable 4 for Pillar 0 — 12 user scenarios (happy paths, abandonment pre/post-account, decline notifications, selection combinations, account creation errors) with journey-sequenced acceptance criteria, in Notion. Corrected scenario structure twice based on user review: (1) removed capture-mechanics content once user clarified P0/P1 boundary; (2) rebuilt scenarios against the actual locked 7-screen flow from the live Notion Pillar 0 page (not stale local docs) after discovering a screen-count mismatch; (3) added missing edge cases (abandon-after-account-creation variants) the first pass missed. Added summary table at top of Notion page per user request. Key process learning: verify against the live Notion source doc before writing scenarios, not assumed/remembered flow structure.
 **Convention:** This file tracks ALL tickets — completed and open — for the full initiative.
 
 ---
@@ -512,11 +514,16 @@
        - Break-even: $0 Groq sustains profitability; GPT fallback remains affordable
        - Quality frameworks locked: Prompt quality (brief + contextual + conversational + emotionally present)
        - Reflection quality: 8-level model with acceptable baseline
-    4. 🔲 **User Scenarios + Acceptance Criteria (P0-P8)** — **NEXT SESSION STARTS HERE** (July 3, 2026)
-       - P0 (Onboarding): 3-4 user journeys + 6-8 acceptance criteria
-       - P1-P8: Same structure (one doc per pillar)
+    4. 🔄 **User Scenarios + Acceptance Criteria (P0-P8)** — **IN PROGRESS** (started July 3, 2026)
+       - ✅ **P0 (Onboarding): COMPLETE** — 12 comprehensive scenarios + step-by-step AC in Notion
+         - Happy paths (2), abandonment pre-account (2), abandonment post-account (2), decline notifications (1), selection combinations (2), account creation errors (3)
+         - AC follow journey progression (Screen 1→7) matching the locked 7-screen flow (Welcome→Education→Intent→Rhythm→Account→Privacy→Notification Permission)
+         - P0/P1 boundary explicitly locked: P0 ends at Screen 7 (Notification Permission); Screen 8 (First Capture) + all capture mechanics belong to P1
+         - Notion page: "P0 User Scenarios & Acceptance Criteria - UPDATED (7-Screen Flow)"
+       - 🔲 **P1-P8:** Same structure (one doc per pillar) — NEXT UP, start with P1 (Capture)
        - Flow specs, tool audit, and cost calculation emerge from scenarios
        - **July 2 prep work:** Finalized P0 design decisions (account creation timing, privacy language). Updated P1 with two-journey documentation (mandatory first capture vs optional ongoing). Established Notion safety protocols.
+       - **July 3 session:** Built full P0 scenario set through iterative refinement — corrected screen flow to match actual locked Notion design (not stale docs), established P0/P1 capture boundary, added missing edge cases (abandonment variants, selection combos, account errors) after user review.
     5. 🔲 Cost review ticket (T-093) — Pre-infrastructure audit validation per pillar
     6. 🔲 Infrastructure readiness (Supabase, E2E encryption T-062, Rich Context system) — DEFERRED to post-infra-audit
     7. 🔲 Beta cohort recruitment strategy (how many users? which segment first?) — DEFERRED
