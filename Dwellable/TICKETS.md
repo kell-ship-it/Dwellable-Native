@@ -1,8 +1,8 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** July 3, 2026 (session end — extended) — Completed P0 comment resolution (8 comments → 6 questions locked for Stages 1 & 2). Locked P0 abandonment/re-entry logic: pre-account users restart from Screen 1 + in-app "Continue Onboarding" prompt; post-account users direct-resume at exact screen + differentiated messaging. Intent/Rhythm selections persist downstream. **Next session objective:** Complete Stage 3 (Context Propagation) — lock S3.1 (Intent usage), S3.2 (Rhythm usage), S3.3 (skip/fallback behavior).
+**Last Updated:** July 4, 2026 (session end) — Completed P0 Stage 3 (Intent & Rhythm locked with prompt mapping + fallback rules). Resolved P0 comments #1, #4-8 (6 of 8 fully resolved); Comment #2 (Screen 4 copy) and #3 (tech audit) remain open. Locked SDK pre-load timing (T-097), account deletion + retention policy (T-095/T-096), 3rd-party sign-in (T-098), and the full monetization model: 3 free journals then paywall on 4th capture attempt (T-099). Added VISION.md principle "We Translate Across Time" + Dwellable 1-pager. **Next session objective:** Finish remaining P0 comments (#2 Screen 4 copy fix, #3 tech audit) + dig deeper into real LLM token/API costs to validate T-099's pricing assumptions (currently placeholder estimates), then move to P1 User Scenarios.
 
-**Status:** 74/97 tickets complete (76%), 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0 complete + Stages 1-2 locked, Stage 3 + P1-P8 remain). Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth with Comment Resolution table + Questions table. Next session: Stage 3 Context Propagation.
+**Status:** 74/102 tickets complete (73%), 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0 complete + Stage 3 locked, P1-P8 remain). Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth with Comment Resolution table + Questions table. Added T-095 (in-app account deletion), T-096 (retention policy + legal review), T-097 (WhisperKit pre-load at Screen 1), T-098 (3rd-party IDP sign-in), T-099 (pricing: 3 free journals, paywall on 4th capture). Added VISION.md principle "We Translate Across Time" + Dwellable 1-pager (docs/DWELLABLE_1PAGER.md). Remaining open P0 items: Comment #2 (Screen 4 copy fix, action needed), Comment #3 (tech audit, deferred to T-093), LLM Testing Protocol still needed to replace token-cost estimates in T-099 with real numbers. Next session: finish remaining P0 comments + dig deeper into LLM API cost / tier pricing validation.
 
 **June 30, 2026 session:** Built Notion workspace as single source of truth (Protocol / Sessions / Tickets / Strategy-PRD). Reconstructed missing MEMORY sessions (May 8–15) + added Source-of-Truth Index. Corrected LLM decision in Notion (Groq Llama 3 70B → GPT-4o mini, superseding the old Gemini→Mistral doc). Rewrote all 9 pillar pages with correct May-10 numbering + organized into Roadmap (phases) and Pillars parents. Added T-094 (Tech Stack per Pillar doc).
 
@@ -548,6 +548,96 @@
   - **Estimated effort:** S (2-3 hours)
   - **Priority:** 🟡 MEDIUM (reference/clarity; not build-blocking)
   - **Raised:** June 30, 2026 session
+
+- [ ] **T-095:** In-App Account Deletion (Apple App Store Requirement) — Pillar 9 (Account Profile) 🔲 **NOT STARTED**
+  - **Purpose:** Apple App Store Guideline 5.1.1(v) requires that any app supporting account creation must also support in-app, self-service account deletion (not just logout/deactivation). This is currently missing from scope and is a hard App Store review requirement, not optional.
+  - **Deliverables:**
+    1. "Delete Account" option in Settings → Account & Profile (Pillar 9)
+    2. Confirmation flow (explicit warning: permanent, cannot be undone, moments + journal entries + account data all removed)
+    3. Backend deletion: Supabase auth user + all associated rows (moments, journal entries, prayer/reflection responses, usage_events) removed or irreversibly anonymized
+    4. Deletion completes without requiring customer support contact (must be fully self-service per Apple guideline)
+  - **Acceptance Criteria:**
+    - [ ] User can find + tap "Delete Account" from Settings without contacting support
+    - [ ] Confirmation step clearly warns of permanence before executing
+    - [ ] All user data removed from Supabase (moments, journals, responses, usage events, auth record)
+    - [ ] Deleted account's email can be reused for a new signup (no orphaned unique constraint)
+    - [ ] Tested end-to-end on a real account before submission to App Store review
+  - **Estimated effort:** M (10-14 hours, design + Supabase cascade delete logic + confirmation UI)
+  - **Dependencies:** Pillar 9 (Account Profile) settings UI must exist
+  - **Priority:** 🔴 HIGH (blocks App Store submission — not optional)
+  - **Raised:** July 3, 2026 session (P0 Comment #8 — dormant account data retention discussion)
+
+- [ ] **T-096:** Dormant Account Data Retention Policy + Legal Review of Screen 6 Privacy Copy 🔲 **NOT STARTED**
+  - **Purpose:** P0 Comment #8 asked how long we keep data for accounts that are created but never engage (no first capture, no return). Locked direction: indefinite retention, no auto-delete, since (a) no regulation mandates a dormancy timer, (b) storage cost is negligible at MVP scale, and (c) Apple's requirement (see T-095) already guarantees user-initiated deletion is available. This ticket formalizes that policy and gets it reviewed by legal alongside the Screen 6 privacy disclosure.
+  - **Deliverables:**
+    1. Written retention policy doc: "Dwellable retains account data indefinitely unless the user deletes their account (see T-095). We do not auto-delete dormant accounts." Include rationale (GDPR storage-limitation principle is satisfied by having a disclosed, reasoned policy — not by an arbitrary timer).
+    2. Legal review of the policy doc itself
+    3. Legal review of Screen 6 (Privacy) copy — confirm the existing "we never sell your data... except as legally required" language adequately discloses retention practices, and add a retention line if needed (e.g., "We keep your data as long as your account exists. You can delete your account and all its data anytime in Settings.")
+    4. Update PILLAR_ONBOARDING_STRATEGY.md and the Notion Pillar 0 page Screen 6 copy if legal requests changes
+  - **Acceptance Criteria:**
+    - [ ] Retention policy documented and approved
+    - [ ] Legal sign-off obtained (or explicitly waived by Kell if no counsel available pre-launch)
+    - [ ] Screen 6 copy updated if legal flags gaps
+    - [ ] Policy referenced in Terms of Service / Privacy Policy documents
+  - **Estimated effort:** S-M (4-8 hours, mostly legal turnaround time, not engineering)
+  - **Dependencies:** T-095 (deletion capability should exist before publicizing the "you can delete anytime" line)
+  - **Priority:** 🟡 MEDIUM (not build-blocking, but should close before public launch)
+  - **Raised:** July 3, 2026 session (P0 Comment #8)
+
+- [ ] **T-097:** Move WhisperKit Model Pre-Load to Onboarding Screen 1 (Background, Non-Blocking) — Pillar 0 🔲 **NOT STARTED**
+  - **Purpose:** P0 Comment #4 asked whether SDK/model downloads could front-load at app open instead of at first capture. Locked decision (July 3, 2026): kick off the ~74MB WhisperKit model download silently in the background the moment the app launches (Screen 1 appears), running in parallel while the user moves through Screens 1-4 (Welcome, Education, Intent, Rhythm). This supersedes the March 14, 2026 "Option B" decision (download triggered at first capture with a visible progress overlay).
+  - **Deliverables:**
+    1. Kick off `TranscriptionManager.shared.setupWhisperKit(download: true)` as a background async task at Screen 1 appearance (DwellableApp/onboarding entry point), non-blocking to screen navigation
+    2. Remove/repurpose the old first-capture download overlay (CaptureView) — only show a brief "almost ready..." fallback if the model isn't finished downloading by the time the user reaches Screen 8 (First Capture)
+    3. No change to WhisperKit setup logic itself, only the trigger timing
+  - **Acceptance Criteria:**
+    - [ ] Model download begins automatically when Screen 1 renders, without any user action
+    - [ ] Screens 1-4 remain fully interactive and responsive while download runs in background
+    - [ ] In the common case (WiFi, normal onboarding pace), model is fully downloaded before user reaches Screen 8
+    - [ ] If download is not yet complete at Screen 8, user sees a brief "almost ready" indicator (not the old full progress bar overlay)
+    - [ ] No crash or blocked navigation if user reaches Screen 8 before download completes
+  - **Known tradeoff:** Users who abandon onboarding on Screen 1-2 (Scenario 3, <1 min) will have partially/fully downloaded 74MB with no benefit. Accepted as reasonable cost for a smoother first-capture experience.
+  - **Estimated effort:** S (4-6 hours — mostly moving an existing trigger point, not new logic)
+  - **Dependencies:** None (WhisperKit integration already exists per March 14, 2026 session)
+  - **Priority:** 🟡 MEDIUM (UX polish, not launch-blocking)
+  - **Raised:** July 3, 2026 session (P0 Comment #4)
+
+- [ ] **T-098:** Third-Party IDP Sign-In for Returning Users (Sign in with Apple + Google) 🔲 **NOT STARTED**
+  - **Purpose:** For a user who already has an account and signs out, enable sign-back-in via third-party identity providers (Apple, Google) instead of only email/password.
+  - **Important Apple compliance nuance:** App Store Guideline 4.8 requires that if an app offers ANY third-party login option (e.g., Google Sign-In), it MUST also offer **Sign in with Apple** as an equivalent option. Cannot ship Google-only; Apple Sign-In is effectively mandatory the moment any social login is added.
+  - **Deliverables:**
+    1. Sign in with Apple (native `AuthenticationServices` framework, maps to Supabase Auth's Apple OIDC provider)
+    2. Google Sign-In (via Supabase Auth's Google OAuth provider)
+    3. Account linking logic: if a user originally signed up with email/password, decide whether IDP sign-in links to that same account (matched by email) or creates a conflict requiring resolution
+  - **Acceptance Criteria:**
+    - [ ] User can sign in with Apple ID after signing out
+    - [ ] User can sign in with Google after signing out
+    - [ ] Both options are presented with equal visual prominence (Apple guideline requirement)
+    - [ ] Signing in with an IDP that matches an existing email/password account resolves to the same account (no duplicate)
+  - **Estimated effort:** M (10-14 hours)
+  - **Dependencies:** None (Supabase Auth already supports both providers)
+  - **Priority:** 🟡 MEDIUM (nice-to-have for reducing sign-in friction, not launch-blocking)
+  - **Raised:** July 3-4, 2026 session (side note during pricing discussion)
+
+- [ ] **T-099:** Free Tier Gate — 3 Free Journals (Capture + Optional Prayer + Journal), Paywall on 4th Capture Attempt 🔲 **NOT STARTED**
+  - **Purpose:** LOCKED July 4, 2026 pricing decision. Free tier = 3 complete loops (Capture, optional Prayer, Journal synthesis — each fully editable and owned, no restrictions). Paywall triggers the moment the user attempts a 4th capture. Formation Intelligence (P6 themes) is naturally gated behind the paywall too, since theme detection requires 3+ occurrences anyway — the free tier alone can't produce a theme, so this isn't an artificial restriction.
+  - **Rationale:** Raw LLM API cost is not the constraint (estimated <$25 for 1,000 users' full free allotment using Groq primary / GPT-4o mini fallback pricing) — this is a conversion-psychology decision, not a cost one. 3 loops is enough to prove the full mechanism (capture → process → translated artifact) repeatedly while reaching the edge of theme-relevant data (3+ occurrences per P6), creating an honest, non-arbitrary reason to continue.
+  - **Deliverables:**
+    1. Track capture count per user (server-side, not just client-side, to prevent bypass via reinstall)
+    2. Paywall/subscription screen triggered on 4th capture attempt (not before) — full StoreKit 2 subscription + free trial flow; TestFlight auto-routes to Apple Sandbox for zero-risk testing of the complete flow pre-launch
+    3. Upsell copy referencing what's been experienced + what's next (patterns/themes) — directional line: "Your first moments showed you what Dwellable creates. The real gift is what happens when these add up."
+    4. First 3 journal entries remain fully accessible/editable regardless of subscription status (never retroactively locked)
+  - **Acceptance Criteria:**
+    - [ ] User can complete 3 full loops (capture/prayer/journal) with zero payment prompts
+    - [ ] 4th capture attempt surfaces paywall/trial screen before recording begins
+    - [ ] Capture count is enforced server-side (Supabase), not just locally
+    - [ ] Existing 3 free entries remain fully viewable/editable after hitting the paywall, subscribed or not
+    - [ ] Tested end-to-end via TestFlight (sandbox), zero real charges during beta
+  - **Estimated effort:** L (20-28 hours — StoreKit 2 integration + server-side entitlement/count tracking + paywall UI)
+  - **Dependencies:** T-063/T-064 (Prayer/Prompts flows), P4 Journal Creation, Supabase schema for capture-count tracking
+  - **Priority:** 🔴 HIGH (defines the entire monetization model — needed before public launch, should be scoped early)
+  - **Open item:** Exact token-cost estimate above is a placeholder pending the LLM Testing Protocol (T-092 deliverable 8, still deferred) — real token counts should be measured before finalizing subscription pricing ($/month).
+  - **Raised:** July 3-4, 2026 session (P0 Comment #4 pricing discussion)
 
 ### LLM Research Documentation
 
