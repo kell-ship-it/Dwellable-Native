@@ -9,8 +9,6 @@ When you type EXACTLY these slash commands, execute the protocol WITHOUT clarifi
 - **`/start-session`** → Run Founder Start Protocol (FIRST) + Agent Startup Protocol (THEN)
 - **`/close-session`** → Run Session End Protocol
 
-**Reference:** See `memory/protocol_triggers.md` for full trigger registry and procedures.
-
 ---
 
 ## 🚨 SESSION START — FOUNDER FIRST, THEN AGENT. NO EXCEPTIONS.
