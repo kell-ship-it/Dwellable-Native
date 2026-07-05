@@ -1,8 +1,10 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** July 4, 2026 (session end) — Completed P0 Stage 3 (Intent & Rhythm locked with prompt mapping + fallback rules). Resolved P0 comments #1, #4-8 (6 of 8 fully resolved); Comment #2 (Screen 4 copy) and #3 (tech audit) remain open. Locked SDK pre-load timing (T-097), account deletion + retention policy (T-095/T-096), 3rd-party sign-in (T-098), and the full monetization model: 3 free journals then paywall on 4th capture attempt (T-099). Added VISION.md principle "We Translate Across Time" + Dwellable 1-pager. **Next session objective:** Finish remaining P0 comments (#2 Screen 4 copy fix, #3 tech audit) + dig deeper into real LLM token/API costs to validate T-099's pricing assumptions (currently placeholder estimates), then move to P1 User Scenarios.
+**Last Updated:** July 5, 2026 (session end) — Resolved P0 Comment #2 (screen copy tickets T-100–T-105 created). Ran the LLM Testing Protocol for real: 4 live benchmark loops against Groq + GPT-4o mini, landing on a validated 4,705-token/loop benchmark. Caught and corrected a real analysis error (OpenAI's Batch queue limit was mistakenly treated as a real-time daily cap, understating GPT-4o mini Tier 1 capacity ~4x — real ceiling is ~1,666 loops/day, not 425). Evaluated and rejected OpenRouter, Cerebras, GitHub Models, and multi-account Groq stacking as capacity levers. Added T-106 (token optimization), T-107 (failover protocol + financial/token guardrails), T-108 (tiered prompts-per-capture cap). Full findings logged in the Notion "LLM Decision (LOCKED)" page and `docs/LLM_COST_CAPACITY_EXPLAINER.html`/`.pdf`. **Next session objective:** Finish P0 Comment #3 (tech audit, deferred to T-093), lock exact free-vs-premium prompt-count numbers for T-108, then move to P1 (Capture) User Scenarios.
 
-**Status:** 74/102 tickets complete (73%), 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0 complete + Stage 3 locked, P1-P8 remain). Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth with Comment Resolution table + Questions table. Added T-095 (in-app account deletion), T-096 (retention policy + legal review), T-097 (WhisperKit pre-load at Screen 1), T-098 (3rd-party IDP sign-in), T-099 (pricing: 3 free journals, paywall on 4th capture). Added VISION.md principle "We Translate Across Time" + Dwellable 1-pager (docs/DWELLABLE_1PAGER.md). Remaining open P0 items: Comment #2 (Screen 4 copy fix, action needed), Comment #3 (tech audit, deferred to T-093), LLM Testing Protocol still needed to replace token-cost estimates in T-099 with real numbers. Next session: finish remaining P0 comments + dig deeper into LLM API cost / tier pricing validation.
+**Status:** 74/111 tickets complete (67%), 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0 complete + Comment #2 resolved, P1-P8 remain). Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth. T-099 pricing model now backed by real, validated LLM cost/capacity numbers (see July 5, 2026 session below) instead of placeholders. Remaining open P0 item: Comment #3 (tech audit, deferred to T-093). Next session: P0 Comment #3 + T-108 numbers, then P1 User Scenarios.
+
+**July 5, 2026 session:** Resolved P0 Comment #2 via T-100–T-105 (all P0 onboarding screen copy tickets). Ran 4 live LLM benchmark loops (Groq `llama-3.3-70b-versatile` + OpenAI GPT-4o mini) to replace T-099's placeholder cost estimate — validated benchmark: **4,705 tokens/loop, 6 API calls, ~$0.00084/loop** (real pricing confirmed via OpenAI's Admin API: $0.15/M input, $0.60/M output). Corrected a real error: GPT-4o mini Tier 1's true capacity is ~1,666 loops/day (10,000 RPD ÷ 6 calls/loop), not 425 — an earlier pass conflated OpenAI's Batch API queue limit with a real-time daily cap. Corrected 1,000-user launch scenario: 21 free (Groq) + 979 paid (GPT-4o mini) + **0 waiting**, total ~$0.82 — Tier 1 alone covers a full launch cohort. Evaluated OpenRouter (rejected — unreliable free pool), Cerebras (rejected — wrong model on free tier), GitHub Models (rejected — barred from production use), and multi-account Groq stacking (rejected — likely ToS violation). Corrected worst-case runaway exposure ($43-98/day Tier 1, $432-$1,728/day Tier 2). Locked 3 guardrail categories → T-106 (token optimization), T-107 (failover + financial/token guardrails), T-108 (tiered prompts-per-capture cap, numbers still open). Full session findings appended to the Notion "LLM Decision (LOCKED)" page.
 
 **June 30, 2026 session:** Built Notion workspace as single source of truth (Protocol / Sessions / Tickets / Strategy-PRD). Reconstructed missing MEMORY sessions (May 8–15) + added Source-of-Truth Index. Corrected LLM decision in Notion (Groq Llama 3 70B → GPT-4o mini, superseding the old Gemini→Mistral doc). Rewrote all 9 pillar pages with correct May-10 numbering + organized into Roadmap (phases) and Pillars parents. Added T-094 (Tech Stack per Pillar doc).
 
@@ -621,7 +623,12 @@
 
 - [ ] **T-099:** Free Tier Gate — 3 Free Journals (Capture + Optional Prayer + Journal), Paywall on 4th Capture Attempt 🔲 **NOT STARTED**
   - **Purpose:** LOCKED July 4, 2026 pricing decision. Free tier = 3 complete loops (Capture, optional Prayer, Journal synthesis — each fully editable and owned, no restrictions). Paywall triggers the moment the user attempts a 4th capture. Formation Intelligence (P6 themes) is naturally gated behind the paywall too, since theme detection requires 3+ occurrences anyway — the free tier alone can't produce a theme, so this isn't an artificial restriction.
-  - **Rationale:** Raw LLM API cost is not the constraint (estimated <$25 for 1,000 users' full free allotment using Groq primary / GPT-4o mini fallback pricing) — this is a conversion-psychology decision, not a cost one. 3 loops is enough to prove the full mechanism (capture → process → translated artifact) repeatedly while reaching the edge of theme-relevant data (3+ occurrences per P6), creating an honest, non-arbitrary reason to continue.
+  - **Rationale:** Raw LLM API cost is not the constraint — **now confirmed with real measured numbers, validated across 4 live test runs (July 4-5, 2026), not a placeholder.** A full loop (capture on-device + 3 Socratic prompt turns, self-wrapping into a prayer invite on the 3rd turn + prayer + journal synthesis) = 6 LLM requests. Three consistent benchmark runs (4,802 / 4,691 / 4,622 tokens) averaged to **4,705 tokens/loop** (~4,402 input + ~303 output), replacing the earlier one-off 6,708-token estimate. Real pricing confirmed exactly via OpenAI's own billing API: $0.15/M input, $0.60/M output → **~$0.00084/loop**.
+    - Groq free tier (`llama-3.3-70b-versatile` — the originally-locked `llama3-70b-8192` is decommissioned) covers **~21 full loops/day**, ~2-3/minute before its hard daily wall (resets midnight UTC, no auto-increase).
+    - GPT-4o mini Tier 1 real ceiling (**corrected** — see incident note below): **~1,666 loops/day** (10,000 RPD ÷ 6 calls/loop), ~42/minute.
+    - For a 1,000-user simultaneous first-capture scenario: **21 free (Groq) + 979 same-day paid (GPT-4o mini) + 0 waiting** = 1,000 people, **total real cost ≈ $0.82**. Tier 1 alone comfortably serves the entire cohort same-day — no Tier 2 upgrade needed for this scenario.
+    - **⚠️ Incident/correction:** An earlier pass mislabeled OpenAI's "Batch queue limit" (2,000,000 — specific to the async Batch API) as a real-time daily token cap, understating Tier 1 capacity ~4x (425/day instead of the real ~1,666/day). Caught via independent review, corrected by re-deriving from RPD ÷ calls-per-loop. Full incident + corrected worst-case exposure numbers ($43-98/day Tier 1, $432-$1,728/day Tier 2) logged in the Notion "🧠 LLM Decision (LOCKED)" page and `docs/LLM_COST_CAPACITY_EXPLAINER.html`.
+    - This is a conversion-psychology decision, not a cost one. 3 loops is enough to prove the full mechanism (capture → process → translated artifact) repeatedly while reaching the edge of theme-relevant data (3+ occurrences per P6), creating an honest, non-arbitrary reason to continue.
   - **Deliverables:**
     1. Track capture count per user (server-side, not just client-side, to prevent bypass via reinstall)
     2. Paywall/subscription screen triggered on 4th capture attempt (not before) — full StoreKit 2 subscription + free trial flow; TestFlight auto-routes to Apple Sandbox for zero-risk testing of the complete flow pre-launch
@@ -636,8 +643,135 @@
   - **Estimated effort:** L (20-28 hours — StoreKit 2 integration + server-side entitlement/count tracking + paywall UI)
   - **Dependencies:** T-063/T-064 (Prayer/Prompts flows), P4 Journal Creation, Supabase schema for capture-count tracking
   - **Priority:** 🔴 HIGH (defines the entire monetization model — needed before public launch, should be scoped early)
-  - **Open item:** Exact token-cost estimate above is a placeholder pending the LLM Testing Protocol (T-092 deliverable 8, still deferred) — real token counts should be measured before finalizing subscription pricing ($/month).
+  - **Resolved:** Token-cost estimate is no longer a placeholder — see Rationale above for the real measured numbers (T-092 deliverable 8, LLM Testing Protocol, validated July 4-5, 2026 across 4 live runs). Full walkthrough in `docs/LLM_COST_CAPACITY_EXPLAINER.html` / `.pdf`. OpenAI tier advancement is triggered by cumulative money paid, not usage (Tier 1 = $5 paid, Tier 2 = $50 paid) — Tier 1 alone already covers the 1,000-user scenario, so funding $50 isn't needed near-term; it only buys headroom beyond ~1,666 loops/day combined demand. See T-106 (output token optimization) and T-107 (request queue/failover protocol + guardrails) for the engineering follow-ups this investigation surfaced, and T-108 (tiered prompts-per-capture cap) for the monetization-linked guardrail this raised.
   - **Raised:** July 3-4, 2026 session (P0 Comment #4 pricing discussion)
+
+- [ ] **T-106:** Optimize LLM Output Token Usage (Prompts + Prayer/Closing Calls) 🔲 **NOT STARTED**
+  - **Purpose:** Live testing (July 4, 2026) showed model output length varies significantly depending on whether explicit length constraints are given — unconstrained prompts (e.g. ad hoc playground testing) produced roughly 3x longer responses than prompts with explicit length instructions. Since output tokens are a major driver of total loop cost/capacity, tightening the 4 non-journal calls (3 Socratic prompts + closing/prayer) reduces tokens/loop and directly raises how many loops fit inside Groq's fixed daily/per-minute caps, without touching journal length (which should stay full — that's the actual product value, not waste).
+  - **Deliverables:**
+    1. Add an explicit `max_tokens` parameter as a hard ceiling on every LLM API call (all 5 calls in the loop)
+    2. A/B test tighter prompt phrasing for the 4 non-journal calls to reduce output without losing warmth/quality
+    3. Re-measure real tokens/loop after changes and update T-099's numbers accordingly
+  - **Acceptance Criteria:**
+    - [ ] `max_tokens` set on all 5 calls in the loop
+    - [ ] Non-journal average completion tokens reduced by at least 20% vs the July 4, 2026 baseline (37-72 tokens/call) without perceptible quality loss
+    - [ ] Re-tested loop total tokens documented and T-099 updated
+  - **Estimated effort:** S-M (4-6 hours)
+  - **Dependencies:** None
+  - **Priority:** 🟡 MEDIUM
+  - **Raised:** July 4, 2026 session (LLM cost/capacity investigation)
+
+- [ ] **T-107:** Build LLM Request Queue + Backoff + Circuit Breaker + Financial/Token Guardrails (Groq → GPT-4o Mini Failover Protocol) 🔲 **NOT STARTED**
+  - **Purpose:** Live testing (July 4-5, 2026) confirmed real per-loop cost is ~4,705 tokens (validated benchmark), and Groq's free tier has a hard daily wall (~21 full loops/day, ~2-3/minute at that real token weight) that's easy to exceed at realistic beta scale. The Groq-primary → GPT-4o-mini-backup design is locked, but the actual failover logic (queueing, retry, circuit breaking) doesn't exist yet — without it, requests that exceed Groq's limits will simply fail (HTTP 429) instead of gracefully falling over to the paid backup. Corrected GPT-4o mini Tier 1 real ceiling is ~1,666 loops/day (10,000 RPD ÷ 6 calls/loop — see T-099 for the Batch-queue-limit mislabeling incident that originally understated this).
+  - **OpenRouter evaluated and rejected as a second free lane (July 4, 2026):** OpenRouter's free tier serves the same `llama-3.3-70b-versatile` model (no quality variance risk), but live testing showed its shared free pool (routed through a third-party provider, "Venice") is persistently rate-limited in practice — 3 consecutive test calls all failed with HTTP 429, wait times not shrinking (11s, 18s, 19s). Not dependable enough to architect around; not included in this ticket's scope.
+  - **Deliverables:**
+    1. Request queue with a concurrency cap so the backend never fires more requests than known budget allows
+    2. Exponential backoff + respect `Retry-After` header on 429s, for short-term per-minute cap hits (resolves within the same minute or two)
+    3. Circuit breaker: after repeated 429s from Groq (daily cap likely exhausted), stop routing new requests to Groq for a cooldown period (until next reset) and send everything to GPT-4o mini instead
+    4. Async/notification UX path for any request that still can't be served immediately (e.g. push notification "your reflection is ready") instead of a blocking spinner
+    5. Conversation-level token budget check: before each new turn, check the running cumulative total; if approaching a ceiling (~15,000-20,000 tokens — well above the real ~4,705-token measured conversation but bounded), gracefully move the user into prayer/journal early rather than letting the reflection phase run indefinitely
+    6. **Financial guardrail:** conservative project budget cap during beta (e.g. $10-25/month), tiered alerts at 25/50/75/90%, and a **hard stop at 100%** (block further paid API calls, force human review) rather than silent overflow — real worst-case exposure without this is $43-98/day at Tier 1, $432-$1,728/day at Tier 2 (Tier 2 has no automatic daily-request brake, only the $500/month cap and whatever alerts we configure ourselves)
+    7. **Token guardrail:** hard `max_tokens` enforcement per call type at the API level (not just prompt-instruction wording, which is soft) — Prompts ~40, Prayer ~90, Journal ~350, per the locked system prompt design; decide and implement graceful handling if a response is truncated mid-sentence (retry with a nudge vs. accept an imperfect ending)
+    8. Server-side-only API calls (never expose keys client-side) + usage logging (user_id, request_id, model, tokens, cost) for debugging and cost attribution
+  - **Acceptance Criteria:**
+    - [ ] Per-minute rate-limit hits retry within the same minute with no user-visible failure
+    - [ ] Daily cap hits automatically reroute to GPT-4o mini same-session, no user-facing error
+    - [ ] Conversation token budget check prevents any single conversation from growing unbounded
+    - [ ] Budget alerts fire at each configured threshold; hard stop blocks new paid requests at 100% of the cap
+    - [ ] `max_tokens` enforced per call type at the API level; truncation handling decided and implemented
+    - [ ] Logging/analytics on how many loops per day land on Groq vs. GPT-4o mini vs. queued, plus per-loop cost attribution
+  - **Estimated effort:** L (16-22 hours — increased from 10-16h to include the financial/token guardrail work)
+  - **Dependencies:** T-099 (finalized cost/capacity numbers)
+  - **Priority:** 🔴 HIGH (needed before real beta traffic — Groq's daily ceiling is easy to exceed with even a modest concurrent cohort, and Tier 2's missing daily-request brake makes the financial guardrail non-optional before any Tier 2 move)
+  - **Raised:** July 4-5, 2026 session (LLM cost/capacity investigation + guardrails discussion)
+
+- [ ] **T-108:** Tiered Prompts-Per-Capture Cap (Free vs. Premium Accounts) 🔲 **NOT STARTED**
+  - **Purpose:** T-064 currently locks a flat "max 5 prompts per flow" for all accounts. Guardrails discussion (July 5, 2026) confirmed this should become a two-part model: **(1) a flat hard ceiling for every account** (safety/cost protection, regardless of tier), and **(2) a lower, tier-differentiated soft cap for free accounts specifically**, as a monetization lever alongside T-099's existing "3 free journals" gate — fewer reflection turns on free tier is part of the upsell story, not just a cost control.
+  - **Deliverables:**
+    1. Lock exact numbers with Kell: free-tier reflection turn cap (candidate: 2-3) vs. premium/paid-tier cap (existing 3-5 range from T-064)
+    2. Update T-064's Prompts flow design to reflect the two-tier model
+    3. Server-side enforcement of the cap by account tier (not just client-side, consistent with T-099's server-side capture-count enforcement pattern)
+    4. Keep the hard ceiling and the tier-specific soft cap configurable (not hardcoded), in case numbers need tuning post-beta
+  - **Acceptance Criteria:**
+    - [ ] Free accounts capped at the lower reflection-turn count; premium accounts get the full range
+    - [ ] Hard ceiling protects against runaway usage regardless of account tier
+    - [ ] Caps enforced server-side, not just in the client
+    - [ ] Numbers are configurable via a settings/config table, not hardcoded in app logic
+  - **Estimated effort:** S-M (6-10 hours)
+  - **Dependencies:** T-099 (monetization model), T-064 (Prompts flow)
+  - **Priority:** 🟡 MEDIUM (product/pricing decision — should be resolved before beta pricing is finalized, not launch-blocking on its own)
+  - **Open item:** Exact free vs. premium prompt-count numbers still need to be locked with Kell.
+  - **Raised:** July 5, 2026 session (LLM cost/capacity guardrails discussion)
+
+### Pillar 0 — Onboarding Screen Copy (July 4, 2026 session — resolves Comment #2)
+**Context:** The 8-screen P0 flow (Welcome → Education → Intent → Rhythm → Account → Privacy → Notification Permission → [P1] First Capture) has locked *structure* and *data decisions* for every screen, but only Screen 6 (Privacy) has fully drafted on-screen copy. The rest have placeholder descriptions only. Screen 2 (Education) was flagged as Comment #2 — locked direction (July 4): copy must be ✅-only (no negation framing) and built around the "We Translate Across Time" principle (`VISION.md`, `DWELLABLE_1PAGER.md`) rather than a feature checklist. Screens 1, 3, 4, 5, and 6.5 need the same copy-drafting treatment. Screen 8 (First Capture) belongs to Pillar 1 and is out of scope here.
+
+- [ ] **T-100:** Write Onboarding Screen 1 (Welcome) Copy — Value Proposition 🔲 **NOT STARTED**
+  - **Purpose:** Screen 1 has no drafted on-screen copy in the current 8-screen model — only "value prop + permission (3–5s)" as a placeholder description in the Notion Pillar 0 page.
+  - **Deliverables:** Headline + subtext copy (3–5s read budget); update `PILLAR_ONBOARDING_STRATEGY.md` Screen 1 section; mirror to Notion Pillar 0 page Screen Details.
+  - **Acceptance Criteria:** Copy establishes value prop within 3–5s read time; reviewed and approved by Kell before implementation.
+  - **Estimated effort:** S (1–2 hours)
+  - **Dependencies:** None
+  - **Priority:** 🟡 MEDIUM
+  - **Raised:** July 4, 2026 session
+
+- [ ] **T-101:** Rewrite Onboarding Screen 2 (Education) Copy — "We Translate Across Time" Differentiation 🔲 **NOT STARTED**
+  - **Purpose:** Resolves half of P0 Comment #2 (the other half is T-103, Screen 4 grace messaging). Comment #2 covers two things: (1) grace-based Rhythm messaging should be ✅-only, not framed via negation (→ T-103), and (2) the Education screen should focus on Dwellable's differentiation from other journal/reflection tools, told affirmatively (→ this ticket). Current Screen 2 copy mixes ✅/❌ framing and doesn't reflect Dwellable's actual differentiation story. Locked direction: copy must be entirely affirmative (✅ only) and built around "We Translate Across Time" (`VISION.md`, `DWELLABLE_1PAGER.md`) — what Dwellable distinctly *does* (processes a moment with you, then translates it into something your future self can still understand), not a feature checklist against other journal apps.
+  - **Deliverables:**
+    1. New Screen 2 copy draft, ✅-only, 10–15s read-time budget, built around the Capture → Process → Translate → Dwell arc and the "half-life of raw writing" insight — distilled from the 1-pager, not full prose
+    2. Update `PILLAR_ONBOARDING_STRATEGY.md` Screen 2 section
+    3. Mirror to the live Notion Pillar 0 page (Screen 2 currently has only a placeholder description)
+  - **Acceptance Criteria:**
+    - [ ] All copy is affirmative (✅) — no ❌ negation lines
+    - [ ] Copy communicates the distinction from generic journal apps (Day One, Notes) via *translation across time*, not a customization comparison
+    - [ ] Fits 10–15 second onboarding read time
+    - [ ] Reviewed and approved by Kell before implementation
+  - **Estimated effort:** S (2–3 hours)
+  - **Dependencies:** None
+  - **Priority:** 🟡 MEDIUM (resolves last open P0 comment, not launch-blocking)
+  - **Raised:** July 4, 2026 session (P0 Comment #2)
+
+- [ ] **T-102:** Write Onboarding Screen 3 (Intent) Framing Copy 🔲 **NOT STARTED**
+  - **Purpose:** The 5 Intent options are locked (Stage 3.1, July 3, 2026) but the screen's framing copy (headline, instructional subtext around "What brought you to Dwellable?") has not been drafted beyond the question itself.
+  - **Deliverables:** Headline + subtext framing copy for the intent-selection screen; update `PILLAR_ONBOARDING_STRATEGY.md` Screen 3 section; mirror to Notion Pillar 0 page.
+  - **Acceptance Criteria:** Framing copy present and consistent with the 5 locked Intent options; approved by Kell before implementation.
+  - **Estimated effort:** S (1–2 hours)
+  - **Dependencies:** None
+  - **Priority:** 🟡 MEDIUM
+  - **Raised:** July 4, 2026 session
+
+- [ ] **T-103:** Write Onboarding Screen 4 (Rhythm) Framing Copy — Grace-Based, ✅-Only 🔲 **NOT STARTED**
+  - **Purpose:** Resolves half of P0 Comment #2 (the other half is T-101). Verbatim comment: *"Not needed to display what we are not and focus on what we are"* — anchored to the Screen 4 "no guilt, no streaks" messaging. Locked direction: the grace-based Rhythm messaging must be expressed entirely affirmatively (✅ only) — describing the freedom/grace of the practice directly, not by first naming what it isn't (no "no guilt, no streaks" negation construction). The 7 Rhythm options themselves (Stage 3.2, July 3, 2026) are unaffected.
+  - **Deliverables:**
+    1. Headline + subtext framing copy for the rhythm-selection screen, expressing grace-based tone affirmatively (e.g., describing freedom/rest directly rather than "no guilt, no streaks")
+    2. Update `PILLAR_ONBOARDING_STRATEGY.md` Screen 4 section
+    3. Mirror to Notion Pillar 0 page and the P0 User Scenarios & Acceptance Criteria page (update AC 1.7 wording once copy is locked)
+  - **Acceptance Criteria:**
+    - [ ] Copy is affirmative (✅) only — no "no guilt, no streaks" or other ❌ negation phrasing
+    - [ ] Grace-based tone preserved and consistent with the 7 locked Rhythm options
+    - [ ] Approved by Kell before implementation
+  - **Estimated effort:** S (1–2 hours)
+  - **Dependencies:** None
+  - **Priority:** 🟡 MEDIUM (resolves P0 Comment #2, alongside T-101)
+  - **Raised:** July 4, 2026 session (P0 Comment #2)
+
+- [ ] **T-104:** Write Onboarding Screen 5 (Account) Copy 🔲 **NOT STARTED**
+  - **Purpose:** Account creation screen (email + password + Terms) is functionally specified but has no drafted trust-building microcopy consistent with brand voice.
+  - **Deliverables:** Headline + microcopy for the account-creation screen; update `PILLAR_ONBOARDING_STRATEGY.md` Screen 5 section; mirror to Notion Pillar 0 page.
+  - **Acceptance Criteria:** Copy present, reinforces trust at the point of account creation, approved by Kell before implementation.
+  - **Estimated effort:** S (1–2 hours)
+  - **Dependencies:** None
+  - **Priority:** 🟡 MEDIUM
+  - **Raised:** July 4, 2026 session
+
+- [ ] **T-105:** Write Onboarding Screen 6.5 (Notification Permission) Copy 🔲 **NOT STARTED**
+  - **Purpose:** Screen 6.5 is locked conceptually as "sparse/gentle framing, opt-out default" but the actual permission-request copy (headline, body, button text) has not been drafted.
+  - **Deliverables:** Headline + body + button copy for the notification permission screen, matching the sparse/gentle tone; update `PILLAR_ONBOARDING_STRATEGY.md` Screen 6.5 section; mirror to Notion Pillar 0 page.
+  - **Acceptance Criteria:** Copy present, gentle/invitational tone (not urgency-driven), consistent with opt-out default framing; approved by Kell before implementation.
+  - **Estimated effort:** S (1–2 hours)
+  - **Dependencies:** None
+  - **Priority:** 🟡 MEDIUM
+  - **Raised:** July 4, 2026 session
 
 ### LLM Research Documentation
 

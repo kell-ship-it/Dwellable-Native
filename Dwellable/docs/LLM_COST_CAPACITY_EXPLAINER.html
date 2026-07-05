@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dwellable — How the free/paid AI split actually works</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    background: #fff;
+    color: #1a1a1a;
+    line-height: 1.6;
+  }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 15px; margin-bottom: 40px; }
+  h2 { font-size: 19px; font-weight: 600; margin-top: 48px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+  p { font-size: 15px; color: #333; }
+  .callout {
+    background: #f7f7f5;
+    border-left: 4px solid #999;
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 16px 0;
+    font-size: 15px;
+  }
+  .steps { display: flex; gap: 8px; flex-wrap: wrap; margin: 20px 0; }
+  .step {
+    flex: 1;
+    min-width: 100px;
+    border-radius: 8px;
+    padding: 12px 10px;
+    text-align: center;
+  }
+  .step .label { font-size: 12px; font-weight: 600; opacity: 0.8; }
+  .step .value { font-size: 16px; font-weight: 700; margin-top: 6px; }
+  .step .note { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+  .capture { background: #eee; color: #444; }
+  .prompt { background: #EEEDFE; color: #3C3489; }
+  .prayer { background: #E1F5EE; color: #085041; }
+  .journal { background: #FAECE7; color: #712B13; }
+  .system { background: #eee; color: #444; }
+
+  .compare { display: flex; gap: 16px; margin: 20px 0; }
+  .card {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .card.free { border-left: 4px solid #1D9E75; }
+  .card.paid { border-left: 4px solid #D85A30; }
+  .card .title { font-weight: 700; font-size: 15px; }
+  .card .big { font-size: 26px; font-weight: 700; margin: 10px 0 4px; }
+  .card .detail { font-size: 13px; color: #666; }
+
+  .bar { display: flex; height: 40px; border-radius: 8px; overflow: hidden; margin: 20px 0 10px; }
+  .bar .free-seg { background: #1D9E75; }
+  .bar .paid-seg { background: #D85A30; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 600; }
+  .bar .wait-seg { background: #f0f0f0; border: 1px dashed #bbb; display: flex; align-items: center; justify-content: center; color: #666; font-size: 12px; }
+  .legend { display: flex; gap: 20px; font-size: 13px; color: #555; margin-bottom: 20px; }
+  .legend span.dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+
+  .cost-row { display: flex; gap: 12px; margin-top: 16px; }
+  .cost-box { flex: 1; text-align: center; background: #fafafa; border: 1px solid #eee; border-radius: 10px; padding: 14px; }
+  .cost-box .amount { font-size: 22px; font-weight: 700; }
+  .cost-box .caption { font-size: 12px; color: #777; margin-top: 4px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eee; }
+  th { color: #555; font-weight: 600; }
+
+  .unknown-box {
+    background: #fff8e6;
+    border: 1px solid #f0d78c;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .fixed-box {
+    background: #eafaf1;
+    border: 1px solid #a8dfc0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<h1>How the free/paid AI split actually works</h1>
+<div class="subtitle">A plain-language walkthrough — updated July 5, 2026 with a corrected capacity model (a real error was caught and fixed) plus real measured numbers</div>
+
+<div class="fixed-box">
+<strong>Correction notice:</strong> An earlier version of this document mislabeled OpenAI's "Batch queue limit" (a separate, unrelated limit for OpenAI's asynchronous Batch API) as if it were a real-time daily token cap for normal chat usage. That mistake understated Tier 1's real capacity by roughly 4x. This version is corrected: the real constraint is Tier 1's actual daily request cap (10,000 RPD) combined with how many API calls one full loop takes (6). The corrected story is better news than before, not worse.
+</div>
+
+<h2>1. What is a "loop"?</h2>
+<p>A loop is one full trip through the app for one moment — start to finish: capture, 3 reflection turns, prayer, journal. We ran this exact loop live 4 times to find a reliable number.</p>
+<table>
+  <tr><th>Run</th><th>Tokens</th><th>Notes</th></tr>
+  <tr><td>Run 1 (original prompt)</td><td>6,708</td><td>Before the wrap-up-to-prayer refinement — treated as a pre-optimization outlier, not part of the benchmark</td></tr>
+  <tr><td>Run 2 (refined prompt)</td><td>4,802</td><td>Benchmark run</td></tr>
+  <tr><td>Run 3 (refined prompt)</td><td>4,691</td><td>Benchmark run</td></tr>
+  <tr><td>Run 4 (refined prompt)</td><td>4,622</td><td>Benchmark run</td></tr>
+</table>
+<div class="callout">
+Runs 2, 3, and 4 all used the refined prompt (the one that has the assistant invite prayer itself right after the 3rd reflection turn, instead of a separate call). They landed within 4% of each other — <strong>4,802, 4,691, 4,622 — a genuinely stable, repeatable number, not noise.</strong> <strong>Average: 4,705 tokens per loop, across 6 real API calls.</strong> This is the benchmark used throughout this document.
+</div>
+<p style="font-size:13px; color:#777;">Every one of these numbers is confirmed twice — once from OpenAI's own usage API, once from summing the real per-call numbers straight from the transcripts. Real cost split: ~4,402 input tokens + ~303 output tokens per loop, on average.</p>
+
+<h2>2. Two AI companies can answer those asks: Groq (free) and OpenAI's GPT-4o mini (paid)</h2>
+<p>Every call in the loop gets routed to one or the other. Here's the real difference between them, using the 4,705-token benchmark loop and 6 calls/loop:</p>
+<div class="compare">
+  <div class="card free">
+    <div class="title">Groq — free</div>
+    <div class="big">$0</div>
+    <div class="detail">up to about 21 loops per day, combined across every user. After that, Groq simply stops answering until the next day. This is a hard wall, not negotiable, because it's free.</div>
+  </div>
+  <div class="card paid">
+    <div class="title">GPT-4o mini — paid</div>
+    <div class="big">$0.00084</div>
+    <div class="detail">per loop, every loop. No fixed daily loop limit beyond the account's current rate limits and monthly spend/budget limits. Corrected real ceiling: about 1,666 loops per day (10,000 requests/day ÷ 6 calls per loop), and about 42 loops per minute. Past that rate limit, extra people are queued/retried by our own app, or may receive a temporary rate-limit error if we don't handle retries ourselves — OpenAI doesn't automatically queue politely for us.</div>
+  </div>
+</div>
+<div class="callout" style="border-left-color:#993C1D;">
+<strong>Confirmed real pricing, straight from OpenAI:</strong> GPT-4o mini costs exactly <strong>$0.00000015 per input token</strong> and <strong>$0.00000060 per output token</strong> — the same as $0.15 and $0.60 per million tokens. This matches our own billing data exactly (e.g. $0.003109 charged for 20,725 input tokens = $0.00015/token, precisely). Not an estimate — the real, published rate.
+</div>
+
+<h2>3. What "21 loops a day" and "1,666 loops a day" actually mean</h2>
+<table>
+  <tr><th></th><th>Groq (free)</th><th>GPT-4o mini (paid)</th></tr>
+  <tr><td>Is there a total limit on how much you can ever use?</td><td>Yes — resets daily, but capped every day</td><td>No fixed daily cap at Tier 2+, but usage is still bounded by rate limits, monthly spend caps, and configured budgets</td></tr>
+  <tr><td>What happens if too many people ask at once?</td><td>Extra people get nothing until tomorrow</td><td>Extra people are queued/retried by our app, or get a temporary rate-limit error if we don't handle retries ourselves</td></tr>
+  <tr><td>Cost</td><td>$0</td><td>~$0.00084 per loop</td></tr>
+  <tr><td>Real daily ceiling (corrected)</td><td>~21 loops/day, shared</td><td>~1,666 loops/day (10,000 RPD ÷ 6 calls/loop)</td></tr>
+</table>
+
+<h2>4. If 1,000 people sign up and do their first loop on the same day</h2>
+<p>Here's the corrected split — and it's much better news than the earlier version of this document said.</p>
+
+<div class="compare">
+  <div class="card free" style="text-align:center;">
+    <div class="title">Group A</div>
+    <div class="big" style="color:#0F6E56;">21 people</div>
+    <div class="detail">get answered by Groq, for free, because that's Groq's entire daily allowance for everyone combined</div>
+  </div>
+  <div class="card paid" style="text-align:center;">
+    <div class="title">Group B</div>
+    <div class="big" style="color:#993C1D;">979 people</div>
+    <div class="detail">get answered by GPT-4o mini the same day, at ~$0.00084 each — Tier 1's real ~1,666 loops/day ceiling comfortably covers everyone left over</div>
+  </div>
+  <div class="card" style="text-align:center; border-left: 4px solid #999;">
+    <div class="title">Group C</div>
+    <div class="big" style="color:#555;">0 people</div>
+    <div class="detail">nobody waits — Tier 1 alone has enough real capacity to serve all 1,000 people the same day</div>
+  </div>
+</div>
+
+<p style="text-align:center; font-weight:600; margin-top:4px;">21 + 979 + 0 = 1,000 people. Everyone served, same day, on Tier 1 alone.</p>
+
+<div class="bar" style="margin-top:20px;">
+  <div class="free-seg" style="width: 2.1%;"></div>
+  <div class="paid-seg" style="width: 97.9%;">Group B — 979</div>
+</div>
+<div class="legend">
+  <span><span class="dot" style="background:#1D9E75;"></span>Group A, 21 people (too thin to show a label, but it's there on the far left)</span>
+</div>
+<p>The earlier version of this document said 687 (then 554) people would be stuck waiting. That was wrong — it came from mistakenly using OpenAI's Batch API queue limit as if it were a real-time daily cap. The real constraint (10,000 requests/day) is far more generous once you divide by the actual 6 calls per loop.</p>
+
+<div class="cost-row">
+  <div class="cost-box">
+    <div class="amount">$0</div>
+    <div class="caption">cost for the 21 free loops</div>
+  </div>
+  <div class="cost-box">
+    <div class="amount">$0.82</div>
+    <div class="caption">cost for the 979 paid loops</div>
+  </div>
+  <div class="cost-box">
+    <div class="amount">~$0.82</div>
+    <div class="caption">total, to get all 1,000 people through their first loop, same day</div>
+  </div>
+</div>
+
+<h2>5. Real Tier 1-5 rate limits for GPT-4o mini (published by OpenAI)</h2>
+<table>
+  <tr><th>Tier</th><th>Total ever paid</th><th>Monthly spend cap</th></tr>
+  <tr><td>Tier 1 (where we are today)</td><td>$5</td><td>$100/month</td></tr>
+  <tr><td>Tier 2 (what $50 unlocks)</td><td>$50</td><td>$500/month</td></tr>
+</table>
+<table>
+  <tr><th>Tier</th><th>RPM</th><th>RPD</th><th>TPM</th><th>Batch queue limit</th></tr>
+  <tr><td>Free</td><td>—</td><td>—</td><td>—</td><td>Not supported</td></tr>
+  <tr><td>Tier 1 (today)</td><td>500</td><td>10,000</td><td>200,000</td><td>2,000,000</td></tr>
+  <tr><td>Tier 2 ($50 paid)</td><td>5,000</td><td>—</td><td>2,000,000</td><td>20,000,000</td></tr>
+  <tr><td>Tier 3</td><td>5,000</td><td>—</td><td>4,000,000</td><td>40,000,000</td></tr>
+  <tr><td>Tier 4</td><td>10,000</td><td>—</td><td>10,000,000</td><td>1,000,000,000</td></tr>
+  <tr><td>Tier 5</td><td>30,000</td><td>—</td><td>150,000,000</td><td>15,000,000,000</td></tr>
+</table>
+<p style="font-size:13px; color:#777;"><strong>Batch queue limit ≠ real-time daily cap.</strong> That column governs OpenAI's separate, asynchronous Batch API — pending tokens queued for batch processing, not same-day chat traffic. Real-time capacity comes from RPM/RPD/TPM only. Note RPD disappears (shown as "—") from Tier 2 onward — no daily request cap at all beyond Tier 1.</p>
+
+<p style="font-weight:600; margin-top:20px;">Since Tier 1 alone already serves all 1,000 people same-day, what does Tier 2 actually buy you? Headroom for real scale beyond ~1,666 loops/day combined demand — not relief for this specific scenario.</p>
+<div class="compare">
+  <div style="flex:1; border:1px solid #ddd; border-radius:10px; padding:16px;">
+    <div style="font-weight:700; font-size:14px; color:#777;">Tier 1 real ceiling</div>
+    <table style="margin:10px 0 0;">
+      <tr><td>Loops/day</td><td style="text-align:right; font-weight:600;">~1,666</td></tr>
+      <tr><td>Loops/minute</td><td style="text-align:right; font-weight:600;">~42</td></tr>
+    </table>
+  </div>
+  <div style="flex:1; border:1px solid #ddd; border-left:4px solid #1D9E75; border-radius:10px; padding:16px;">
+    <div style="font-weight:700; font-size:14px; color:#0F6E56;">Tier 2 real ceiling</div>
+    <table style="margin:10px 0 0;">
+      <tr><td>Loops/day</td><td style="text-align:right; font-weight:600;">no daily cap — bounded by RPM/TPM instead</td></tr>
+      <tr><td>Loops/minute</td><td style="text-align:right; font-weight:600;">~425 (10x Tier 1)</td></tr>
+    </table>
+  </div>
+</div>
+
+<h2>6. Worst case: what if someone actually maxed out the daily limit?</h2>
+<p>A natural follow-up question: how much could Tier 1 or Tier 2 cost on the single worst day, if something (a bug, an attack, a runaway loop) tried to use the absolute maximum allowed? The corrected math here is a real risk to plan around — these worst-case numbers are meaningfully higher than we first thought.</p>
+
+<table>
+  <tr><th>Scenario</th><th>Math</th><th>Approx. cost/day</th></tr>
+  <tr><td>Tier 1, all-input flood (via TPM)</td><td>200,000 TPM × 1,440 min = 288M input tokens</td><td>$43.20</td></tr>
+  <tr><td>Tier 1, all-output flood (via RPD × max output)</td><td>10,000 requests/day × 16,384 max output tokens/response = 163.84M output tokens</td><td>$98.30</td></tr>
+  <tr><td>Tier 2, all-input flood (via TPM)</td><td>2,000,000 TPM × 1,440 min = 2.88B input tokens</td><td>$432.00</td></tr>
+  <tr><td>Tier 2, all-output flood (via TPM)</td><td>2,000,000 TPM × 1,440 min = 2.88B output tokens</td><td>$1,728.00</td></tr>
+</table>
+<p style="font-size:13px; color:#777;">Tier 2's worst case ($1,728) actually exceeds its own $500/month spend cap in a single day — meaning the monthly budget cap, not the rate limit, is the real backstop there, and it shouldn't be relied on alone.</p>
+
+<table>
+  <tr><th></th><th>Tier 1</th><th>Tier 2+</th></tr>
+  <tr><td>What stops runaway usage?</td><td>Hits the 10,000 requests/day wall — blocked automatically, worst case ~$43-98/day</td><td>Nothing, until the $500/month spend cap is hit — worst case could reach $1,728/day theoretically</td></tr>
+</table>
+
+<div class="callout">
+<strong>The real takeaway isn't a dollar figure — it's a missing safety net.</strong> At Tier 1, a runaway bug is naturally bounded to well under $100/day by the request cap itself. At Tier 2, that automatic brake disappears — the only thing standing between normal usage and burning the full $500/month budget in one afternoon is whatever budget alerts or hard spend limits <em>we</em> configure ourselves. Worth setting up before ever moving to Tier 2, not after.
+</div>
+
+<p style="font-weight:600; margin-top:20px;">Recommended safety controls before public launch or any Tier 2 move:</p>
+<table>
+  <tr><th>Control</th><th>Starting point</th><th>Why</th></tr>
+  <tr><td>Project budget</td><td>$10-$25/month during testing</td><td>Low blast radius while validating real usage</td></tr>
+  <tr><td>Per-user loop limit</td><td>e.g. 1 free loop/day; 3-5/day logged in</td><td>Stops one account from running up the bill</td></tr>
+  <tr><td>Per-IP throttling</td><td>Rate-limit unauthenticated traffic</td><td>Helps against bots/anonymous abuse</td></tr>
+  <tr><td>Max output tokens</td><td>300-800 tokens for normal responses</td><td>Output costs 4x input — cap long replies</td></tr>
+  <tr><td>Conversation/session cap</td><td>Stop after defined loop steps</td><td>Prevents runaway reflection chains</td></tr>
+  <tr><td>Server-side model calls only</td><td>Never expose the API key client-side</td><td>Prevents key theft and uncontrolled requests</td></tr>
+  <tr><td>Usage logging</td><td>Log user_id, request_id, model, tokens, cost</td><td>Enables debugging and cost attribution</td></tr>
+  <tr><td>Budget alerts</td><td>Alert at $1, $5, $10, $25</td><td>Early warning before budget exhaustion</td></tr>
+</table>
+
+<h2>7. The bottom line</h2>
+<p>Getting all 1,000 first-time users all the way through capture, 3 reflection turns, a prayer, and a journal entry costs about <strong>$0.82</strong>, total — and, corrected, <strong>every single one of them can be served the same day on Tier 1 alone</strong>, no Tier 2 upgrade needed for this scenario. The free Groq tier covers a small slice of that for nothing; the rest costs less than a tenth of a cent per person on GPT-4o mini. The 4,705-token benchmark is backed by three consistent, repeated live tests. The one real risk worth planning for isn't normal usage — it's uncontrolled/runaway usage, which is why the safety controls above (per-user limits, output caps, budget alerts) matter before scaling past Tier 1.</p>
+
+</body>
+</html>
