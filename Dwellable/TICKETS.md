@@ -1,8 +1,8 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** July 5, 2026 (session end) — Resolved P0 Comment #2 (screen copy tickets T-100–T-105 created). Ran the LLM Testing Protocol for real: 4 live benchmark loops against Groq + GPT-4o mini, landing on a validated 4,705-token/loop benchmark. Caught and corrected a real analysis error (OpenAI's Batch queue limit was mistakenly treated as a real-time daily cap, understating GPT-4o mini Tier 1 capacity ~4x — real ceiling is ~1,666 loops/day, not 425). Evaluated and rejected OpenRouter, Cerebras, GitHub Models, and multi-account Groq stacking as capacity levers. Added T-106 (token optimization), T-107 (failover protocol + financial/token guardrails), T-108 (tiered prompts-per-capture cap). Full findings logged in the Notion "LLM Decision (LOCKED)" page and `docs/LLM_COST_CAPACITY_EXPLAINER.html`/`.pdf`. **Next session objective:** Finish P0 Comment #3 (tech audit, deferred to T-093), lock exact free-vs-premium prompt-count numbers for T-108, then move to P1 (Capture) User Scenarios.
+**Last Updated:** July 6, 2026 (session close) — Built the full Pillar 0 system design in FigJam (gate logic, all 8 screens, error states, 12-scenario checklist), corrected it three times through review with Kell (nested auth/sign-in-recovery/onboarding-complete gate; collapsed onboarding + first-capture into one flag; client-vs-server error split), and locked two real architecture decisions: WhisperKit model bundled into the app binary at install time (not runtime-downloaded — T-097 rewritten), and StoreKit 2 built fully before launch with beta access via Offer Codes (T-099 clarified). Fixed a real Notion/TICKETS.md parity gap — the Notion "Dwellable Tickets Base" only had 8 of the real P0 tickets; created T-109–T-117 there and corrected two mislabeled tickets (T-095/T-096 were miscategorized, T-061 numbering drift documented). Reviewed P0 financial cost (~109 engineering hours, $0 new recurring vendor cost) and corrected Apple's commission figure (30%/15%-after-1-year standard, or flat 15% via the Small Business Program — T-117 created for Kell to enroll). **Next session objective:** Begin Pillar 1 (Capture) system design and User Scenarios, picking up at Screen 8 where P0's diagram intentionally stops.
 
-**Status:** 74/111 tickets complete (67%), 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0 complete + Comment #2 resolved, P1-P8 remain). Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth. T-099 pricing model now backed by real, validated LLM cost/capacity numbers (see July 5, 2026 session below) instead of placeholders. Remaining open P0 item: Comment #3 (tech audit, deferred to T-093). Next session: P0 Comment #3 + T-108 numbers, then P1 User Scenarios.
+**Status:** 74/117 tickets complete (63%)*, 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0 complete, P1-P8 remain). Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth (Tickets Base now has full P0 parity — 16 P0-tagged tickets). T-099 pricing model backed by real, validated LLM cost/capacity numbers, plus StoreKit/Offer-Code rollout plan and corrected Apple commission figures. Next session: Pillar 1 (Capture) system design, starting at Screen 8. *(denominator grows as new tickets are created from audits — T-113–T-117 added this session)*
 
 **July 5, 2026 session:** Resolved P0 Comment #2 via T-100–T-105 (all P0 onboarding screen copy tickets). Ran 4 live LLM benchmark loops (Groq `llama-3.3-70b-versatile` + OpenAI GPT-4o mini) to replace T-099's placeholder cost estimate — validated benchmark: **4,705 tokens/loop, 6 API calls, ~$0.00084/loop** (real pricing confirmed via OpenAI's Admin API: $0.15/M input, $0.60/M output). Corrected a real error: GPT-4o mini Tier 1's true capacity is ~1,666 loops/day (10,000 RPD ÷ 6 calls/loop), not 425 — an earlier pass conflated OpenAI's Batch API queue limit with a real-time daily cap. Corrected 1,000-user launch scenario: 21 free (Groq) + 979 paid (GPT-4o mini) + **0 waiting**, total ~$0.82 — Tier 1 alone covers a full launch cohort. Evaluated OpenRouter (rejected — unreliable free pool), Cerebras (rejected — wrong model on free tier), GitHub Models (rejected — barred from production use), and multi-account Groq stacking (rejected — likely ToS violation). Corrected worst-case runaway exposure ($43-98/day Tier 1, $432-$1,728/day Tier 2). Locked 3 guardrail categories → T-106 (token optimization), T-107 (failover + financial/token guardrails), T-108 (tiered prompts-per-capture cap, numbers still open). Full session findings appended to the Notion "LLM Decision (LOCKED)" page.
 
@@ -586,23 +586,26 @@
   - **Priority:** 🟡 MEDIUM (not build-blocking, but should close before public launch)
   - **Raised:** July 3, 2026 session (P0 Comment #8)
 
-- [ ] **T-097:** Move WhisperKit Model Pre-Load to Onboarding Screen 1 (Background, Non-Blocking) — Pillar 0 🔲 **NOT STARTED**
-  - **Purpose:** P0 Comment #4 asked whether SDK/model downloads could front-load at app open instead of at first capture. Locked decision (July 3, 2026): kick off the ~74MB WhisperKit model download silently in the background the moment the app launches (Screen 1 appears), running in parallel while the user moves through Screens 1-4 (Welcome, Education, Intent, Rhythm). This supersedes the March 14, 2026 "Option B" decision (download triggered at first capture with a visible progress overlay).
+- [ ] **T-097:** Bundle WhisperKit Model into App Binary — Install-Time Availability (Pillar 0) 🔲 **NOT STARTED**
+  - **Purpose:** P0 Comment #4 asked whether SDK/model downloads could front-load earlier than first capture. Original approach (locked July 3, 2026): trigger the ~74MB WhisperKit download in the background at Screen 1 render. **Superseded July 6, 2026:** Kell asked whether this could move even earlier, to app install itself. Decision: **bundle the model directly into the app binary (Option A)** rather than any in-app runtime download — the model is then already present the moment App Store install finishes, before first launch, with zero network dependency ever.
+  - **Why Option A over ODR (Option B):** Apple's On-Demand Resources with an "Initial Install Tag" would keep the App Store listing size smaller, but WhisperKit manages its own model-fetch/cache logic internally — using ODR means bypassing WhisperKit's built-in downloader and manually placing model files where it expects them, a custom integration that has to be re-verified against every future WhisperKit version bump. Option A avoids fighting the library's internals; the cost (+~74MB one-time on the App Store listing, not a recurring per-update cost) is worth the simplicity for a small team.
   - **Deliverables:**
-    1. Kick off `TranscriptionManager.shared.setupWhisperKit(download: true)` as a background async task at Screen 1 appearance (DwellableApp/onboarding entry point), non-blocking to screen navigation
-    2. Remove/repurpose the old first-capture download overlay (CaptureView) — only show a brief "almost ready..." fallback if the model isn't finished downloading by the time the user reaches Screen 8 (First Capture)
-    3. No change to WhisperKit setup logic itself, only the trigger timing
+    1. Obtain WhisperKit "base" model files matching the exact pinned version in `Package.resolved`; add as bundled resources (Copy Bundle Resources build phase) — do NOT commit the 74MB binary directly into git history; use Git LFS or a pinned-URL/checksum build-time fetch script instead
+    2. Rewrite `TranscriptionManager.setupWhisperKit()` to load via a local `modelFolder` path (`download: false`) instead of the network downloader
+    3. Delete the old `ModelSetupView` download-progress flow entirely — with the model always present at install, there is no "downloading voice engine..." state and no "almost ready" fallback needed (this removes UI, not just changes its trigger)
+    4. Verify the model's license permits redistribution bundled inside a shipped app
+    5. Test fresh install + airplane mode immediately after install to prove zero network dependency
+    6. Confirm final `.ipa`/TestFlight build size before App Store submission
   - **Acceptance Criteria:**
-    - [ ] Model download begins automatically when Screen 1 renders, without any user action
-    - [ ] Screens 1-4 remain fully interactive and responsive while download runs in background
-    - [ ] In the common case (WiFi, normal onboarding pace), model is fully downloaded before user reaches Screen 8
-    - [ ] If download is not yet complete at Screen 8, user sees a brief "almost ready" indicator (not the old full progress bar overlay)
-    - [ ] No crash or blocked navigation if user reaches Screen 8 before download completes
-  - **Known tradeoff:** Users who abandon onboarding on Screen 1-2 (Scenario 3, <1 min) will have partially/fully downloaded 74MB with no benefit. Accepted as reasonable cost for a smoother first-capture experience.
-  - **Estimated effort:** S (4-6 hours — mostly moving an existing trigger point, not new logic)
-  - **Dependencies:** None (WhisperKit integration already exists per March 14, 2026 session)
-  - **Priority:** 🟡 MEDIUM (UX polish, not launch-blocking)
-  - **Raised:** July 3, 2026 session (P0 Comment #4)
+    - [ ] Model is fully functional immediately on first launch with no network connection at all
+    - [ ] No download-progress UI exists anywhere in the onboarding flow
+    - [ ] Bundled model version matches the WhisperKit package version exactly (no format mismatch)
+    - [ ] Model asset is not present as a binary blob in git history (LFS or fetch-script only)
+    - [ ] License check documented before shipping
+  - **Estimated effort:** M (10-14 hours — larger than the original relocation-only scope; includes de-integrating the runtime downloader and removing the old progress UI)
+  - **Dependencies:** None (WhisperKit integration already exists)
+  - **Priority:** 🟡 MEDIUM (UX polish + simplification, not launch-blocking)
+  - **Raised:** July 3, 2026 session (P0 Comment #4); scope corrected July 6, 2026 (install-time bundling decision with Kell)
 
 - [ ] **T-098:** Third-Party IDP Sign-In for Returning Users (Sign in with Apple + Google) 🔲 **NOT STARTED**
   - **Purpose:** For a user who already has an account and signs out, enable sign-back-in via third-party identity providers (Apple, Google) instead of only email/password.
@@ -641,10 +644,28 @@
     - [ ] Existing 3 free entries remain fully viewable/editable after hitting the paywall, subscribed or not
     - [ ] Tested end-to-end via TestFlight (sandbox), zero real charges during beta
   - **Estimated effort:** L (20-28 hours — StoreKit 2 integration + server-side entitlement/count tracking + paywall UI)
+  - **⚠️ Clarified July 6, 2026 (Kell):** This is not a late/deferred item — the full StoreKit 2 subscription infrastructure should be **built and fully live before public launch**, not bolted on afterward. Beta/tester access is handled via **StoreKit's native Offer Codes** (redeemable codes granting free/discounted subscription periods) — testers get comp access through the real paywall, not a bypassed one. At public launch, this becomes a **config flip** (stop issuing/honoring beta offer codes) rather than a build event. This also confirms Apple's native IAP system is the right call regardless of preference — Apple requires it for digital subscription commerce, and it's also how Apple tracks what's owed to them.
+  - **Apple's commission (corrected):** Standard rate is **30% for a subscriber's first year, dropping to 15% after 12 months of continuous subscription** (Apple's long-standing subscription retention discount). However, Dwellable likely qualifies for the **App Store Small Business Program** (any developer/company earning under $1M/year in App Store proceeds) — that program gives a **flat 15% rate from day one**, no waiting for the 1-year mark. Recommend enrolling before the first paid transaction; enrollment is developer-account-level, not per-app, and is free.
   - **Dependencies:** T-063/T-064 (Prayer/Prompts flows), P4 Journal Creation, Supabase schema for capture-count tracking
   - **Priority:** 🔴 HIGH (defines the entire monetization model — needed before public launch, should be scoped early)
   - **Resolved:** Token-cost estimate is no longer a placeholder — see Rationale above for the real measured numbers (T-092 deliverable 8, LLM Testing Protocol, validated July 4-5, 2026 across 4 live runs). Full walkthrough in `docs/LLM_COST_CAPACITY_EXPLAINER.html` / `.pdf`. OpenAI tier advancement is triggered by cumulative money paid, not usage (Tier 1 = $5 paid, Tier 2 = $50 paid) — Tier 1 alone already covers the 1,000-user scenario, so funding $50 isn't needed near-term; it only buys headroom beyond ~1,666 loops/day combined demand. See T-106 (output token optimization) and T-107 (request queue/failover protocol + guardrails) for the engineering follow-ups this investigation surfaced, and T-108 (tiered prompts-per-capture cap) for the monetization-linked guardrail this raised.
   - **Raised:** July 3-4, 2026 session (P0 Comment #4 pricing discussion)
+
+- [ ] **T-117:** Enroll in the App Store Small Business Program (Kell — Business/Admin Action) 🔲 **NOT STARTED**
+  - **Purpose:** Standard Apple commission is 30% for a subscriber's first year, 15% after 12 months. The App Store Small Business Program gives a flat 15% from day one for developers earning under $1M/year in App Store proceeds — Dwellable qualifies as a new/pre-revenue developer.
+  - **Requirements:**
+    1. Active Apple Developer Program membership (already in place)
+    2. Enroll via App Store Connect (Business/Agreements section)
+    3. Attest to expected earnings under $1M/year (new-developer attestation, since no paid transactions have shipped yet)
+    4. Disclose any affiliated developer accounts (combined-earnings threshold applies across affiliated accounts, not per-account)
+    5. No fee to enroll (separate from the existing $99/yr membership)
+  - **⚠️ Timing matters:** the reduced 15% rate takes effect starting the first day of the calendar month **following** approval — not retroactive. Enroll well before T-099's paywall goes live, not after, to avoid losing months at the higher rate.
+  - **Acceptance Criteria:** Enrollment submitted and approved in App Store Connect before T-099 ships to production.
+  - **Estimated effort:** XS (~30 minutes — attestation/form only, no engineering)
+  - **Dependencies:** None (can be done anytime, independent of engineering work)
+  - **Priority:** 🟡 MEDIUM (no cost to do early, real cost to delay — every month enrolled late at 30% instead of 15% is lost margin)
+  - **Owner:** Kell (business/admin, not an engineering ticket)
+  - **Raised:** July 6, 2026 session (reviewing P0 financial costs)
 
 - [ ] **T-106:** Optimize LLM Output Token Usage (Prompts + Prayer/Closing Calls) 🔲 **NOT STARTED**
   - **Purpose:** Live testing (July 4, 2026) showed model output length varies significantly depending on whether explicit length constraints are given — unconstrained prompts (e.g. ad hoc playground testing) produced roughly 3x longer responses than prompts with explicit length instructions. Since output tokens are a major driver of total loop cost/capacity, tightening the 4 non-journal calls (3 Socratic prompts + closing/prayer) reduces tokens/loop and directly raises how many loops fit inside Groq's fixed daily/per-minute caps, without touching journal length (which should stay full — that's the actual product value, not waste).
@@ -702,6 +723,100 @@
   - **Priority:** 🟡 MEDIUM (product/pricing decision — should be resolved before beta pricing is finalized, not launch-blocking on its own)
   - **Open item:** Exact free vs. premium prompt-count numbers still need to be locked with Kell.
   - **Raised:** July 5, 2026 session (LLM cost/capacity guardrails discussion)
+
+### Pillar 0 — Onboarding Technical Tools Audit (July 5, 2026 session — resolves Comment #3)
+**Context:** P0 Comment #3 asked what technical tools/infrastructure onboarding actually needs to build. Audit cross-checked the locked 8-screen flow against the live codebase (`Dwellable/Views/`, `Dwellable/Managers/`) and the live Supabase schema — confirmed **none of the 8 onboarding screens exist in code yet** (only `LoginView.swift`, sign-in only). Full findings in Notion "Technical Tools Needed" (child of Pillar 0). Four new build tickets below; encryption gap already tracked as T-062.
+
+- [ ] **T-109:** Implement Supabase Self-Service Sign-Up (`AuthManager.signUp()`) 🔲 **NOT STARTED**
+  - **Purpose:** `ARCHITECTURE.md` documents "pre-provisioned accounts; no self-signup" (a Phase 1 decision). Screen 5 requires real self-service account creation. `SupabaseAPIClient.swift` has `login()` but no `signUp()`.
+  - **Deliverables:** Call Supabase Auth `POST /auth/v1/signup` (email + password) via new `SupabaseAPIClient.signUp()`; wire into `AuthManager.signUp()`; surface friendly server-side errors ("email already in use", network failure) with a retry path back to Screen 5 per the locked system design; update `ARCHITECTURE.md`'s "pre-provisioned accounts" line once shipped.
+  - **⚠️ Corrected July 5, 2026 (system-design error-state review):** Weak password is NOT a server-side error — it's caught client-side by T-110's `Form valid?` check (button stays disabled, no network call). This ticket's error handling is scoped to what Supabase's signup endpoint can actually return: duplicate email and network failure only.
+  - **Acceptance Criteria:** New user can create an account from Screen 5 without a pre-provisioned row; duplicate email shows friendly error with retry; network failure shows friendly error with retry; uses existing `sb_publishable_` key (no new credentials).
+  - **Estimated effort:** S-M (4-8 hours)
+  - **Dependencies:** None
+  - **Priority:** 🔴 HIGH (blocks Screen 5 — first onboarding build item)
+  - **Raised:** July 5, 2026 session (P0 Comment #3 — Technical Tools audit)
+
+- [ ] **T-110:** Build 7 Onboarding SwiftUI Views + OnboardingCoordinator 🔲 **NOT STARTED**
+  - **Purpose:** No onboarding views exist. Needed: `WelcomeView`, `EducationView`, `IntentView`, `RhythmView`, `AccountView` (new — do not overload `LoginView`, which is sign-in only), `PrivacyView`, `NotificationPermissionView` (Screen 6.5), plus an `OnboardingCoordinatorView` (NavigationStack) sequencing screens 1→7 per the existing stack-only navigation pattern.
+  - **Deliverables:** 7 views matching copy from T-100–T-105 + Screen 6 (already locked); coordinator persists current screen position across app restarts (works with T-111's `current_onboarding_screen` pointer). `AccountView` (Screen 5) implements a client-side `Form valid?` check (8+ char password, Terms checkbox) that disables the Create Account button and never calls the network on failure — separate from T-109's server-side error handling (duplicate email / network failure), which needs its own retry UI back to the same screen with form data preserved.
+  - **Acceptance Criteria:** All 7 screens navigable in sequence; no skip links (per locked "all screens required" decision); quitting mid-flow and reopening resumes at the same screen; weak password / unchecked Terms blocks submission client-side with no network call; server-side signup errors (duplicate email, network failure) show a retry affordance without losing entered form data. **Added July 6, 2026:** all 7 views support VoiceOver (accessibility labels on every interactive element) and Dynamic Type (text scales without truncation/overlap) — cheap to build in now, expensive to retrofit later, and relevant to App Store review.
+  - **Estimated effort:** L (16-20 hours)
+  - **Dependencies:** T-109 (Account screen needs signUp), T-100–T-105 (copy), T-111 (persistence)
+  - **Priority:** 🔴 HIGH
+  - **Raised:** July 5, 2026 session (P0 Comment #3 — Technical Tools audit)
+
+- [ ] **T-111:** Build ProfileManager + Onboarding Data Schema Migration 🔲 **NOT STARTED**
+  - **Purpose:** Live Supabase `public.users` table has only `id`, `email`, `created_at`, `updated_at` — none of the onboarding data model exists. The Notion Pillar 0 page's ticket list labels this scope "T-061 (preference storage + ProfileManager, in progress)," but `TICKETS.md`'s actual T-061 is "Define Policy for Capturing Risk Content" — an unrelated ticket. This is a Notion/TICKETS.md numbering drift, not a real predecessor; T-111 is the first real ticket for this scope, formalized with the exact schema found missing during audit.
+  - **Deliverables:** Migration adding to `public.users` (or new `user_profiles` table): `spiritual_intent` (text[]/jsonb, Screen 3), `capture_rhythm` (text, Screen 4), `privacy_acknowledged` (boolean/timestamptz, Screen 6 — see note below), `notification_opt_in` (boolean, Screen 6.5), `onboarding_completed_at` (timestamptz, nullable — see note below), `current_onboarding_screen` (text/int, nullable — resume-position pointer covering Screens 1-8). New client-side `ProfileManager` (mirrors `AuthManager`/`SyncManager` pattern) writes locally first (offline-safe), syncs to Supabase on network return.
+  - **⚠️ Locked July 5, 2026 (corrected from original 5-field draft):** `onboarding_completed_at` is set **only once first capture succeeds** — not at Screen 7. There is no separate `first_capture_completed_at` field. Rationale (Kell): onboarding isn't done until the user has captured something; the mandatory Screen 8 capture is the final step of one continuous sequence, not a distinct milestone after "onboarding." A single `current_onboarding_screen` resume pointer (needed regardless, to resume mid-flow at Screen 3, 5, etc.) already covers "quit sitting on the capture screen, never recorded" as just another resume position — no second completion flag adds information. This also means the P0 success metrics ("first capture rate," "time to first capture") are fully answered by this one field: they're numerically identical to onboarding completion rate/time now, not a separate measurement.
+  - **⚠️ Added July 5, 2026 (system-design error-state review):** Screen 6 (Privacy) had no data-persistence field at all in the original draft — every other screen with a user decision (3, 4, 6.5) writes a field, but the privacy acknowledgment tap wrote nothing. Added `privacy_acknowledged` for legal/compliance traceability (ties to T-096's retention-policy work), same offline-tolerant write-then-sync pattern as the other fields — not a blocking network dependency.
+  - **Acceptance Criteria:** All 5 fields persist server-side (not just `UserDefaults`) — required because Pillar 8's notification engine (T-084/T-085) runs backend-triggered and must know `notification_opt_in` server-side.
+  - **Estimated effort:** M (8-12 hours)
+  - **Dependencies:** None
+  - **Priority:** 🔴 HIGH (blocks Screens 3, 4, 6.5, and the navigation gate in T-112)
+  - **Raised:** July 5, 2026 session (P0 Comment #3 — Technical Tools audit)
+
+- [ ] **T-112:** Build Navigation Gate (AppView.swift) — Auth, Sign-In Recovery, Mandatory First Capture 🔲 **NOT STARTED**
+  - **Purpose:** Screen 7/8's lock ("cannot bypass first capture," no skip, no back-button escape) doesn't exist as app logic. `AppView.swift` currently only branches on `isAuthenticated` (binary Login vs. Moments list) — it has no concept of onboarding progress, and no path for a returning-but-signed-out user to recognize their existing account.
+  - **Deliverables:** Replace the binary branch with three nested, sequential checks (not a flat 4-way branch — see July 5 diagram review):
+    1. **Authenticated?** (Keychain token present) → No → **2a. Already have an account?** (manual choice, since a missing token doesn't reliably mean "no account" — could be sign-out, reinstall, or new device) → No → Screen 1 (Welcome, fresh onboarding) | Yes → `LoginView` (existing sign-in) → on success, re-enter at check 3 below
+    2. Yes → **3. Onboarding complete?** (`onboarding_completed_at` nil — per T-111, this now includes first capture) → No → resume at `current_onboarding_screen` (may be any of Screens 1-8, including sitting on the mandatory capture screen) → Yes → normal app (Today/Journal/Settings)
+  - **Acceptance Criteria:** User cannot reach Today/Journal/Settings without a completed first capture; quitting mid-onboarding (including mid-capture-screen) resumes at the correct screen, not a restart or broken state; a signed-out user with an existing account is never forced through fresh onboarding.
+  - **Estimated effort:** M (8-10 hours)
+  - **Dependencies:** T-111 (fields to gate on), T-110 (screens to gate to), T-109 (LoginView already exists for sign-in; no new work needed there)
+  - **Priority:** 🔴 HIGH
+  - **Raised:** July 5, 2026 session (P0 Comment #3 — Technical Tools audit); gate logic corrected same session via FigJam system-design review with Kell (nested checks not flat branch; added sign-in recovery path; collapsed onboarding/capture into one flag)
+
+- [ ] **T-113:** Handle Dead Refresh Token — Force Sign-Out Instead of Silent Dead-End 🔲 **NOT STARTED**
+  - **Purpose:** Discovered while designing T-112's gate logic. `AuthManager.init()` treats "Keychain has a token" as "session valid" — it's optimistic, not verified (no expiry check, no round-trip at launch). `SupabaseAPIClient.makeRequest()` auto-refreshes once on a 401, but **if the refresh token itself is also dead, it throws `APIError.unauthorized` and nothing catches it** — `isAuthenticated` is never flipped back to `false` anywhere except an explicit user-initiated Sign Out (`AuthManager.signOut()`). Result: a user in this state stays flagged as authenticated forever, but every API call quietly fails — stuck on error/retry UI (T-004) with no path back to sign-in.
+  - **Deliverables:**
+    1. Catch `APIError.unauthorized` at the point(s) `refreshJWTToken()` fails inside `makeRequest()`
+    2. On unrecoverable 401 (refresh also failed), clear Keychain (`authToken`, `userId`, `userEmail`, `refreshToken`) and flip `isAuthenticated = false`, routing the user back to sign-in instead of a dead-end error state
+    3. **QA note, same root cause:** Keychain items here have no `kSecAttrAccessible`/`kSecAttrSynchronizable` override, so they use iOS's default device-local, non-iCloud-synced storage — which means **deleting and reinstalling the app on the same device does NOT clear the token** (standard iOS Keychain behavior, easy to assume otherwise). QA testing a "fresh install / logged-out" path must use a genuinely new device, an explicit sign-out, or a manual Keychain wipe — not just delete-and-reinstall — or the not-authenticated path silently never gets exercised.
+  - **Acceptance Criteria:**
+    - [ ] A dead refresh token results in the user landing back at sign-in, not a stuck error state
+    - [ ] Keychain is fully cleared when this happens (no orphaned partial state)
+    - [ ] Test plan for T-082 (device QA) documents that delete-and-reinstall does not simulate a logged-out state on the same device
+  - **Estimated effort:** S-M (4-6 hours)
+  - **Dependencies:** None (bug in existing `AuthManager`/`SupabaseAPIClient`, not new P0 build work)
+  - **Priority:** 🟡 MEDIUM (real gap, but only triggers on the specific dead-refresh-token edge case — not launch-blocking on its own, though worth fixing before T-112's gate ships since T-112 assumes "authenticated" is a trustworthy signal)
+  - **Raised:** July 5, 2026 session (surfaced while reviewing the P0 system design FigJam gate logic with Kell)
+
+- [ ] **T-114:** Test & Validate Token Persistence + Authentication Gate Across All Device/Session Scenarios 🔲 **NOT STARTED**
+  - **Purpose:** T-109 (self-signup), T-112 (nested gate), and T-113 (dead refresh token) each build one piece of the authentication story, but nothing explicitly validates the *combined* behavior end-to-end across every real device/session scenario. Walking through this with Kell (July 6, 2026) surfaced that "same device reinstall" and "new device" behave very differently and both need explicit test coverage, not just implicit correctness.
+  - **Deliverables — test matrix covering:**
+    1. **Same-device reinstall:** delete + reinstall app on the same physical device → Keychain token survives (standard iOS behavior, no `kSecAttrSynchronizable` override) → `Authenticated?` = Yes → auto-signed-in with zero action, lands on `Onboarding complete?` check correctly
+    2. **New device / factory reset:** no Keychain token present → `Authenticated?` = No → `Already have an account?` must be answered manually → "Yes" routes to `LoginView` and signs in with real credentials → "No" starts fresh onboarding
+    3. **Explicit sign-out:** confirms `AuthManager.signOut()` fully clears Keychain (`authToken`, `userId`, `userEmail`, `refreshToken`) and the next launch correctly shows `Authenticated?` = No
+    4. **Access token silent refresh:** short-lived JWT (~1hr Supabase default) expires mid-session → `makeRequest()`'s 401-triggered refresh succeeds invisibly → user never sees an interruption
+    5. **Refresh token expiry/revocation (T-113):** confirms the app correctly detects the unrecoverable case and routes back to sign-in rather than a silent dead-end
+    6. **Sign-in recovery → resume accuracy:** a signed-out user with an existing, partially-onboarded account signs back in and lands on the exact correct resume screen (`current_onboarding_screen`), never repeating completed screens
+  - **Acceptance Criteria:** All 6 scenarios above pass on real devices (not just simulator); test plan explicitly documents that scenario 1 requires a genuinely separate device or Keychain wipe to distinguish from scenario 2 (they look identical from a "fresh install" perspective otherwise).
+  - **Estimated effort:** S-M (6-8 hours — mostly device-time, not new code)
+  - **Dependencies:** T-109, T-111, T-112, T-113 all built first
+  - **Priority:** 🔴 HIGH (this is the trust foundation of the entire gate — an untested auth flow is worse than an untested feature, since it silently gates access to everything else)
+  - **Raised:** July 6, 2026 session (walking through the authentication/token design with Kell)
+
+- [ ] **T-115:** Add Signup Abuse Protection to Self-Service Sign-Up (T-109) 🔲 **NOT STARTED**
+  - **Purpose:** T-109 introduces something that didn't exist before — a public, open self-service signup endpoint. Under the old "pre-provisioned accounts" model, only Kell could create accounts, so mass-account abuse wasn't a real attack surface. `SupabaseAPIClient` already has a general rate limiter (100 req/min) and a `LoginAttemptTracker` for *login* attempts, but nothing addresses spam/scripted account creation on the *signup* endpoint specifically.
+  - **Deliverables:** Rate-limit signup attempts per-IP and/or per-device independent of the general API rate limiter; consider Supabase Auth's built-in signup rate limiting settings; evaluate whether CAPTCHA/attestation (e.g., Apple's App Attest) is warranted for MVP scale or is over-engineering; ensure error messages for rate-limited signups don't leak whether an email exists (avoid email enumeration).
+  - **Acceptance Criteria:** Scripted rapid-fire signup attempts are throttled distinctly from normal user behavior; error messaging doesn't enable email enumeration attacks.
+  - **Estimated effort:** S-M (6-8 hours)
+  - **Dependencies:** T-109
+  - **Priority:** 🔴 HIGH (new attack surface introduced by T-109; should ship alongside it, not after)
+  - **Raised:** July 6, 2026 session (reviewing what else P0 needs with Kell)
+
+- [ ] **T-116:** Build Onboarding Funnel Analytics Instrumentation 🔲 **NOT STARTED**
+  - **Purpose:** The Pillar 0 strategy doc locks specific success metrics (>90% reach Screen 7, >95% of completers create account, >80% record first moment, "identify which screens cause abandonment") but no ticket builds the instrumentation needed to actually measure them. T-018 (Phase 1 analytics) only tracks `app_opened`/`app_closed`/`moment_created` — nothing screen-by-screen for the new 8-screen flow.
+  - **Deliverables:** Per-screen funnel events (screen entered, screen completed/advanced, screen abandoned) for all 8 screens; event for the "Already have an account?" branch (new vs. returning split); event for sign-in-recovery usage; wire into existing `UsageTracker`/`usage_events` pattern (local-first, synced pattern already established).
+  - **Acceptance Criteria:** Can answer, from data, which screen has the highest drop-off; can compute actual completion rate and time-to-complete against the locked targets; new-vs-returning split is queryable.
+  - **Estimated effort:** M (8-12 hours)
+  - **Dependencies:** T-110 (screens must exist to instrument)
+  - **Priority:** 🟡 MEDIUM (not launch-blocking, but the locked success metrics are unmeasurable without it)
+  - **Raised:** July 6, 2026 session (reviewing what else P0 needs with Kell)
+
+**⚠️ Flagged dependency (not a new ticket — already tracked):** Screen 6's locked copy promises live behavior ("we temporarily decrypt your moments... then re-encrypt") but **T-062 (E2E Encryption) is still 🔲 Not Started and BLOCKING**. Moments are currently stored as plaintext in Supabase. Recommend sequencing T-062 before Screen 6 ships — shipping an untrue privacy promise is a trust risk for a privacy-differentiated product. Kell to decide: sequence T-062 first, or ship P0 screens 1–5/6.5–7 and gate Screen 6 specifically until encryption lands.
 
 ### Pillar 0 — Onboarding Screen Copy (July 4, 2026 session — resolves Comment #2)
 **Context:** The 8-screen P0 flow (Welcome → Education → Intent → Rhythm → Account → Privacy → Notification Permission → [P1] First Capture) has locked *structure* and *data decisions* for every screen, but only Screen 6 (Privacy) has fully drafted on-screen copy. The rest have placeholder descriptions only. Screen 2 (Education) was flagged as Comment #2 — locked direction (July 4): copy must be ✅-only (no negation framing) and built around the "We Translate Across Time" principle (`VISION.md`, `DWELLABLE_1PAGER.md`) rather than a feature checklist. Screens 1, 3, 4, 5, and 6.5 need the same copy-drafting treatment. Screen 8 (First Capture) belongs to Pillar 1 and is out of scope here.
