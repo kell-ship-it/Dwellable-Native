@@ -1,8 +1,8 @@
 # Dwellable Native — Full Ticket Registry
 
-**Last Updated:** July 9, 2026 (session close) — Reviewed the Pillar 3 (Soaking/Guided Prayer) Notion comments and processed the design questions they raised before building any FigJam board. **Paused Pillar 2** after recognizing (per Kell) that encryption is a cross-cutting layer that every data-capturing pillar must address (journal, prayer, settings — not just sign-in/capture), so P2 should be designed as a holistic security-layer audit *after* all experience pillars (P1–P8) are designed, not as a standalone pillar now. Verified P1 design is complete (FigJam + 9 scenarios + tools audit locked July 8; 6 impl tickets T-118–T-123 queued). Moved to P3: pulled all 4 Notion comments, and with Kell locked P3 MVP decisions — binary thumbs-up for prayer-resonance confirmation; MVP-light voice narration using **Voicebox** (voicebox.sh, free/open-source/local TTS + voice cloning, runs on-device, zero per-use cost) + royalty-free background music. Deferred crisis-protocol + chatbot-misuse guardrails + resource-links to a new **Pillar 6 ticket T-125** (full context captured). Added **T-124** (P3 voice narration, MVP-light via Voicebox). Created a scaffold P2 FigJam board (paused, not reviewed). **Next session objective:** Design the Pillar 3 (Soaking/Guided Prayer) system design in FigJam using `/figjam`, incorporating the locked MVP decisions (binary resonance, Voicebox voice narration) and flagging crisis-handling as T-125/Pillar-6.
+**Last Updated:** July 9, 2026 (session close, evening) — Built and corrected the Pillar 3 (Soaking/Guided Prayer) FigJam system design end-to-end, then locked T-119's token-budget allocation. **Scope corrections during board review (per Kell):** (1) MVP prayer-consumption experience is text-on-screen + background music only — voice narration descoped from T-124 to a new Post-MVP ticket **T-126**; (2) removed a "Re-Dwelling" lane that didn't belong in this pillar (capture is the only mandatory step; Today/Entries/Growth re-entry is a different pillar's scope); (3) merged the two remaining capture-trigger lanes (post-capture + organic) into one shared lane, since the prayer invitation is identical either way; (4) removed the "Prayer or Prompts" fork — MVP is prayer-only, Socratic reflection prompts moved to Post-MVP backlog; (5) added a mid-prayer exit path. Resolved 5 Kell comments directly on the board (renamed "Soaking"→"Prayer" throughout, scoped Rich Context to immediate-reflection-only for MVP, locked sequential prayer-then-journal-review ordering, corrected prayer length to 350 tokens, clarified prayer is stored WITH the journal entry). Reconciled **T-056 → T-118** (closed as duplicate, per Kell — this had already been settled verbally in a prior session but not yet reflected in this file). **Locked T-119**: split the ~4,700-token loop budget as Dwelly conversation ~2,500 (hard cap 3,000) / prayer ~1,250 (350-token output) / journal synthesis ~950 — flagged explicitly as a beta hypothesis to validate against real usage, not a permanent number. **Next session objective:** Begin Pillar 2 (Security & Encryption) as a cross-cutting holistic audit across P1–P8 now that all experience pillars through P3 are designed — OR continue pillar sequence with P4 (Journal Creation) FigJam board, Kell to confirm which.
 
-**Status:** 74/125 tickets complete (59%)*, 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0 and P1 complete, P2-P8 remain). Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth. T-099 pricing model backed by real, validated LLM cost/capacity numbers. Next session: Pillar 3 (Soaking/Guided Prayer) system design in FigJam. *(denominator grows as new tickets are created from audits — T-124 and T-125 added this session)*
+**Status:** 75/126 tickets complete (60%)*, 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0 and P1 complete, P2-P8 remain). Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth. T-099 pricing model backed by real, validated LLM cost/capacity numbers; T-119 token-budget split locked as beta hypothesis. Pillar 3 (Soaking/Prayer) FigJam system design complete and reviewed. Next session: Pillar 2 (Security/Encryption cross-cutting audit) or Pillar 4 (Journal Creation) FigJam — TBD with Kell. *(denominator grows as new tickets are created from audits — T-126 added this session; T-056 closed as duplicate of T-118)*
 
 **July 9, 2026 session:** Reviewed Pillar 3 (Soaking/Guided Prayer) Notion comments (4 comments across 2 discussion threads) and processed each with Kell before designing. **Key scope correction:** paused Pillar 2 (Security & Encryption) FigJam work — encryption is a cross-cutting layer that must be shown across *every* data-capturing pillar (journal entries, prayer responses, settings — not just the sign-in/capture flows the scaffold P2 board showed), so P2 is better designed as a holistic security-layer audit after P1–P8 experience pillars are designed. Verified P1 design complete. Moved to P3 and locked MVP decisions: (1) **prayer-resonance confirmation = binary thumbs-up** (explicit positive affirmation post-prayer, resolving Comment #1's "confirm it resonated" ask); (2) **voice narration in MVP-light form** via **Voicebox** (voicebox.sh — open-source, 39.8k-star, 1.5M downloads, runs entirely local/on-device, free voice cloning + 7 TTS engines, a free ElevenLabs alternative) + royalty-free background music, zero per-use cost (resolving Comment #4's token-cost concern — moved from Post-MVP toward MVP once a free/local tool was found); (3) **crisis protocol, chatbot-misuse guardrails, and resource-links deferred to Pillar 6 as new ticket T-125** with full context captured (Comments #2 and #3 — Kell's framing: allow free expression like Google Docs never halting a user, but respond well for legal-safety + genuine help; also research OpenAI Moderation API vs. Anthropic Constitutional AI built-in safety and consider parity). Added **T-124** (P3 voice narration, MVP-light via Voicebox). Created a scaffold P2 FigJam board (https://www.figma.com/board/6fwsiWYheAT5lVzgbXUh9C) but paused/did not review it. **T-119 token cap still unresolved:** reconfirmed the full loop budget is ~4,700 tokens (Dwelly conversation + prayer + journal synthesis combined) per the validated July 4-5 benchmark; the exact allocation/split across those three stages is documented in Pillar 0 + the LLM cost explainer and still needs to be pulled forward and locked (agent had erroneously proposed an unsupported 1,500 figure, corrected).
 
@@ -827,7 +827,7 @@
 
 - [ ] **T-118:** Research & improve on-device transcription accuracy (WhisperKit tuning) 🔲 **NOT STARTED**
   - **Purpose:** WhisperKit currently produces two known accuracy issues flagged during P1 FigJam review: (1) blank-space/dropped-word gaps in transcripts, (2) hallucinated non-speech captions (e.g., "[Applause]", "[Music]") on silence or background noise — a known Whisper-family artifact inherited from training data, not a WhisperKit-specific bug.
-  - **⚠️ Possible duplicate:** a pre-existing ticket, **T-056 "Improve WhisperKit handling for long pauses and applause,"** appears to cover substantially the same scope. Reconcile before starting implementation — merge or clarify the distinction.
+  - **Reconciled ✅:** T-056 ("Improve WhisperKit handling for long pauses and applause") covered the same scope — closed as a duplicate, pointing here.
   - **Chosen approach (locked July 8, 2026 — implement these two first):**
     1. **Tune decoding thresholds** in `TranscriptionManager.swift`'s `DecodingOptions(...)` call: `suppressBlank: true` (currently implicit `false`), `compressionRatioThreshold: 2.2` (default 2.4), `logProbThreshold: -0.8` (default -1.0), `noSpeechThreshold: 0.5` (default 0.6) — all stricter than WhisperKit's defaults to suppress low-confidence/hallucinated segments. Values verified against the exact pinned WhisperKit `v0.17.0` source on GitHub (`Sources/WhisperKit/Core/Configurations.swift`).
     2. **Enable VAD-based chunking**: add `chunkingStrategy: .vad` to the same `DecodingOptions` call. This routes through WhisperKit's built-in `EnergyVAD` (`voiceActivityDetector ?? EnergyVAD()` in `WhisperKit.swift`), chunking audio at voice-activity boundaries instead of fixed-time windows — directly reduces the case where a window lands entirely on silence and the model hallucinates a caption for it.
@@ -840,16 +840,23 @@
   - **Raised:** July 8, 2026 session (P1 FigJam system design review, comment #2)
   - **Note:** a threshold-tuning code change was drafted and then explicitly reverted this session per Kell's direction ("just add it as a ticket... I'm not saying you need to rebuild it now") — this ticket is documentation-only, no code shipped.
 
-- [ ] **T-119:** Define & implement token-cost cap for Dwelly conversation loop 🔲 **NOT STARTED**
+- [ ] **T-119:** Define & implement token-cost cap for Dwelly conversation loop 🔲 **NOT STARTED (allocation LOCKED — hypothesis, test in beta)**
   - **Purpose:** The Dwelly Agent conversational loop in P1 (user responds → Dwelly may respond → repeat) was originally capped by a simple "3 prompts" count, but Kell flagged that count alone undercounts true cost risk — a single long user response can consume more input tokens than several short prompt rounds combined.
+  - **Locked allocation (July 9, 2026 session):** The ~4,705-token/6-call benchmark in `LLM_COST_CAPACITY_EXPLAINER.html` was only ever an *aggregate* — no per-stage split existed prior to this session. Split the ~4,700-token full-loop budget across the three LLM-consuming stages as follows (**a launch hypothesis to validate in beta, not a permanent number**):
+    | Stage | Token budget | Share | Notes |
+    |---|---|---|---|
+    | Dwelly conversation (up to 3 turns) | **~2,500** (hard cap: **3,000**) | 53% | Biggest input driver — full conversation history re-sent each turn, cost compounds. Cap set above the average (not at it) since this is the one variable-length stage. |
+    | Prayer generation (1 call) | ~1,250 (output capped at **350 tokens**, per the P3 FigJam lock) | 27% | Input = full conversation; output is fixed/bounded |
+    | Journal synthesis (1 call) | ~950 | 20% | Input = conversation + prayer; output is small (4-6 word title + 2-3 paragraph body) |
   - **Deliverables:**
     1. Replace the prompt-count cap with a token-cost cap: sum input + output tokens across the full conversation (all rounds so far)
-    2. Once the cap is exceeded, end the engagement and route the user to Review/Journal creation, regardless of how many prompt rounds occurred
-    3. Lock the exact token limit number using real Groq Llama 3 70B / GPT-4o mini pricing data (number is TBD as of this ticket — Kell has not yet landed on it)
+    2. Enforce the **3,000-token hard cap specifically on the Dwelly loop** — once exceeded, end the engagement and route the user to Review/Journal creation, regardless of how many prompt rounds occurred
+    3. Prayer (350-token output cap) and journal synthesis run as their own downstream calls after the loop ends — not counted against the Dwelly cap
+  - **Validation plan:** Ship this split as the beta hypothesis; instrument per-stage token usage (T-088-style analytics) so actual usage can be compared against the ~2,500/1,250/950 allocation and adjusted post-beta if real usage skews differently.
   - **Dependencies:** T-093 (LLM cost/capacity validation), T-099 (paywall/pricing model — 3 free journals, paywall on 4th capture); this ticket directly extends that pricing work into the mid-conversation cost-control mechanism
   - **Estimated effort:** M (requires token-counting integration + real cost modeling, not just a UI-level counter)
   - **Priority:** 🔴 HIGH (cost control; blocks finalizing the P1 capture conversational flow)
-  - **Raised:** July 8, 2026 session (P1 FigJam system design review, comment #3)
+  - **Raised:** July 8, 2026 session (P1 FigJam system design review, comment #3); allocation locked July 9, 2026 session
 
 - [ ] **T-120:** Build Dwelly Agent conversational loop (LLM integration) 🔲 **NOT STARTED**
   - **Purpose:** The "3a) User ends engagement, or 3b) Dwelly Agent responds?" decision and the resulting multi-turn conversation designed on the P1 FigJam board has no corresponding code — this is the core new mechanic of the P1 system design.
@@ -901,19 +908,28 @@
 ### Pillar 3 (Soaking / Guided Prayer) — Comment Review Follow-ups (July 9, 2026 Session)
 **Context:** Reviewed the 4 Notion comments on the Pillar 3 page (2 discussion threads) with Kell before designing the P3 FigJam system design. Locked MVP decisions this session: prayer-resonance confirmation = **binary thumbs-up**; voice narration moves toward **MVP** (from Post-MVP) once a free/local tool (Voicebox) was identified; crisis-handling / chatbot-misuse guardrails / resource-links deferred to Pillar 6 (T-125). The P3 FigJam board itself was NOT yet built — that is next session's objective.
 
-- [ ] **T-124:** Prayer Voice Narration (MVP-Light) — Voicebox + Background Music 🔲 **NOT STARTED**
-  - **Purpose:** Resolves the Pillar 3 Notion comment (Discussion #2) asking whether prayer audio narration could move into MVP and what the token/cost impact would be. Original strategy doc marked "Voice + Background Music that reads prayer to user" as **Post-MVP**. Kell's direction (July 9): pull toward MVP *if* it can be done completely free — which it can, via a local open-source tool.
+- [ ] **T-124:** Prayer Reading Experience (MVP) — On-Screen Text + Background Music 🔲 **NOT STARTED**
+  - **Purpose:** Resolves the Pillar 3 Notion comment (Discussion #2) asking about the prayer-consumption experience. **Scope correction (July 9, 2026, later in session):** Kell paused the Voicebox voice-narration idea to avoid being blocked on unresolved tool research. **MVP is now text-on-screen + royalty-free background music only** — the user reads their prayer at their own pace while music plays underneath. No TTS/voice narration in MVP.
   - **Locked approach (July 9, 2026):**
-    1. **Voicebox** (https://voicebox.sh — open-source AI voice studio, ~39.8k GitHub stars, 1.5M+ downloads, macOS/Windows/Linux) as the narration engine. Runs **entirely on-device/locally**, free voice cloning + 7 TTS engines, positioned as a free local alternative to ElevenLabs/WisprFlow. **Zero per-use API cost** — this is the key unlock that moved narration from Post-MVP to MVP.
-    2. **Two default voices** (one male, one woman) per Kell's comment — not per-user custom voices for MVP.
-    3. **Same royalty-free background music** for every prayer (single track for MVP, not tone-varied).
-    4. Generate narration once per prayer and **cache** it, so there is no repeated generation cost.
-  - **UX still to lock (design in P3 FigJam session):** whether narration auto-plays vs. play-button; whether there's also a "read it yourself with a timed music bed (e.g. ~60s)" silent-reading option in parallel with narrated option; how long the music sustains (fixed timer vs. loop vs. fade). Kell floated: (a) narrated voice + music, or (b) music-only + user reads silently on a timer — possibly offer both.
-  - **Open items to research:** confirm Voicebox licensing permits bundling/redistribution or on-device use inside a shipped iOS app (it targets desktop OSes — verify iOS feasibility, since Dwellable is native iOS; if Voicebox itself can't run on iOS, fall back to iOS-native `AVSpeechSynthesizer` which is also free/on-device, or pre-generate narration server-side/at-build-time with Voicebox and ship audio files); pick the royalty-free music track + confirm its license.
-  - **Dependencies:** Prayer generation (P3 core) must exist to have text to narrate; coordinate with T-119 token budget (narration itself is non-LLM/local so it does not consume the 4,700-token loop budget).
-  - **Estimated effort:** M (tool integration + caching + UX for play/timed-reading + music licensing)
+    1. Prayer text displayed on screen (already the P3 core output — no new generation work)
+    2. Single royalty-free background music track plays while the user reads (loop or fade; exact duration/timer behavior to be finalized in the P3 FigJam session)
+    3. No auto-advance, no narration — user controls their own pace, taps through when done
+  - **Dependencies:** Prayer generation (P3 core) must exist to have text to display; pick the royalty-free music track + confirm its license.
+  - **Estimated effort:** S (music playback + simple UI; no TTS integration)
   - **Priority:** 🟡 MEDIUM (enriches P3 MVP experience; not launch-blocking for the core prayer text)
-  - **Raised:** July 9, 2026 session (P3 comment review, Discussion #2 — voice narration cost question)
+  - **Raised:** July 9, 2026 session (P3 comment review, Discussion #2); descoped from voice narration same session per Kell
+
+- [ ] **T-126:** Prayer Voice Narration (Post-MVP) — Voicebox + Background Music 🔲 **NOT STARTED (POST-MVP)**
+  - **Purpose:** Adds spoken narration of the prayer on top of the T-124 text + music experience. Explicitly deferred out of MVP on July 9, 2026 — Kell does not want unresolved Voicebox/TTS research to block Pillar 3 shipping, and wants to learn more about the tooling before committing.
+  - **Candidate approach (not locked, subject to further research):**
+    1. **Voicebox** (https://voicebox.sh — open-source AI voice studio, ~39.8k GitHub stars, 1.5M+ downloads, macOS/Windows/Linux) as the narration engine. Runs entirely on-device/locally, free voice cloning + 7 TTS engines, zero per-use API cost.
+    2. Two default voices (one male, one woman) — not per-user custom voices.
+    3. Generate narration once per prayer and cache it, so there is no repeated generation cost.
+  - **Open items to research before this ticket can be locked:** confirm Voicebox licensing permits bundling/redistribution or on-device use inside a shipped iOS app (it targets desktop OSes — verify iOS feasibility; if Voicebox can't run on iOS, fall back to iOS-native `AVSpeechSynthesizer`, or pre-generate narration server-side/at-build-time with Voicebox and ship audio files); whether narration auto-plays vs. play-button; whether a "read it yourself" silent option remains alongside narration.
+  - **Dependencies:** T-124 (text + music MVP) must ship first; coordinate with T-119 token budget (narration itself is non-LLM/local so it does not consume the 4,700-token loop budget).
+  - **Estimated effort:** M (tool integration + caching + UX for play/timed-reading + music licensing + iOS feasibility research)
+  - **Priority:** ⚪ POST-MVP (deferred by Kell to avoid blocking P3 on unresolved tooling research)
+  - **Raised:** July 9, 2026 session (P3 comment review, Discussion #2); descoped from MVP same session
 
 - [ ] **T-125:** Crisis Protocol, Chatbot-Misuse Guardrails & Resource-Link Strategy (Pillar 6) 🔲 **NOT STARTED**
   - **Purpose:** Consolidates three related guardrail questions raised in the Pillar 3 Notion comments (Discussion #1, Comments #2 and #3) that Kell explicitly reassigned to **Pillar 6 (Formation Intelligence)** because they concern cross-cutting AI behavior, not the prayer experience itself. Bundled here so they're designed together as one coherent guardrail layer.
@@ -1333,16 +1349,9 @@
     - [ ] T-065: Add privacy guarantee messaging to onboarding + settings
 
 ### Voice — WhisperKit Improvements
-- [ ] **T-056:** Improve WhisperKit handling for long pauses and applause
-  - **Priority:** MEDIUM (Phase 2 quality improvement)
-  - **Description:** WhisperKit incorrectly transcribes or mishandles audio with long pauses, silence sections, or applause (environmental noise)
-  - **Current behavior:** Treats pauses as content, includes applause noise in transcription
-  - **Expected behavior:**
-    - Long pauses (>3 seconds) should be filtered/ignored or user warned
-    - Applause/environmental noise should be detected and either removed or user alerted
-    - Only preserve intentional speech content
-  - **Affects:** Users capturing moments in environments with background noise or when they pause while speaking
-  - **Phase:** 2 (Robustness)
+- [x] **T-056:** Improve WhisperKit handling for long pauses and applause — **CLOSED, DUPLICATE ✅**
+  - **Resolution:** Reconciled into **T-118** (Research & improve on-device transcription accuracy) — same scope (blank/pause handling + applause/non-speech hallucination), same fix (decoding threshold tuning + VAD chunking). See T-118 in the Pillar 1 section for the locked implementation approach.
+  - **Reconciled:** Prior session (per Kell)
   - **Estimated effort:** 4-6 hours
   - **Found during:** Phase 1 testing — users reported transcriptions including unwanted audio
 
