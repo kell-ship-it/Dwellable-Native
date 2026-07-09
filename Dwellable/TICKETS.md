@@ -526,10 +526,13 @@
          - AC follow journey progression (Screen 1→7) matching the locked 7-screen flow (Welcome→Education→Intent→Rhythm→Account→Privacy→Notification Permission)
          - P0/P1 boundary explicitly locked: P0 ends at Screen 7 (Notification Permission); Screen 8 (First Capture) + all capture mechanics belong to P1
          - Notion page: "P0 User Scenarios & Acceptance Criteria - UPDATED (7-Screen Flow)"
-       - 🔲 **P1-P8:** Same structure (one doc per pillar) — NEXT UP, start with P1 (Capture)
+       - ✅ **P1 (Capture): COMPLETE** — 9 scenarios + AC in Notion ("P1 User Scenarios & Acceptance Criteria"), plus "Technical Tools Needed" audit (built July 8, 2026)
+       - ✅ **P3 (Soaking/Prayer): COMPLETE** — 9 scenarios + AC in Notion ("P3 User Scenarios & Acceptance Criteria"), plus "Technical Tools Needed" audit (built July 9, 2026). **Audit surfaced two real cross-pillar blockers:** P3's context load has nothing to read until P1 ships archetype inference; PrayerArtifact's encrypted storage is hard-blocked on T-062, and its journal-embedding is soft-blocked on P4's (also not-yet-built) JournalEntry model.
+       - 🔲 **P2, P4-P8:** Same structure (one doc per pillar) — NEXT UP. P2 skipped for now per the cross-cutting-audit reframe (design after P1–P8); P4 (Journal Creation) is the natural next pillar since P3 hands off directly into it.
        - Flow specs, tool audit, and cost calculation emerge from scenarios
        - **July 2 prep work:** Finalized P0 design decisions (account creation timing, privacy language). Updated P1 with two-journey documentation (mandatory first capture vs optional ongoing). Established Notion safety protocols.
        - **July 3 session:** Built full P0 scenario set through iterative refinement — corrected screen flow to match actual locked Notion design (not stale docs), established P0/P1 capture boundary, added missing edge cases (abandonment variants, selection combos, account errors) after user review.
+       - **July 9 session (evening):** Built P3 scenario set (9 scenarios) covering trigger-parity (post-capture vs. organic), decline/exit/skip-resonance paths, and 4 MVP-scope-boundary verification scenarios (no voice narration, immediate-reflection-only context, 350-token prayer cap, journal-embedded storage). Technical Tools Needed audit confirmed zero existing P3 code and surfaced the archetype-inference and T-062/JournalEntry cross-pillar dependencies above.
     5. 🔲 Cost review ticket (T-093) — Pre-infrastructure audit validation per pillar
     6. 🔲 Infrastructure readiness (Supabase, E2E encryption T-062, Rich Context system) — DEFERRED to post-infra-audit
     7. 🔲 Beta cohort recruitment strategy (how many users? which segment first?) — DEFERRED
