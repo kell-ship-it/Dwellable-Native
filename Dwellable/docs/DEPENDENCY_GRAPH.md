@@ -1,7 +1,7 @@
 # Pillar Dependency Graph — Phase 2 Implementation Sequencing
 
 **Status:** Locked for T-092 Phase 2 Launch Readiness  
-**Last Updated:** July 9, 2026 (reconciled with P1/P3 Technical Tools Needed audits — see §0)
+**Last Updated:** July 9, 2026 (reconciled with P1/P3/P4 Technical Tools Needed audits — see §0)
 
 ---
 
@@ -22,6 +22,18 @@ This graph was last substantively updated May 14, 2026 and predates several deci
 4. **New cross-pillar blocker discovered: PrayerArtifact storage → T-062 (hard) + P4 JournalEntry model (soft).** This session locked that prayer artifacts must be **stored with the journal entry**, not merely linked to the moment. Two consequences not previously captured here: **(a)** PrayerArtifact cannot ship encrypted-at-rest until T-062 lands (hard blocker — same relationship P0's Screen 6 privacy copy already depends on), and **(b)** the journal-embedding relationship depends on P4's JournalEntry model existing, which — per the P3 audit's codebase search — **does not exist in code yet either**, despite P4's PRD status reading "Design Complete, Implementation Ready." Recommend P3 ship with `journalEntryId`/resonance fields nullable/stubbed until both land, rather than blocking P3 engineering entirely on P4 completing first.
 
 5. **P3 MVP scope corrections not yet reflected below:** §5's "P3 (Soaking) — guided prayer only (no open-ended prompts MVP)" is **still accurate** — the July 9 FigJam session confirmed prayer-only for MVP and moved the "Prompts" (Socratic reflection) alternative to Post-MVP backlog, consistent with what this doc already assumed. No correction needed there.
+
+**Corrections/additions from the P4 (July 9, same evening) audit:**
+
+6. **T-062 confirmed to have zero code anywhere — now the single highest-leverage blocking ticket.** The P4 audit's codebase search (CryptoKit/AES/Argon2id patterns) returned zero matches, same as P3's. T-062 isn't just unstarted — there's no partial scaffolding on either side. It hard-blocks **both** P3's PrayerArtifact encrypted storage and P4's JournalEntry encrypted storage. Recommend T-062 be sequenced *before* either pillar's full implementation, not in parallel with them as §7's original build order assumed.
+
+7. **Three pillars now share an identical unbuilt dependency: LLM infrastructure.** P1 (Dwelly Agent loop, T-120), P3 (PrayerGenerationManager), and P4 (JournalSynthesisManager) all need the same Groq Llama 3.3 70B → GPT-4o mini calling pattern via Vercel AI SDK. None of the three have built it yet. Recommend whichever pillar's engineering starts first builds one shared, reusable LLM-calling service — not three independent implementations. This wasn't visible as a shared risk until three separate audits converged on the same gap.
+
+8. **P4's Mood and Object pickers likely share one UI component.** Both are "N presets + 1 custom" selection patterns (Mood: 8 preset + inferred/overridable; Object: 6 preset + fully user-chosen, not inferred). Worth building one generic preset+custom picker component and reusing it, rather than two bespoke UIs.
+
+9. **New cross-pillar dependency: P4's prayer-embedding logic is a pure consumer of P3's resonance signal.** P4 does not independently decide whether to show "🙏 You prayed over this" — it reads P3's `resonance` field directly (not the `userEngaged`/"Prayed" field — see P3 Scenario 5 / P4 Scenario 3). This is a one-way, read-only dependency: P4 cannot be fully tested until P3's resonance field's exact shape is finalized, but P4 has no logic of its own to build here beyond the boolean check.
+
+10. **P4's synthesis error fallback is an open product decision, not an engineering gap.** Per `P4_SUMMARY.html`'s own open questions list, whether a failed synthesis falls back to Entry-only, retries, or requires manual entry has never been decided. Flagged (not silently resolved) in P4's User Scenarios Scenario 4 — needs Kell's input before that scenario's acceptance criteria can be completed.
 
 ---
 
@@ -322,6 +334,9 @@ WEEK 15–16:  P5 (Search) ═════════════════�
 | **Theme detection accuracy low** | P7 themes impact P8 notifications; if inaccurate, users will disable notifications | ML/Backend owner |
 | **NEW (July 9): P1 archetype inference not built, blocks P3 context** | P1 must ship archetype inference (Jotter/Venter/Processor passive detection) before P3's Load Context step can be contextually complete — currently no code exists for this in either pillar | iOS/Backend engineer (P1 owner) |
 | **NEW (July 9): PrayerArtifact storage blocked on T-062 + P4 JournalEntry model** | P3's "store prayer WITH journal" requirement needs both T-062 (encryption) and P4's JournalEntry model to exist. Recommend P3 ships with nullable/stubbed `journalEntryId` field until both land, rather than hard-blocking P3 engineering | Backend engineer (P3/P4 owners) |
+| **NEW (July 9, P4 audit): T-062 confirmed zero code anywhere — top-priority blocker** | Codebase search found no CryptoKit/AES/Argon2id usage at all. T-062 now blocks both P3 and P4's encrypted storage simultaneously. Recommend sequencing T-062 ahead of both pillars' full implementation, not parallel to them | Crypto engineer |
+| **NEW (July 9, P4 audit): three pillars (P1, P3, P4) each need identical unbuilt LLM infra** | P1's Dwelly loop, P3's PrayerGenerationManager, P4's JournalSynthesisManager all require the same Groq→GPT-4o mini calling pattern. Build one shared service once, reuse across all three, rather than three independent implementations | Backend/LLM owner (whichever pillar starts engineering first) |
+| **NEW (July 9, P4 audit): synthesis error fallback undecided** | P4_SUMMARY.html's open question (Entry-only? retry? manual entry?) has never been locked. Blocks completing P4 Scenario 4's acceptance criteria until Kell decides | Kell (product decision, not engineering) |
 
 ---
 
