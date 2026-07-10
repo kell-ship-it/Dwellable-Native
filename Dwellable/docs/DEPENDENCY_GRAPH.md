@@ -1,7 +1,7 @@
 # Pillar Dependency Graph — Phase 2 Implementation Sequencing
 
 **Status:** Locked for T-092 Phase 2 Launch Readiness  
-**Last Updated:** July 9, 2026 (reconciled with P1/P3/P4 Technical Tools Needed audits — see §0)
+**Last Updated:** July 10, 2026 (reconciled with P1/P3/P4/P5 Technical Tools Needed audits — see §0)
 
 ---
 
@@ -36,6 +36,22 @@ This graph was last substantively updated May 14, 2026 and predates several deci
 10. **P4's synthesis error fallback is an open product decision, not an engineering gap.** Per `P4_SUMMARY.html`'s own open questions list, whether a failed synthesis falls back to Entry-only, retries, or requires manual entry has never been decided. Flagged (not silently resolved) in P4's User Scenarios Scenario 4 — needs Kell's input before that scenario's acceptance criteria can be completed.
 
 11. **New shared requirement: density-tiered AI generation (T-127), spanning Captures/Prayer/Journal/future Notifications.** Discovered while resolving P4's "Empty Capture Handling" open question. Reference case: a one-word reflection in the Untold app still produced a specific, personalized title + contextual response — not padded/generic filler. **Locked principle: input depth should scale output depth; sparse reflections get short, honest synthesis, never invented content to hit a fixed length.** This reuses the existing **Reflective Density Model (L1–L8)** from `FORMATION_INTELLIGENCE_STRATEGY.md` §III — already the intended shared taxonomy across P0–P8, now confirmed as required by P1 (Dwelly depth-escalation), P3 (prayer tone/length), P4 (journal synthesis size), and eventually P8 (notification personalization). **Real blocker:** L1–L8 density *detection* is not implemented in code anywhere — this is now a fourth pillar's worth of unbuilt dependency stacking on the same missing piece of infrastructure (P1's Dwelly loop, P3's context loading, and now P4's synthesis sizing all need it). A simpler word-count-based 2-tier stopgap was considered and explicitly rejected by Kell (length ≠ depth — risks treating short-but-weighty reflections and long-but-shallow ones backwards). See T-127.
+
+**Corrections/additions from the P5 (July 10, 2026) audit — system design restructured to a two-screen model this session:**
+
+12. **P5 is not one monolithic dependency on P4 — it splits into two screens with very different dependency depths.** Screen 1 (default Entries tab — Untold-style calendar + that month's entries) only needs P1's moments to exist (`dateCreated` for grouping/sort) — **no encryption, no journals, no P3/P4 data required.** It could ship independently of P4, much earlier than the current build order assumes. Screen 2 (dedicated Search page — keyword + Mood/Object/Prayed filter shortcuts) is the piece that actually depends on P4 (JournalEntry model, Mood/Object taxonomy) and P3 (resonance field) and T-062 (encrypted index). **Recommend Kell weigh in on whether Screen 1 should be pulled forward in the build order** given how cheap its dependency footprint is relative to Screen 2 — not changed here without that call.
+
+13. **New cross-pillar dependency: P5's Prayed filter → P3's resonance field, directly.** The original graph only listed P5 depending on "P4, P1" — it did not capture that Screen 2's Prayed filter reads P3's `resonance` boolean directly (the same field P4 already consumes for prayer-embedding, per §0.9). This is a direct read-only dependency on P3, not merely an indirect one inherited through P4.
+
+14. **T-062 now confirmed to block a third pillar: P5's encrypted SearchableContent index.** P5's `encryptedIndex` field cannot be built until T-062 ships — same relationship already confirmed for P3's PrayerArtifact and P4's JournalEntry (§0.6). T-062's blocking radius is now three pillars' worth of encrypted storage, not two, reinforcing the existing recommendation to sequence T-062 ahead of P3/P4/P5's full implementation rather than in parallel.
+
+15. **P5's Filter UI has a sequencing dependency on P4 actually building Mood/Object as a *reusable* component, not merely on P4 shipping data.** P4's own audit already recommended one generic preset+custom picker shared across Mood and Object (§0.8). P5's Screen 2 depends specifically on that recommendation being followed — if P4 builds two bespoke, non-reusable pickers instead, P5 either duplicates that UI work from scratch or blocks on a P4 refactor first.
+
+16. **Two P5 decisions reduced dependency surface rather than adding to it.** Date range filter was removed this session (redundant with Screen 1's calendar, so no separate date-range engineering work exists to depend on). Pinned was paused (removed from the `SearchableContent` model and Screen 2's filter set, so no `isPinned` cross-model placement decision blocks P5 for now — that decision is simply deferred, not resolved).
+
+17. **"Ask a Question" (Post-MVP, LLM-powered natural-language querying) will depend on whatever LLM infrastructure P7 (Formation Intelligence) eventually builds.** Flagged here for future tracking only — explicitly out of scope for P5's MVP, not yet an active dependency.
+
+18. **RESOLVED (July 10, 2026, same session): Kell decided on §0.12's open question — both P5 screens are now MVP.** (a) **Screen 1 is not separate work** — it's folded directly into **T-078** (P6's "Wire Entries tab to full moments list + filters" ticket), which was already MVP-critical. T-078's spec is corrected below (§7) to the real locked design: Untold-style calendar + that month's entries, tap-a-day to filter — replacing its previous vague "Date range, prayer-tagged, prompt-engaged, soaking-depth" filter list, which predates P3/P4/P5's actual locked designs. (b) **Screen 2 is elevated from Post-MVP to a full MVP feature** — new ticket **T-128** (§7). Since its real blockers (P3, P4, T-062) all resolve by the time P4 finishes, it runs *parallel* to P6/Today/Growth (§4, §6) rather than extending the critical path — MVP timeline is unaffected. (c) **T-062's schedule position doesn't actually need to change** — on inspection, §4/§7 already had it starting parallel to P0 (right after Auth), which is correctly early. The real correction is *urgency of execution*, not timing: it's still 🔲 Not Started with zero code despite being scheduled first, and its blocking radius has grown to three pillars (P3, P4, P5) — treat it as the single most time-sensitive engineering task in this graph, not just a well-scheduled one.
 
 ---
 
@@ -123,8 +139,8 @@ SUPPORTING LAYERS (Parallel to Core):
 | **P1 (Capture)** | P0, Auth, P2 | P3, P4, Today | ✅ YES | No |
 | **P3 (Soaking)** | P1, P2 | P4, P8 | ✅ YES | No |
 | **P4 (Journal)** | P1, P3, P2 | P5, P7, Growth | ✅ YES | No |
-| **P5 (Search)** | P4, P1 | None (optional) | ⏳ NO (Post-MVP) | Yes (after P4) |
-| **P6 (Menu Bar)** | P0–P4 | Navigation | ✅ YES | Yes (after P4) |
+| **P5 (Search) — Screen 2 only (Filters/Query)** | P1, P3 (resonance), P4 (JournalEntry, Mood/Object as reusable components), T-062 | None | ✅ YES — elevated to MVP July 10, 2026 (see §0.18) | Yes (after P4, parallel to P6/Today/Growth) |
+| **P6 (Menu Bar)** | P0–P4 | Navigation | ✅ YES | Yes (after P4) — **T-078 (Entries tab) now includes P5 Screen 1's calendar/list spec, folded in July 10, 2026** |
 | **P7 (Formation Intel)** | P1, P3, P4 | P8, Growth | ✅ YES | Yes (after P4) |
 | **P8 (Notifications)** | P7, P3 | None | ⏳ NO (Post-MVP) | Yes (after P7) |
 | **Settings** | Auth, P0, P8 | None | ✅ YES | Yes (parallel) |
@@ -170,12 +186,12 @@ These pillars can be built in parallel with the critical path, not blocking laun
 | **Today Tab** | P1 (mid-way) | 1–2 weeks | Depends on P1 + P3; can start when both are feature-complete |
 | **P7 (Formation Intel)** | P4 (mid-way) | 2–3 weeks | Needs P1, P3, P4 data; can start once core pillars have data flowing |
 | **Growth Tab** | P7 (mid-way) | 1–2 weeks | Visualization; starts after P7 can provide theme data |
+| **P5 Search (Screen 2 — filters/query)** | P4 (T-062 already done by then) | 2–3 weeks | **Elevated to MVP July 10, 2026** (was Post-MVP). Blockers (P3, P4, T-062) resolve by ~week 10; runs parallel to P6/Today/Growth, no critical-path extension. Screen 1 (calendar/list) is NOT a separate line item — folded into P6's T-078 |
 
 **Deferred to Post-MVP:**
 
 | Pillar | Reason | Target Phase | Duration |
 |--------|--------|--------------|----------|
-| **P5 (Search)** | Nice-to-have; P4 journals exist without it | Phase 2.1 (post-launch) | 2–3 weeks |
 | **P8 (Notifications)** | Requires P7 themes; can launch without push notifications | Phase 2.1 (post-launch) | 2–3 weeks |
 | **Account Deletion** | Legal/compliance feature; not MVP-blocking | Phase 2.1 (post-launch) | 1 week |
 | **Multi-device Sync** | E2E encryption + key distribution; Phase 2+ only | Phase 3 | TBD |
@@ -193,7 +209,8 @@ These pillars can be built in parallel with the critical path, not blocking laun
 - ✅ P2 (Encryption) — E2E encryption, key derivation
 - ✅ P3 (Soaking) — guided prayer only (no open-ended prompts MVP)
 - ✅ P4 (Journal) — AI synthesis, mood selection
-- ✅ P6 (Menu Bar) — 4-tab navigation (Today, Entries, Create, Growth)
+- ✅ P6 (Menu Bar) — 4-tab navigation (Today, Entries, Create, Growth); **Entries tab (T-078) now includes P5 Screen 1's Untold-style calendar + month list, folded in July 10, 2026**
+- ✅ **P5 Search Screen 2 (elevated July 10, 2026)** — dedicated Search page: keyword + Mood/Object/Prayed filter shortcuts, AND logic, real-time results
 - ✅ Settings — password change, notification prefs, legal links
 - ✅ Today Tab — entry experience, unprayed moments, daily prompt
 - ✅ Growth Tab — formation metrics, emotional themes, settings
@@ -208,7 +225,6 @@ These pillars can be built in parallel with the critical path, not blocking laun
 ### Post-MVP Phase 2.1 (Launch + 2 Weeks)
 
 **Add Shortly After:**
-- ⏳ P5 (Search) — allow users to find moments
 - ⏳ P7 (Formation Intelligence) — theme detection
 - ⏳ P8 (Notifications) — theme breakthroughs, re-dwelling invitations
 - ⏳ Growth Tab Theme Exploration — tap theme to see moments
@@ -236,15 +252,15 @@ WEEK 7–8:    P3 (Soaking) ═════════════════�
              P7 (Formation Intel) ══════════════════════════    [Parallel start]
 WEEK 9–10:   P4 (Journal) ═══════════════════════════════════
              P7 (Formation Intel) ═══════════════════════════  [Parallel end]
-WEEK 11–12:  P6 (Menu Bar) ══════════════════════════════════
+WEEK 11–12:  P6 (Menu Bar, incl. T-078 = P5 Screen 1 calendar/list) ══════
              Today Tab ════════════════════════════════════════  [Parallel]
              Growth Tab (without themes) ═════════════════════  [Parallel]
+             P5 Search Screen 2 (T-128) ══════════════════════  [Parallel — elevated to MVP July 10, 2026]
 WEEK 13:     Testing, QA, Launch Prep
-WEEK 14:     ✅ MVP LAUNCH
+WEEK 14:     ✅ MVP LAUNCH (now includes full P5: calendar/list + search/filters)
 
 POST-LAUNCH (WEEK 15–16):
-WEEK 15–16:  P5 (Search) ════════════════════════════════════
-             P8 (Notifications) ════════════════════════════════  [Parallel]
+             P8 (Notifications) ════════════════════════════════
              Account Deletion ══════════════════════════════════  [Parallel]
 ```
 
@@ -286,10 +302,14 @@ WEEK 15–16:  P5 (Search) ═════════════════�
    - T-085: Journal artifact creation + mood selection
 
 7. **P6 Menu Bar** (1–2 weeks, starts after P4)
-   - T-088: 4-tab navigation (Today, Entries, Create, Growth)
-   - T-089: Tab routing + persistence
+   - T-076: 4-tab navigation (Today, Entries, Create, Growth)
+   - T-078: Entries tab — **now includes P5 Screen 1's locked spec (Untold-style calendar + that month's entries, tap-a-day to filter), folded in July 10, 2026, replacing its previous generic "Date range/prayer-tagged/prompt-engaged/soaking-depth" filter placeholder**
 
 **Phase 3: Supporting Experiences (Weeks 6–12, Parallel)**
+
+7b. **P5 Search — Screen 2 only** (2–3 weeks, starts after P4; T-062/P3 already resolved by this point) — **elevated from Post-MVP to MVP, July 10, 2026**
+    - T-128: Search page — Mood/Object/Prayed filter shortcuts (reusing P4's components, single-select) + free-text keyword field, AND logic, real-time results
+    - Runs parallel to P6/Today/Growth; does not extend the critical path
 
 8. **Settings** (2–3 weeks, parallel to P1)
    - T-090: Settings modal (5 sections: Account, Security, Preferences, Support, Legal)
@@ -316,9 +336,8 @@ WEEK 15–16:  P5 (Search) ═════════════════�
 
 **Post-MVP (Weeks 15–18)**
 
-14. **P5 Search** (2–3 weeks) — Start after MVP
-15. **P8 Notifications** (2–3 weeks) — Parallel to P5
-16. **Account Deletion** (1 week) — Parallel to P5/P8
+14. **P8 Notifications** (2–3 weeks) — Start after MVP
+15. **Account Deletion** (1 week) — Parallel to P8
 
 ---
 
@@ -340,6 +359,9 @@ WEEK 15–16:  P5 (Search) ═════════════════�
 | **NEW (July 9, P4 audit): three pillars (P1, P3, P4) each need identical unbuilt LLM infra** | P1's Dwelly loop, P3's PrayerGenerationManager, P4's JournalSynthesisManager all require the same Groq→GPT-4o mini calling pattern. Build one shared service once, reuse across all three, rather than three independent implementations | Backend/LLM owner (whichever pillar starts engineering first) |
 | **NEW (July 9, P4 audit): synthesis error fallback undecided** | P4_SUMMARY.html's open question (Entry-only? retry? manual entry?) has never been locked. Blocks completing P4 Scenario 4's acceptance criteria until Kell decides | Kell (product decision, not engineering) |
 | **NEW (July 9): density-tiered AI generation (T-127) needed across 4 surfaces, detection unbuilt** | Captures (Dwelly), Prayer, Journal synthesis, and future Notifications all need output sized to reflection depth (Reflective Density Model, L1-L8) rather than a fixed length — but density *detection* doesn't exist in code anywhere. Recommend building it once as shared infra, not per-pillar | Backend/ML engineer (whichever pillar starts engineering first) |
+| **T-062 blocks three pillars (P3, P4, P5) — highest-urgency ticket in this graph** | Still 🔲 Not Started, zero code anywhere, despite already being scheduled early (parallel to P0). Schedule position is correct; execution urgency needs to match its now-tripled blocking radius | Crypto engineer |
+| **P5 Screen 2 depends on P4 building reusable Mood/Object pickers, not just shipping data** | If P4 builds bespoke, non-reusable Mood/Object UI instead of the recommended shared component (§0.8), P5 either duplicates that work or blocks on a P4 refactor | iOS engineer (P4/P5 owners) |
+| **RESOLVED (July 10, 2026): P5 screen split — Kell decided both are MVP** | Screen 1 folded into P6's T-078 (no separate ticket); Screen 2 elevated to MVP as new T-128, running parallel to P6/Today/Growth. See §0.18 | Kell (resolved) |
 
 ---
 
@@ -368,12 +390,13 @@ WEEK 15–16:  P5 (Search) ═════════════════�
 
 | Aspect | Decision |
 |--------|----------|
-| **Critical Path** | Auth → P0 → P1 → P3 → P4 → P6 (11–16 weeks to MVP) |
-| **MVP Launch** | 10 core pillars + 3 supporting tabs (Auth, P0–P4, P6, Settings, Today, Growth) |
-| **Post-MVP** | P5 (Search), P8 (Notifications), Account Deletion, advanced features (2–4 weeks after launch) |
-| **Parallel Work** | P2 (Encryption), Settings, P7, Today, Growth can run alongside critical path |
+| **Critical Path** | Auth → P0 → P1 → P3 → P4 → P6 (11–16 weeks to MVP); P5 Search Screen 2 runs parallel after P4, doesn't extend this chain |
+| **MVP Launch** | 10 core pillars + 3 supporting tabs + **P5 Search Screen 2 (elevated July 10, 2026)** (Auth, P0–P4, P5-Screen2, P6, Settings, Today, Growth) |
+| **Post-MVP** | P8 (Notifications), Account Deletion, advanced features (2–4 weeks after launch) |
+| **Parallel Work** | P2 (Encryption), Settings, P7, Today, Growth, **P5 Search Screen 2** can run alongside critical path |
 | **Deferred to Phase 2+** | Multi-device sync, open-ended prayer, email verification, biometric unlock |
-| **Critical Blocker** | Supabase setup (week 1); LLM selection is now resolved (Groq → GPT-4o mini). **New as of July 9:** T-062 (encryption) and P1 archetype inference are confirmed hard/soft blockers for P3's PrayerArtifact storage — see §0. |
+| **Critical Blocker** | Supabase setup (week 1); LLM selection is now resolved (Groq → GPT-4o mini). T-062 (encryption) confirmed to block **three** pillars (P3, P4, P5) — highest-urgency ticket in this graph, still 🔲 Not Started. P1 archetype inference also a confirmed P3 blocker. |
+| **RESOLVED July 10, 2026** | P5 elevated from Post-MVP to MVP, split in two: Screen 1 (calendar/list) folded into P6's T-078, no separate ticket; Screen 2 (search/filters) is new ticket T-128, runs parallel to P6/Today/Growth. MVP timeline unchanged (11–16 weeks). |
 | **Longest Pillar Build** | P4 (Journal) or P7 (Formation Intel) — 2–3 weeks each |
 
 ---
