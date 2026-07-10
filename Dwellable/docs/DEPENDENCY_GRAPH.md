@@ -35,6 +35,8 @@ This graph was last substantively updated May 14, 2026 and predates several deci
 
 10. **P4's synthesis error fallback is an open product decision, not an engineering gap.** Per `P4_SUMMARY.html`'s own open questions list, whether a failed synthesis falls back to Entry-only, retries, or requires manual entry has never been decided. Flagged (not silently resolved) in P4's User Scenarios Scenario 4 — needs Kell's input before that scenario's acceptance criteria can be completed.
 
+11. **New shared requirement: density-tiered AI generation (T-127), spanning Captures/Prayer/Journal/future Notifications.** Discovered while resolving P4's "Empty Capture Handling" open question. Reference case: a one-word reflection in the Untold app still produced a specific, personalized title + contextual response — not padded/generic filler. **Locked principle: input depth should scale output depth; sparse reflections get short, honest synthesis, never invented content to hit a fixed length.** This reuses the existing **Reflective Density Model (L1–L8)** from `FORMATION_INTELLIGENCE_STRATEGY.md` §III — already the intended shared taxonomy across P0–P8, now confirmed as required by P1 (Dwelly depth-escalation), P3 (prayer tone/length), P4 (journal synthesis size), and eventually P8 (notification personalization). **Real blocker:** L1–L8 density *detection* is not implemented in code anywhere — this is now a fourth pillar's worth of unbuilt dependency stacking on the same missing piece of infrastructure (P1's Dwelly loop, P3's context loading, and now P4's synthesis sizing all need it). A simpler word-count-based 2-tier stopgap was considered and explicitly rejected by Kell (length ≠ depth — risks treating short-but-weighty reflections and long-but-shallow ones backwards). See T-127.
+
 ---
 
 ## 1. Dependency Graph (Visual)
@@ -337,6 +339,7 @@ WEEK 15–16:  P5 (Search) ═════════════════�
 | **NEW (July 9, P4 audit): T-062 confirmed zero code anywhere — top-priority blocker** | Codebase search found no CryptoKit/AES/Argon2id usage at all. T-062 now blocks both P3 and P4's encrypted storage simultaneously. Recommend sequencing T-062 ahead of both pillars' full implementation, not parallel to them | Crypto engineer |
 | **NEW (July 9, P4 audit): three pillars (P1, P3, P4) each need identical unbuilt LLM infra** | P1's Dwelly loop, P3's PrayerGenerationManager, P4's JournalSynthesisManager all require the same Groq→GPT-4o mini calling pattern. Build one shared service once, reuse across all three, rather than three independent implementations | Backend/LLM owner (whichever pillar starts engineering first) |
 | **NEW (July 9, P4 audit): synthesis error fallback undecided** | P4_SUMMARY.html's open question (Entry-only? retry? manual entry?) has never been locked. Blocks completing P4 Scenario 4's acceptance criteria until Kell decides | Kell (product decision, not engineering) |
+| **NEW (July 9): density-tiered AI generation (T-127) needed across 4 surfaces, detection unbuilt** | Captures (Dwelly), Prayer, Journal synthesis, and future Notifications all need output sized to reflection depth (Reflective Density Model, L1-L8) rather than a fixed length — but density *detection* doesn't exist in code anywhere. Recommend building it once as shared infra, not per-pillar | Backend/ML engineer (whichever pillar starts engineering first) |
 
 ---
 
