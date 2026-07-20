@@ -142,7 +142,7 @@ SUPPORTING LAYERS (Parallel to Core):
 | **P5 (Search) — Screen 2 only (Filters/Query)** | P1, P3 (resonance), P4 (JournalEntry, Mood/Object as reusable components), T-062 | None | ✅ YES — elevated to MVP July 10, 2026 (see §0.18) | Yes (after P4, parallel to P6/Today/Growth) |
 | **P6 (Menu Bar)** | P0–P4 | Navigation | ✅ YES | Yes (after P4) — **T-078 (Entries tab) now includes P5 Screen 1's calendar/list spec, folded in July 10, 2026** |
 | **P7 (Formation Intel)** | P1, P3, P4 | P8, Growth | ✅ YES | Yes (after P4) |
-| **P8 (Notifications)** | P7, P3 | None | ⏳ NO (Post-MVP) | Yes (after P7) |
+| **P8 (Notifications)** | P7, P3 | None | ✅ YES — reclassified MVP July 20, 2026 (was Post-MVP; all 7 stages A–G unified, see §0.19) | Yes (after P7) |
 | **Settings** | Auth, P0, P8 | None | ✅ YES | Yes (parallel) |
 | **Today Tab** | P1, P3 | None | ✅ YES | Yes (parallel) |
 | **Growth Tab** | P1, P3, P4, P7 | None | ✅ YES | Yes (after P7) |
@@ -187,14 +187,14 @@ These pillars can be built in parallel with the critical path, not blocking laun
 | **P7 (Formation Intel)** | P4 (mid-way) | 2–3 weeks | Needs P1, P3, P4 data; can start once core pillars have data flowing |
 | **Growth Tab** | P7 (mid-way) | 1–2 weeks | Visualization; starts after P7 can provide theme data |
 | **P5 Search (Screen 2 — filters/query)** | P4 (T-062 already done by then) | 2–3 weeks | **Elevated to MVP July 10, 2026** (was Post-MVP). Blockers (P3, P4, T-062) resolve by ~week 10; runs parallel to P6/Today/Growth, no critical-path extension. Screen 1 (calendar/list) is NOT a separate line item — folded into P6's T-078 |
+| **P8 (Notifications)** | P7 (themes), P3 (prayer) | 2–3 weeks | **Reclassified to MVP July 20, 2026** (was Post-MVP). All 7 stages (A–G) unified as originally designed, no split — directly addresses Phase 1's 0%-return finding. Runs parallel once P7 + P3 are ready (~week 10-12), alongside P5 Screen 2/Today/Growth |
 
 **Deferred to Post-MVP:**
 
 | Pillar | Reason | Target Phase | Duration |
 |--------|--------|--------------|----------|
-| **P8 (Notifications)** | Requires P7 themes; can launch without push notifications | Phase 2.1 (post-launch) | 2–3 weeks |
 | **Account Deletion** | Legal/compliance feature; not MVP-blocking | Phase 2.1 (post-launch) | 1 week |
-| **Multi-device Sync** | E2E encryption + key distribution; Phase 2+ only | Phase 3 | TBD |
+| **Multi-device Sync** | E2E encryption + key distribution; Phase 2+ only | Post-MVP | TBD |
 
 ---
 
@@ -214,6 +214,7 @@ These pillars can be built in parallel with the critical path, not blocking laun
 - ✅ Settings — password change, notification prefs, legal links
 - ✅ Today Tab — entry experience, unprayed moments, daily prompt
 - ✅ Growth Tab — formation metrics, emotional themes, settings
+- ✅ **P8 (Notifications) — reclassified MVP July 20, 2026**, all 7 stages (A–G) unified; requires P7 (themes) + P3 (prayer)
 
 **Cannot Launch Without:**
 - ✅ Auth (can't use app without login)
@@ -225,8 +226,7 @@ These pillars can be built in parallel with the critical path, not blocking laun
 ### Post-MVP Phase 2.1 (Launch + 2 Weeks)
 
 **Add Shortly After:**
-- ⏳ P7 (Formation Intelligence) — theme detection
-- ⏳ P8 (Notifications) — theme breakthroughs, re-dwelling invitations
+- ⏳ P7 (Formation Intelligence) — theme detection *(P8/Notifications moved OUT of this list July 20, 2026 — now MVP, see above)*
 - ⏳ Growth Tab Theme Exploration — tap theme to see moments
 - ⏳ Account Deletion — self-service account removal with 30-day recovery
 
@@ -256,11 +256,12 @@ WEEK 11–12:  P6 (Menu Bar, incl. T-078 = P5 Screen 1 calendar/list) ═══�
              Today Tab ════════════════════════════════════════  [Parallel]
              Growth Tab (without themes) ═════════════════════  [Parallel]
              P5 Search Screen 2 (T-128) ══════════════════════  [Parallel — elevated to MVP July 10, 2026]
-WEEK 13:     Testing, QA, Launch Prep
-WEEK 14:     ✅ MVP LAUNCH (now includes full P5: calendar/list + search/filters)
+             P8 (Notifications, Stage A/B) ══════════════════   [Parallel — reclassified MVP July 20, 2026; A/B don't need P7/P3]
+WEEK 13:     P8 (Notifications, Stage C–G) ═════════════════════  [Once P7 + P3 ready]
+             Testing, QA, Launch Prep
+WEEK 14:     ✅ MVP LAUNCH (now includes full P5 + full P8 Notifications A–G)
 
 POST-LAUNCH (WEEK 15–16):
-             P8 (Notifications) ════════════════════════════════
              Account Deletion ══════════════════════════════════  [Parallel]
 ```
 
@@ -391,10 +392,10 @@ POST-LAUNCH (WEEK 15–16):
 | Aspect | Decision |
 |--------|----------|
 | **Critical Path** | Auth → P0 → P1 → P3 → P4 → P6 (11–16 weeks to MVP); P5 Search Screen 2 runs parallel after P4, doesn't extend this chain |
-| **MVP Launch** | 10 core pillars + 3 supporting tabs + **P5 Search Screen 2 (elevated July 10, 2026)** (Auth, P0–P4, P5-Screen2, P6, Settings, Today, Growth) |
-| **Post-MVP** | P8 (Notifications), Account Deletion, advanced features (2–4 weeks after launch) |
-| **Parallel Work** | P2 (Encryption), Settings, P7, Today, Growth, **P5 Search Screen 2** can run alongside critical path |
-| **Deferred to Phase 2+** | Multi-device sync, open-ended prayer, email verification, biometric unlock |
+| **MVP Launch** | 11 core pillars + 3 supporting tabs + **P5 Search Screen 2 (elevated July 10, 2026)** + **P8 Notifications (reclassified MVP July 20, 2026)** (Auth, P0–P4, P5-Screen2, P6, P8, Settings, Today, Growth) |
+| **Post-MVP** | Account Deletion, advanced features (2–4 weeks after launch) |
+| **Parallel Work** | P2 (Encryption), Settings, P7, Today, Growth, **P5 Search Screen 2**, **P8 Notifications** can run alongside critical path |
+| **Deferred to Post-MVP** | Multi-device sync, open-ended prayer, email verification, biometric unlock |
 | **Critical Blocker** | Supabase setup (week 1); LLM selection is now resolved (Groq → GPT-4o mini). T-062 (encryption) confirmed to block **three** pillars (P3, P4, P5) — highest-urgency ticket in this graph, still 🔲 Not Started. P1 archetype inference also a confirmed P3 blocker. |
 | **RESOLVED July 10, 2026** | P5 elevated from Post-MVP to MVP, split in two: Screen 1 (calendar/list) folded into P6's T-078, no separate ticket; Screen 2 (search/filters) is new ticket T-128, runs parallel to P6/Today/Growth. MVP timeline unchanged (11–16 weeks). |
 | **Longest Pillar Build** | P4 (Journal) or P7 (Formation Intel) — 2–3 weeks each |
