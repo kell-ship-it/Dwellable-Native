@@ -39,7 +39,7 @@
 - User's emotional readiness for reflection (unprayed moments indicate incomplete processing)
 
 **How Today feeds Formation Intelligence to next pillars:**
-- **→ P3 (Soaking):** Signals readiness for prayer/reflection. Recent unprayed moment + daily prompt create two pathways into soaking.
+- **→ P3 (Prayer):** Signals readiness for prayer/reflection. Recent unprayed moment + daily prompt create two pathways into prayer.
 - **→ P6 (Formation Intelligence):** Daily engagement pattern helps detect user's natural rhythm, informing when to surface themes/breakthroughs
 - **→ Growth/Notifications (P8):** Daily prompt resonance data feeds personalization engine (which biblical themes to surface, when)
 
@@ -122,9 +122,9 @@
 ```
 
 **MVP Features:**
-- **Most recent unprayed moment:** Query all user's moments, filter for `has_soaking = false`, show most recent
+- **Most recent unprayed moment:** Query all user's moments, filter for `has_prayed = false`, show most recent
   - Visual: Moment title (from P4), mood tag (from P4), timestamp relative ("2 hours ago")
-  - Tap destination: Opens Soaking flow (P3) for that moment
+  - Tap destination: Opens Prayer flow (P3) for that moment
   - Implicit message: "You captured this. Do you want to dwell?"
   - If no unprayed moments: Show empty state: "You've dwelt on everything. Capture something new?"
 
@@ -155,7 +155,7 @@
     - Input: User's recent themes, intent, theological framework, current moment patterns
     - Output: Bible verse/story + plain-language explanation of why it matters to their journey
   - Example: User has been wrestling with doubt (theme detected) → Prompt shows story of Thomas doubting Jesus, with explanation: "You've been exploring doubt in your moments. Thomas's story is yours too."
-  - Tap destination: Opens Soaking flow with this prompt as the dwelling text
+  - Tap destination: Opens Prayer flow with this prompt as the dwelling text
   - Post-MVP: "Read full passage" link routes to full Bible text (if applicable)
 
 **Post-MVP Enhancement:**
@@ -206,7 +206,7 @@
 | **Random historical moment** | "Reminisce" pattern | Distracting; Today should focus forward (unprayed moment) not backward |
 | **AI-generated daily reflection** | Personalized, introspective | Generic AI tone mismatches formation mission; Rich Context Scripture > AI reflection |
 | **Multiple unprayed moments** | Show more opportunities | Overwhelming; singular focus honors user agency |
-| **Auto-open Soaking for unprayed moment** | Reduces friction | Respects user agency; invite > mandate |
+| **Auto-open Prayer for unprayed moment** | Reduces friction | Respects user agency; invite > mandate |
 
 ---
 
@@ -233,9 +233,9 @@
   - Query user's name from P0 Onboarding
   - Display affirming greeting (or fallback name)
 - [ ] Implement Most Recent Unprayed Moment
-  - Query moments where `has_soaking = false`, sort by date desc, show most recent
+  - Query moments where `has_prayed = false`, sort by date desc, show most recent
   - Display moment title (from P4), mood, timestamp
-  - Wire tap → Soaking flow (P3)
+  - Wire tap → Prayer flow (P3)
   - Handle empty state ("You've dwelt on everything")
 - [ ] Implement Daily Prompt
   - Set up daily generation (7am or user timezone)
@@ -243,7 +243,7 @@
     - Input: User's recent themes (P6), intent (P0), theological framework (P0)
     - Output: Bible verse/story + explanation
   - Cache prompt for 24 hours (avoid regenerating mid-day)
-  - Wire tap → Soaking flow with prompt
+  - Wire tap → Prayer flow with prompt
 - [ ] Wire Today as 1st tab in menu navigation
 - [ ] Test on device (iPhone 13+)
 
@@ -266,7 +266,7 @@
 |--------|-------|--------|--------------|
 | T-XXX | Build: Today Tab Shell (4 sections, navigation) | M | T-076 (Menu Bar) |
 | T-XXX | Build: Personalized Greeting (pull from P0) | S | T-XXX |
-| T-XXX | Build: Most Recent Unprayed Moment (query + display) | M | T-XXX, P4 soaking data |
+| T-XXX | Build: Most Recent Unprayed Moment (query + display) | M | T-XXX, P4 prayer data |
 | T-XXX | Build: Daily Prompt (LLM generation + caching) | L | T-XXX, Rich Context system, P6 themes |
 | T-XXX | Wire: Today Tab to Menu (1st position) | S | T-XXX (all sections) |
 | T-XXX | Test: Today Tab on device (iPhone 13+) | S | All sections |
@@ -297,8 +297,8 @@
 
 - **Pillar 0 (Onboarding):** Today displays user's name, intent, theological framework from P0
 - **Pillar 1 (Capture):** Today surfaces moments from P1
-- **Pillar 3 (Soaking):** Tapping unprayed moment or prompt routes to P3 prayer/prompts flow
-- **Pillar 4 (Journal Creation):** Today references soaking status + mood from P4
+- **Pillar 3 (Prayer):** Tapping unprayed moment or prompt routes to P3 prayer/prompts flow
+- **Pillar 4 (Journal Creation):** Today references prayer status + mood from P4
 - **Pillar 6 (Formation Intelligence):** Daily prompt generated via Rich Context + user's themes (P6)
 - **Growth Pillar:** Today can cross-promote Growth tab features (post-MVP)
 - **Menu Bar:** Today is Tab 1 in navigation (Pillar 6 Menu responsibility)

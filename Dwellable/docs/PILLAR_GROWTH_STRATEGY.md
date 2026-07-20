@@ -7,7 +7,7 @@
 ## 1. Overview
 
 - **Purpose:** Show users their formation journey through metrics, trends, and emerging patterns
-- **Scope:** Formation metrics, emotional themes, soaking engagement, settings, post-MVP glossary & emotional depth
+- **Scope:** Formation metrics, emotional themes, prayer engagement, settings, post-MVP glossary & emotional depth
 - **Status:** Strategy locked, ready for implementation ticket creation
 - **Tab Position:** 4th tab in main menu (Today | Entries | Create | Growth)
 
@@ -29,16 +29,16 @@
 **What Growth learns about the user:**
 - Capture frequency and patterns (how many moments per week? concentrated or distributed?)
 - Prayer engagement (how many moments led to prayer? prayer vs. prompt preference)
-- Soaking depth (% of moments with ANY soaking response — prayer or prompts)
+- Prayer depth (% of moments with ANY prayer response — prayer or prompts)
 - Emotional landscape (which moods dominate? are they shifting over time?)
-- Archetype confirmation (Jotter/Venter/Processor) based on capture style + soaking behavior
+- Archetype confirmation (Jotter/Venter/Processor) based on capture style + prayer behavior
 - Formation pace and consistency (steady dweller vs. sporadic vs. seasonal patterns)
 - Emotional depth progression (are moods becoming more reflective/transcendent?)
 
 **What system infers:**
 - User's natural spiritual rhythm (frequency, time of day preference, day patterns)
 - User's formation progress (is emotional landscape shifting toward peace/hope?)
-- User's engagement depth (soaking %, prayer frequency, prompt thoughtfulness)
+- User's engagement depth (prayer %, prayer frequency, prompt thoughtfulness)
 - User's identity as dweller (who are they becoming through this practice?)
 - User's theme evolution (what patterns are emerging? Are they cycling or progressing?)
 - User's growth velocity (are they deepening or plateauing?)
@@ -71,7 +71,7 @@
 - [ ] >40% return to Growth weekly (weekly habit check-in)
 - [ ] >30% adjust prayer frequency or notification preferences after viewing Growth
 - [ ] Emotional Themes page has >3.5/5.0 satisfaction (survey: "Does this feel accurate to your journey?")
-- [ ] Users who view Growth weekly show 2x higher soaking engagement (dwelling rate)
+- [ ] Users who view Growth weekly show 2x higher prayer engagement (dwelling rate)
 
 ---
 
@@ -106,7 +106,7 @@
 │ Total Prayers                │
 │ 19 times you've prayed       │  [Statcard]
 │                              │
-│ Soaking Engagement           │
+│ Prayer Engagement           │
 │ 40% of moments dwelt on      │  [Statcard]
 │                              │
 │ Prayer Preference            │
@@ -122,12 +122,12 @@
   - Visual: large number + icon
   - Tap for breakdown (moments/week trend) — *post-MVP detailed view*
   
-- **Total Prayers:** Count of moments where user chose Prayer in soaking flow
+- **Total Prayers:** Count of moments where user chose Prayer in prayer flow
   - Visual: large number + prayer icon
   - Metric affirms action ("You've offered 19 prayers")
   
-- **Soaking Engagement:** % of captured moments with ANY soaking response (prayer OR prompts)
-  - Calculation: (moments with soaking) / (total moments) × 100
+- **Prayer Engagement:** % of captured moments with ANY prayer response (prayer OR prompts)
+  - Calculation: (moments with prayer) / (total moments) × 100
   - Visual: percentage card with trend indicator (↑ improving, → stable, ↓ declining)
   - Affirms dwelling behavior
   
@@ -264,7 +264,7 @@
 | **Journaling streaks** | Motivational, proven pattern | Soft streak (prayer rhythm benchmark) not hard streak; deferring to P0 tickets |
 | **Settings in separate modal** | Keeps Growth tab focused | Settings are contextual to growth; nesting them keeps discoverability high |
 | **WAR metric (Weekly Active Reflections)** | Beta metric, important for us | Internal metric for founders; users care about "I prayed X times" not "% of active reflectors" |
-| **Soaking depth (avg prompts per moment)** | Shows reflection intensity | Too abstract for MVP; emotional themes + engagement % simpler |
+| **Prayer depth (avg prompts per moment)** | Shows reflection intensity | Too abstract for MVP; emotional themes + engagement % simpler |
 
 ---
 
@@ -278,7 +278,7 @@
 | **Settings Edit Rate** | % of users who adjust prayer frequency or notifications from Growth | >30% in first month |
 | **Emotional Themes Accuracy** | % of users who agree "these moods feel accurate to my journey" (survey) | >3.5/5.0 |
 | **Glossary Interaction (post-MVP)** | % of users who tap glossary items to browse moments | >40% |
-| **Soaking Engagement Correlation** | Users viewing Growth weekly show 2x higher soaking rate | 2x lift |
+| **Prayer Engagement Correlation** | Users viewing Growth weekly show 2x higher prayer rate | 2x lift |
 | **Growth Impact on WAR** | Users with >weekly Growth visits show >50% WAR | 50% threshold |
 
 ---
@@ -288,7 +288,7 @@
 **Phase 1 (MVP Launch):**
 - [ ] Build Growth tab shell with 2 sections (Formation Overview + Emotional Themes + Settings + Full Settings link)
 - [ ] Implement Formation Overview section
-  - Display Total Captures, Total Prayers, Soaking Engagement, Prayer Preference
+  - Display Total Captures, Total Prayers, Prayer Engagement, Prayer Preference
   - Wire to UsageTracker data (analytics)
   - Add time range filter (This Month / This Year / All-time)
 - [ ] Implement Emotional Themes section
@@ -363,9 +363,9 @@
 | **Goal** | Help users see their formation journey through affirming metrics and emerging patterns |
 | **Tab Position** | 4th tab (Today \| Entries \| Create \| Growth) |
 | **MVP Sections** | Formation Overview \| Emotional Themes \| Settings \| Full Settings Link |
-| **MVP Metrics** | Total Captures, Total Prayers, Soaking Engagement, Prayer Preference, Emotional Themes |
+| **MVP Metrics** | Total Captures, Total Prayers, Prayer Engagement, Prayer Preference, Emotional Themes |
 | **Post-MVP** | Glossary (moods/topics/people/things), Color Wheel (emotional depth), Steward Score, Trends |
-| **Success Metric** | >40% weekly growth visits, >80% metric comprehension, 2x soaking engagement lift |
+| **Success Metric** | >40% weekly growth visits, >80% metric comprehension, 2x prayer engagement lift |
 | **Key blocker** | UsageTracker data ready; P4 mood selections accurate |
 
 ---

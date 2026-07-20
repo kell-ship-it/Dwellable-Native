@@ -1,14 +1,16 @@
 # Dwellable Native — Full Ticket Registry
 
-**July 11, 2026 session (this session):** Resequenced remaining pillar design work with Kell — pillar numbers reflect order of discovery, not build priority. Locked order: **P9 (Account Profile) → P10 (Today) → P11 (Growth) → P8 (Beta/Marketing) → P6 (Formation Intelligence) → P2 (Security) → P7 (Notifications, last)**. Confirmed P6 = Formation Intelligence (not Menu Bar — that legacy T-074/T-076-082 label predates the May 7 renumbering and is stale). Menu Bar/Navigation will NOT get its own pillar — it's a thin integration layer (existing T-076–T-082) hosting tabs designed by other pillars, not an independent design surface; revisit only if something nav-specific surfaces once P9/P10/P11/P8 are locked. Built FigJam system designs for all three: **Pillar 9 (Account Profile)** — 6 lanes: Entry (gear icon, all tabs) → Account & Profile (incl. weekly Intent Check Prompt Yes/Not Yet/Need Help branch) → Security & Privacy (password change flow; flags T-062 as blocking) → Preferences (prayer frequency, hands off to Pillar 8 Notifications) → Support & Feedback (receives Intent Check's Not Yet/Need Help routes) → Legal & About. **Pillar 10 (Today)** — 4 lanes: Entry (app launch → Today, 1st tab) → Personalized Greeting (affirming term or name fallback) → Most Recent Unprayed Moment (empty-state branch, hands off to Pillar 3/Pillar 1) → Daily Prompt (cache check → LLM via Rich Context, flags Pillar 6 Formation Intelligence as blocking contextual generation, curated-library fallback, hands off to Pillar 3). **Pillar 11 (Growth)** — 4 lanes: Entry (Growth, 4th tab; flags UsageTracker data pipeline as blocking) → Formation Overview (4 affirming stat cards + time filter) → Emotional Themes (bar chart, tap-to-detail) → Settings nested (prayer frequency shares field with Pillar 9; Notification/All Settings hand off to Pillar 8/Pillar 9, same destinations as Pillar 9's equivalents). All three mirrored to their Notion pages. Locked sequence for remaining pillar design work (resequenced this session): P9 ✅ → P10 ✅ → P11 ✅ → **P8 (Beta/Marketing, next)** → P6 (Formation Intelligence) → P2 (Security) → P7 (Notifications, last). Confirmed P6 = Formation Intelligence (not Menu Bar); Menu Bar/Navigation will not get its own pillar — it's implementation only (T-076–T-082) hosting tabs designed elsewhere. **Settings access pattern changed (Kell, same session):** gear icon moved from "visible on all 4 main tabs" to "top-right corner of the Growth tab only" — updated in PILLAR_SETTINGS_STRATEGY.md, PILLAR_GROWTH_STRATEGY.md, both Notion pages, and both FigJam boards. Open question for Kell: Growth's Lane 4 nested "All Settings" text link and the new top-corner gear icon both now route to the same Pillar 9 modal within the same tab — intentional redundancy or should the nested link be removed?
+**July 20, 2026 session (this session):** Reviewed Pillars 9/10/11 with Kell — built the 3 missing subpages (User Scenarios & Acceptance Criteria + Technical Tools Needed) for each of P9, P10, P11 in Notion, grounded in the actual FigJam boards + a fresh codebase audit (not assumptions). Confirmed 4-Tab Navigation Shell is a shared missing prerequisite for all three (`AppView.swift` is `NavigationStack`-only, no `TabView` exists), P9's existing `SettingsView.swift` covers ~10% of the locked P9 spec with wrong entry pattern, P10's `Moment` model has no `has_prayed` field at all, and P11's `UsageTracker` only tracks 3 event types — none of which capture prayer activity or mood distribution. **Then worked through Pillar 10 comment review (8 unresolved discussions), starting from the top. Resolved 3:** (1) Greeting gender concept dropped — name-only greeting; no gender field exists in P0, not worth adding one. Simplified P10 FigJam board (removed decision diamond + branch), merged P10 Scenarios 2+3 into one. (2) Theological framework — never actually built into any real P0 screen despite being referenced as something P0 "learns"; removed from P10's Rich Context inputs, deferred to Post-MVP, added a note to P0's Notion page flagging the aspirational-vs-real gap. (3) **"Soaking" → "Prayer" full rename, permanent, everywhere.** Kell's reasoning: "Soaking" reads as a Protestant/Pentecostal-specific term, too narrow/denominational. Swept across Pillar 3 itself (renamed "Pillar 3 - Soaking" → "Pillar 3 - Prayer" in Notion), every pillar's docs/FigJam boards/Notion pages that reference it (P1/P3/P4/P5 shared FigJam board, P9/P10/P11 boards, all pillar Notion pages + subpages), `PRD.md`, `DEPENDENCY_GRAPH.md`, `TICKETS.md`/`.csv`, strategy file rename (`PILLAR_3_SOAKING_STRATEGY.md` → `PILLAR_3_PRAYER_STRATEGY.md`), and field-name changes (`has_soaking` → `has_prayed`, `soaking_count` → `prayer_count`, `soaking_completed` → `prayer_engagement_completed`). Historical `MEMORY.md` session logs left as dated records with a highlighted rename note at the top. Replied to all 3 resolved comment threads in Notion. **Comments 4–8 still open** on Pillar 10 — carry to next session.
+
+**July 11, 2026 session:** Resequenced remaining pillar design work with Kell — pillar numbers reflect order of discovery, not build priority. Locked order: **P9 (Account Profile) → P10 (Today) → P11 (Growth) → P8 (Beta/Marketing) → P6 (Formation Intelligence) → P2 (Security) → P7 (Notifications, last)**. Confirmed P6 = Formation Intelligence (not Menu Bar — that legacy T-074/T-076-082 label predates the May 7 renumbering and is stale). Menu Bar/Navigation will NOT get its own pillar — it's a thin integration layer (existing T-076–T-082) hosting tabs designed by other pillars, not an independent design surface; revisit only if something nav-specific surfaces once P9/P10/P11/P8 are locked. Built FigJam system designs for all three: **Pillar 9 (Account Profile)** — 6 lanes: Entry (gear icon, all tabs) → Account & Profile (incl. weekly Intent Check Prompt Yes/Not Yet/Need Help branch) → Security & Privacy (password change flow; flags T-062 as blocking) → Preferences (prayer frequency, hands off to Pillar 8 Notifications) → Support & Feedback (receives Intent Check's Not Yet/Need Help routes) → Legal & About. **Pillar 10 (Today)** — 4 lanes: Entry (app launch → Today, 1st tab) → Personalized Greeting (affirming term or name fallback) → Most Recent Unprayed Moment (empty-state branch, hands off to Pillar 3/Pillar 1) → Daily Prompt (cache check → LLM via Rich Context, flags Pillar 6 Formation Intelligence as blocking contextual generation, curated-library fallback, hands off to Pillar 3). **Pillar 11 (Growth)** — 4 lanes: Entry (Growth, 4th tab; flags UsageTracker data pipeline as blocking) → Formation Overview (4 affirming stat cards + time filter) → Emotional Themes (bar chart, tap-to-detail) → Settings nested (prayer frequency shares field with Pillar 9; Notification/All Settings hand off to Pillar 8/Pillar 9, same destinations as Pillar 9's equivalents). All three mirrored to their Notion pages. Locked sequence for remaining pillar design work (resequenced this session): P9 ✅ → P10 ✅ → P11 ✅ → **P8 (Beta/Marketing, next)** → P6 (Formation Intelligence) → P2 (Security) → P7 (Notifications, last). Confirmed P6 = Formation Intelligence (not Menu Bar); Menu Bar/Navigation will not get its own pillar — it's implementation only (T-076–T-082) hosting tabs designed elsewhere. **Settings access pattern changed (Kell, same session):** gear icon moved from "visible on all 4 main tabs" to "top-right corner of the Growth tab only" — updated in PILLAR_SETTINGS_STRATEGY.md, PILLAR_GROWTH_STRATEGY.md, both Notion pages, and both FigJam boards. Open question for Kell: Growth's Lane 4 nested "All Settings" text link and the new top-corner gear icon both now route to the same Pillar 9 modal within the same tab — intentional redundancy or should the nested link be removed?
 
 **July 10, 2026 session:** Built the **Pillar 5 (Search & Discovery) FigJam system design**, restructured mid-session from an initial two-redundant-starts design (separate Search vs. Browse flows) into a locked **two-screen model**: Screen 1 = default Entries tab (Untold-style calendar + that month's entries, tap-a-day to filter); Screen 2 = dedicated Search page (magnifying-glass icon → Mood/Object/Prayed filter shortcuts + free-text query, AND logic, real-time results). Locked with Kell: **Prayed filter added** (reads P3's resonance signal directly, not a new writable field); **Mood and Object filters are both single-select**; **Date range filter removed** (redundant with Screen 1's calendar); **Pinned paused** (filter + underlying pin action both deferred). Corrected an error introduced earlier this session where a "Dwelly transcript" fallback field was proposed for P4's synthesis-failure scenario — reverted to the already-locked design (fallback reuses the existing `originalTranscript` field from P1's Dwelly capture, no new field needed) across P4_SUMMARY.html, PRD.md, and all three P4 Notion pages. Built **P5 User Scenarios & Acceptance Criteria** (6 scenarios) and **P5 Technical Tools Needed** in Notion; confirmed via codebase audit that zero search-, calendar-, or pin-related code exists anywhere. **Resequencing decision (Kell, same session):** reviewed dependencies for Pillars 0–5 given P5's new design — discovered P5 splits into two pieces with very different dependency depths (Screen 1 needs only P1; Screen 2 needs P3+P4+T-062). Kell decided: **Screen 1 folds into P6's existing MVP ticket T-078** (no separate ticket, stale filter spec replaced with the real locked design) and **Screen 2 is elevated from Post-MVP to a full MVP feature as new ticket T-128**, running parallel to P6/Today/Growth rather than waiting for post-launch — MVP timeline unaffected (11–16 weeks). T-062 also now confirmed to block a **third** pillar (P5's encrypted search index, via T-128) — its schedule position (parallel to P0) was already correct; flagged as the single highest-execution-urgency ticket in the graph. Updated `docs/DEPENDENCY_GRAPH.md` + Notion mirror + T-078 + T-062 + new T-128 to reflect all of this.
 
 **Last Updated:** July 9, 2026 (session close) — Built the **Pillar 4 (Journal Creation & Ownership) FigJam system design**, resolving a real discrepancy first: Notion's locked P4 page (9-step, 3D metadata model — Prayed × Mood × Object) conflicted with `P4_SUMMARY.html`/PRD.md's simpler 6-step version. Locked with Kell: **"Prayed" is not an independent journal field** — a prayer is embedded in the journal only if it resonated in P3; **Mood** stays inferred + user-overridable (8 preset + 1 custom); **Object** is kept as preset+custom (6 preset + 1 custom, fully user-chosen, not inferred). Built the board, then **P4 User Scenarios & Acceptance Criteria** (11 scenarios) and **P4 Technical Tools Needed** in Notion. The P4 audit confirmed **zero encryption code exists anywhere in the codebase** — T-062 is now the single highest-leverage blocker, hard-blocking both P3's PrayerArtifact and P4's JournalEntry storage — and surfaced that **three pillars (P1, P3, P4) independently need the same unbuilt Groq→GPT-4o mini LLM infrastructure**. Resolved four open questions raised during the P4 scenarios review: (1) re-engagement/reflections on old entries → backlogged; (2) "View Moment" CTA → superseded by the sequential prayer-then-journal lock; (3) Empty Capture Handling → resolved via new **T-127** (Reflective Density-Tiered AI Generation — reuses the existing L1-L8 model shared across Captures/Prayer/Journal/future Notifications, rejecting a simpler word-count stopgap since length ≠ depth); (4) offline capture → locked (synthesis shows a pending state, auto-populates on reconnect). Also locked **Scenario 4 (synthesis failure fallback)**: auto-retry with backoff, then the raw transcript itself stands in as the journal entry (simple fallback title, no invented AI content, no forced manual writing) — optional manual "Retry synthesis" later. Folded all findings into `docs/DEPENDENCY_GRAPH.md` and its Notion mirror per the incremental-reconciliation process. **Next session objective:** Kell to decide — begin Pillar 2 (Security & Encryption, now clearly time-sensitive given the T-062 finding) as the cross-cutting audit, or continue the pillar sequence with Pillar 5 (Search) FigJam design.
 
-**Status:** 75/128 tickets complete (59%)*, 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0, P1, P3, P4, P5 complete, P2/P6-P8 remain). Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth. T-099 pricing model backed by real, validated LLM cost/capacity numbers; T-119 token-budget split locked as beta hypothesis. Pillars 3, 4, 5, 9, 10, and 11 FigJam system designs complete and reviewed; P1/P3/P4/P5 User Scenarios/AC + Technical Tools Needed audits complete, all open questions resolved except T-062/LLM-infra/T-127 (all tracked as shared cross-pillar blockers, not pillar-specific gaps). **P5 elevated to MVP (July 10, 2026):** Screen 1 folded into P6's T-078, Screen 2 is new MVP ticket T-128, both reflected in `docs/DEPENDENCY_GRAPH.md` + Notion mirror. T-062 now confirmed to block three pillars (P3, P4, P5) — flagged as highest-execution-urgency ticket, schedule position already correct. **Pillar design sequence resequenced (July 11, 2026):** P9 (Account Profile) → P10 (Today) → P11 (Growth) → P8 (Beta/Marketing, next) → P6 (Formation Intelligence) → P2 (Security) → P7 (Notifications, last); confirmed P6 = Formation Intelligence, Menu Bar/Navigation is implementation-only (no dedicated pillar). **Settings access pattern changed:** gear icon moved from all-4-tabs to Growth tab's top-right corner only — docs, Notion, and both FigJam boards (P9, P11) updated; open question remains on Growth's redundant nested "All Settings" link, to resolve when finishing P9 next session. *(denominator grows — T-128 added July 10; T-127 added July 9; T-126 added earlier same evening; T-056 closed as duplicate of T-118)*
+**Status:** 75/128 tickets complete (59%)*, 1 in progress (T-092 — deliverables 1-3 ✅, deliverable 4 in progress: P0, P1, P3, P4, P5, P9, P10, P11 User Scenarios/AC + Technical Tools Needed all COMPLETE (P9/P10/P11 subpages added July 20); P2, P6, P7, P8 remain). Build 107 on TestFlight, Phase 1 complete, Formation Intelligence framework locked, Notion workspace as authoritative source-of-truth. T-099 pricing model backed by real, validated LLM cost/capacity numbers; T-119 token-budget split locked as beta hypothesis. Pillars 3, 4, 5, 9, 10, and 11 FigJam system designs complete and reviewed. All open questions resolved except T-062/LLM-infra/T-127 (shared cross-pillar blockers) + 5 remaining Pillar 10 comments (carrying to next session) + Growth-tab redundant "All Settings" link question (still open). **P5 elevated to MVP (July 10, 2026):** Screen 1 folded into P6's T-078, Screen 2 is new MVP ticket T-128, both reflected in `docs/DEPENDENCY_GRAPH.md` + Notion mirror. T-062 now confirmed to block three pillars (P3, P4, P5) — flagged as highest-execution-urgency ticket. **Pillar design sequence resequenced (July 11, 2026):** P9 → P10 → P11 → P8 (next) → P6 → P2 → P7 (last). **Naming change (July 20, 2026):** "Soaking" permanently renamed to "Prayer" everywhere (too narrow/denominational a term); Pillar 3 is now "Pillar 3 - Prayer," strategy file renamed to `PILLAR_3_PRAYER_STRATEGY.md`, `has_soaking` field → `has_prayed`. **Also July 20:** P10 name-based greeting locked (no gender field), theological framework deferred to Post-MVP (never actually existed as a real P0 screen). *(denominator grows — T-128 added July 10; T-127 added July 9; T-126 added earlier same evening; T-056 closed as duplicate of T-118)*
 
-**July 9, 2026 session:** Reviewed Pillar 3 (Soaking/Guided Prayer) Notion comments (4 comments across 2 discussion threads) and processed each with Kell before designing. **Key scope correction:** paused Pillar 2 (Security & Encryption) FigJam work — encryption is a cross-cutting layer that must be shown across *every* data-capturing pillar (journal entries, prayer responses, settings — not just the sign-in/capture flows the scaffold P2 board showed), so P2 is better designed as a holistic security-layer audit after P1–P8 experience pillars are designed. Verified P1 design complete. Moved to P3 and locked MVP decisions: (1) **prayer-resonance confirmation = binary thumbs-up** (explicit positive affirmation post-prayer, resolving Comment #1's "confirm it resonated" ask); (2) **voice narration in MVP-light form** via **Voicebox** (voicebox.sh — open-source, 39.8k-star, 1.5M downloads, runs entirely local/on-device, free voice cloning + 7 TTS engines, a free ElevenLabs alternative) + royalty-free background music, zero per-use cost (resolving Comment #4's token-cost concern — moved from Post-MVP toward MVP once a free/local tool was found); (3) **crisis protocol, chatbot-misuse guardrails, and resource-links deferred to Pillar 6 as new ticket T-125** with full context captured (Comments #2 and #3 — Kell's framing: allow free expression like Google Docs never halting a user, but respond well for legal-safety + genuine help; also research OpenAI Moderation API vs. Anthropic Constitutional AI built-in safety and consider parity). Added **T-124** (P3 voice narration, MVP-light via Voicebox). Created a scaffold P2 FigJam board (https://www.figma.com/board/6fwsiWYheAT5lVzgbXUh9C) but paused/did not review it. **T-119 token cap still unresolved:** reconfirmed the full loop budget is ~4,700 tokens (Dwelly conversation + prayer + journal synthesis combined) per the validated July 4-5 benchmark; the exact allocation/split across those three stages is documented in Pillar 0 + the LLM cost explainer and still needs to be pulled forward and locked (agent had erroneously proposed an unsupported 1,500 figure, corrected).
+**July 9, 2026 session:** Reviewed Pillar 3 (Prayer) Notion comments (4 comments across 2 discussion threads) and processed each with Kell before designing. **Key scope correction:** paused Pillar 2 (Security & Encryption) FigJam work — encryption is a cross-cutting layer that must be shown across *every* data-capturing pillar (journal entries, prayer responses, settings — not just the sign-in/capture flows the scaffold P2 board showed), so P2 is better designed as a holistic security-layer audit after P1–P8 experience pillars are designed. Verified P1 design complete. Moved to P3 and locked MVP decisions: (1) **prayer-resonance confirmation = binary thumbs-up** (explicit positive affirmation post-prayer, resolving Comment #1's "confirm it resonated" ask); (2) **voice narration in MVP-light form** via **Voicebox** (voicebox.sh — open-source, 39.8k-star, 1.5M downloads, runs entirely local/on-device, free voice cloning + 7 TTS engines, a free ElevenLabs alternative) + royalty-free background music, zero per-use cost (resolving Comment #4's token-cost concern — moved from Post-MVP toward MVP once a free/local tool was found); (3) **crisis protocol, chatbot-misuse guardrails, and resource-links deferred to Pillar 6 as new ticket T-125** with full context captured (Comments #2 and #3 — Kell's framing: allow free expression like Google Docs never halting a user, but respond well for legal-safety + genuine help; also research OpenAI Moderation API vs. Anthropic Constitutional AI built-in safety and consider parity). Added **T-124** (P3 voice narration, MVP-light via Voicebox). Created a scaffold P2 FigJam board (https://www.figma.com/board/6fwsiWYheAT5lVzgbXUh9C) but paused/did not review it. **T-119 token cap still unresolved:** reconfirmed the full loop budget is ~4,700 tokens (Dwelly conversation + prayer + journal synthesis combined) per the validated July 4-5 benchmark; the exact allocation/split across those three stages is documented in Pillar 0 + the LLM cost explainer and still needs to be pulled forward and locked (agent had erroneously proposed an unsupported 1,500 figure, corrected).
 
 **July 8, 2026 session:** Built the P1 (Capture) system design in FigJam as two separate Sections (Onboarding Capture, mandatory; Post-Onboarding Capture, optional), reviewed line-by-line with Kell across multiple correction rounds — container type (Frame → Section), connector z-order and magnet routing, two-spoke prompt-origin parity between both flows, split "cancel mid-capture" into two correctly-placed checks (mid-recording vs. mid-typing, distinct from declining Dwelly), and moved transcript review earlier in the flow (before the Dwelly loop, not after). Cross-checked against the live P0 board and removed a duplicated WhisperKit download-overlay/model-ready branch (already resolved by P0's T-097 install-time bundling). Designed the new **Dwelly Agent conversational loop** (engagement decision + token-cost cap, replacing an earlier simple "3 prompts" count per Kell's feedback that cost should be token-based). Added a "Formation Intelligence Connection" section to the Pillar 1 Notion page, tying the loop to the Reflective Density Model (L1-L8, MVMR = L2+L3+L4) and explicitly flagging that density-level detection isn't implemented yet — deferred to Pillar 6 work. Created two new Notion sub-pages under Pillar 1 (User Scenarios & Acceptance Criteria — 9 scenarios; Technical Tools Needed — built-vs-missing audit). Added T-118–T-123 (transcription accuracy, token-cost cap, Dwelly Agent LLM integration, review-vs-auto-send UI, cancel/dismiss UI, rotating prompt pool), mirrored to the Notion Tickets Base. Created a reusable `/figjam` skill codifying the FigJam conventions and script-safety gotchas (Section vs. Frame, color/shape legend grounded in Theme.swift, connector routing rules, a `throw`-causes-rollback bug that silently reverted edits for a large part of the session) so Pillar 2 goes faster. **Also discovered and fixed a real environment issue:** an entire session's worth of ticket edits had been applied to a stale, non-git-tracked duplicate at `/Users/kell/Dwellable-Native/Dwellable/` instead of this file — reconciled by re-applying the session's actual new content (T-118–T-123 + this note) onto the correct git-tracked copy.
 
@@ -254,8 +256,8 @@
   - Offline-first architecture (LocalStorageManager + SyncManager)
   - Phase 1 completion metrics: 100% adoption, 3-5 moments/user, >95% transcription accuracy
 
-- [x] **T-070 (Pillar 3):** Soaking Strategy Doc ✅ **COMPLETE**
-  - Created `PILLAR_3_SOAKING_STRATEGY.md` (200 lines)
+- [x] **T-070 (Pillar 3):** Prayer Strategy Doc ✅ **COMPLETE**
+  - Created `PILLAR_3_PRAYER_STRATEGY.md` (200 lines)
   - Four features: Gallery + Tags/Headlines + Soak Mode + Reflection Prompts
   - Prayer Flow + Prompts Flow (Socratic questions)
   - Success metric: WAR 40-50% by week 8
@@ -303,7 +305,7 @@
   - Next: Get architectural design from Kell, write strategy doc
 
 #### Pillar Architectural Designs — UPDATED (May 7, 2026 Session)
-**Context:** Journal Creation (formerly "Pillar 4: Editing" in PRD) was inserted after Soaking (Pillar 3), causing pillar renumbering. All subsequent pillars shifted up by 1. Architecture is now 0-8 (9 pillars total, with Pillar 9 deferred).
+**Context:** Journal Creation (formerly "Pillar 4: Editing" in PRD) was inserted after Prayer (Pillar 3), causing pillar renumbering. All subsequent pillars shifted up by 1. Architecture is now 0-8 (9 pillars total, with Pillar 9 deferred).
 
 - [x] **T-HYP (Pillar 4):** Journal Creation Strategy Doc ✅ **COMPLETE**
   - Created `P4_SUMMARY.html` (comprehensive specification)
@@ -384,7 +386,7 @@
   - Priority: HIGH
 
 - [ ] **T-078:** Wire Entries tab — Calendar + Month List (Untold-style) 🔲 **NOT STARTED**
-  - **UPDATED July 10, 2026:** Spec replaced with P5 Screen 1's locked design (folded in from the P5 Search & Discovery FigJam session — see `docs/DEPENDENCY_GRAPH.md` §0.18). Previous "Date range, prayer-tagged, prompt-engaged, soaking-depth" filter list is superseded and removed.
+  - **UPDATED July 10, 2026:** Spec replaced with P5 Screen 1's locked design (folded in from the P5 Search & Discovery FigJam session — see `docs/DEPENDENCY_GRAPH.md` §0.18). Previous "Date range, prayer-tagged, prompt-engaged, prayer-depth" filter list is superseded and removed.
   - Untold-style Calendar for the current month, ◀/▶ arrows to navigate months
   - That month's entries (moments + journals) listed below the calendar, newest first
   - Days with 1+ entries visually marked (dot/highlight)
@@ -405,7 +407,7 @@
   - Priority: HIGH
 
 - [ ] **T-080:** Build Insights dashboard (WAR, Formation Rate, etc.) 🔲 **NOT STARTED**
-  - Display metrics: Weekly Active Reflections (WAR), Formation Engagement Rate, Soaking Depth, Prayer Rate, D7 Retention, Avg Session Length
+  - Display metrics: Weekly Active Reflections (WAR), Formation Engagement Rate, Prayer Depth, Prayer Rate, D7 Retention, Avg Session Length
   - Visualizations: Line charts (trends), cards (current week stats)
   - Tap stat → detailed breakdown
   - Estimated effort: L (18-24 hours)
@@ -536,7 +538,7 @@
          - P0/P1 boundary explicitly locked: P0 ends at Screen 7 (Notification Permission); Screen 8 (First Capture) + all capture mechanics belong to P1
          - Notion page: "P0 User Scenarios & Acceptance Criteria - UPDATED (7-Screen Flow)"
        - ✅ **P1 (Capture): COMPLETE** — 9 scenarios + AC in Notion ("P1 User Scenarios & Acceptance Criteria"), plus "Technical Tools Needed" audit (built July 8, 2026)
-       - ✅ **P3 (Soaking/Prayer): COMPLETE** — 9 scenarios + AC in Notion ("P3 User Scenarios & Acceptance Criteria"), plus "Technical Tools Needed" audit (built July 9, 2026). **Audit surfaced two real cross-pillar blockers:** P3's context load has nothing to read until P1 ships archetype inference; PrayerArtifact's encrypted storage is hard-blocked on T-062, and its journal-embedding is soft-blocked on P4's (also not-yet-built) JournalEntry model.
+       - ✅ **P3 (Prayer): COMPLETE** — 9 scenarios + AC in Notion ("P3 User Scenarios & Acceptance Criteria"), plus "Technical Tools Needed" audit (built July 9, 2026). **Audit surfaced two real cross-pillar blockers:** P3's context load has nothing to read until P1 ships archetype inference; PrayerArtifact's encrypted storage is hard-blocked on T-062, and its journal-embedding is soft-blocked on P4's (also not-yet-built) JournalEntry model.
        - 🔲 **P2, P4-P8:** Same structure (one doc per pillar) — NEXT UP. P2 skipped for now per the cross-cutting-audit reframe (design after P1–P8); P4 (Journal Creation) is the natural next pillar since P3 hands off directly into it.
        - Flow specs, tool audit, and cost calculation emerge from scenarios
        - **July 2 prep work:** Finalized P0 design decisions (account creation timing, privacy language). Updated P1 with two-journey documentation (mandatory first capture vs optional ongoing). Established Notion safety protocols.
@@ -917,7 +919,7 @@
   - **Priority:** 🟡 MEDIUM (needed for Post-Onboarding capture to feel complete; not launch-blocking)
   - **Raised:** July 8, 2026 session (P1 Technical Tools Needed audit)
 
-### Pillar 3 (Soaking / Guided Prayer) — Comment Review Follow-ups (July 9, 2026 Session)
+### Pillar 3 (Prayer) — Comment Review Follow-ups (July 9, 2026 Session)
 **Context:** Reviewed the 4 Notion comments on the Pillar 3 page (2 discussion threads) with Kell before designing the P3 FigJam system design. Locked MVP decisions this session: prayer-resonance confirmation = **binary thumbs-up**; voice narration moves toward **MVP** (from Post-MVP) once a free/local tool (Voicebox) was identified; crisis-handling / chatbot-misuse guardrails / resource-links deferred to Pillar 6 (T-125). The P3 FigJam board itself was NOT yet built — that is next session's objective.
 
 - [ ] **T-124:** Prayer Reading Experience (MVP) — On-Screen Text + Background Music 🔲 **NOT STARTED**
@@ -1081,7 +1083,7 @@
 
 - [ ] **T-077 (Previously):** Create DWELLABLE_THOUGHTS.md catch-all file ✅ **COMPLETE**
   - Captures random architectural questions and design considerations
-  - Current entries: (1) Soaking reflection placement, (2) Reflection display format (conversational vs. final)
+  - Current entries: (1) Prayer reflection placement, (2) Reflection display format (conversational vs. final)
 
 ### Phase 2 Strategy & Planning
 - [x] **T-060:** Phase 2 Sign-Up & Onboarding Design ✅ **COMPLETE — Ready for Wireframing**
@@ -1176,13 +1178,13 @@
 
 ---
 
-### Phase 2 Core Pillar Implementation — Pillar 3 (Soaking/Responding)
+### Phase 2 Core Pillar Implementation — Pillar 3 (Prayer/Responding)
 - [ ] **T-063:** Build Prayer Flow (Design + Engineering) — Pillar 3
   - **Priority:** HIGH (Phase 2 Core)
-  - **Category:** Feature — Soaking/Responding to Captures (Pillar 3)
+  - **Category:** Feature — Prayer/Responding to Captures (Pillar 3)
   - **Status:** 🔲 NOT STARTED
   - **Description:**
-    Implement the Prayer flow for Soaking — when users return to moments, offer a guided, contemplative response experience with optional reflection.
+    Implement the Prayer flow for Prayer — when users return to moments, offer a guided, contemplative response experience with optional reflection.
     
     Users tap "Pray" button on a moment → lands in Prayer flow → sees optional guided prompt → can respond with own prayer/reflection → response saved for later review.
   - **Design Requirements (From Pillar 3):**
@@ -1214,14 +1216,14 @@
   - **When to do:** Week 2 of Phase 2 implementation (after T-062 encryption complete)
   - **Dependencies:** Pillar 1 (Capture) ✅ | T-062 (E2E Encryption) must be in progress
   - **Blocks:** T-065, T-066 (Pillar 3 completion + Pillar 6 integration)
-  - **Context:** Prayer is one of two core Soaking flows. Users need a guided but non-prescriptive way to respond spiritually to captured moments.
+  - **Context:** Prayer is one of two core Prayer flows. Users need a guided but non-prescriptive way to respond spiritually to captured moments.
 
 - [ ] **T-064:** Build Prompts Flow (Design + Engineering) — Pillar 3
   - **Priority:** HIGH (Phase 2 Core)
-  - **Category:** Feature — Soaking/Responding to Captures (Pillar 3)
+  - **Category:** Feature — Prayer/Responding to Captures (Pillar 3)
   - **Status:** 🔲 NOT STARTED
   - **Description:**
-    Implement the Prompts flow for Soaking — sequential dialogue that helps users discover their own insights through Socratic questioning.
+    Implement the Prompts flow for Prayer — sequential dialogue that helps users discover their own insights through Socratic questioning.
     
     Users tap "Reflect" button on a moment → lands in Prompts flow → sees contextual reflection prompt #1 → user responds → shown prompt #2 → user responds → etc. → responses saved.
   - **Design Requirements (From Pillar 3):**
@@ -1258,9 +1260,9 @@
   - **Blocks:** T-065, T-066 (Pillar 3 completion + Pillar 6 integration)
   - **Context:** Prompts enable deeper reflection than prayer alone. Users discover their own insights through guided questioning (never interpretation).
 
-- [ ] **T-065:** Rich Context Integration for Soaking Flows (Design + Engineering) — Pillar 3
+- [ ] **T-065:** Rich Context Integration for Prayer Flows (Design + Engineering) — Pillar 3
   - **Priority:** HIGH (Phase 2 Foundation)
-  - **Category:** Feature — Rich Context + Soaking Integration
+  - **Category:** Feature — Rich Context + Prayer Integration
   - **Status:** 🔲 NOT STARTED
   - **Description:**
     Integrate Rich Context data into Prayer and Prompts flows, enabling hyper-personalized prompts and responses that reference user's actual story.
@@ -1299,14 +1301,14 @@
   - **When to do:** Week 3-4 of Phase 2 implementation (after T-063, T-064 flows built)
   - **Dependencies:** T-063 (Prayer), T-064 (Prompts), T-066 (Response persistence) in progress
   - **Blocks:** Pillar 6 (Formation Intelligence) theme surfacing, Pillar 8 (Notifications) contextual nudges
-  - **Context:** Rich Context is the foundational principle for Phase 2. Without it, Soaking flows are generic. With it, Dwellable feels like it knows the user.
+  - **Context:** Rich Context is the foundational principle for Phase 2. Without it, Prayer flows are generic. With it, Dwellable feels like it knows the user.
 
 - [ ] **T-066:** Response Persistence & History (Engineering) — Pillar 3
   - **Priority:** HIGH (Phase 2 Foundation)
   - **Category:** Feature — Data Persistence
   - **Status:** 🔲 NOT STARTED
   - **Description:**
-    Implement backend schema and client logic for persisting all Soaking responses (prayer + prompts). Users should see:
+    Implement backend schema and client logic for persisting all Prayer responses (prayer + prompts). Users should see:
     - All their prayers/reflections on a moment (chronologically)
     - Ability to review and add more responses later
     - Responses encrypted end-to-end (T-062)
@@ -1337,7 +1339,7 @@
   - **When to do:** Week 2-3 of Phase 2 implementation (parallel to T-063, T-064)
   - **Dependencies:** T-062 (Encryption required), T-063 & T-064 (Flows to save to)
   - **Blocks:** Nothing — enables T-063 & T-064 to fully function
-  - **Context:** Response persistence is the foundation for all Soaking features. Without it, user's spiritual work on moments is lost.
+  - **Context:** Response persistence is the foundation for all Prayer features. Without it, user's spiritual work on moments is lost.
 
 - [ ] **T-062:** Implement End-to-End Encryption for Moments (Phase 2 Security/Privacy Pillar)
   - **Priority:** BLOCKING (Phase 2 Foundation — brand trust requirement)
@@ -1838,7 +1840,7 @@ T-011 · T-012 · T-013 · T-027 · T-028
 | WhisperKit Improvements (Phase 2) | 1 | 0 | 0 | 1 |
 | Console Logging (Phase 2) | 1 | 0 | 0 | 1 |
 | Phase 2 Pillar 2 Implementation (Security & Privacy) | 1 | 0 | 0 | 1 |
-| Phase 2 Pillar 3 Implementation (Soaking/Responding) | 4 | 0 | 0 | 4 |
+| Phase 2 Pillar 3 Implementation (Prayer/Responding) | 4 | 0 | 0 | 4 |
 | Pillar Strategy Docs (May 5-6 Session) | 8 | 8 | 0 | 0 |
 | Pillar 6 Implementation (May 6 Session) | 7 | 0 | 0 | 7 |
 | Pillar 7 Implementation (May 6 Session) | 9 | 0 | 0 | 9 |
@@ -2028,8 +2030,8 @@ T-011 · T-012 · T-013 · T-027 · T-028
     - Competitor research: Untold (calendar + list), Reflection.app (multi-select), Apple Calendar/Notes (full-text), Bible App (unified discovery)
     - Implementation tickets: T-071, T-072, T-073, T-074 (not started)
   - **DWELLABLE_THOUGHTS.md** created as catch-all for architectural questions/considerations
-    - Current entries: (1) Soaking reflection placement (fullscreen vs. list context), (2) Reflection display format (conversational vs. final journal)
-    - First architectural thought submitted: soaking per reflection should be fullscreen/immersive (Option A)
+    - Current entries: (1) Prayer reflection placement (fullscreen vs. list context), (2) Reflection display format (conversational vs. final journal)
+    - First architectural thought submitted: prayer per reflection should be fullscreen/immersive (Option A)
 
 - **Remaining pillars identified:**
   - **Pillar 2 (Security & Privacy):** Architectural design provided by Kell (E2E encryption, AES-256-GCM, Argon2id)
@@ -2068,7 +2070,7 @@ Open each of the following in order and walk through happy paths, asking for fee
 
 3. **P7_FORMATION_INTELLIGENCE_STRATEGY.md** (5 happy paths)
    - Discover emerging theme (3+ occurrences)
-   - Explore themes in reflection (linked from Soaking)
+   - Explore themes in reflection (linked from Prayer)
    - Weekly theme summary
    - Filter search by theme
    - Monthly formation review
@@ -2220,7 +2222,7 @@ Enable users to ask questions about ALL their reflections at once and receive sy
 
 **T-HYP-P7-LOCK:** Pillar 7 (Formation Intelligence) Review & Lock  
 **Status:** 🔄 READY FOR REVIEW (HTML form created, user to complete next session)  
-**File:** `/Users/kell/Desktop/Dwellable-Native/Dwellable/docs/REVIEW_P7_FORMATION_INTELLIGENCE.html`  
+**File:** `/Volumes/Backup Plus/Dwellable-Native/Dwellable/docs/REVIEW_P7_FORMATION_INTELLIGENCE.html`  
 **Key Unlock Pillar:** Determines paywall strategy (P5), multi-journal view feasibility (P6), monetization across entire product  
 **5 Happy Paths (all CORE):** Discover emerging themes, Explore in reflection, Weekly summary, Filter by theme, Monthly formation review  
 **8 Locked Decisions:** Theme detection at 3+, Rich Context required, Invitational framing, No interpretation, User language for themes, Theme linking, Timeline view, Privacy by default  

@@ -42,7 +42,7 @@
 
 **How Settings feeds Formation Intelligence to next pillars:**
 - **← P0 (Onboarding):** Settings displays & allows editing of intent + prayer rhythm set in P0
-- **→ Growth:** Prayer frequency preference flows into Growth's calculation of expected soaking engagement
+- **→ Growth:** Prayer frequency preference flows into Growth's calculation of expected prayer engagement
 - **→ Notifications (P8):** Notification preferences + intent feedback inform what/when to notify
 - **→ P7 (Beta):** Feedback + bug reports feed cohort segmentation and feature prioritization
 

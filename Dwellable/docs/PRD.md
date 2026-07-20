@@ -74,7 +74,7 @@ Pattern surfacing, semantic search across moments, themed views, optional biblic
 
 ## Section 2: Pillars (Phase 2+)
 
-**Pillar Architecture Update (May 7, 2026):** Journal Creation has been inserted after Soaking/Prayer (Pillar 3), shifting subsequent pillars from 4→5, 5→6, 6→7, 7→8. Total structure is now 0-8 (9 pillars).
+**Pillar Architecture Update (May 7, 2026):** Journal Creation has been inserted after Prayer (Pillar 3), shifting subsequent pillars from 4→5, 5→6, 6→7, 7→8. Total structure is now 0-8 (9 pillars).
 
 ### Pillar 0: Onboarding (Sign-Up & Account Setup)
 
@@ -138,12 +138,12 @@ Pattern surfacing, semantic search across moments, themed views, optional biblic
 
 ---
 
-### Pillar 3: Soaking/Responding to Captures (Prayer + Prompts)
+### Pillar 3: Prayer (Responding to Captures)
 
 **Status:** ✅ Design Complete, Implementation Not Started  
 **Locked:** 2-option skeleton (Prayer + Prompts), Rich Context powered, invitational framing ("Want to?"), Gallery + Soak Mode + Reflection Prompts + Notifications architecture
 
-**Design Skeleton:** See [`docs/PILLAR_3_SOAKING_STRATEGY.md`](PILLAR_3_SOAKING_STRATEGY.md) for full design specification, competitor research (Prayer Lock, Untold, Calm, Medito, Dwell, Day One, Stoic), skeletal system architecture, and success metrics (WAR 40-50% by week 8).
+**Design Skeleton:** See [`docs/PILLAR_3_PRAYER_STRATEGY.md`](PILLAR_3_PRAYER_STRATEGY.md) for full design specification, competitor research (Prayer Lock, Untold, Calm, Medito, Dwell, Day One, Stoic), skeletal system architecture, and success metrics (WAR 40-50% by week 8).
 
 **Core Concept:**  
 When users return to past moments, offer two contextual pathways:
@@ -166,7 +166,7 @@ Both powered by Rich Context to reference user's actual story and themes. Galler
 *(To be created after design skeleton locked)*
 - T-XXX: Prayer flow (design + engineering) — Guided contemplative response, optional prompt
 - T-XXX: Prompts flow (design + engineering) — Sequential dialogue, user discovery
-- T-XXX: Rich Context integration for Soaking (design + engineering) — Reference user's story, themes, patterns
+- T-XXX: Rich Context integration for Prayer (design + engineering) — Reference user's story, themes, patterns
 - T-XXX: Response persistence (engineering) — Store responses, track completion status
 - *(Dependencies: Pillar 1 (Capture), Pillar 2 (Encryption T-062) must be complete)*
 
@@ -177,7 +177,7 @@ Both powered by Rich Context to reference user's actual story and themes. Galler
 **Status:** ✅ Design Complete (P4_SUMMARY.html), Implementation Ready  
 **Locked:** LLM-powered synthesis (title + body), Rich Context powered, Dwelling Place tab as home, photo management v1, mood/tag selection, editability (detail view only), soft delete capability
 
-**Design Skeleton:** See [`docs/P4_SUMMARY.html`](P4_SUMMARY.html) for complete design specification including 6-step happy path (capture → synthesis → journal editing), journal artifact structure, LLM output format, 10 locked decisions, and integration points with Pillar 3 (Soaking).
+**Design Skeleton:** See [`docs/P4_SUMMARY.html`](P4_SUMMARY.html) for complete design specification including 6-step happy path (capture → synthesis → journal editing), journal artifact structure, LLM output format, 10 locked decisions, and integration points with Pillar 3 (Prayer).
 
 **Core Intent:** Transform captured voice conversation into a synthesized journal entry using Rich Context (conversation history + themes) to generate personalized title and body. Enable users to dwell on their moments through a beautifully composed narrative, then attach guided prayer for reflection.
 
@@ -244,7 +244,7 @@ struct JournalEntry: Codable {
 - T-XXX: Soft delete capability (archive vs permanent delete flow)
 - T-XXX: Rich Context integration for synthesis (conversation history + themes)
 - T-XXX: Encryption for journal entries (AES-256-GCM)
-- *(Dependencies: Pillar 1 (Capture), Pillar 2 (Encryption T-062), Pillar 3 (Soaking) must be complete)*
+- *(Dependencies: Pillar 1 (Capture), Pillar 2 (Encryption T-062), Pillar 3 (Prayer) must be complete)*
 
 ---
 
@@ -330,7 +330,7 @@ Detect recurring themes across moments (anxiety, joy, relational moments, breakt
 **Phase 2 Scope:**  
 - Theme detection (Socratic, not prescriptive) — detect patterns in user's own language
 - Text-based pattern surfacing (e.g., "You've reflected on doubt 8 times in the past month. What patterns do you notice?")
-- Integration with Soaking flows (reference themes in prayer/prompts, enabling contextual reflection)
+- Integration with Prayer flows (reference themes in prayer/prompts, enabling contextual reflection)
 - Theme dashboard or insights view (optional pull-based surfacing)
 
 **Post-Launch Scope:**  
@@ -352,10 +352,10 @@ Detect recurring themes across moments (anxiety, joy, relational moments, breakt
 *(To be created after design skeleton is locked)*
 - T-XXX: Theme detection algorithm (design + engineering)
 - T-XXX: Rich Context integration for theme surfacing (engineering)
-- T-XXX: Surface themes in Soaking prompts (integration)
+- T-XXX: Surface themes in Prayer prompts (integration)
 - T-XXX: Theme dashboard/insights UI (design + engineering)
 - T-XXX: Theme-based filters in Search (integration with Pillar 6)
-- *(Dependencies: Pillar 3 (Soaking), Pillar 4 (Journal Creation), Rich Context architecture)*
+- *(Dependencies: Pillar 3 (Prayer), Pillar 4 (Journal Creation), Rich Context architecture)*
 
 ---
 
@@ -409,7 +409,7 @@ Expand from Phase 1 personal dogfooding to Phase 2 closed beta with targeted use
 Pattern detection + contextual nudges. When user reflects on a theme 3+ times without prayer, send gentle notification: *"You reflected on anxiety, but haven't prayed. Want to now?"* Invitational, not prescriptive. Use Rich Context to make nudges deeply personal.
 
 **Why Deferred:**  
-We need to confirm what experiences we are creating (Pillars 1-8) and validate user behavior in Phase 2 before knowing what we are notifying dwellers of. Notifications requires all other pillars (Capture, Soaking, Search, Formation Intelligence) to exist and be validated in production first.
+We need to confirm what experiences we are creating (Pillars 1-8) and validate user behavior in Phase 2 before knowing what we are notifying dwellers of. Notifications requires all other pillars (Capture, Prayer, Search, Formation Intelligence) to exist and be validated in production first.
 
 **Open Questions (Design Phase):**
 - When should nudges arrive (day after? after 3rd moment? week later)?
@@ -428,7 +428,7 @@ We need to confirm what experiences we are creating (Pillars 1-8) and validate u
 - T-XXX: Pattern detection + theme identification (engineering)
 - T-XXX: Notification scheduling + delivery (engineering)
 - T-XXX: User notification preferences UI (design + engineering)
-- *(Dependencies: Pillars 3 (Soaking), 7 (Formation Intelligence) must be complete and validated)*
+- *(Dependencies: Pillars 3 (Prayer), 7 (Formation Intelligence) must be complete and validated)*
 
 ---
 

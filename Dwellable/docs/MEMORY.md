@@ -1,5 +1,13 @@
 # Dwellable Native — Session Memory
 
+## 🔄 Permanent Naming Change (July 20, 2026)
+
+**"Soaking" → "Prayer" / "Pray", everywhere, permanently.** Pillar 3 was originally named "Soaking" (also seen as "Soaking/Guided Prayer," "Soaking (Guided Prayer)" throughout earlier sessions below). Kell's reasoning: "Soaking" reads as a Protestant/Pentecostal-specific term for a particular prayer practice — too narrow/denominational for what this pillar actually is, and less widely understood than just calling it "Prayer." Renamed permanently across the pillar's own name, every other pillar's docs/FigJam boards that reference it, `PRD.md`, `DEPENDENCY_GRAPH.md`, `TICKETS.md`/`.csv`, and the strategy file itself (`PILLAR_3_SOAKING_STRATEGY.md` → `PILLAR_3_PRAYER_STRATEGY.md`). Field name `has_soaking` → `has_prayed` (P10's unprayed-moment query).
+
+**Historical sessions below still say "Soaking"** — left as-is intentionally, since they're a dated record of what was actually decided/discussed at the time. If you're reading an old session entry and see "Soaking," it means "Prayer" as understood today; no need to mentally substitute anything else.
+
+---
+
 ## 🚨 Blocking Items
 
 **Comments #5, #6, #7 on Pillar 0 (Notion)** — Comments #1–#4 resolved. Next work: resolve final three Pillar 0 comments, then begin T-092 (P0 User Scenarios).
@@ -765,7 +773,7 @@ Editing strategy (headlines, tags, moods) locked. Shortly after, on May 10, this
 **PRIMARY TASK:** Complete Pillars 7 & 8 Review & Lock, Then Begin Implementation Ticket Generation
 
 **Step 1: Pillar 7 (Formation Intelligence) — Review & Lock**
-1. User opens `/Users/kell/Desktop/Dwellable-Native/Dwellable/docs/REVIEW_P7_FORMATION_INTELLIGENCE.html`
+1. User opens `/Volumes/Backup Plus/Dwellable-Native/Dwellable/docs/REVIEW_P7_FORMATION_INTELLIGENCE.html`
 2. Review 5 happy paths (all CORE, likely approve all)
 3. Confirm 8 locked decisions
 4. **Decide 5 critical tentative decisions:**

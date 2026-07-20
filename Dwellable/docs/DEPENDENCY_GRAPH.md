@@ -21,7 +21,7 @@ This graph was last substantively updated May 14, 2026 and predates several deci
 
 4. **New cross-pillar blocker discovered: PrayerArtifact storage → T-062 (hard) + P4 JournalEntry model (soft).** This session locked that prayer artifacts must be **stored with the journal entry**, not merely linked to the moment. Two consequences not previously captured here: **(a)** PrayerArtifact cannot ship encrypted-at-rest until T-062 lands (hard blocker — same relationship P0's Screen 6 privacy copy already depends on), and **(b)** the journal-embedding relationship depends on P4's JournalEntry model existing, which — per the P3 audit's codebase search — **does not exist in code yet either**, despite P4's PRD status reading "Design Complete, Implementation Ready." Recommend P3 ship with `journalEntryId`/resonance fields nullable/stubbed until both land, rather than blocking P3 engineering entirely on P4 completing first.
 
-5. **P3 MVP scope corrections not yet reflected below:** §5's "P3 (Soaking) — guided prayer only (no open-ended prompts MVP)" is **still accurate** — the July 9 FigJam session confirmed prayer-only for MVP and moved the "Prompts" (Socratic reflection) alternative to Post-MVP backlog, consistent with what this doc already assumed. No correction needed there.
+5. **P3 MVP scope corrections not yet reflected below:** §5's "P3 (Prayer) — guided prayer only (no open-ended prompts MVP)" is **still accurate** — the July 9 FigJam session confirmed prayer-only for MVP and moved the "Prompts" (Socratic reflection) alternative to Post-MVP backlog, consistent with what this doc already assumed. No correction needed there.
 
 **Corrections/additions from the P4 (July 9, same evening) audit:**
 
@@ -51,7 +51,7 @@ This graph was last substantively updated May 14, 2026 and predates several deci
 
 17. **"Ask a Question" (Post-MVP, LLM-powered natural-language querying) will depend on whatever LLM infrastructure P7 (Formation Intelligence) eventually builds.** Flagged here for future tracking only — explicitly out of scope for P5's MVP, not yet an active dependency.
 
-18. **RESOLVED (July 10, 2026, same session): Kell decided on §0.12's open question — both P5 screens are now MVP.** (a) **Screen 1 is not separate work** — it's folded directly into **T-078** (P6's "Wire Entries tab to full moments list + filters" ticket), which was already MVP-critical. T-078's spec is corrected below (§7) to the real locked design: Untold-style calendar + that month's entries, tap-a-day to filter — replacing its previous vague "Date range, prayer-tagged, prompt-engaged, soaking-depth" filter list, which predates P3/P4/P5's actual locked designs. (b) **Screen 2 is elevated from Post-MVP to a full MVP feature** — new ticket **T-128** (§7). Since its real blockers (P3, P4, T-062) all resolve by the time P4 finishes, it runs *parallel* to P6/Today/Growth (§4, §6) rather than extending the critical path — MVP timeline is unaffected. (c) **T-062's schedule position doesn't actually need to change** — on inspection, §4/§7 already had it starting parallel to P0 (right after Auth), which is correctly early. The real correction is *urgency of execution*, not timing: it's still 🔲 Not Started with zero code despite being scheduled first, and its blocking radius has grown to three pillars (P3, P4, P5) — treat it as the single most time-sensitive engineering task in this graph, not just a well-scheduled one.
+18. **RESOLVED (July 10, 2026, same session): Kell decided on §0.12's open question — both P5 screens are now MVP.** (a) **Screen 1 is not separate work** — it's folded directly into **T-078** (P6's "Wire Entries tab to full moments list + filters" ticket), which was already MVP-critical. T-078's spec is corrected below (§7) to the real locked design: Untold-style calendar + that month's entries, tap-a-day to filter — replacing its previous vague "Date range, prayer-tagged, prompt-engaged, prayer-depth" filter list, which predates P3/P4/P5's actual locked designs. (b) **Screen 2 is elevated from Post-MVP to a full MVP feature** — new ticket **T-128** (§7). Since its real blockers (P3, P4, T-062) all resolve by the time P4 finishes, it runs *parallel* to P6/Today/Growth (§4, §6) rather than extending the critical path — MVP timeline is unaffected. (c) **T-062's schedule position doesn't actually need to change** — on inspection, §4/§7 already had it starting parallel to P0 (right after Auth), which is correctly early. The real correction is *urgency of execution*, not timing: it's still 🔲 Not Started with zero code despite being scheduled first, and its blocking radius has grown to three pillars (P3, P4, P5) — treat it as the single most time-sensitive engineering task in this graph, not just a well-scheduled one.
 
 ---
 
@@ -91,7 +91,7 @@ This graph was last substantively updated May 14, 2026 and predates several deci
                 ▼
          ┌──────────────┐
          │   P3         │
-         │  Soaking     │
+         │  Prayer     │
          │  (Prayer)    │
          └──────┬───────┘
                 │
@@ -137,7 +137,7 @@ SUPPORTING LAYERS (Parallel to Core):
 | **P0 (Onboarding)** | Auth | P1 | ✅ YES | No |
 | **P2 (Encryption)** | Auth, P0 | All data ops | ✅ YES | Yes (infrastructure) |
 | **P1 (Capture)** | P0, Auth, P2 | P3, P4, Today | ✅ YES | No |
-| **P3 (Soaking)** | P1, P2 | P4, P8 | ✅ YES | No |
+| **P3 (Prayer)** | P1, P2 | P4, P8 | ✅ YES | No |
 | **P4 (Journal)** | P1, P3, P2 | P5, P7, Growth | ✅ YES | No |
 | **P5 (Search) — Screen 2 only (Filters/Query)** | P1, P3 (resonance), P4 (JournalEntry, Mood/Object as reusable components), T-062 | None | ✅ YES — elevated to MVP July 10, 2026 (see §0.18) | Yes (after P4, parallel to P6/Today/Growth) |
 | **P6 (Menu Bar)** | P0–P4 | Navigation | ✅ YES | Yes (after P4) — **T-078 (Entries tab) now includes P5 Screen 1's calendar/list spec, folded in July 10, 2026** |
@@ -160,7 +160,7 @@ P0: Onboarding (T-076, T-077, T-078)
     ↓ (2–3 weeks)
 P1: Capture (T-079, T-080)
     ↓ (2–3 weeks)
-P3: Soaking/Prayer (T-082, T-083)
+P3: Prayer (T-082, T-083)
     ↓ (2–3 weeks)
 P4: Journal Creation (T-084, T-085)
     ↓ (1–2 weeks)
@@ -207,7 +207,7 @@ These pillars can be built in parallel with the critical path, not blocking laun
 - ✅ P0 (Onboarding) — all 7 screens
 - ✅ P1 (Capture) — voice + text, contextual prompts
 - ✅ P2 (Encryption) — E2E encryption, key derivation
-- ✅ P3 (Soaking) — guided prayer only (no open-ended prompts MVP)
+- ✅ P3 (Prayer) — guided prayer only (no open-ended prompts MVP)
 - ✅ P4 (Journal) — AI synthesis, mood selection
 - ✅ P6 (Menu Bar) — 4-tab navigation (Today, Entries, Create, Growth); **Entries tab (T-078) now includes P5 Screen 1's Untold-style calendar + month list, folded in July 10, 2026**
 - ✅ **P5 Search Screen 2 (elevated July 10, 2026)** — dedicated Search page: keyword + Mood/Object/Prayed filter shortcuts, AND logic, real-time results
@@ -248,7 +248,7 @@ WEEK 3–4:    P0 (Onboarding) ════════════════�
              P2 (Encryption) ════════════════════════════════  [Parallel]
 WEEK 5–6:    P1 (Capture) ═══════════════════════════════════
              Settings ════════════════════════════════════════  [Parallel]
-WEEK 7–8:    P3 (Soaking) ═══════════════════════════════════
+WEEK 7–8:    P3 (Prayer) ═══════════════════════════════════
              P7 (Formation Intel) ══════════════════════════    [Parallel start]
 WEEK 9–10:   P4 (Journal) ═══════════════════════════════════
              P7 (Formation Intel) ═══════════════════════════  [Parallel end]
@@ -293,9 +293,9 @@ POST-LAUNCH (WEEK 15–16):
    - T-079: Voice capture + transcription
    - T-080: Text capture + contextual prompts
 
-5. **P3 Soaking/Prayer** (2–3 weeks, starts after P1)
+5. **P3 Prayer** (2–3 weeks, starts after P1)
    - T-082: Prayer generation (LLM integration)
-   - T-083: Soaking flow (prayer display + engagement signal)
+   - T-083: Prayer flow (prayer display + engagement signal)
 
 6. **P4 Journal Creation** (2–3 weeks, starts after P3)
    - T-084: LLM synthesis (title + body generation)
@@ -303,7 +303,7 @@ POST-LAUNCH (WEEK 15–16):
 
 7. **P6 Menu Bar** (1–2 weeks, starts after P4)
    - T-076: 4-tab navigation (Today, Entries, Create, Growth)
-   - T-078: Entries tab — **now includes P5 Screen 1's locked spec (Untold-style calendar + that month's entries, tap-a-day to filter), folded in July 10, 2026, replacing its previous generic "Date range/prayer-tagged/prompt-engaged/soaking-depth" filter placeholder**
+   - T-078: Entries tab — **now includes P5 Screen 1's locked spec (Untold-style calendar + that month's entries, tap-a-day to filter), folded in July 10, 2026, replacing its previous generic "Date range/prayer-tagged/prompt-engaged/prayer-depth" filter placeholder**
 
 **Phase 3: Supporting Experiences (Weeks 6–12, Parallel)**
 
@@ -325,7 +325,7 @@ POST-LAUNCH (WEEK 15–16):
     - T-XXX: Integration with P1 + P3 data
 
 11. **Growth Tab** (1–2 weeks, parallel to P6)
-    - T-XXX: Formation Overview (captures, prayers, soaking %, preference)
+    - T-XXX: Formation Overview (captures, prayers, prayer %, preference)
     - T-XXX: Emotional Themes (without P7 integration, use P4 mood data)
     - T-XXX: Settings subsection
 
@@ -348,7 +348,7 @@ POST-LAUNCH (WEEK 15–16):
 | ~~LLM selection not locked~~ **RESOLVED** | ~~Lock Gemini 2.0 Flash → Mistral 7B~~ — **Superseded May 15, 2026: Groq Llama 3.3 70B (primary) → GPT-4o mini (backup), via Vercel AI SDK.** Live-benchmarked July 4-5 (4,705 tokens/loop, ~$0.00084/loop). Token allocation across Dwelly/prayer/journal locked July 9 (T-119). | CTO/LLM owner |
 | **Supabase auth setup delayed** | Have Supabase project + auth tables ready before Auth pillar starts | Infra engineer |
 | **Encryption T-062 not complete** | P2 (redesigned as cross-cutting audit, not standalone pillar) must complete before P1 ships data; also now a confirmed hard blocker for P3's PrayerArtifact encrypted storage (see §0.4) | Crypto engineer |
-| **LLM API integration slow** | P3 prayer generation needs low-latency LLM calls (<3s per PILLAR_3_SOAKING_STRATEGY.md); test early against real Groq/GPT-4o mini latency for the prayer-generation prompt shape specifically | Backend/LLM owner |
+| **LLM API integration slow** | P3 prayer generation needs low-latency LLM calls (<3s per PILLAR_3_PRAYER_STRATEGY.md); test early against real Groq/GPT-4o mini latency for the prayer-generation prompt shape specifically | Backend/LLM owner |
 | **Email service unreliable** | Password reset emails must deliver >99%; use SendGrid or Supabase email function | Email infra owner |
 | **Rich Context context size exceeds token limit** | Test P4 journal synthesis with large moment histories; may need chunking strategy | LLM/Backend owner |
 | **Key derivation too slow on device** | Argon2id ~1 second on iPhone 13; test on slower devices (iPhone 12) | iOS engineer |
@@ -373,7 +373,7 @@ POST-LAUNCH (WEEK 15–16):
 | **P0 Onboarding** | iOS Engineer | Frontend |
 | **P1 Capture** | iOS Engineer + Backend | — |
 | **P2 Encryption** | Crypto/Security Engineer | Backend |
-| **P3 Soaking** | Backend + LLM Engineer | — |
+| **P3 Prayer** | Backend + LLM Engineer | — |
 | **P4 Journal** | Backend + LLM Engineer | — |
 | **P5 Search** | Backend Engineer | iOS |
 | **P6 Menu Bar** | iOS Engineer | Frontend |
