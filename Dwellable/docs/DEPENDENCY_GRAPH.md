@@ -1,61 +1,102 @@
 # Pillar Dependency Graph — Phase 2 Implementation Sequencing
 
-**Status:** Locked for T-092 Phase 2 Launch Readiness  
-**Last Updated:** July 10, 2026 (reconciled with P1/P3/P4/P5 Technical Tools Needed audits — see §0)
+**Status:** Locked for T-092 Phase 2 Launch Readiness
+**Last Updated:** July 21, 2026 (Pillar numbering correction; Pillar 6 MVP scope pivot to the Dweller Profile; P9/P10/P11 formalized as their own pillars; P8/P11 changes folded in)
 
 ---
 
-## 0. July 9, 2026 Update — Findings From Per-Pillar Audits (Read This First)
+## 0. Numbering Correction (Read This First — July 21, 2026)
 
-This graph was last substantively updated May 14, 2026 and predates several decisions made since. Rather than rewrite it wholesale, this section reconciles what's changed; the sections below retain their original content except where explicitly corrected inline.
+This document's original diagram, matrix, and build-order sections were written before the May 10, 2026 pillar renumbering fully propagated here, and use a stale scheme. Corrected mapping:
 
-**Process going forward:** as each pillar's "User Scenarios + Acceptance Criteria" and "Technical Tools Needed" audit is completed (T-092 deliverable 4), fold any newly-discovered dependency directly into this graph at that time — not deferred to one big reconciliation pass at the end. This is what closed the May 8–15 memory-desync gap; the same discipline applies here so this graph doesn't go stale the same way.
+- What this doc originally called **"P6 (Menu Bar)"** is not a standalone pillar. Menu Bar/Navigation is a thin integration layer (the tab-hosting tickets T-076–T-082, confirmed July 11, 2026) — it hosts tabs designed by other pillars and doesn't get its own pillar number. Referred to below as the **Navigation Shell**.
+- What this doc originally called **"P7 (Formation Intelligence)"** is **P6**, per the May 10, 2026 renumbering. All references below are corrected.
+- **P7** is actually **Beta & Marketing** — not yet represented in this graph; not yet started (see TICKETS.md pillar sequence).
+- **"Settings," "Today Tab," and "Growth Tab"** were originally informal supporting labels in this graph. They are now fully-designed pillars — **P9 (Account Profile)**, **P10 (Today)**, **P11 (Growth)** — each with a locked FigJam system design, User Scenarios/AC, and Technical Tools Needed audit. Referenced by their proper numbers below.
+
+The historical audit corrections in §0-A predate this fix and use the old "P7 = Formation Intelligence" language in places — read them with this correction in mind rather than as contradictory.
+
+---
+
+## 0-A. July 9–10, 2026 Update — Findings From Per-Pillar Audits (Historical Record)
+
+This graph was last substantively updated May 14, 2026 and predated several decisions made since. Rather than rewrite it wholesale at the time, this section reconciled what had changed; retained here as the historical audit trail.
+
+**Process established here:** as each pillar's "User Scenarios + Acceptance Criteria" and "Technical Tools Needed" audit is completed (T-092 deliverable 4), fold any newly-discovered dependency directly into this graph at that time — not deferred to one big reconciliation pass at the end. This is what closed the May 8–15 memory-desync gap; the same discipline applies here so this graph doesn't go stale the same way. *(Note: it did go stale again on the pillar-numbering front — see §0 above. The discipline held for content; it didn't catch a renumbering that happened elsewhere. Worth remembering next time a pillar gets renumbered: grep this file too.)*
 
 **Corrections/additions from the P1 (July 8) and P3 (July 9) audits:**
 
-1. **LLM selection superseded.** This doc (§8 Risk Dependencies) still references "Gemini 2.0 Flash → Mistral 7B" — that was superseded May 15, 2026. **Actual locked decision: Groq Llama 3.3 70B (primary, free) → GPT-4o mini (backup, paid)**, via Vercel AI SDK. See the Notion "🧠 LLM Decision (LOCKED)" page.
+1. **LLM selection superseded.** §8 originally referenced "Gemini 2.0 Flash → Mistral 7B" — superseded May 15, 2026. **Actual locked decision: Groq Llama 3.3 70B (primary, free) → GPT-4o mini (backup, paid)**, via Vercel AI SDK. See the Notion "🧠 LLM Decision (LOCKED)" page.
 
-2. **P2 (Encryption) is no longer a standalone pillar in the build sequence.** Per Kell's July 9 correction, encryption is a cross-cutting layer that must be designed across every data-capturing pillar (capture, prayer, journal, settings) — not a single isolated pillar slotted in parallel to P0. **This graph's treatment of P2 as a parallel-track pillar (§1 diagram, §2 matrix, §7 build order) is now considered directionally correct for engineering sequencing purposes (encryption infra can still be built early/in parallel) but the *design* work for P2 happens as a holistic audit after P1–P8 experience pillars are designed, not up front.** T-062 (E2E Encryption implementation) remains a real, still-unstarted blocking ticket regardless of when the design audit happens.
+2. **P2 (Encryption) is no longer a standalone pillar in the build sequence.** Encryption is a cross-cutting layer designed across every data-capturing pillar (capture, prayer, journal, settings), not a single isolated pillar. Engineering sequencing (§1/§2/§7) can still treat it as parallel-track infrastructure; the *design* work happens as a holistic audit after experience pillars are designed. T-062 (E2E Encryption implementation) remains a real, still-unstarted blocking ticket regardless.
 
-3. **New cross-pillar blocker discovered: P1 archetype inference → P3 Load Context.** P3's "Load Context" step (Rich Context, MVP-scoped to the immediate reflection only) needs the user's archetype (Jotter/Venter/Processor) as input. P1's own Technical Tools Needed audit (July 8) confirmed archetype inference is **not implemented in code** — it's inferred passively per the design, but no code does this yet. **P3 engineering cannot fully deliver contextual prayers until P1 ships this.** Not previously visible in this graph's P1→P3 arrow (§1), which only labeled the dependency "moments needed" — it's more specific than that.
+3. **Cross-pillar blocker: P1 archetype inference → P3 Load Context.** P3's Rich Context step needs the user's archetype (Jotter/Venter/Processor) as input. P1's audit confirmed archetype inference is **not implemented in code** yet. P3 engineering cannot fully deliver contextual prayers until P1 ships this.
 
-4. **New cross-pillar blocker discovered: PrayerArtifact storage → T-062 (hard) + P4 JournalEntry model (soft).** This session locked that prayer artifacts must be **stored with the journal entry**, not merely linked to the moment. Two consequences not previously captured here: **(a)** PrayerArtifact cannot ship encrypted-at-rest until T-062 lands (hard blocker — same relationship P0's Screen 6 privacy copy already depends on), and **(b)** the journal-embedding relationship depends on P4's JournalEntry model existing, which — per the P3 audit's codebase search — **does not exist in code yet either**, despite P4's PRD status reading "Design Complete, Implementation Ready." Recommend P3 ship with `journalEntryId`/resonance fields nullable/stubbed until both land, rather than blocking P3 engineering entirely on P4 completing first.
+4. **Cross-pillar blocker: PrayerArtifact storage → T-062 (hard) + P4 JournalEntry model (soft).** Prayer artifacts must be stored with the journal entry, not merely linked to the moment. **(a)** PrayerArtifact cannot ship encrypted-at-rest until T-062 lands, and **(b)** the journal-embedding relationship depends on P4's JournalEntry model, which also does not exist in code yet. Recommend P3 ship with `journalEntryId`/resonance fields nullable/stubbed until both land.
 
-5. **P3 MVP scope corrections not yet reflected below:** §5's "P3 (Prayer) — guided prayer only (no open-ended prompts MVP)" is **still accurate** — the July 9 FigJam session confirmed prayer-only for MVP and moved the "Prompts" (Socratic reflection) alternative to Post-MVP backlog, consistent with what this doc already assumed. No correction needed there.
+5. **P3 MVP scope confirmed:** guided prayer only (no open-ended prompts MVP) — the "Prompts" alternative moved to Post-MVP.
 
-**Corrections/additions from the P4 (July 9, same evening) audit:**
+**Corrections/additions from the P4 (July 9) audit:**
 
-6. **T-062 confirmed to have zero code anywhere — now the single highest-leverage blocking ticket.** The P4 audit's codebase search (CryptoKit/AES/Argon2id patterns) returned zero matches, same as P3's. T-062 isn't just unstarted — there's no partial scaffolding on either side. It hard-blocks **both** P3's PrayerArtifact encrypted storage and P4's JournalEntry encrypted storage. Recommend T-062 be sequenced *before* either pillar's full implementation, not in parallel with them as §7's original build order assumed.
+6. **T-062 confirmed zero code anywhere — single highest-leverage blocking ticket.** Hard-blocks both P3's PrayerArtifact and P4's JournalEntry encrypted storage. Recommend sequencing T-062 *before* either pillar's full implementation.
 
-7. **Three pillars now share an identical unbuilt dependency: LLM infrastructure.** P1 (Dwelly Agent loop, T-120), P3 (PrayerGenerationManager), and P4 (JournalSynthesisManager) all need the same Groq Llama 3.3 70B → GPT-4o mini calling pattern via Vercel AI SDK. None of the three have built it yet. Recommend whichever pillar's engineering starts first builds one shared, reusable LLM-calling service — not three independent implementations. This wasn't visible as a shared risk until three separate audits converged on the same gap.
+7. **Three pillars share an identical unbuilt dependency: LLM infrastructure.** P1 (Dwelly Agent loop), P3 (PrayerGenerationManager), P4 (JournalSynthesisManager) all need the same Groq → GPT-4o mini calling pattern via Vercel AI SDK. Build one shared, reusable service, not three.
 
-8. **P4's Mood and Object pickers likely share one UI component.** Both are "N presets + 1 custom" selection patterns (Mood: 8 preset + inferred/overridable; Object: 6 preset + fully user-chosen, not inferred). Worth building one generic preset+custom picker component and reusing it, rather than two bespoke UIs.
+8. **P4's Mood and Object pickers likely share one UI component.** Both are "N presets + 1 custom" patterns (Mood: 8 preset + inferred/overridable; Object: 6 preset + fully user-chosen). Build one generic preset+custom picker, reuse it.
 
-9. **New cross-pillar dependency: P4's prayer-embedding logic is a pure consumer of P3's resonance signal.** P4 does not independently decide whether to show "🙏 You prayed over this" — it reads P3's `resonance` field directly (not the `userEngaged`/"Prayed" field — see P3 Scenario 5 / P4 Scenario 3). This is a one-way, read-only dependency: P4 cannot be fully tested until P3's resonance field's exact shape is finalized, but P4 has no logic of its own to build here beyond the boolean check.
+9. **P4's prayer-embedding logic is a pure consumer of P3's resonance signal** — reads P3's `resonance` field directly, not `userEngaged`. One-way, read-only dependency.
 
-10. **P4's synthesis error fallback is an open product decision, not an engineering gap.** Per `P4_SUMMARY.html`'s own open questions list, whether a failed synthesis falls back to Entry-only, retries, or requires manual entry has never been decided. Flagged (not silently resolved) in P4's User Scenarios Scenario 4 — needs Kell's input before that scenario's acceptance criteria can be completed.
+10. **P4's synthesis error fallback was an open product decision** — since resolved: raw transcript stands in as the journal entry on synthesis failure (see P4 Notion page).
 
-11. **New shared requirement: density-tiered AI generation (T-127), spanning Captures/Prayer/Journal/future Notifications.** Discovered while resolving P4's "Empty Capture Handling" open question. Reference case: a one-word reflection in the Untold app still produced a specific, personalized title + contextual response — not padded/generic filler. **Locked principle: input depth should scale output depth; sparse reflections get short, honest synthesis, never invented content to hit a fixed length.** This reuses the existing **Reflective Density Model (L1–L8)** from `FORMATION_INTELLIGENCE_STRATEGY.md` §III — already the intended shared taxonomy across P0–P8, now confirmed as required by P1 (Dwelly depth-escalation), P3 (prayer tone/length), P4 (journal synthesis size), and eventually P8 (notification personalization). **Real blocker:** L1–L8 density *detection* is not implemented in code anywhere — this is now a fourth pillar's worth of unbuilt dependency stacking on the same missing piece of infrastructure (P1's Dwelly loop, P3's context loading, and now P4's synthesis sizing all need it). A simpler word-count-based 2-tier stopgap was considered and explicitly rejected by Kell (length ≠ depth — risks treating short-but-weighty reflections and long-but-shallow ones backwards). See T-127.
+11. **Shared requirement: density-tiered AI generation (T-127)**, spanning Captures/Prayer/Journal/future Notifications. Input depth should scale output depth — never invented content to hit a fixed length. Reuses the **Reflective Density Model (L1–L8)**. Density *detection* is not implemented in code anywhere — a fourth pillar's worth of unbuilt dependency stacking on the same missing infrastructure.
 
-**Corrections/additions from the P5 (July 10, 2026) audit — system design restructured to a two-screen model this session:**
+**Corrections/additions from the P5 (July 10) audit:**
 
-12. **P5 is not one monolithic dependency on P4 — it splits into two screens with very different dependency depths.** Screen 1 (default Entries tab — Untold-style calendar + that month's entries) only needs P1's moments to exist (`dateCreated` for grouping/sort) — **no encryption, no journals, no P3/P4 data required.** It could ship independently of P4, much earlier than the current build order assumes. Screen 2 (dedicated Search page — keyword + Mood/Object/Prayed filter shortcuts) is the piece that actually depends on P4 (JournalEntry model, Mood/Object taxonomy) and P3 (resonance field) and T-062 (encrypted index). **Recommend Kell weigh in on whether Screen 1 should be pulled forward in the build order** given how cheap its dependency footprint is relative to Screen 2 — not changed here without that call.
+12. **P5 splits into two screens with very different dependency depths.** Screen 1 (calendar + month list) only needs P1's moments (`dateCreated`) — no encryption, no journals, no P3/P4 data. Screen 2 (dedicated Search page) depends on P4 (JournalEntry, Mood/Object taxonomy), P3 (resonance field), T-062 (encrypted index).
 
-13. **New cross-pillar dependency: P5's Prayed filter → P3's resonance field, directly.** The original graph only listed P5 depending on "P4, P1" — it did not capture that Screen 2's Prayed filter reads P3's `resonance` boolean directly (the same field P4 already consumes for prayer-embedding, per §0.9). This is a direct read-only dependency on P3, not merely an indirect one inherited through P4.
+13. **P5's Prayed filter reads P3's resonance field directly** — a direct dependency, not merely inherited through P4.
 
-14. **T-062 now confirmed to block a third pillar: P5's encrypted SearchableContent index.** P5's `encryptedIndex` field cannot be built until T-062 ships — same relationship already confirmed for P3's PrayerArtifact and P4's JournalEntry (§0.6). T-062's blocking radius is now three pillars' worth of encrypted storage, not two, reinforcing the existing recommendation to sequence T-062 ahead of P3/P4/P5's full implementation rather than in parallel.
+14. **T-062 now confirmed to block a third pillar: P5's encrypted SearchableContent index.**
 
-15. **P5's Filter UI has a sequencing dependency on P4 actually building Mood/Object as a *reusable* component, not merely on P4 shipping data.** P4's own audit already recommended one generic preset+custom picker shared across Mood and Object (§0.8). P5's Screen 2 depends specifically on that recommendation being followed — if P4 builds two bespoke, non-reusable pickers instead, P5 either duplicates that UI work from scratch or blocks on a P4 refactor first.
+15. **P5's Filter UI depends on P4 building Mood/Object as a reusable component**, not merely on P4 shipping data.
 
-16. **Two P5 decisions reduced dependency surface rather than adding to it.** Date range filter was removed this session (redundant with Screen 1's calendar, so no separate date-range engineering work exists to depend on). Pinned was paused (removed from the `SearchableContent` model and Screen 2's filter set, so no `isPinned` cross-model placement decision blocks P5 for now — that decision is simply deferred, not resolved).
+16. **Two P5 decisions reduced dependency surface:** date range filter removed (redundant with Screen 1's calendar); Pinned paused.
 
-17. **"Ask a Question" (Post-MVP, LLM-powered natural-language querying) will depend on whatever LLM infrastructure P7 (Formation Intelligence) eventually builds.** Flagged here for future tracking only — explicitly out of scope for P5's MVP, not yet an active dependency.
+17. **"Ask a Question" (Post-MVP, natural-language querying)** will depend on whatever LLM infrastructure P6 (Formation Intelligence) eventually builds. *(Corrected reference: originally said "P7" — that's P6 post-renumbering.)* Out of scope for P5 MVP.
 
-18. **RESOLVED (July 10, 2026, same session): Kell decided on §0.12's open question — both P5 screens are now MVP.** (a) **Screen 1 is not separate work** — it's folded directly into **T-078** (P6's "Wire Entries tab to full moments list + filters" ticket), which was already MVP-critical. T-078's spec is corrected below (§7) to the real locked design: Untold-style calendar + that month's entries, tap-a-day to filter — replacing its previous vague "Date range, prayer-tagged, prompt-engaged, prayer-depth" filter list, which predates P3/P4/P5's actual locked designs. (b) **Screen 2 is elevated from Post-MVP to a full MVP feature** — new ticket **T-128** (§7). Since its real blockers (P3, P4, T-062) all resolve by the time P4 finishes, it runs *parallel* to P6/Today/Growth (§4, §6) rather than extending the critical path — MVP timeline is unaffected. (c) **T-062's schedule position doesn't actually need to change** — on inspection, §4/§7 already had it starting parallel to P0 (right after Auth), which is correctly early. The real correction is *urgency of execution*, not timing: it's still 🔲 Not Started with zero code despite being scheduled first, and its blocking radius has grown to three pillars (P3, P4, P5) — treat it as the single most time-sensitive engineering task in this graph, not just a well-scheduled one.
+18. **RESOLVED July 10, 2026: both P5 screens are MVP.** Screen 1 folded into T-078 (Navigation Shell's Entries tab spec). Screen 2 elevated to MVP as new ticket T-128, runs parallel to Navigation Shell/Today/Growth — MVP timeline unaffected.
+
+19. **RESOLVED July 20, 2026: P8 (Notifications) reclassified to MVP.** All 7 stages (A–G) unified as originally designed — was "Deferred to Post-MVP." Directly addresses Phase 1's 0%-return finding.
 
 ---
 
-## 1. Dependency Graph (Visual)
+## 0-B. July 21, 2026 Update — Pillar 6 (Formation Intelligence) MVP Scope Pivot
+
+**Pillar 6 is no longer "theme detection" as its MVP deliverable.** MVP ships as the **Dweller Profile** — a single, continuously-evolving narrative understanding of the user (Wispr Flow "Your Voice"-inspired), reassessed on a threshold basis (not real-time, not edit-triggered), reading journal entries directly. Discrete named-theme detection (the original design — dashboard, weekly/monthly review, parent/child theme structure) is now Post-MVP. Full spec: Pillar 6's Notion page.
+
+**Corrected dependency shape for P6:**
+- **P6 depends on:** P0 (Intent/Rhythm, initial snapshot), P3 (prayer completion + resonance, plus the internal "Closing the Loop" signal), P4 (journal entries + Mood/Object tags — **primary read source**), P9 (Intent/Rhythm **updates** — the ongoing/living source, not just P0's one-time snapshot)
+- **P6 blocks:** P11 (Your Narrative display — **MVP**). Post-MVP, P6 also blocks P3 (in-prayer contextual theme prompts), P5 (theme-based filtering), P8 (v2 formation-aligned notification types), P10 (cross-entry Daily Prompt personalization)
+- **P6 does NOT depend on P1 directly at MVP** — raw captures/transcripts are explicitly excluded as an FI input; only the synthesized journal entry (P4) counts. Archetype inference (P1, Jotter/Venter/Processor) is a Post-MVP input only.
+- **P6 does NOT have a data dependency on P2** — P2 is a *constraint* (FI's server-side LLM calls must operate within whatever encryption model P2 locks), not a feed relationship.
+
+**Privacy correction:** the original P6 strategy doc's "on-device first" detection assumption is superseded — Formation Intelligence uses the same server-side/cloud LLM architecture already locked for Journal synthesis (P4) and Notifications (P8), not on-device processing. On-device was never realistic given the app doesn't run models locally.
+
+**Capture-without-surfacing principle (locked):** P6's reassessment engine ingests all of the above inputs from MVP launch — including prayer completion/resonance and Intent/Rhythm updates — even though only a subset of possible outputs (narrative, mood arc, Object-tag frequency, Rhythm-match, resurfaced highlight) displays in P11 at MVP. This is a locked requirement on whatever ticket builds the engine, not an implicit assumption — feeding happens now so Post-MVP consumers aren't starting from a data backfill later.
+
+**Prompt contextuality boundary (clarified July 21, 2026):** "contextual" at MVP means contextual *within a single conversation* (e.g., Dwelly referencing what was just said in that capture session). Contextual awareness *across* past reflections/journals — which is what P6's Dweller Profile enables — is a Post-MVP consumer relationship for P1, P3, and P10 alike.
+
+---
+
+## 0-C. July 20–21, 2026 Update — P8 and P11 Changes
+
+**P8 (Notifications) reclassified to MVP** (July 20, 2026) — see §0-A.19. Stands as-is post-renumbering.
+
+**P11 (Growth) amended** (July 21, 2026) — MVP is now three sections: **Your Narrative** (new — the P6 Dweller Profile's display surface), **Your Plain Stats** (renamed from "Formation Overview," otherwise unchanged), **Settings** (unchanged). **Emotional Themes removed from MVP** — redundant with P5 Search's already-locked Mood filter; no second entry point needed into the same data. P11's dependency on "theme data" (as this graph originally phrased it, attributing it to "P7") is corrected: **P11 depends on P6** for Your Narrative's content, full stop.
+
+---
+
+## 1. Dependency Graph (Visual, Corrected)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -65,129 +106,120 @@ This graph was last substantively updated May 14, 2026 and predates several deci
                           INFRASTRUCTURE LAYER
                           ┌────────────────────┐
                           │  Auth Pillar       │ (Gatekeeper)
-                          │  - Login           │
-                          │  - Account Mgmt    │
                           └─────────┬──────────┘
                                     │
                 ┌───────────────────┼───────────────────┐
                 │                   │                   │
                 ▼                   ▼                   ▼
-         ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
-         │   P0         │   │    P2        │   │     P6       │
-         │ Onboarding   │   │  Encryption  │   │   Menu Bar   │
-         │              │   │   (E2E)      │   │ (Navigation) │
-         └──────┬───────┘   └──────┬───────┘   └──────┬───────┘
-                │                  │                  │
-                │ (enables)         │ (enables)       │ (routes to)
-                │                  │                  │
-                ▼                  ▼                  ▼
-         ┌──────────────┐          │         ┌──────────────┐
-         │   P1         │◄─────────┘         │  Settings    │
-         │  Capture     │                    │  (cross-cut) │
-         │              │                    │              │
-         └──────┬───────┘                    └──────────────┘
-                │
+         ┌──────────────┐   ┌──────────────┐   ┌──────────────────┐
+         │   P0         │   │    P2        │   │  Navigation Shell │
+         │ Onboarding   │   │  Encryption  │   │ (T-076–082, hosts │
+         │              │   │   (E2E)      │   │  tabs — not a     │
+         └──────┬───────┘   └──────┬───────┘   │  standalone pillar│
+                │                  │            └─────────┬─────────┘
+                │ (enables)        │ (enables)             │ (routes to)
+                ▼                  ▼                       ▼
+         ┌──────────────┐          │              ┌──────────────────┐
+         │   P1         │◄─────────┘              │  P9 Account      │
+         │  Capture     │                         │  Profile /       │
+         │              │                         │  Settings        │
+         └──────┬───────┘                         └──────────────────┘
                 │ (moments needed)
                 ▼
          ┌──────────────┐
-         │   P3         │
-         │  Prayer     │
-         │  (Prayer)    │
-         └──────┬───────┘
-                │
-                │ (prayer artifacts)
-                ▼
+         │   P3         │──────────────┐ (Intent/Rhythm updates)
+         │  Prayer      │              │
+         └──────┬───────┘              ▼
+                │ (prayer artifacts)  P9 also feeds P6 directly
+                ▼                     (ongoing Intent/Rhythm source)
          ┌──────────────┐
          │   P4         │
          │  Journal     │
          │  Creation    │
          └──────┬───────┘
-                │
-    ┌───────────┴──────────────┐
-    │                          │
-    ▼                          ▼
-┌─────────────┐          ┌──────────────┐
-│   P5        │          │   P7         │
-│  Search     │          │  Formation   │
-│  (Entries)  │          │  Intelligence│
-└─────────────┘          └──────┬───────┘
-                                │
-                                │ (theme insights)
-                                ▼
-                         ┌──────────────┐
-                         │   P8         │
-                         │Notifications │
-                         └──────────────┘
+                │ (journal entries + tags — primary read source)
+    ┌───────────┼──────────────┬─────────────────┐
+    │           │              │                 │
+    ▼           ▼              ▼                 ▼
+┌─────────┐ ┌──────────┐ ┌───────────────┐  (P0/P3/P9 also feed P6 — see 0-B)
+│  P5     │ │   P6     │ │  P10 Today    │
+│ Search  │ │Formation │ │  (same-       │
+│(Screen 2│ │  Intel   │ │  conversation │
+│ Post-MVP│ │(Dweller  │ │  context only,│
+│ theme   │ │ Profile, │ │  MVP; cross-  │
+│ filter) │ │ MVP)     │ │  entry Post-  │
+└─────────┘ └────┬─────┘ │  MVP)         │
+                  │       └───────────────┘
+                  │ (Your Narrative — MVP)
+                  ▼
+           ┌──────────────┐
+           │  P11 Growth  │
+           │ (Your        │
+           │  Narrative,   │
+           │  Plain Stats, │
+           │  Settings)    │
+           └──────────────┘
 
-SUPPORTING LAYERS (Parallel to Core):
-    ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-    │  Today Tab   │  │ Growth Tab   │  │ Account Del  │
-    │  (depends on │  │ (depends on  │  │  (Auth Pillar│
-    │   P1, P3)    │  │  P1,P3,P4,P7)│  │   feature)   │
-    └──────────────┘  └──────────────┘  └──────────────┘
+Post-MVP consumers of P6 (not on critical path): P3 (in-prayer prompts),
+P5 (theme filter), P8 (v2 formation-aligned notifications), P10 (cross-entry prompt)
 ```
 
 ---
 
-## 2. Dependency Matrix
+## 2. Dependency Matrix (Corrected)
 
 | Pillar | Depends On | Blocks | MVP Critical? | Can Parallelize? |
 |--------|-----------|--------|---------------|-----------------|
 | **Auth** | None | Everything | ✅ YES | N/A (Gatekeeper) |
 | **P0 (Onboarding)** | Auth | P1 | ✅ YES | No |
 | **P2 (Encryption)** | Auth, P0 | All data ops | ✅ YES | Yes (infrastructure) |
-| **P1 (Capture)** | P0, Auth, P2 | P3, P4, Today | ✅ YES | No |
-| **P3 (Prayer)** | P1, P2 | P4, P8 | ✅ YES | No |
-| **P4 (Journal)** | P1, P3, P2 | P5, P7, Growth | ✅ YES | No |
-| **P5 (Search) — Screen 2 only (Filters/Query)** | P1, P3 (resonance), P4 (JournalEntry, Mood/Object as reusable components), T-062 | None | ✅ YES — elevated to MVP July 10, 2026 (see §0.18) | Yes (after P4, parallel to P6/Today/Growth) |
-| **P6 (Menu Bar)** | P0–P4 | Navigation | ✅ YES | Yes (after P4) — **T-078 (Entries tab) now includes P5 Screen 1's calendar/list spec, folded in July 10, 2026** |
-| **P7 (Formation Intel)** | P1, P3, P4 | P8, Growth | ✅ YES | Yes (after P4) |
-| **P8 (Notifications)** | P7, P3 | None | ✅ YES — reclassified MVP July 20, 2026 (was Post-MVP; all 7 stages A–G unified, see §0.19) | Yes (after P7) |
-| **Settings** | Auth, P0, P8 | None | ✅ YES | Yes (parallel) |
-| **Today Tab** | P1, P3 | None | ✅ YES | Yes (parallel) |
-| **Growth Tab** | P1, P3, P4, P7 | None | ✅ YES | Yes (after P7) |
+| **P1 (Capture)** | P0, Auth, P2 | P3, P4, P10 | ✅ YES | No |
+| **P3 (Prayer)** | P1, P2 | P4, P8, P6 (input) | ✅ YES | No |
+| **P4 (Journal)** | P1, P3, P2 | P5, P6, P11 | ✅ YES | No |
+| **P5 (Search) — Screen 2 (Filters/Query)** | P1, P3 (resonance), P4 (JournalEntry, Mood/Object components), T-062 | None | ✅ YES — elevated to MVP July 10, 2026 | Yes (after P4, parallel to Navigation Shell/P10/P11) |
+| **Navigation Shell (T-076–082, not a pillar)** | P0–P4 | Tab access | ✅ YES | Yes (after P4) — hosts P9/P10/P11's tabs; Entries tab (T-078) includes P5 Screen 1 |
+| **P6 (Formation Intelligence — Dweller Profile)** | P0 (Intent/Rhythm), P3 (prayer + resonance), P4 (journals — primary), P9 (Intent/Rhythm updates) | P11 (MVP); P3/P5/P8/P10 (Post-MVP) | ✅ YES (Dweller Profile only — see §0-B) | Yes (after P4) |
+| **P7 (Beta & Marketing)** | P0–P8 broadly functional | Public beta launch | Not yet started | N/A |
+| **P8 (Notifications)** | P6 (v2, Post-MVP), P3 (v1, MVP) | None | ✅ YES — reclassified MVP July 20, 2026 | Yes (v1 after P3; v2 after P6) |
+| **P9 (Account Profile)** | Auth, P0 | P6 (Intent/Rhythm feed), P8 (settings link) | ✅ YES | Yes (parallel) |
+| **P10 (Today)** | P1, P3 | None (same-conversation context only, MVP) | ✅ YES | Yes (parallel); cross-entry Daily Prompt is Post-MVP, depends on P6 |
+| **P11 (Growth)** | P1, P3, P4, **P6** | None | ✅ YES | Yes (after P6) |
 
 ---
 
 ## 3. Critical Path (Longest Dependency Chain)
 
-The critical path determines minimum time to MVP launch. Each pillar on this path must complete before the next can start.
-
 ```
-Auth (T-XXX)
+Auth
     ↓ (1–2 weeks)
-P0: Onboarding (T-076, T-077, T-078)
+P0: Onboarding
     ↓ (2–3 weeks)
-P1: Capture (T-079, T-080)
+P1: Capture
     ↓ (2–3 weeks)
-P3: Prayer (T-082, T-083)
+P3: Prayer
     ↓ (2–3 weeks)
-P4: Journal Creation (T-084, T-085)
+P4: Journal Creation
     ↓ (1–2 weeks)
-P6: Menu Bar (T-088, T-089) [OR P5 if omitting P6 from MVP]
+Navigation Shell (T-076–082) [tabs hosting P9/P10/P11, incl. P5 Screen 1]
     ↓ (1 week)
 MVP LAUNCH ✅
 ```
 
-**Critical Path Duration:** ~11–16 weeks (MVP launch, core pillars only)
+**Critical Path Duration:** ~11–16 weeks (unchanged — P6 and P11 run parallel to this spine, not on it, per §4)
 
 ---
 
 ## 4. Parallelizable Work (Can Run Alongside Critical Path)
 
-These pillars can be built in parallel with the critical path, not blocking launch:
-
-**Parallel to Critical Path:**
-
 | Pillar | Start After | Duration | Notes |
 |--------|------------|----------|-------|
 | **P2 (Encryption)** | Auth | 2–3 weeks | Infrastructure; needed for data ops |
-| **Settings** | Auth | 2–3 weeks | Cross-cutting; independent |
-| **Today Tab** | P1 (mid-way) | 1–2 weeks | Depends on P1 + P3; can start when both are feature-complete |
-| **P7 (Formation Intel)** | P4 (mid-way) | 2–3 weeks | Needs P1, P3, P4 data; can start once core pillars have data flowing |
-| **Growth Tab** | P7 (mid-way) | 1–2 weeks | Visualization; starts after P7 can provide theme data |
-| **P5 Search (Screen 2 — filters/query)** | P4 (T-062 already done by then) | 2–3 weeks | **Elevated to MVP July 10, 2026** (was Post-MVP). Blockers (P3, P4, T-062) resolve by ~week 10; runs parallel to P6/Today/Growth, no critical-path extension. Screen 1 (calendar/list) is NOT a separate line item — folded into P6's T-078 |
-| **P8 (Notifications)** | P7 (themes), P3 (prayer) | 2–3 weeks | **Reclassified to MVP July 20, 2026** (was Post-MVP). All 7 stages (A–G) unified as originally designed, no split — directly addresses Phase 1's 0%-return finding. Runs parallel once P7 + P3 are ready (~week 10-12), alongside P5 Screen 2/Today/Growth |
+| **P9 (Account Profile)** | Auth | 2–3 weeks | Cross-cutting; independent |
+| **P10 (Today)** | P1 (mid-way) | 1–2 weeks | Depends on P1 + P3; same-conversation context only at MVP |
+| **P6 (Formation Intel — Dweller Profile)** | P4 (mid-way) | 2–3 weeks | Needs P0, P3, P4, P9 data flowing; builds the engine P11 displays |
+| **P11 (Growth)** | P6 (mid-way) | 1–2 weeks | Displays Your Narrative once P6's engine can provide it |
+| **P5 Search (Screen 2)** | P4 (T-062 already done by then) | 2–3 weeks | Elevated to MVP July 10, 2026. Screen 1 folded into Navigation Shell's T-078 |
+| **P8 (Notifications)** | P3 (v1, MVP); P6 (v2, Post-MVP) | 2–3 weeks | Reclassified MVP July 20, 2026. v1 funnel-stage notifications don't need P6; v2 formation-aligned types do |
 
 **Deferred to Post-MVP:**
 
@@ -195,6 +227,8 @@ These pillars can be built in parallel with the critical path, not blocking laun
 |--------|--------|--------------|----------|
 | **Account Deletion** | Legal/compliance feature; not MVP-blocking | Phase 2.1 (post-launch) | 1 week |
 | **Multi-device Sync** | E2E encryption + key distribution; Phase 2+ only | Post-MVP | TBD |
+| **P6 fuller theme graph** | Discrete named themes, parent/child structure, dashboard/weekly/monthly review | Post-MVP | TBD |
+| **P7 (Beta & Marketing)** | Not yet started; depends on P0–P8 broadly functional | Post-MVP launch prep | TBD |
 
 ---
 
@@ -203,32 +237,30 @@ These pillars can be built in parallel with the critical path, not blocking laun
 ### MVP Launch (Critical Path + Parallel Infrastructure)
 
 **Must Ship:**
-- ✅ Auth Pillar (login, account creation, password reset, account recovery)
+- ✅ Auth Pillar
 - ✅ P0 (Onboarding) — all 7 screens
-- ✅ P1 (Capture) — voice + text, contextual prompts
+- ✅ P1 (Capture) — voice + text, same-conversation contextual prompts
 - ✅ P2 (Encryption) — E2E encryption, key derivation
 - ✅ P3 (Prayer) — guided prayer only (no open-ended prompts MVP)
 - ✅ P4 (Journal) — AI synthesis, mood selection
-- ✅ P6 (Menu Bar) — 4-tab navigation (Today, Entries, Create, Growth); **Entries tab (T-078) now includes P5 Screen 1's Untold-style calendar + month list, folded in July 10, 2026**
-- ✅ **P5 Search Screen 2 (elevated July 10, 2026)** — dedicated Search page: keyword + Mood/Object/Prayed filter shortcuts, AND logic, real-time results
-- ✅ Settings — password change, notification prefs, legal links
-- ✅ Today Tab — entry experience, unprayed moments, daily prompt
-- ✅ Growth Tab — formation metrics, emotional themes, settings
-- ✅ **P8 (Notifications) — reclassified MVP July 20, 2026**, all 7 stages (A–G) unified; requires P7 (themes) + P3 (prayer)
+- ✅ Navigation Shell (T-076–082) — 4-tab hosting (Today, Entries, Create, Growth); Entries tab (T-078) includes P5 Screen 1
+- ✅ **P5 Search Screen 2** — dedicated Search page: keyword + Mood/Object/Prayed filter shortcuts
+- ✅ **P6 (Formation Intelligence) — Dweller Profile only** (MVP scope locked July 21, 2026; fuller theme graph is Post-MVP)
+- ✅ P9 (Account Profile / Settings) — password change, notification prefs, legal links, Rhythm/Intent editing
+- ✅ P10 (Today) — greeting, unprayed moments, same-conversation daily prompt
+- ✅ **P11 (Growth) — Your Narrative, Your Plain Stats, Settings** (amended July 21, 2026 — Emotional Themes removed)
+- ✅ **P8 (Notifications)** — reclassified MVP July 20, 2026, all 7 stages (A–G) unified; v1 funnel-stage only, v2 formation-aligned is Post-MVP
 
 **Cannot Launch Without:**
-- ✅ Auth (can't use app without login)
-- ✅ P0 (can't use app without account creation + intent)
-- ✅ P1 (nothing to do without capture)
-- ✅ P3 (core experience; sealing moments is core value prop)
-- ✅ P4 (journals embed prayers; core output)
+- ✅ Auth, P0, P1, P3, P4 (core experience + core output)
 
 ### Post-MVP Phase 2.1 (Launch + 2 Weeks)
 
-**Add Shortly After:**
-- ⏳ P7 (Formation Intelligence) — theme detection *(P8/Notifications moved OUT of this list July 20, 2026 — now MVP, see above)*
-- ⏳ Growth Tab Theme Exploration — tap theme to see moments
+- ⏳ P6 fuller theme graph — discrete named themes, dashboard, weekly/monthly review, parent/child structure
+- ⏳ P6 Post-MVP consumers activate: P3 in-prayer contextual prompts, P5 theme filtering, P8 v2 formation-aligned notifications, P10 cross-entry Daily Prompt
+- ⏳ P11 Post-MVP additions: Archetype hero framing, Spiritual Gifts, "[Name]'s Language" (renamed from Glossary), Closing the Loop (uncategorized)
 - ⏳ Account Deletion — self-service account removal with 30-day recovery
+- ⏳ P7 (Beta & Marketing) — not yet started
 
 ### Phase 2.2 (Launch + 4–6 Weeks)
 
@@ -247,22 +279,24 @@ WEEK 1–2:    Auth Pillar ═════════════════�
 WEEK 3–4:    P0 (Onboarding) ════════════════════════════════
              P2 (Encryption) ════════════════════════════════  [Parallel]
 WEEK 5–6:    P1 (Capture) ═══════════════════════════════════
-             Settings ════════════════════════════════════════  [Parallel]
+             P9 (Account Profile) ═════════════════════════════ [Parallel]
 WEEK 7–8:    P3 (Prayer) ═══════════════════════════════════
-             P7 (Formation Intel) ══════════════════════════    [Parallel start]
 WEEK 9–10:   P4 (Journal) ═══════════════════════════════════
-             P7 (Formation Intel) ═══════════════════════════  [Parallel end]
-WEEK 11–12:  P6 (Menu Bar, incl. T-078 = P5 Screen 1 calendar/list) ══════
-             Today Tab ════════════════════════════════════════  [Parallel]
-             Growth Tab (without themes) ═════════════════════  [Parallel]
-             P5 Search Screen 2 (T-128) ══════════════════════  [Parallel — elevated to MVP July 10, 2026]
-             P8 (Notifications, Stage A/B) ══════════════════   [Parallel — reclassified MVP July 20, 2026; A/B don't need P7/P3]
-WEEK 13:     P8 (Notifications, Stage C–G) ═════════════════════  [Once P7 + P3 ready]
+             P6 (Formation Intel — Dweller Profile) ══════════   [Parallel start, mid-P4]
+WEEK 11–12:  Navigation Shell (T-076–082, incl. P5 Screen 1) ══
+             P10 (Today) ═══════════════════════════════════════ [Parallel]
+             P11 (Growth) ═══════════════════════════════════════ [Parallel, after P6]
+             P5 Search Screen 2 (T-128) ══════════════════════   [Parallel]
+             P8 (Notifications, v1 Stage A/B) ═══════════════   [Parallel — don't need P3/P6 fully]
+WEEK 13:     P8 (Notifications, v1 Stage C–G, once P3 ready) ═══
              Testing, QA, Launch Prep
-WEEK 14:     ✅ MVP LAUNCH (now includes full P5 + full P8 Notifications A–G)
+WEEK 14:     ✅ MVP LAUNCH
 
-POST-LAUNCH (WEEK 15–16):
-             Account Deletion ══════════════════════════════════  [Parallel]
+POST-LAUNCH (WEEK 15+):
+             Account Deletion ══════════════════════════════════
+             P6 fuller theme graph ═══════════════════════════════
+             P8 v2 (formation-aligned, needs P6 fuller graph) ═════
+             P7 (Beta & Marketing) ═══════════════════════════════
 ```
 
 ---
@@ -272,73 +306,42 @@ POST-LAUNCH (WEEK 15–16):
 **Phase 1: Gatekeeper + Foundation (Weeks 1–4)**
 
 1. **Auth Pillar** (1–2 weeks)
-   - T-XXX: Supabase auth integration
-   - T-XXX: Login screen
-   - T-XXX: Account creation (P0 integration)
-   - T-XXX: Forgot password + password reset
-   - T-XXX: Password change + sign out
-
 2. **P0 Onboarding** (2–3 weeks, starts after Auth)
-   - T-076: Screens 1–4 (Welcome, Education, Intent, Rhythm)
-   - T-077: Screen 5 (Account creation integration)
-   - T-078: Screens 6–7 (Privacy, Notifications, First capture mandate)
-
-3. **P2 Encryption** (2–3 weeks, parallel to P0)
-   - T-062: E2E encryption implementation (Argon2id, AES-256-GCM)
-   - T-XXX: Keychain integration
-   - T-XXX: Encryption key derivation on login/signup
+3. **P2 Encryption** (2–3 weeks, parallel to P0) — T-062
 
 **Phase 2: Core Pillars (Weeks 5–12)**
 
 4. **P1 Capture** (2–3 weeks, starts after P0)
-   - T-079: Voice capture + transcription
-   - T-080: Text capture + contextual prompts
-
 5. **P3 Prayer** (2–3 weeks, starts after P1)
-   - T-082: Prayer generation (LLM integration)
-   - T-083: Prayer flow (prayer display + engagement signal)
-
 6. **P4 Journal Creation** (2–3 weeks, starts after P3)
-   - T-084: LLM synthesis (title + body generation)
-   - T-085: Journal artifact creation + mood selection
-
-7. **P6 Menu Bar** (1–2 weeks, starts after P4)
-   - T-076: 4-tab navigation (Today, Entries, Create, Growth)
-   - T-078: Entries tab — **now includes P5 Screen 1's locked spec (Untold-style calendar + that month's entries, tap-a-day to filter), folded in July 10, 2026, replacing its previous generic "Date range/prayer-tagged/prompt-engaged/prayer-depth" filter placeholder**
+7. **Navigation Shell** (1–2 weeks, starts after P4) — T-076 (4-tab nav), T-078 (Entries tab, includes P5 Screen 1)
 
 **Phase 3: Supporting Experiences (Weeks 6–12, Parallel)**
 
-7b. **P5 Search — Screen 2 only** (2–3 weeks, starts after P4; T-062/P3 already resolved by this point) — **elevated from Post-MVP to MVP, July 10, 2026**
-    - T-128: Search page — Mood/Object/Prayed filter shortcuts (reusing P4's components, single-select) + free-text keyword field, AND logic, real-time results
-    - Runs parallel to P6/Today/Growth; does not extend the critical path
-
-8. **Settings** (2–3 weeks, parallel to P1)
-   - T-090: Settings modal (5 sections: Account, Security, Preferences, Support, Legal)
-   - T-091: Integration with gear icon, prayer frequency, notification prefs
-
-9. **P7 Formation Intelligence** (2–3 weeks, starts mid-P4)
-   - T-XXX: Theme detection (from journals + captures)
-   - T-XXX: Formation metrics calculation
-   - T-XXX: Emotional landscape analysis
-
-10. **Today Tab** (1–2 weeks, parallel to P6)
-    - T-XXX: Entry experience (greeting, unprayed moments, daily prompt)
-    - T-XXX: Integration with P1 + P3 data
-
-11. **Growth Tab** (1–2 weeks, parallel to P6)
-    - T-XXX: Formation Overview (captures, prayers, prayer %, preference)
-    - T-XXX: Emotional Themes (without P7 integration, use P4 mood data)
-    - T-XXX: Settings subsection
+7b. **P5 Search — Screen 2** (2–3 weeks, starts after P4) — T-128
+8. **P9 Account Profile** (2–3 weeks, parallel to P1)
+9. **P6 Formation Intelligence — Dweller Profile** (2–3 weeks, starts mid-P4)
+    - Build the reassessment engine per the input contract in §0-B (journals, tags, prayer completion/resonance, Intent/Rhythm) — not just what P11 displays
+    - Threshold-based reassessment logic (Wispr-style, not real-time, not edit-triggered)
+    - Confirmation loop (feeds future reassessment)
+10. **P10 Today** (1–2 weeks, parallel to Navigation Shell) — same-conversation contextual prompt only at MVP
+11. **P11 Growth** (1–2 weeks, starts after P6 has data to display)
+    - Your Narrative (displays P6's Dweller Profile)
+    - Your Plain Stats (Total Captures, Total Prayers)
+    - Settings (nested)
 
 **Phase 4: MVP Launch + Polish (Weeks 13–14)**
 
 12. **Testing & QA** (1 week)
 13. **Launch Prep & Go-Live** (1 week)
 
-**Post-MVP (Weeks 15–18)**
+**Post-MVP (Weeks 15+)**
 
-14. **P8 Notifications** (2–3 weeks) — Start after MVP
-15. **Account Deletion** (1 week) — Parallel to P8
+14. **P8 Notifications v1** (2–3 weeks) — funnel-stage, doesn't need P6
+15. **P6 fuller theme graph** — discrete named themes, dashboard, weekly/monthly review
+16. **P8 v2, P3 in-prayer prompts, P5 theme filter, P10 cross-entry prompt** — all depend on #15
+17. **Account Deletion** (1 week)
+18. **P7 Beta & Marketing** — not yet started
 
 ---
 
@@ -346,23 +349,21 @@ POST-LAUNCH (WEEK 15–16):
 
 | Risk | Mitigation | Responsible |
 |------|-----------|-------------|
-| ~~LLM selection not locked~~ **RESOLVED** | ~~Lock Gemini 2.0 Flash → Mistral 7B~~ — **Superseded May 15, 2026: Groq Llama 3.3 70B (primary) → GPT-4o mini (backup), via Vercel AI SDK.** Live-benchmarked July 4-5 (4,705 tokens/loop, ~$0.00084/loop). Token allocation across Dwelly/prayer/journal locked July 9 (T-119). | CTO/LLM owner |
+| ~~LLM selection not locked~~ **RESOLVED** | Groq Llama 3.3 70B (primary) → GPT-4o mini (backup), via Vercel AI SDK. Benchmarked July 4-5 (4,705 tokens/loop, ~$0.00084/loop). Token allocation locked July 9 (T-119). | CTO/LLM owner |
 | **Supabase auth setup delayed** | Have Supabase project + auth tables ready before Auth pillar starts | Infra engineer |
-| **Encryption T-062 not complete** | P2 (redesigned as cross-cutting audit, not standalone pillar) must complete before P1 ships data; also now a confirmed hard blocker for P3's PrayerArtifact encrypted storage (see §0.4) | Crypto engineer |
-| **LLM API integration slow** | P3 prayer generation needs low-latency LLM calls (<3s per PILLAR_3_PRAYER_STRATEGY.md); test early against real Groq/GPT-4o mini latency for the prayer-generation prompt shape specifically | Backend/LLM owner |
-| **Email service unreliable** | Password reset emails must deliver >99%; use SendGrid or Supabase email function | Email infra owner |
-| **Rich Context context size exceeds token limit** | Test P4 journal synthesis with large moment histories; may need chunking strategy | LLM/Backend owner |
-| **Key derivation too slow on device** | Argon2id ~1 second on iPhone 13; test on slower devices (iPhone 12) | iOS engineer |
-| **Theme detection accuracy low** | P7 themes impact P8 notifications; if inaccurate, users will disable notifications | ML/Backend owner |
-| **NEW (July 9): P1 archetype inference not built, blocks P3 context** | P1 must ship archetype inference (Jotter/Venter/Processor passive detection) before P3's Load Context step can be contextually complete — currently no code exists for this in either pillar | iOS/Backend engineer (P1 owner) |
-| **NEW (July 9): PrayerArtifact storage blocked on T-062 + P4 JournalEntry model** | P3's "store prayer WITH journal" requirement needs both T-062 (encryption) and P4's JournalEntry model to exist. Recommend P3 ships with nullable/stubbed `journalEntryId` field until both land, rather than hard-blocking P3 engineering | Backend engineer (P3/P4 owners) |
-| **NEW (July 9, P4 audit): T-062 confirmed zero code anywhere — top-priority blocker** | Codebase search found no CryptoKit/AES/Argon2id usage at all. T-062 now blocks both P3 and P4's encrypted storage simultaneously. Recommend sequencing T-062 ahead of both pillars' full implementation, not parallel to them | Crypto engineer |
-| **NEW (July 9, P4 audit): three pillars (P1, P3, P4) each need identical unbuilt LLM infra** | P1's Dwelly loop, P3's PrayerGenerationManager, P4's JournalSynthesisManager all require the same Groq→GPT-4o mini calling pattern. Build one shared service once, reuse across all three, rather than three independent implementations | Backend/LLM owner (whichever pillar starts engineering first) |
-| **NEW (July 9, P4 audit): synthesis error fallback undecided** | P4_SUMMARY.html's open question (Entry-only? retry? manual entry?) has never been locked. Blocks completing P4 Scenario 4's acceptance criteria until Kell decides | Kell (product decision, not engineering) |
-| **NEW (July 9): density-tiered AI generation (T-127) needed across 4 surfaces, detection unbuilt** | Captures (Dwelly), Prayer, Journal synthesis, and future Notifications all need output sized to reflection depth (Reflective Density Model, L1-L8) rather than a fixed length — but density *detection* doesn't exist in code anywhere. Recommend building it once as shared infra, not per-pillar | Backend/ML engineer (whichever pillar starts engineering first) |
-| **T-062 blocks three pillars (P3, P4, P5) — highest-urgency ticket in this graph** | Still 🔲 Not Started, zero code anywhere, despite already being scheduled early (parallel to P0). Schedule position is correct; execution urgency needs to match its now-tripled blocking radius | Crypto engineer |
-| **P5 Screen 2 depends on P4 building reusable Mood/Object pickers, not just shipping data** | If P4 builds bespoke, non-reusable Mood/Object UI instead of the recommended shared component (§0.8), P5 either duplicates that work or blocks on a P4 refactor | iOS engineer (P4/P5 owners) |
-| **RESOLVED (July 10, 2026): P5 screen split — Kell decided both are MVP** | Screen 1 folded into P6's T-078 (no separate ticket); Screen 2 elevated to MVP as new T-128, running parallel to P6/Today/Growth. See §0.18 | Kell (resolved) |
+| **Encryption T-062 not complete** | Confirmed hard blocker for P3, P4, and P5's encrypted storage — three pillars now. Highest-urgency ticket in this graph, still 🔲 Not Started with zero code | Crypto engineer |
+| **LLM API integration slow** | P3 prayer generation needs low-latency LLM calls (<3s); test early against real Groq/GPT-4o mini latency | Backend/LLM owner |
+| **Rich Context context size exceeds token limit** | Test P4 journal synthesis with large moment histories; may need chunking | LLM/Backend owner |
+| **Key derivation too slow on device** | Argon2id ~1 second on iPhone 13; test on slower devices | iOS engineer |
+| **P1 archetype inference not built, blocks P3 context** | P1 must ship archetype inference before P3's Load Context step is contextually complete | iOS/Backend engineer |
+| **PrayerArtifact storage blocked on T-062 + P4 JournalEntry model** | P3 ships with nullable/stubbed `journalEntryId` until both land | Backend engineer |
+| **Three pillars (P1, P3, P4) each need identical unbuilt LLM infra** | Build one shared Groq→GPT-4o mini calling service, reuse across all three | Backend/LLM owner |
+| **Density-tiered AI generation (T-127) needed across 4 surfaces, detection unbuilt** | Reflective Density Model (L1–L8) detection doesn't exist in code anywhere; build once as shared infra | Backend/ML engineer |
+| **NEW (July 21): P6's Dweller Profile engine must ingest the full input contract, not just what P11 displays** | Explicit acceptance criteria on P6's build ticket must list journals, tags, prayer completion/resonance, and Intent/Rhythm updates as required inputs — not just journal entries, and not scoped down to only what's needed for P11's current display | Backend/ML engineer (P6 owner) |
+| **NEW (July 21): P6/P7 numbering confusion risk** | This document itself had P6 and P7 swapped for months. Any new doc or ticket referencing "Formation Intelligence" or "Menu Bar" by pillar number should be double-checked against the Pillars index in Notion, not assumed from memory or older docs | Whoever's writing the next doc |
+| **RESOLVED July 10, 2026:** P5 screen split — both MVP | Screen 1 folded into Navigation Shell's T-078; Screen 2 is T-128 | Kell (resolved) |
+| **RESOLVED July 20, 2026:** P8 reclassified MVP | All 7 stages unified, v2 stays Post-MVP | Kell (resolved) |
+| **RESOLVED July 21, 2026:** P6 MVP scope is the Dweller Profile, not theme detection | Fuller graph moves to Post-MVP | Kell (resolved) |
 
 ---
 
@@ -377,12 +378,13 @@ POST-LAUNCH (WEEK 15–16):
 | **P3 Prayer** | Backend + LLM Engineer | — |
 | **P4 Journal** | Backend + LLM Engineer | — |
 | **P5 Search** | Backend Engineer | iOS |
-| **P6 Menu Bar** | iOS Engineer | Frontend |
-| **P7 Formation Intel** | ML/Backend Engineer | Data Engineer |
+| **Navigation Shell** | iOS Engineer | Frontend |
+| **P6 Formation Intelligence** | ML/Backend Engineer | Data Engineer |
+| **P7 Beta & Marketing** | Not yet assigned | — |
 | **P8 Notifications** | Backend + iOS Engineer | — |
-| **Settings** | iOS Engineer | Frontend |
-| **Today Tab** | iOS Engineer | Frontend |
-| **Growth Tab** | iOS Engineer + Backend | Frontend |
+| **P9 Account Profile** | iOS Engineer | Frontend |
+| **P10 Today** | iOS Engineer | Frontend |
+| **P11 Growth** | iOS Engineer + Backend | Frontend |
 | **E2E Testing** | QA Engineer | iOS Engineer |
 
 ---
@@ -391,14 +393,14 @@ POST-LAUNCH (WEEK 15–16):
 
 | Aspect | Decision |
 |--------|----------|
-| **Critical Path** | Auth → P0 → P1 → P3 → P4 → P6 (11–16 weeks to MVP); P5 Search Screen 2 runs parallel after P4, doesn't extend this chain |
-| **MVP Launch** | 11 core pillars + 3 supporting tabs + **P5 Search Screen 2 (elevated July 10, 2026)** + **P8 Notifications (reclassified MVP July 20, 2026)** (Auth, P0–P4, P5-Screen2, P6, P8, Settings, Today, Growth) |
-| **Post-MVP** | Account Deletion, advanced features (2–4 weeks after launch) |
-| **Parallel Work** | P2 (Encryption), Settings, P7, Today, Growth, **P5 Search Screen 2**, **P8 Notifications** can run alongside critical path |
+| **Critical Path** | Auth → P0 → P1 → P3 → P4 → Navigation Shell (11–16 weeks to MVP); P6, P9, P10, P11, P5-Screen2, P8 all run parallel, don't extend this chain |
+| **MVP Launch** | Auth, P0–P4, Navigation Shell, P5-Screen2, **P6 (Dweller Profile only)**, P8 (v1), P9, P10, P11 |
+| **Post-MVP** | Account Deletion, P6 fuller theme graph, P8 v2, P3 in-prayer prompts, P5 theme filter, P10 cross-entry prompt, P11's Archetype/Spiritual Gifts/"[Name]'s Language"/Closing the Loop, P7 (not yet started) |
+| **Parallel Work** | P2, P9, P10, **P6**, **P11**, P5 Screen 2, P8 can all run alongside the critical path |
 | **Deferred to Post-MVP** | Multi-device sync, open-ended prayer, email verification, biometric unlock |
-| **Critical Blocker** | Supabase setup (week 1); LLM selection is now resolved (Groq → GPT-4o mini). T-062 (encryption) confirmed to block **three** pillars (P3, P4, P5) — highest-urgency ticket in this graph, still 🔲 Not Started. P1 archetype inference also a confirmed P3 blocker. |
-| **RESOLVED July 10, 2026** | P5 elevated from Post-MVP to MVP, split in two: Screen 1 (calendar/list) folded into P6's T-078, no separate ticket; Screen 2 (search/filters) is new ticket T-128, runs parallel to P6/Today/Growth. MVP timeline unchanged (11–16 weeks). |
-| **Longest Pillar Build** | P4 (Journal) or P7 (Formation Intel) — 2–3 weeks each |
+| **Critical Blocker** | T-062 (encryption) blocks three pillars (P3, P4, P5) — highest-urgency ticket, still 🔲 Not Started. P1 archetype inference also a confirmed P3 blocker |
+| **RESOLVED July 21, 2026** | Pillar numbering corrected throughout (P6 = Formation Intelligence, not Menu Bar; Menu Bar isn't a pillar). P6 MVP scope locked as the Dweller Profile. P11 amended (Your Narrative added, Emotional Themes removed) |
+| **Longest Pillar Build** | P4 (Journal) or P6 (Formation Intelligence engine) — 2–3 weeks each |
 
 ---
 
