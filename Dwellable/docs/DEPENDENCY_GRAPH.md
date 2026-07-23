@@ -1,7 +1,7 @@
 # Pillar Dependency Graph — Phase 2 Implementation Sequencing
 
 **Status:** Locked for T-092 Phase 2 Launch Readiness — **all pillar designs (P0–P11) now complete as of July 23, 2026**
-**Last Updated:** July 23, 2026 (P2 model corrected to server-side encryption; P6/T-062 dependency corrected — now blocks four pillars, not three; P7 design locked including Cohort A acquisition strategy; P7 positioned in build sequence; T-125 Crisis Protocol reclassified MVP and moved to P1 ownership, flagged as a critical-path timeline risk; **critical path estimate validated against real ticket-level hours and recalibrated for the actual solo Kell + Claude Code execution model, not a fictional team — Owner Assignments table corrected accordingly**)
+**Last Updated:** July 23, 2026 (P2 model corrected to server-side encryption; P6/T-062 dependency corrected — now blocks four pillars, not three; P7 design locked including Cohort A acquisition strategy; P7 positioned in build sequence; T-125 Crisis Protocol reclassified MVP and moved to P1 ownership, flagged as a critical-path timeline risk; critical path estimate validated against real ticket-level hours and recalibrated for the actual solo Kell + Claude Code execution model, not a fictional team — Owner Assignments table corrected accordingly; **P3 and P4 broken into real tickets (T-145–T-159) with hour estimates, replacing pillar-level guesses — also caught and superseded 4 stale P3 tickets (T-063–T-066) describing a pre-July-9 design that no longer matches what's locked**)
 
 ---
 
@@ -208,7 +208,13 @@ MVP LAUNCH ✅
 
 **Critical Path Duration:** ~11–16 weeks, **at risk of extending** (July 23, 2026 — T-125 crisis protocol reclassified to MVP and bundled into P1, which sits on the critical path; L–XL effort ticket now shares P1's 2–3 week window. Recommend scoping T-125's MVP slice to the minimum safety floor — detection + compassionate response + resource surfacing — and deferring the fuller Formation Intelligence tie-in, to avoid extending the critical path)
 
-**⚠️ Estimate basis validated + recalibrated (July 23, 2026):** This estimate was originally sized against a fictional multi-role team (see corrected §9 Owner Assignments below). Actual execution is **solo — Kell + Claude Code, no other engineers.** Recomputed from real ticket-level hour estimates (not pillar-level guesses) where they exist: Auth (~90–120h, per its own doc) + P0 (~60–90h, T-100–116) + P1 (~75–95h, T-118–124) + T-125 bundled (~30–50h estimate, no precise ticket hours yet) + Navigation Shell (~85–110h, T-076–082) ≈ **340–465 hours** for those five alone. At a **near-full-time pace (35–40 hrs/week, confirmed by Kell)**, that's ~9–13 weeks. P3 and P4 still lack ticket-level breakdowns (only pillar-level "2–3 weeks" guesses exist) — adding their guessed 4–6 weeks lands the full critical path around **13–19 weeks**, close to but somewhat higher than the original 11–16. **Recommendation: break P3 and P4 into individual tickets with real hour estimates (same discipline already applied to P0/P1/Auth/Nav Shell) before treating this range as reliable** — right now it's the one remaining soft spot in an otherwise ticket-grounded estimate.
+**⚠️ Estimate basis validated + recalibrated (July 23, 2026):** This estimate was originally sized against a fictional multi-role team (see corrected §9 Owner Assignments below). Actual execution is **solo — Kell + Claude Code, no other engineers.** Recomputed from real ticket-level hour estimates (not pillar-level guesses) where they exist: Auth (~90–120h, per its own doc) + P0 (~60–90h, T-100–116) + P1 (~75–95h, T-118–124) + T-125 bundled (~30–50h estimate, no precise ticket hours yet) + Navigation Shell (~85–110h, T-076–082) ≈ **340–465 hours** for those five alone. At a **near-full-time pace (35–40 hrs/week, confirmed by Kell)**, that's ~9–13 weeks.
+
+**✅ P3 and P4 ticket breakdowns complete (July 23, 2026)** — no longer pillar-level guesses. Also caught and fixed a real problem while doing this: TICKETS.md's old T-063–T-066 (Pillar 3 implementation tickets) described a **stale, superseded design** — user-typed prayers, a separate Socratic "Prompts" flow at MVP, and Rich Context/cross-moment history powering prompts at MVP. None of that matches what's actually locked (guided **LLM-generated** prayer only, Prompts is Post-MVP, Rich Context explicitly excluded from P3 at MVP). Those four are now marked superseded; **T-145–T-150** are the corrected P3 tickets, **T-151–T-159** are the new P4 tickets.
+- **P3: ~51–75 hours** (T-145–T-150, plus already-ticketed T-124/T-119) — came in **lighter** than the original 2–3 week guess once broken into real tickets
+- **P4: ~79–115 hours** (T-151–T-159) — roughly matches the original 2–3 week guess
+
+**Recomputed full critical path:** Auth (~90-120h) + P0 (~60-90h) + P1+T-125 (~105-145h) + P3 (~51-75h) + P4 (~79-115h) + Nav Shell (~85-110h) ≈ **470–655 hours ≈ 12–16 weeks** at 35-40 hrs/week. This lands squarely inside — actually slightly better-grounded than — the original 11–16 week estimate, now with every pillar on the critical path backed by real ticket-level hours instead of guesses.
 
 ---
 
@@ -319,8 +325,8 @@ POST-LAUNCH (WEEK 15+):
 **Phase 2: Core Pillars (Weeks 5–12)**
 
 4. **P1 Capture** (2–3 weeks, starts after P0) — **bundles T-125** (Crisis Protocol: OpenAI Moderation API detection + compassionate response + 988/Crisis Text Line resource surfacing, all at capture time). Real risk this extends P1's window given L–XL effort; recommend scoping to the MVP safety floor only
-5. **P3 Prayer** (2–3 weeks, starts after P1)
-6. **P4 Journal Creation** (2–3 weeks, starts after P3)
+5. **P3 Prayer** (~51–75 hours / ~1.5–2 weeks at full-time pace, starts after P1) — T-145 (Invitation UI) → T-146 (Load Context) → T-147 (PrayerGenerationManager) → T-148 (Reading screen + exit) → T-149 (Resonance + PrayerArtifact, hard-blocked on T-062) → T-150 (token accounting). Ticket-level breakdown replaces the old pillar-level guess July 23, 2026 — came in lighter than expected.
+6. **P4 Journal Creation** (~79–115 hours / ~2–3 weeks, starts after P3) — T-151 (JournalSynthesisManager) → T-152 (JournalEntry model, hard-blocked on T-062) → T-153/T-154 (Mood/Object UI) → T-155 (two-tab UI) → T-156 (photo mgmt, parallel) → T-157 (resonance-gated embedding, depends on P3's T-149) → T-158 (soft delete) → T-159 (synthesis fallback). Ticket-level breakdown added July 23, 2026 — matches the original guess.
 7. **Navigation Shell** (1–2 weeks, starts after P4) — T-076 (4-tab nav), T-078 (Entries tab, includes P5 Screen 1)
 
 **Phase 3: Supporting Experiences (Weeks 6–12, Parallel)**

@@ -1331,7 +1331,10 @@
 ---
 
 ### Phase 2 Core Pillar Implementation — Pillar 3 (Prayer/Responding)
-- [ ] **T-063:** Build Prayer Flow (Design + Engineering) — Pillar 3
+
+**⚠️ T-063, T-064, T-065, T-066 below are SUPERSEDED (July 23, 2026) — describe a stale pre-July-9 design.** They assume: user-typed prayers/reflections (not LLM-generated), a separate Socratic "Prompts" flow at MVP, and Rich Context/cross-moment history powering prompts at MVP. **None of this matches what's actually locked** (July 9, 2026 session and after): P3 MVP is **guided prayer only** — the LLM generates a ~350-token prayer for the user to read (not type), Prompts moved to **Post-MVP**, and Rich Context is explicitly **excluded** from P3 at MVP (Load Context must not query past moments/themes — that's a locked Post-MVP boundary, not a build detail). Kept below for historical reference only — do not build against these four. **Corrected, currently-locked tickets are T-145–T-150 below.**
+
+- [ ] **T-063 (SUPERSEDED — see note above):** Build Prayer Flow (Design + Engineering) — Pillar 3
   - **Priority:** HIGH (Phase 2 Core)
   - **Category:** Feature — Prayer/Responding to Captures (Pillar 3)
   - **Status:** 🔲 NOT STARTED
@@ -1370,7 +1373,7 @@
   - **Blocks:** T-065, T-066 (Pillar 3 completion + Pillar 6 integration)
   - **Context:** Prayer is one of two core Prayer flows. Users need a guided but non-prescriptive way to respond spiritually to captured moments.
 
-- [ ] **T-064:** Build Prompts Flow (Design + Engineering) — Pillar 3
+- [ ] **T-064 (SUPERSEDED — Prompts is Post-MVP, see note above T-063):** Build Prompts Flow (Design + Engineering) — Pillar 3
   - **Priority:** HIGH (Phase 2 Core)
   - **Category:** Feature — Prayer/Responding to Captures (Pillar 3)
   - **Status:** 🔲 NOT STARTED
@@ -1412,7 +1415,7 @@
   - **Blocks:** T-065, T-066 (Pillar 3 completion + Pillar 6 integration)
   - **Context:** Prompts enable deeper reflection than prayer alone. Users discover their own insights through guided questioning (never interpretation).
 
-- [ ] **T-065:** Rich Context Integration for Prayer Flows (Design + Engineering) — Pillar 3
+- [ ] **T-065 (SUPERSEDED — Rich Context excluded from P3 at MVP, see note above T-063):** Rich Context Integration for Prayer Flows (Design + Engineering) — Pillar 3
   - **Priority:** HIGH (Phase 2 Foundation)
   - **Category:** Feature — Rich Context + Prayer Integration
   - **Status:** 🔲 NOT STARTED
@@ -1455,7 +1458,7 @@
   - **Blocks:** Pillar 6 (Formation Intelligence) theme surfacing, Pillar 8 (Notifications) contextual nudges
   - **Context:** Rich Context is the foundational principle for Phase 2. Without it, Prayer flows are generic. With it, Dwellable feels like it knows the user.
 
-- [ ] **T-066:** Response Persistence & History (Engineering) — Pillar 3
+- [ ] **T-066 (SUPERSEDED — folded into T-149's PrayerArtifact model, see note above T-063):** Response Persistence & History (Engineering) — Pillar 3
   - **Priority:** HIGH (Phase 2 Foundation)
   - **Category:** Feature — Data Persistence
   - **Status:** 🔲 NOT STARTED
@@ -1540,10 +1543,146 @@
   - **When to do:** Week 1 of Phase 2 development (foundation for all P0 features)
   - **Why now:** Data protection is core to Dwellable's trust with users. This must ship with P0 features.
   - **Context:** Current build uses Supabase RLS (row-level security) only — moments are currently stored as plaintext. This ticket closes that gap.
-  - **Follow-up tickets:**
-    - [ ] T-063: Test encryption with long moments (performance baseline)
-    - [ ] T-064: Document key management + LLM data-handling for users (replaces old "password reset + recovery" doc scope)
-    - [ ] T-065: Add "secure with us" privacy guarantee messaging to onboarding + settings (replaces old zero-knowledge copy)
+  - **Follow-up items (folded into this ticket's own scope, not separate tickets — avoids colliding with the real T-063/064/065 tickets elsewhere in this file):**
+    - [ ] Test encryption with long moments (performance baseline)
+    - [ ] Document key management + LLM data-handling for users (replaces old "password reset + recovery" doc scope)
+    - [ ] Add "secure with us" privacy guarantee messaging to onboarding + settings (replaces old zero-knowledge copy)
+
+### Pillar 3 (Prayer) — Corrected Implementation Tickets (July 23, 2026)
+
+**Grounded in the P3 Technical Tools Needed audit (July 9, 2026) — zero corresponding code exists for any of these; this is a from-scratch build.** Replaces the superseded T-063–T-066 above.
+
+- [ ] **T-145:** Build Prayer Invitation UI (CTA + Accept/Decline Decision) — Pillar 3 🔲 **NOT STARTED**
+  - **Purpose:** The "Want to pray over this?" CTA and its accept/decline decision — the entry point into the Prayer flow.
+  - **Deliverables:**
+    1. Shared UI component triggered from two call sites: immediately after P1 Capture's Save, and from Today tab/Capture button (organic entry) — must be the literal same component per the parity lock (P3 Scenario 2), not two near-duplicate implementations
+    2. Decline path routes directly to P4 Journal creation with no prayer artifact created
+  - **Dependencies:** P1 (Capture) — needs a saved moment to attach the CTA to
+  - **Estimated effort:** S–M (6–10 hours)
+  - **Priority:** 🔴 HIGH (entry point for the whole pillar)
+
+- [ ] **T-146:** Build Load Context (MVP-Scoped, Single-Conversation Only) — Pillar 3 🔲 **NOT STARTED**
+  - **Purpose:** Assembles the input for prayer generation: current reflection's transcript + user archetype (Jotter/Venter/Processor, from P1).
+  - **Deliverables:**
+    1. Fetch current moment's transcript + P1's inferred archetype
+    2. **Hard MVP constraint:** must NOT query past moments/themes — cross-moment Rich Context is an explicit Post-MVP boundary (P3 Scenario 7). Build as a single, easily-extended query point, not a scope-creep risk
+  - **Dependencies:** **P1's archetype inference must exist and be populated** — confirmed via P1's own audit that archetype inference is not yet implemented in code either. This context load has nothing to read until P1 ships it.
+  - **Estimated effort:** M (8–12 hours)
+  - **Priority:** 🔴 HIGH
+
+- [ ] **T-147:** Build PrayerGenerationManager (LLM Integration) — Pillar 3 🔲 **NOT STARTED**
+  - **Purpose:** The core prayer-generation call — transcript + archetype in, a ~350-token guided prayer out.
+  - **Deliverables:**
+    1. LLM wiring using the locked **Groq Llama 3.3 70B (primary) → GPT-4o mini (backup)** pairing via Vercel AI SDK — same provider decision as P1's Dwelly Agent (T-120). **Check whether P1's LLM infra already exists by the time this starts — reuse it rather than building a second implementation.**
+    2. Prompt construction: extract feelings/people/intended-outcome from transcript, apply Acknowledge+Counteract structure (never affirm the negative belief), match user's theological language (Lord vs. God, from P0)
+    3. **Hard constraint:** output capped at exactly 350 tokens (`max_tokens` parameter) — not a soft UI truncation (P3 Scenario 8)
+    4. Validate <3s latency target (per `PILLAR_3_PRAYER_STRATEGY.md`) against real Groq/GPT-4o mini response times for this prompt shape
+  - **Dependencies:** T-146 (Load Context); shared LLM infra with T-120 (P1 Dwelly loop) — build once, reuse
+  - **Estimated effort:** L (20–28 hours — first-build cost; **10–14 hours if P1's shared LLM service already exists and this just wires into it**)
+  - **Priority:** 🔴 HIGH (core mechanic of the pillar)
+
+- [ ] **T-148:** Build Prayer Reading Screen + Mid-Prayer Exit — Pillar 3 🔲 **NOT STARTED**
+  - **Purpose:** Combines T-124 (already-ticketed reading UI: on-screen text + background music) with the mid-prayer exit decision point added per Kell's request once the Prompts fork was removed.
+  - **Deliverables:**
+    1. See T-124 for the base reading experience (text display, music playback, no auto-advance, music stops cleanly on exit)
+    2. "User exits mid-prayer, or finishes?" decision reachable throughout the reading screen, not gated to start/end
+    3. On exit: no PrayerArtifact stored, even though the LLM generation call already completed and cost money — accepted cost, not a bug (generation happens before the user decides whether to keep engaging)
+  - **Dependencies:** T-124 (already ticketed), T-147 (PrayerGenerationManager output to display)
+  - **Estimated effort:** S–M (4–7 hours, additive to T-124's existing estimate)
+  - **Priority:** 🟡 MEDIUM
+
+- [ ] **T-149:** Build Resonance Confirmation + PrayerArtifact Model (Encrypted Storage) — Pillar 3 🔲 **NOT STARTED**
+  - **Purpose:** The binary 👍 resonance confirmation, distinct from mere completion, plus the storage model for the resulting artifact. (Folds in the storage scope from the superseded T-066.)
+  - **Deliverables:**
+    1. Two distinct trackable fields: `userEngaged` (set on completion, tap or not) vs. `resonance` (true only if 👍 tapped) — per P3 Scenario 5, these must not collapse into a single boolean. No "thumbs down" path exists by design — binary is affirmation-only; skipping the tap is the only "no" state.
+    2. `PrayerArtifact` model: `id`, `momentId`, `userId`, `prayerText`, `encryptedContent` (AES-256-GCM), `createdAt`, `userEngaged`, `resonance`
+    3. **Storage clarification (locked):** must store WITH the journal entry via a `journalEntryId` field, not merely reference the moment ID (P3 Scenario 9)
+  - **Dependencies:** **Hard-blocked on T-062 (Server-Side Encryption)** — cannot ship encrypted-at-rest until it lands. **Soft-blocked on P4's JournalEntry model** (T-151) — ship with `journalEntryId` nullable/stubbed until P4 lands, per the dependency graph's existing recommendation.
+  - **Estimated effort:** M (10–14 hours)
+  - **Priority:** 🔴 HIGH (blocked on T-062, but design/UI work can start in parallel)
+
+- [ ] **T-150:** Wire Prayer Token Accounting into T-119 — Pillar 3 🔲 **NOT STARTED**
+  - **Purpose:** Prayer's ~1,250-token budget (350 output + input) needs to be tracked as its own bucket, separate from the Dwelly conversation's 3,000-token hard cap — per T-119's already-locked allocation.
+  - **Deliverables:** Extend T-119's token-counting infrastructure to cover the Prayer generation call as its own accounted bucket
+  - **Dependencies:** T-119 (shared token-counting infra — build once, use for both Dwelly loop and Prayer)
+  - **Estimated effort:** S (2–4 hours, additive to T-119)
+  - **Priority:** 🟢 MEDIUM
+
+**P3 total new-build estimate: ~51–75 hours** (T-145 through T-150, excluding T-124/T-119 which already have their own estimates) — notably **less** than the original pillar-level "2–3 weeks" (80–120 hours) guess, since P3's actual scope turned out tighter once broken into real tickets.
+
+### Pillar 4 (Journal Creation & Ownership) — Corrected Implementation Tickets (July 23, 2026)
+
+**Grounded in the P4 Technical Tools Needed audit (July 9, 2026) — zero corresponding code exists for any of these; from-scratch build, same as P3.**
+
+- [ ] **T-151:** Build JournalSynthesisManager (LLM Integration) — Pillar 4 🔲 **NOT STARTED**
+  - **Purpose:** The core synthesis call: transcript → title (4-6 words) + body (2-3 paragraphs) + suggested mood.
+  - **Deliverables:**
+    1. Same **Groq Llama 3.3 70B → GPT-4o mini** pairing via Vercel AI SDK as P1 and P3 — **this is the third pillar needing the same LLM infra**; strongly reuse whichever of P1/P3/P4 builds it first rather than a third independent implementation
+    2. Prompt construction: contemplative tone, mirrors user's language, 2-3 paragraph narrative (not structured/bulleted)
+    3. Validate <5s latency target (prayer completion → Dwelling Place visible, per PRD success metric) against real Groq/GPT-4o mini timing for this prompt shape
+  - **Dependencies:** P1's transcript (exists once P1 ships); optionally P3's prayer content/resonance signal (exists once P3 ships); shared LLM infra with T-120/T-147
+  - **Estimated effort:** L (20–28 hours — first-build cost; less if P1/P3's shared LLM service already exists)
+  - **Priority:** 🔴 HIGH (core mechanic of the pillar)
+
+- [ ] **T-152:** Build JournalEntry Model + Encrypted Storage — Pillar 4 🔲 **NOT STARTED**
+  - **Purpose:** The core data model: `id`, `momentId`, `dateCreated`, `title`, `body`, `mood`, `object`, `photos`, `prayerReference`, `edited`, `metadataEditedAt`, `deleted`, `deletedAt`, `encryptedContent` (AES-256-GCM).
+  - **Deliverables:** Schema + Supabase table + encrypted storage wiring
+  - **Dependencies:** **Hard-blocked on T-062 (Server-Side Encryption)** — confirmed zero encryption code exists anywhere; this is the single biggest blocker across P3 and P4 both. **Soft dependency:** P3's PrayerArtifact model (T-149) — `prayerReference` linkage needs both models built roughly together, or ship this nullable until P3 lands.
+  - **Estimated effort:** M (10–14 hours)
+  - **Priority:** 🔴 HIGH
+
+- [ ] **T-153:** Build Mood UI (Inferred + Override) — Pillar 4 🔲 **NOT STARTED**
+  - **Purpose:** Suggested mood surfaces from synthesis output (template-derived, NOT a separate AI call — per the locked "mood message is template-based, not AI" decision).
+  - **Deliverables:** Picker UI — 8 presets + 1 custom text field (≤20 chars), matching the pattern already documented in P5/Editing (May 8 session)
+  - **Dependencies:** T-151 (synthesis output to seed the suggestion)
+  - **Estimated effort:** M (8–12 hours)
+  - **Priority:** 🟡 MEDIUM
+  - **Reuse note:** build as a generic preset+custom picker component — T-154 (Object) can reuse the same UI shell with a different data set
+
+- [ ] **T-154:** Build Object UI (Preset + Custom) — Pillar 4 🔲 **NOT STARTED**
+  - **Purpose:** 6 presets (Family/Romance/Career/Health/Spiritual/Other) + 1 custom slot. Not AI-inferred — fully user-chosen, unlike Mood.
+  - **Deliverables:** Picker UI, ideally sharing T-153's component shell (same preset+custom shape)
+  - **Dependencies:** T-153 (component reuse, if built as shared)
+  - **Estimated effort:** S (4–6 hours if reusing T-153's component; more if built standalone)
+  - **Priority:** 🟡 MEDIUM
+
+- [ ] **T-155:** Build Entry / Dwelling Place Two-Tab UI — Pillar 4 🔲 **NOT STARTED**
+  - **Purpose:** Entry tab renders raw transcript (strictly read-only, no edit affordance); Dwelling Place tab renders synthesized title/body (editable only from detail view, not list cards). Both tabs share one AI-generated title.
+  - **Dependencies:** T-152 (JournalEntry model must exist to have data to render)
+  - **Estimated effort:** M (10–14 hours)
+  - **Priority:** 🔴 HIGH
+
+- [ ] **T-156:** Build Photo Management (Post-Synthesis) — Pillar 4 🔲 **NOT STARTED**
+  - **Purpose:** Add/remove photos after journal creation; no photo required for save.
+  - **Deliverables:** `AVFoundation`/`PhotosUI` camera capture + photo library picker. No AI-generated photo descriptions in v1 (deferred to v2+).
+  - **Dependencies:** None — independent of the LLM/synthesis path, can be built and tested in isolation
+  - **Estimated effort:** M (10–14 hours)
+  - **Priority:** 🟢 MEDIUM (can run in parallel with everything else in this section)
+
+- [ ] **T-157:** Build Resonance-Gated Prayer Embedding — Pillar 4 🔲 **NOT STARTED**
+  - **Purpose:** Reads P3's `resonance` field (not `userEngaged`) to decide whether to set `prayerReference` and show "🙏 You prayed over this."
+  - **Deliverables:** Pure consumer logic — no independent decision-making beyond the boolean check
+  - **Dependencies:** **Depends entirely on P3 shipping its resonance signal first** (T-149), or at minimum its data shape being finalized
+  - **Estimated effort:** S (3–5 hours)
+  - **Priority:** 🟢 MEDIUM
+
+- [ ] **T-158:** Build Soft Delete + 30-Day Recovery — Pillar 4 🔲 **NOT STARTED**
+  - **Purpose:** `deleted` boolean + `deletedAt` timestamp pattern, consistent with the same pattern already locked for P5/Editing.
+  - **Open item:** Recovery window logic (30 days) and eventual hard-delete/purge behavior after that window is not yet specified — same open-question status noted in P5's original lock
+  - **Dependencies:** T-152 (JournalEntry model)
+  - **Estimated effort:** M (8–12 hours)
+  - **Priority:** 🟡 MEDIUM
+
+- [ ] **T-159:** Build Synthesis Error Fallback — Pillar 4 🔲 **NOT STARTED**
+  - **Purpose:** Locked spec, ready to build (July 9, 2026): auto-retry with backoff (reuse `SyncManager`'s existing 10s/20s/40s pattern) → if retries exhaust, the existing `originalTranscript` (already stored on every JournalEntry from P1's capture) becomes the journal entry body — no AI title/body invented → title defaults to "Your Reflection" → user sees "We couldn't synthesize your journal, but here's what you reflected on" → optional "Retry synthesis" later.
+  - **Deliverables:** No forced manual writing at any point; no new fields needed on JournalEntry (reuses the transcript already captured during P1)
+  - **Dependencies:** T-152 (JournalEntry model must support a fallback title+body state distinct from a fully-synthesized entry)
+  - **Estimated effort:** S–M (6–10 hours)
+  - **Priority:** 🟡 MEDIUM
+
+**Note on T-127 (Density-Tiered Generation):** already ticketed and applies to P4's synthesis sizing (input depth should scale output depth) — see T-127 above. Blocked on shared L1-L8 density detection, which doesn't exist in code anywhere yet; not re-ticketed here.
+
+**P4 total new-build estimate: ~79–115 hours** (T-151 through T-159) — roughly matches the original pillar-level "2-3 weeks" (80-120 hours) guess, unlike P3 which came in lighter.
 
 ### Voice — WhisperKit Improvements
 - [x] **T-056:** Improve WhisperKit handling for long pauses and applause — **CLOSED, DUPLICATE ✅**
