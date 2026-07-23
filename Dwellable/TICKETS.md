@@ -720,6 +720,7 @@
   - **Raised:** July 4, 2026 session (LLM cost/capacity investigation)
 
 - [ ] **T-107:** Build LLM Request Queue + Backoff + Circuit Breaker + Financial/Token Guardrails (Groq → GPT-4o Mini Failover Protocol) 🔲 **NOT STARTED**
+  - **🚨 Sequencing clarified (July 23, 2026):** This ticket's deliverable #8 ("Server-side-only API calls, never expose keys client-side") is exactly what **T-168 (Shared LLM Proxy Service)** builds — these two tickets describe the same backend layer from different angles (T-168 = the calling infrastructure, T-107 = the queueing/backoff/cost-guardrail logic that sits inside it). **T-107 should be built into T-168's Edge Function, not as a separate client-side or parallel system.** Sequencing: T-062 → T-168 (with T-107's guardrails built in from the start, not bolted on after) → T-120/T-147/T-151/T-162 (the four features that call it). Do not let T-120 or the others start calling a real LLM before T-107's guardrails exist — the $432-$1,728/day worst-case exposure noted below is real from the very first request, not just at beta scale.
   - **Purpose:** Live testing (July 4-5, 2026) confirmed real per-loop cost is ~4,705 tokens (validated benchmark), and Groq's free tier has a hard daily wall (~21 full loops/day, ~2-3/minute at that real token weight) that's easy to exceed at realistic beta scale. The Groq-primary → GPT-4o-mini-backup design is locked, but the actual failover logic (queueing, retry, circuit breaking) doesn't exist yet — without it, requests that exceed Groq's limits will simply fail (HTTP 429) instead of gracefully falling over to the paid backup. Corrected GPT-4o mini Tier 1 real ceiling is ~1,666 loops/day (10,000 RPD ÷ 6 calls/loop — see T-099 for the Batch-queue-limit mislabeling incident that originally understated this).
   - **OpenRouter evaluated and rejected as a second free lane (July 4, 2026):** OpenRouter's free tier serves the same `llama-3.3-70b-versatile` model (no quality variance risk), but live testing showed its shared free pool (routed through a third-party provider, "Venice") is persistently rate-limited in practice — 3 consecutive test calls all failed with HTTP 429, wait times not shrinking (11s, 18s, 19s). Not dependable enough to architect around; not included in this ticket's scope.
   - **Deliverables:**
@@ -739,15 +740,16 @@
     - [ ] `max_tokens` enforced per call type at the API level; truncation handling decided and implemented
     - [ ] Logging/analytics on how many loops per day land on Groq vs. GPT-4o mini vs. queued, plus per-loop cost attribution
   - **Estimated effort:** L (16-22 hours — increased from 10-16h to include the financial/token guardrail work)
-  - **Dependencies:** T-099 (finalized cost/capacity numbers)
-  - **Priority:** 🔴 HIGH (needed before real beta traffic — Groq's daily ceiling is easy to exceed with even a modest concurrent cohort, and Tier 2's missing daily-request brake makes the financial guardrail non-optional before any Tier 2 move)
+  - **Dependencies:** T-099 (finalized cost/capacity numbers); **T-168 (Shared LLM Proxy Service — this ticket's logic is built inside it, not alongside it)**
+  - **Priority:** 🔴 BLOCKING (updated July 23, 2026 — not just "before real beta traffic": this must exist before T-120/T-147/T-151/T-162 make their first real LLM call at all, in dev/testing too, not only at beta scale. Groq's daily ceiling and Tier 2's missing daily-request brake make the financial guardrail non-optional from request one.)
   - **Raised:** July 4-5, 2026 session (LLM cost/capacity investigation + guardrails discussion)
 
-- [ ] **T-108:** Tiered Prompts-Per-Capture Cap (Free vs. Premium Accounts) 🔲 **NOT STARTED**
-  - **Purpose:** T-064 currently locks a flat "max 5 prompts per flow" for all accounts. Guardrails discussion (July 5, 2026) confirmed this should become a two-part model: **(1) a flat hard ceiling for every account** (safety/cost protection, regardless of tier), and **(2) a lower, tier-differentiated soft cap for free accounts specifically**, as a monetization lever alongside T-099's existing "3 free journals" gate — fewer reflection turns on free tier is part of the upsell story, not just a cost control.
-  - **Deliverables:**
-    1. Lock exact numbers with Kell: free-tier reflection turn cap (candidate: 2-3) vs. premium/paid-tier cap (existing 3-5 range from T-064)
-    2. Update T-064's Prompts flow design to reflect the two-tier model
+- [ ] **T-108 (Post-MVP — see note below):** Tiered Prompts-Per-Capture Cap (Free vs. Premium Accounts) ⚪ **NOT STARTED (POST-MVP, July 23, 2026)**
+  - **🚨 Stale dependency found and corrected (July 23, 2026):** This ticket depended on **T-064 (Prompts Flow)**, which was marked superseded/Post-MVP earlier this session — P3's actual locked MVP scope is guided LLM-generated prayer only; the Socratic "Prompts" flow this ticket is capping doesn't exist at MVP. This ticket therefore moves to **Post-MVP alongside T-064**, effective the same date it was superseded. Revisit once Prompts is actually scheduled for build.
+  - **Purpose (historical, Post-MVP):** T-064 (superseded) locked a flat "max 5 prompts per flow" for all accounts. Guardrails discussion (July 5, 2026) confirmed this should become a two-part model: **(1) a flat hard ceiling for every account** (safety/cost protection, regardless of tier), and **(2) a lower, tier-differentiated soft cap for free accounts specifically**, as a monetization lever alongside T-099's existing "3 free journals" gate — fewer reflection turns on free tier is part of the upsell story, not just a cost control.
+  - **Deliverables (Post-MVP, once Prompts is scheduled):**
+    1. Lock exact numbers with Kell: free-tier reflection turn cap (candidate: 2-3) vs. premium/paid-tier cap (existing 3-5 range from the original Prompts design)
+    2. Update the Prompts flow design (whatever ticket replaces superseded T-064 when this is built) to reflect the two-tier model
     3. Server-side enforcement of the cap by account tier (not just client-side, consistent with T-099's server-side capture-count enforcement pattern)
     4. Keep the hard ceiling and the tier-specific soft cap configurable (not hardcoded), in case numbers need tuning post-beta
   - **Acceptance Criteria:**
@@ -756,9 +758,9 @@
     - [ ] Caps enforced server-side, not just in the client
     - [ ] Numbers are configurable via a settings/config table, not hardcoded in app logic
   - **Estimated effort:** S-M (6-10 hours)
-  - **Dependencies:** T-099 (monetization model), T-064 (Prompts flow)
-  - **Priority:** 🟡 MEDIUM (product/pricing decision — should be resolved before beta pricing is finalized, not launch-blocking on its own)
-  - **Open item:** Exact free vs. premium prompt-count numbers still need to be locked with Kell.
+  - **Dependencies:** T-099 (monetization model); Prompts flow (Post-MVP, not yet re-ticketed since T-064's supersession)
+  - **Priority:** ⚪ POST-MVP (moved from 🟡 MEDIUM July 23, 2026 — tracks Prompts flow's own Post-MVP status)
+  - **Open item:** Exact free vs. premium prompt-count numbers still need to be locked with Kell, whenever Prompts is scheduled.
   - **Raised:** July 5, 2026 session (LLM cost/capacity guardrails discussion)
 
 ### Pillar 0 — Onboarding Technical Tools Audit (July 5, 2026 session — resolves Comment #3)
@@ -1058,10 +1060,26 @@
 - [ ] **T-134:** Legal & About Fixes — Dynamic Version, Wire ToS/Privacy, About Modal (Pillar 9) 🔲 **NOT STARTED**
   - **Purpose:** `SettingsView.swift`'s Legal section exists but is broken: Version History is a hardcoded `Text("1.0.0")` string (needs to read actual `CFBundleShortVersionString`/`CFBundleVersion` dynamically), and Terms of Service / Privacy Policy buttons have empty action closures (`Button(action: {})`) — UI present, tap does nothing.
   - **Scope:** Wire ToS/Privacy buttons to actual content; build dynamic version display + proper Version History view (not just current version); build "About Dwellable" modal/web view.
-  - **Dependencies:** None
+  - **Dependencies:** **T-169 (Draft Terms of Service + Privacy Policy)** — added July 23, 2026. This ticket wires the buttons; it can't link to real content until T-169 exists.
   - **Estimated effort:** S
   - **Priority:** 🟢 MEDIUM
   - **Raised:** July 20, 2026 session (P9 Technical Tools Needed audit)
+
+- [ ] **T-169:** Draft Terms of Service + Privacy Policy 🔲 **NOT STARTED**
+  - **🚨 NEW (July 23, 2026) — real gap found during pre-execution readiness checks.** No ToS/Privacy Policy document exists anywhere in this repo. T-134 only wires up buttons that were always meant to link to "a web link to full legal document (hosted on website)" per `PILLAR_SETTINGS_STRATEGY.md` — nothing was ever drafted. An old flagged action item in `MEMORY.md` ("Add law enforcement/subpoena language to ToS + Privacy Policy") assumed a draft existed to amend; it doesn't. Needed before any beta user — even Cohort A's personally-vetted direct outreach — is onboarded, since the app collects sensitive spiritual/emotional data.
+  - **Purpose:** A real Privacy Policy and Terms of Service reflecting the actual, currently-locked product decisions — not generic boilerplate.
+  - **Must reflect (pulled from decisions locked this session and earlier):**
+    1. **Server-side encryption model** (not zero-knowledge) — "your moments are secure with us," encrypted at rest, decrypted transiently for processing; see `docs/PILLAR_2_SECURITY_STRATEGY.md`'s User Communication section for the plain-language framing to build from
+    2. **LLM processing disclosure** — moment content is sent to third-party cloud LLMs (Groq, OpenAI) for processing (Dwelly, Prayer, Journal synthesis, Formation Intelligence); never used for provider training (per the locked LLM decision)
+    3. **Law enforcement / subpoena language** — data disclosed "except as legally required" (already used in onboarding copy; needs to actually appear in the legal document itself)
+    4. **Crisis protocol disclaimer** (T-125) — "not a substitute for professional mental-health treatment; if in crisis, call/text 988" and related liability language
+    5. **Account deletion / data retention** — 30-day soft-delete recovery window, then permanent deletion
+    6. **Data collection scope** — what's collected (moments, journals, prayer responses, Intent/Rhythm, usage analytics) and what isn't (no third-party ad trackers per the locked no-third-party-SDK analytics decision)
+  - **Recommendation:** Draft using the above as source material, but **have actual legal counsel review before publishing** — this is a real liability document, not just app copy, especially given the crisis-content handling (T-125) and sensitive spiritual/emotional data collection.
+  - **Dependencies:** T-125 (crisis disclaimer language), P2 model (already locked)
+  - **Estimated effort:** M (10-16 hours — drafting + legal review turnaround, similar in kind to T-105's "8-12 hours, research + writing + legal input" estimate for related copy)
+  - **Priority:** 🔴 HIGH (blocks any real beta user, including Cohort A)
+  - **Raised:** July 23, 2026 session (pre-execution readiness check, before moving to design)
 
 - [ ] **T-135:** TodayView UI Shell — 3-Section Parallel-Query Render (Pillar 10) 🔲 **NOT STARTED**
   - **Purpose:** Pillar 10 has zero corresponding code today — no `TodayView` exists. Renders Greeting, Unprayed Moment, and Daily Prompt sections.
