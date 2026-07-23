@@ -1,7 +1,7 @@
 # Pillar Dependency Graph — Phase 2 Implementation Sequencing
 
 **Status:** Locked for T-092 Phase 2 Launch Readiness — **all pillar designs (P0–P11) now complete as of July 23, 2026**
-**Last Updated:** July 23, 2026 (P2 model corrected to server-side encryption; P6/T-062 dependency corrected — now blocks four pillars, not three; P7 design locked including Cohort A acquisition strategy; P7 positioned in build sequence)
+**Last Updated:** July 23, 2026 (P2 model corrected to server-side encryption; P6/T-062 dependency corrected — now blocks four pillars, not three; P7 design locked including Cohort A acquisition strategy; P7 positioned in build sequence; T-125 Crisis Protocol reclassified MVP and moved to P1 ownership, flagged as a critical-path timeline risk)
 
 ---
 
@@ -174,6 +174,7 @@ P5 (theme filter), P8 (v2 formation-aligned notifications), P10 (cross-entry pro
 | **P0 (Onboarding)** | Auth | P1 | ✅ YES | No |
 | **P2 (Encryption)** | Auth, P0 | All data ops | ✅ YES | Yes (infrastructure) |
 | **P1 (Capture)** | P0, Auth, P2 | P3, P4, P10 | ✅ YES | No |
+| **T-125 (Crisis Protocol)** | Bundled into P1's build (not standalone) — detection runs at capture time via OpenAI Moderation API | P3 (inherits non-refusal rule, no detection of its own) | ✅ YES — reclassified MVP + moved to P1 ownership, July 23, 2026 | No — critical path, adds real risk to P1's timeline (L–XL effort) |
 | **P3 (Prayer)** | P1, P2 | P4, P8, P6 (input) | ✅ YES | No |
 | **P4 (Journal)** | P1, P3, P2 | P5, P6, P11 | ✅ YES | No |
 | **P5 (Search) — Screen 2 (Filters/Query)** | P1, P3 (resonance), P4 (JournalEntry, Mood/Object components), T-062 | None | ✅ YES — elevated to MVP July 10, 2026 | Yes (after P4, parallel to Navigation Shell/P10/P11) |
@@ -205,7 +206,7 @@ Navigation Shell (T-076–082) [tabs hosting P9/P10/P11, incl. P5 Screen 1]
 MVP LAUNCH ✅
 ```
 
-**Critical Path Duration:** ~11–16 weeks (unchanged — P6 and P11 run parallel to this spine, not on it, per §4)
+**Critical Path Duration:** ~11–16 weeks, **at risk of extending** (July 23, 2026 — T-125 crisis protocol reclassified to MVP and bundled into P1, which sits on the critical path; L–XL effort ticket now shares P1's 2–3 week window. Recommend scoping T-125's MVP slice to the minimum safety floor — detection + compassionate response + resource surfacing — and deferring the fuller Formation Intelligence tie-in, to avoid extending the critical path)
 
 ---
 
@@ -280,6 +281,7 @@ WEEK 1–2:    Auth Pillar ═════════════════�
 WEEK 3–4:    P0 (Onboarding) ════════════════════════════════
              P2 (Encryption) ════════════════════════════════  [Parallel — T-062, now blocks 4 pillars: P3/P4/P5/P6]
 WEEK 5–6:    P1 (Capture) ═══════════════════════════════════
+             ├─ T-125 (Crisis Protocol, bundled — OpenAI Moderation API + response) ══ [Same window, real timeline risk — L–XL effort]
              P9 (Account Profile) ═════════════════════════════ [Parallel]
 WEEK 7–8:    P3 (Prayer) ═══════════════════════════════════
 WEEK 9–10:   P4 (Journal) ═══════════════════════════════════
@@ -314,7 +316,7 @@ POST-LAUNCH (WEEK 15+):
 
 **Phase 2: Core Pillars (Weeks 5–12)**
 
-4. **P1 Capture** (2–3 weeks, starts after P0)
+4. **P1 Capture** (2–3 weeks, starts after P0) — **bundles T-125** (Crisis Protocol: OpenAI Moderation API detection + compassionate response + 988/Crisis Text Line resource surfacing, all at capture time). Real risk this extends P1's window given L–XL effort; recommend scoping to the MVP safety floor only
 5. **P3 Prayer** (2–3 weeks, starts after P1)
 6. **P4 Journal Creation** (2–3 weeks, starts after P3)
 7. **Navigation Shell** (1–2 weeks, starts after P4) — T-076 (4-tab nav), T-078 (Entries tab, includes P5 Screen 1)
@@ -373,6 +375,7 @@ POST-LAUNCH (WEEK 15+):
 | **RESOLVED July 21, 2026:** P6 MVP scope is the Dweller Profile, not theme detection | Fuller graph moves to Post-MVP | Kell (resolved) |
 | **RESOLVED July 23, 2026:** P6/T-062 relationship corrected | P6 has a real storage dependency on T-062, not just a constraint — T-062 now blocks four pillars, not three | Kell (resolved) |
 | **RESOLVED July 23, 2026:** P7 (Beta & Marketing) design locked | All 5 tentative decisions locked; Cohort A acquisition strategy locked (direct personal outreach, not public funnel); implementation not yet started | Kell (resolved) |
+| **NEW (July 23, 2026): T-125 (Crisis Protocol) reclassified MVP + bundled into P1, adds real critical-path risk** | L–XL effort ticket now shares P1's 2–3 week window. Mitigation: scope T-125's MVP slice to the minimum safety floor (OpenAI Moderation API detection + compassionate response + 988/Crisis Text Line resources), defer the Formation Intelligence crisis_signal tracking (deliverable 7) to Post-MVP without extending P1 | iOS/Backend engineer (P1 owner) |
 
 ---
 
@@ -409,7 +412,7 @@ POST-LAUNCH (WEEK 15+):
 | **Deferred to Post-MVP** | Multi-device sync, open-ended prayer, email verification, biometric unlock |
 | **Critical Blocker** | T-062 (encryption) blocks **four** pillars (P3, P4, P5, P6 — P6 added July 23, 2026) — highest-urgency ticket, still 🔲 Not Started. P1 archetype inference also a confirmed P3 blocker |
 | **RESOLVED July 21, 2026** | Pillar numbering corrected throughout (P6 = Formation Intelligence, not Menu Bar; Menu Bar isn't a pillar). P6 MVP scope locked as the Dweller Profile. P11 amended (Your Narrative added, Emotional Themes removed) |
-| **RESOLVED July 23, 2026** | P2 model locked as server-side encryption (not E2E). P6/T-062 dependency corrected (real, not just a constraint). P7 (Beta & Marketing) design fully locked — all pillar designs (P0–P11) now complete. Cohort A acquisition strategy locked: direct personal outreach, not public funnel; P7 Prep can start Week 1 in parallel with zero dependencies |
+| **RESOLVED July 23, 2026** | P2 model locked as server-side encryption (not E2E). P6/T-062 dependency corrected (real, not just a constraint). P7 (Beta & Marketing) design fully locked — all pillar designs (P0–P11) now complete. Cohort A acquisition strategy locked: direct personal outreach, not public funnel; P7 Prep can start Week 1 in parallel with zero dependencies. T-125 (Crisis Protocol) reclassified MVP, ownership moved from orphaned "P3/P6" to **P1** (where free-form user text actually enters the system) — bundled into P1's build, adding real critical-path timeline risk (L–XL effort); mitigation is scoping to the minimum safety floor |
 | **Longest Pillar Build** | P4 (Journal) or P6 (Formation Intelligence engine) — 2–3 weeks each |
 
 ---
