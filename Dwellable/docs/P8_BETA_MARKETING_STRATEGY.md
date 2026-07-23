@@ -14,11 +14,28 @@ The core principle: Validate dwelling behavior at scale before public launch. Me
 
 ---
 
+## Beta Acquisition Strategy — Cohort A (Locked July 23, 2026)
+
+**Starting point:** Personal network (church, friends, family) — uncertain if sufficient reach on its own — plus 1-2 direct connections to churches/ministries/Christian creators. No existing social following, email list, or ad budget.
+
+**Key decision: Cohort A (20-30 users) is filled through direct personal outreach, not the public self-signup funnel described in Path 1 below.** Path 1's landing-page/waitlist flow assumes discovery at scale, which doesn't match the actual starting point. Filling 20-30 seats is a personal-outreach problem, not a marketing-funnel problem — and quality/engagement matters far more than volume for a cohort meant to validate dwelling behavior.
+
+**Cohort A acquisition, in priority order:**
+1. **Direct personal outreach** — text/call/DM 15-20 specific people already known to journal, pray, or reflect regularly. Skip the landing page for this group; send the TestFlight link directly once there's been a real conversation. Higher conversion, and quality control comes from picking people likely to actually engage, not just try it once.
+2. **Re-invite Phase 1 dogfooding participants explicitly to Phase 2.** They already validated capture adoption for themselves — the warmest, most-validated seed group. Shouldn't have to rediscover the beta through a public channel.
+3. **Curated referrals through the 1-2 church/ministry contacts** — ask each to personally recommend 3-5 specific people they think would actually engage, not announce broadly to a congregation/community. A broad announcement produces downloads, not engaged reflectors, and there isn't yet the support bandwidth for a flood of low-intent signups.
+
+**Messaging (for all direct asks):** one consistent, short pitch grounded in VISION.md's actual differentiation (dwelling on God's presence across all of life, not generic journaling) — not feature-list marketing copy. Example: *"I built a journaling app just for capturing and reflecting on where you notice God in your day — not a generic notes app. I'm looking for a small group to try it before it's public. Want in?"*
+
+**When Path 1 (public landing page + open waitlist) activates:** Once Cohort A is filled and validating well — i.e., for Cohort B/C or a later organic-growth phase, not at beta launch. This is also when the locked **FIFO waitlist** decision starts to actually matter (FIFO only means something once there's excess public demand beyond what personal outreach fills).
+
+---
+
 ## Happy Paths
 
 ### Path 1: Beta User Self-Signup
 
-**Scenario:** A user hears about Dwellable (social media, word-of-mouth, church community) and wants to join the Phase 2 beta.
+**Scenario (activates for Cohort B/C, once Cohort A is filled via direct outreach — see Beta Acquisition Strategy above):** A user hears about Dwellable (social media, word-of-mouth, church community) and wants to join the Phase 2 beta.
 
 1. **User Visits Signup URL** → www.dwellable.app/beta or landing page
 2. **See Beta Pitch** → Clear copy: "Dwellable is a faith-specific app for capturing and dwelling on God's presence. We're in Phase 2 beta. Apply now."
