@@ -1,7 +1,7 @@
 # Pillar Dependency Graph — Phase 2 Implementation Sequencing
 
 **Status:** Locked for T-092 Phase 2 Launch Readiness — **all pillar designs (P0–P11) now complete as of July 23, 2026**
-**Last Updated:** July 23, 2026 (P2 model corrected to server-side encryption; P6/T-062 dependency corrected — now blocks four pillars, not three; P7 design locked including Cohort A acquisition strategy; P7 positioned in build sequence; T-125 Crisis Protocol reclassified MVP and moved to P1 ownership, flagged as a critical-path timeline risk; critical path estimate validated against real ticket-level hours and recalibrated for the actual solo Kell + Claude Code execution model, not a fictional team — Owner Assignments table corrected accordingly; **P3 and P4 broken into real tickets (T-145–T-159) with hour estimates, replacing pillar-level guesses — also caught and superseded 4 stale P3 tickets (T-063–T-066) describing a pre-July-9 design that no longer matches what's locked**)
+**Last Updated:** July 23, 2026 (P2 model corrected to server-side encryption; P6/T-062 dependency corrected — now blocks four pillars, not three; P7 design locked including Cohort A acquisition strategy; P7 positioned in build sequence; T-125 Crisis Protocol reclassified MVP and moved to P1 ownership, flagged as a critical-path timeline risk; critical path estimate validated against real ticket-level hours and recalibrated for the actual solo Kell + Claude Code execution model, not a fictional team — Owner Assignments table corrected accordingly; P3 and P4 broken into real tickets (T-145–T-159), superseding 4 stale P3 tickets; **Navigation Shell's stale T-077/T-080 also superseded (same collision pattern found a third time); P6 (T-160–164) and P7 Prep (T-165–167) ticketed for the first time; Auth verified already fully covered — sequencing (Gantt, Build Order, summary table) now references real ticket numbers throughout instead of pillar-level guesses**)
 
 ---
 
@@ -285,7 +285,7 @@ MVP LAUNCH ✅
 
 ```
 WEEK 1–2:    Auth Pillar ═════════════════════════════════════
-             P7 Prep (personal-outreach list, Discord, email/pitch templates) ═ [Parallel — no dependencies, lowest-cost early start]
+             P7 Prep (T-165 outreach list, T-166 pitch script, T-167 Discord + contacts) ═ [Parallel — no dependencies, lowest-cost early start, ~6-13 hours total]
 WEEK 3–4:    P0 (Onboarding) ════════════════════════════════
              P2 (Encryption) ════════════════════════════════  [Parallel — T-062, now blocks 4 pillars: P3/P4/P5/P6]
 WEEK 5–6:    P1 (Capture) ═══════════════════════════════════
@@ -293,7 +293,7 @@ WEEK 5–6:    P1 (Capture) ═════════════════�
              P9 (Account Profile) ═════════════════════════════ [Parallel]
 WEEK 7–8:    P3 (Prayer) ═══════════════════════════════════
 WEEK 9–10:   P4 (Journal) ═══════════════════════════════════
-             P6 (Formation Intel — Dweller Profile) ══════════   [Parallel start, mid-P4, needs T-062 done by now]
+             P6 (T-160-164, ~56-80h) ══════════════════════════   [Parallel start, mid-P4, needs T-062 done by now]
 WEEK 11–12:  Navigation Shell (T-076–082, incl. P5 Screen 1) ══
              P10 (Today) ═══════════════════════════════════════ [Parallel]
              P11 (Growth) ═══════════════════════════════════════ [Parallel, after P6]
@@ -317,10 +317,10 @@ POST-LAUNCH (WEEK 15+):
 
 **Phase 1: Gatekeeper + Foundation (Weeks 1–4)**
 
-1. **Auth Pillar** (1–2 weeks)
+1. **Auth Pillar** (1–2 weeks) — already thoroughly ticketed (T-003 login/JWT, Phase 1, ✅ complete; T-109 signup; T-110 onboarding views incl. AccountView; T-111 schema; T-112 nav gate; T-113 dead-token handling; T-114 device test matrix; T-115 signup abuse protection; T-116 funnel analytics; T-067 forgot-password; T-131 password change) — verified July 23, 2026, no new tickets needed
 2. **P0 Onboarding** (2–3 weeks, starts after Auth)
 3. **P2 Encryption** (2–3 weeks, parallel to P0) — T-062, now confirmed to block **four** pillars (P3, P4, P5, P6 — corrected July 23, 2026, P6 storage dependency added)
-3b. **P7 Prep** (ongoing, starts Week 1, zero dependencies) — build the personal-outreach list, reach out to the 1-2 church/ministry contacts to gauge interest, draft the pitch script, stand up Discord. Lowest-cost, highest-lead-time item in the whole plan — no reason to wait on it.
+3b. **P7 Prep** (ongoing, starts Week 1, zero dependencies) — **T-165** (outreach list, 2-4h), **T-166** (pitch script, 1-3h), **T-167** (Discord + church/ministry outreach, 3-6h). ~6-13 hours total. Lowest-cost, highest-lead-time item in the whole plan — no reason to wait on it.
 
 **Phase 2: Core Pillars (Weeks 5–12)**
 
@@ -333,7 +333,7 @@ POST-LAUNCH (WEEK 15+):
 
 7b. **P5 Search — Screen 2** (2–3 weeks, starts after P4) — T-128
 8. **P9 Account Profile** (2–3 weeks, parallel to P1)
-9. **P6 Formation Intelligence — Dweller Profile** (2–3 weeks, starts mid-P4)
+9. **P6 Formation Intelligence — Dweller Profile** (~56–80 hours, starts mid-P4) — **T-160** (data model, blocked on T-062) → **T-161** (reassessment/threshold engine) → **T-162** (LLM generation, shares infra with P1/P3/P4) → **T-163** (confirmation loop UI, coordinate with P11's T-140) → **T-164** (Closing the Loop internal signal)
     - Build the reassessment engine per the input contract in §0-B (journals, tags, prayer completion/resonance, Intent/Rhythm) — not just what P11 displays
     - Threshold-based reassessment logic (Wispr-style, not real-time, not edit-triggered)
     - Confirmation loop (feeds future reassessment)
@@ -423,7 +423,8 @@ POST-LAUNCH (WEEK 15+):
 | **Critical Blocker** | T-062 (encryption) blocks **four** pillars (P3, P4, P5, P6 — P6 added July 23, 2026) — highest-urgency ticket, still 🔲 Not Started. P1 archetype inference also a confirmed P3 blocker |
 | **RESOLVED July 21, 2026** | Pillar numbering corrected throughout (P6 = Formation Intelligence, not Menu Bar; Menu Bar isn't a pillar). P6 MVP scope locked as the Dweller Profile. P11 amended (Your Narrative added, Emotional Themes removed) |
 | **RESOLVED July 23, 2026** | P2 model locked as server-side encryption (not E2E). P6/T-062 dependency corrected (real, not just a constraint). P7 (Beta & Marketing) design fully locked — all pillar designs (P0–P11) now complete. Cohort A acquisition strategy locked: direct personal outreach, not public funnel; P7 Prep can start Week 1 in parallel with zero dependencies. T-125 (Crisis Protocol) reclassified MVP, ownership moved from orphaned "P3/P6" to **P1** (where free-form user text actually enters the system) — bundled into P1's build, adding real critical-path timeline risk (L–XL effort); mitigation is scoping to the minimum safety floor |
-| **Longest Pillar Build** | P4 (Journal) or P6 (Formation Intelligence engine) — 2–3 weeks each |
+| **Longest Pillar Build** | P4 (Journal, ~79-115h, T-151-159) or P6 (Formation Intelligence engine, ~56-80h, T-160-164) — roughly 2-3 weeks each at full-time pace |
+| **All tickets now exist** (July 23, 2026) | Every pillar on the critical path and every parallel-track pillar has real, individually-estimated tickets — no pillar-level guesses remain. Auth verified already covered (T-003/067/109-116/131); P6 (T-160-164) and P7 Prep (T-165-167) newly created; P3's stale T-063-066 superseded by T-145-150; Nav Shell's stale T-077/T-080 superseded, pointing to T-135-139/T-140-144 |
 
 ---
 
