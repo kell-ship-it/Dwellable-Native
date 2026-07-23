@@ -1,7 +1,7 @@
 # Pillar Dependency Graph — Phase 2 Implementation Sequencing
 
 **Status:** Locked for T-092 Phase 2 Launch Readiness — **all pillar designs (P0–P11) now complete as of July 23, 2026**
-**Last Updated:** July 23, 2026 (P2 model corrected to server-side encryption; P6/T-062 dependency corrected — now blocks four pillars, not three; P7 design locked including Cohort A acquisition strategy; P7 positioned in build sequence; T-125 Crisis Protocol reclassified MVP and moved to P1 ownership, flagged as a critical-path timeline risk)
+**Last Updated:** July 23, 2026 (P2 model corrected to server-side encryption; P6/T-062 dependency corrected — now blocks four pillars, not three; P7 design locked including Cohort A acquisition strategy; P7 positioned in build sequence; T-125 Crisis Protocol reclassified MVP and moved to P1 ownership, flagged as a critical-path timeline risk; **critical path estimate validated against real ticket-level hours and recalibrated for the actual solo Kell + Claude Code execution model, not a fictional team — Owner Assignments table corrected accordingly**)
 
 ---
 
@@ -208,6 +208,8 @@ MVP LAUNCH ✅
 
 **Critical Path Duration:** ~11–16 weeks, **at risk of extending** (July 23, 2026 — T-125 crisis protocol reclassified to MVP and bundled into P1, which sits on the critical path; L–XL effort ticket now shares P1's 2–3 week window. Recommend scoping T-125's MVP slice to the minimum safety floor — detection + compassionate response + resource surfacing — and deferring the fuller Formation Intelligence tie-in, to avoid extending the critical path)
 
+**⚠️ Estimate basis validated + recalibrated (July 23, 2026):** This estimate was originally sized against a fictional multi-role team (see corrected §9 Owner Assignments below). Actual execution is **solo — Kell + Claude Code, no other engineers.** Recomputed from real ticket-level hour estimates (not pillar-level guesses) where they exist: Auth (~90–120h, per its own doc) + P0 (~60–90h, T-100–116) + P1 (~75–95h, T-118–124) + T-125 bundled (~30–50h estimate, no precise ticket hours yet) + Navigation Shell (~85–110h, T-076–082) ≈ **340–465 hours** for those five alone. At a **near-full-time pace (35–40 hrs/week, confirmed by Kell)**, that's ~9–13 weeks. P3 and P4 still lack ticket-level breakdowns (only pillar-level "2–3 weeks" guesses exist) — adding their guessed 4–6 weeks lands the full critical path around **13–19 weeks**, close to but somewhat higher than the original 11–16. **Recommendation: break P3 and P4 into individual tickets with real hour estimates (same discipline already applied to P0/P1/Auth/Nav Shell) before treating this range as reliable** — right now it's the one remaining soft spot in an otherwise ticket-grounded estimate.
+
 ---
 
 ## 4. Parallelizable Work (Can Run Alongside Critical Path)
@@ -379,25 +381,27 @@ POST-LAUNCH (WEEK 15+):
 
 ---
 
-## 9. Owner Assignments (Proposed)
+## 9. Owner Assignments — CORRECTED July 23, 2026
 
-| Component | Owner | Backup |
-|-----------|-------|--------|
-| **Auth Pillar** | Backend Engineer | iOS Engineer |
-| **P0 Onboarding** | iOS Engineer | Frontend |
-| **P1 Capture** | iOS Engineer + Backend | — |
-| **P2 Encryption** | Crypto/Security Engineer | Backend |
-| **P3 Prayer** | Backend + LLM Engineer | — |
-| **P4 Journal** | Backend + LLM Engineer | — |
-| **P5 Search** | Backend Engineer | iOS |
-| **Navigation Shell** | iOS Engineer | Frontend |
-| **P6 Formation Intelligence** | ML/Backend Engineer | Data Engineer |
-| **P7 Beta & Marketing** | Kell (personal outreach + church/ministry contacts is founder-led by nature) | — |
-| **P8 Notifications** | Backend + iOS Engineer | — |
-| **P9 Account Profile** | iOS Engineer | Frontend |
-| **P10 Today** | iOS Engineer | Frontend |
-| **P11 Growth** | iOS Engineer + Backend | Frontend |
-| **E2E Testing** | QA Engineer | iOS Engineer |
+**This table previously proposed a fictional 6-8 role team (iOS Engineer, Backend Engineer, Crypto/Security Engineer, ML Engineer, QA Engineer, etc.) working in parallel. Actual execution model: solo — Kell + Claude Code, no other engineers.** This matters for the estimate above: work that a team could genuinely parallelize (P2 while someone else does P0, P9 while someone else does P1) still competes for the same one person's attention in practice, even when the dependency graph marks it "parallelizable." The roles below now describe *what kind of work* each pillar requires, not *who* does it — useful for knowing what skillset/mode you're in for that pillar, not for staffing.
+
+| Component | Work Type (not a separate person) |
+|-----------|--------|
+| **Auth Pillar** | Backend/auth integration |
+| **P0 Onboarding** | iOS/SwiftUI |
+| **P1 Capture** | iOS + Backend/LLM integration |
+| **P2 Encryption** | Security/crypto integration |
+| **P3 Prayer** | Backend + LLM |
+| **P4 Journal** | Backend + LLM |
+| **P5 Search** | Backend |
+| **Navigation Shell** | iOS/SwiftUI |
+| **P6 Formation Intelligence** | ML/Backend |
+| **P7 Beta & Marketing** | Founder-led personal outreach (genuinely Kell-only, not a coding task) |
+| **P8 Notifications** | Backend + iOS |
+| **P9 Account Profile** | iOS/SwiftUI |
+| **P10 Today** | iOS/SwiftUI |
+| **P11 Growth** | iOS + Backend |
+| **E2E Testing** | Real-device QA — this one specifically **cannot be delegated to Claude Code**; it requires Kell's own hands-on-device time per the project's own WORKFLOW.md ("manual device testing preferred over simulator") |
 
 ---
 
