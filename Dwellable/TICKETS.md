@@ -778,6 +778,7 @@
   - **Purpose:** No onboarding views exist. Needed: `WelcomeView`, `EducationView`, `IntentView`, `RhythmView`, `AccountView` (new — do not overload `LoginView`, which is sign-in only), `PrivacyView`, `NotificationPermissionView` (Screen 6.5), plus an `OnboardingCoordinatorView` (NavigationStack) sequencing screens 1→7 per the existing stack-only navigation pattern.
   - **Deliverables:** 7 views matching copy from T-100–T-105 + Screen 6 (already locked); coordinator persists current screen position across app restarts (works with T-111's `current_onboarding_screen` pointer). `AccountView` (Screen 5) implements a client-side `Form valid?` check (8+ char password, Terms checkbox) that disables the Create Account button and never calls the network on failure — separate from T-109's server-side error handling (duplicate email / network failure), which needs its own retry UI back to the same screen with form data preserved.
   - **Acceptance Criteria:** All 7 screens navigable in sequence; no skip links (per locked "all screens required" decision); quitting mid-flow and reopening resumes at the same screen; weak password / unchecked Terms blocks submission client-side with no network call; server-side signup errors (duplicate email, network failure) show a retry affordance without losing entered form data. **Added July 6, 2026:** all 7 views support VoiceOver (accessibility labels on every interactive element) and Dynamic Type (text scales without truncation/overlap) — cheap to build in now, expensive to retrofit later, and relevant to App Store review.
+  - **Added July 23, 2026 (folded in from PILLAR_AUTHENTICATION_STRATEGY.md's ticket list — too small to warrant separate tickets):** `AccountView` (Screen 5) includes a show/hide password toggle and a live password-strength indicator (visual feedback against the 8+ char/mixed-case/number/symbol rule already enforced by the client-side `Form valid?` check).
   - **Estimated effort:** L (16-20 hours)
   - **Dependencies:** T-109 (Account screen needs signUp), T-100–T-105 (copy), T-111 (persistence)
   - **Priority:** 🔴 HIGH
@@ -1686,6 +1687,83 @@
 **Note on T-127 (Density-Tiered Generation):** already ticketed and applies to P4's synthesis sizing (input depth should scale output depth) — see T-127 above. Blocked on shared L1-L8 density detection, which doesn't exist in code anywhere yet; not re-ticketed here.
 
 **P4 total new-build estimate: ~79–115 hours** (T-151 through T-159) — roughly matches the original pillar-level "2-3 weeks" (80-120 hours) guess, unlike P3 which came in lighter.
+
+### Pillar 6 (Formation Intelligence — Dweller Profile) — Implementation Tickets (July 23, 2026)
+
+**Grounded in the P6 Technical Tools Needed audit (July 21, 2026) — first real tickets for this pillar; previously only had a Technical Tools Needed audit naming what's unbuilt, no actual T-XXX tickets.**
+
+- [ ] **T-160:** Build Dweller Profile Data Model + Encrypted Storage — Pillar 6 🔲 **NOT STARTED**
+  - **Purpose:** New table/model: narrative text, mood arc data, Object frequency, Rhythm-match result, resurfaced highlight reference, last-reassessed timestamp, confirmation state, feedback text history.
+  - **Deliverables:** Schema + Supabase table + encrypted storage wiring
+  - **Dependencies:** **Hard-blocked on T-062 (Server-Side Encryption)** — the Dweller Profile's own stored output is sensitive, user-derived content and gets the same encryption treatment as journals (locked July 23, 2026 — see Pillar 6 Notion page). P6 is a fourth pillar blocked on T-062, alongside P3/P4/P5.
+  - **Estimated effort:** M (10–14 hours)
+  - **Priority:** 🔴 HIGH
+
+- [ ] **T-161:** Build Reassessment/Threshold Engine — Pillar 6 🔲 **NOT STARTED**
+  - **Purpose:** Tracks a per-user counter (moments/journals since last reassessment) and triggers the LLM reassessment pass once threshold is met. Exact threshold number still TBD (not blocking design).
+  - **Deliverables:** Threshold-tracking logic; must NOT fire on a single new entry alone, must NOT fire on journal edits alone (per P6 Scenario 1/2 — reassessment is threshold-based only, never real-time or edit-triggered)
+  - **Dependencies:** T-160 (data model to write results into)
+  - **Estimated effort:** M (10–14 hours)
+  - **Priority:** 🔴 HIGH
+
+- [ ] **T-162:** Build Dweller Profile Generation (LLM Integration) — Pillar 6 🔲 **NOT STARTED**
+  - **Purpose:** The core reassessment call: reads journal entries (not raw transcript, not tags alone) + Mood/Object tags + prayer completion/resonance + current Intent/Rhythm values → generates narrative + mood arc + Object frequency + Rhythm-match + resurfaced highlight.
+  - **Deliverables:**
+    1. Same **Groq Llama 3.3 70B → GPT-4o mini** pairing via Vercel AI SDK as P1/P3/P4 — **P6 is the fourth pillar needing this identical calling pattern**; strongly reuse whichever pillar builds the shared LLM service first
+    2. Each reassessment is shown the user's *existing* profile so it extends rather than duplicates (locked decision #4 on the Pillar 6 page)
+    3. Recurrence detection is a judgment call on meaning, not literal word-count/string-matching (locked decision #3)
+    4. Excludes soft-deleted entries from the read scope (locked July 23, 2026)
+  - **Dependencies:** T-160 (storage), T-161 (trigger), shared LLM infra with T-120/T-147/T-151
+  - **Estimated effort:** L (20–28 hours — first-build cost; less if P1/P3/P4's shared LLM service already exists)
+  - **Priority:** 🔴 HIGH (core mechanic of the pillar)
+
+- [ ] **T-163:** Build Confirmation Loop UI (Yes/Not-Quite + Feedback) — Pillar 6 / Pillar 11 🔲 **NOT STARTED**
+  - **Purpose:** "Does this feel true to you?" confirmation in Growth tab's "Your Narrative" section — locked as MVP scope, not deferred (echoes P3's binary prayer-resonance pattern, but with a real feedback path, not just Yes/No).
+  - **Deliverables:**
+    1. Affirming state on "Yes" ("Good — that'll sharpen future updates"), no further action required
+    2. Feedback text field appears inline on "Not quite" ("What feels off, or what's missing?") — not a dead-end button
+    3. Feedback captured and stored, informs the next reassessment cycle (not necessarily an immediate regeneration)
+    4. No punitive or error-style framing — invitational, matching the "never prescriptive" rule
+    5. Pre-threshold empty state: gentle waiting-message copy (locked July 23, 2026) — e.g. "Your story is still forming — keep capturing and praying, and we'll start noticing patterns soon"
+  - **Dependencies:** T-160 (data model to store feedback against); lives in Pillar 11's Growth tab UI (coordinate with T-140)
+  - **Estimated effort:** M (10–14 hours)
+  - **Priority:** 🔴 HIGH
+
+- [ ] **T-164:** Build Closing the Loop Internal Assessment — Pillar 6 🔲 **NOT STARTED**
+  - **Purpose:** Internal-only signal capture: when a user reflects on a moment that previously required prayer, in a way suggesting resolution or clarity, the system assesses and flags this. No user-facing feature or CTA at MVP — no home pillar decided yet for if/when it becomes user-facing (per P6 Scenario 7).
+  - **Deliverables:** Detection/assessment logic only; store result for potential Post-MVP surfacing
+  - **Dependencies:** T-160 (storage for the assessment result)
+  - **Estimated effort:** S–M (6–10 hours — internal signal only, no UI)
+  - **Priority:** 🟢 MEDIUM (needed for the "capture without surfacing" principle, but not launch-blocking on its own)
+
+**P6 total new-build estimate: ~56–80 hours** (T-160 through T-164) — this pillar runs in parallel to the critical path (starts mid-P4, per the dependency graph), so it doesn't extend the critical path itself, but does need T-062 done first.
+
+### Pillar 7 (Beta & Marketing) — Prep Tickets (July 23, 2026)
+
+**These were previously only described in `docs/DEPENDENCY_GRAPH.md`, never ticketed. Zero dependencies — can start Week 1, in parallel with everything else.**
+
+- [ ] **T-165:** Build Cohort A Personal Outreach List — Pillar 7 🔲 **NOT STARTED**
+  - **Purpose:** Identify and list 15-20 specific people already known to journal, pray, or reflect regularly — the direct-outreach seed group for Cohort A (locked acquisition strategy, July 23, 2026).
+  - **Deliverables:** A working list (name + relationship + why they're a good fit) ready to start conversations from; not a public form, not a spreadsheet shared beyond Kell
+  - **Dependencies:** None
+  - **Estimated effort:** S (2–4 hours — founder's own time, not engineering)
+  - **Priority:** 🟡 MEDIUM (highest-lead-time item in the whole plan — building trust with people takes longer than writing code)
+
+- [ ] **T-166:** Draft Cohort A Pitch Script — Pillar 7 🔲 **NOT STARTED**
+  - **Purpose:** One consistent, short pitch for direct asks — grounded in VISION.md's actual differentiation (dwelling on God's presence, not generic journaling), not feature-list marketing copy.
+  - **Deliverables:** A short script/talking points doc, reusable across text/call/DM outreach and the 1-2 church/ministry contact asks
+  - **Dependencies:** None
+  - **Estimated effort:** S (1–3 hours)
+  - **Priority:** 🟡 MEDIUM
+
+- [ ] **T-167:** Stand Up Discord Server + Reach Out to Church/Ministry Contacts — Pillar 7 🔲 **NOT STARTED**
+  - **Purpose:** Community platform setup (Discord server + channels per the locked P7 design) and the first outreach touch to the 1-2 known church/ministry contacts to gauge interest — not a broad congregation-wide announcement, a curated ask for 3-5 specific people each.
+  - **Deliverables:** Discord server + channels created; initial conversation started with both contacts
+  - **Dependencies:** T-166 (pitch script to use in the outreach)
+  - **Estimated effort:** S–M (3–6 hours)
+  - **Priority:** 🟢 MEDIUM
+
+**P7 Prep total: ~6–13 hours** — cheap, founder-led, no reason not to start immediately.
 
 ### Voice — WhisperKit Improvements
 - [x] **T-056:** Improve WhisperKit handling for long pauses and applause — **CLOSED, DUPLICATE ✅**
