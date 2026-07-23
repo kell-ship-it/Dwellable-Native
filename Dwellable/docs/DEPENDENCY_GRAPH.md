@@ -1,7 +1,7 @@
 # Pillar Dependency Graph — Phase 2 Implementation Sequencing
 
 **Status:** Locked for T-092 Phase 2 Launch Readiness — **all pillar designs (P0–P11) now complete as of July 23, 2026**
-**Last Updated:** July 23, 2026 (P2 model corrected to server-side encryption; P6/T-062 dependency corrected — now blocks four pillars, not three; P7 design locked including Cohort A acquisition strategy; P7 positioned in build sequence; T-125 Crisis Protocol reclassified MVP and moved to P1 ownership, flagged as a critical-path timeline risk; critical path estimate validated against real ticket-level hours and recalibrated for the actual solo Kell + Claude Code execution model, not a fictional team — Owner Assignments table corrected accordingly; P3 and P4 broken into real tickets (T-145–T-159), superseding 4 stale P3 tickets; **Navigation Shell's stale T-077/T-080 also superseded (same collision pattern found a third time); P6 (T-160–164) and P7 Prep (T-165–167) ticketed for the first time; Auth verified already fully covered — sequencing (Gantt, Build Order, summary table) now references real ticket numbers throughout instead of pillar-level guesses**)
+**Last Updated:** July 23, 2026 (P2 model corrected to server-side encryption; P6/T-062 dependency corrected — now blocks four pillars, not three; P7 design locked including Cohort A acquisition strategy; P7 positioned in build sequence; T-125 Crisis Protocol reclassified MVP and moved to P1 ownership, flagged as a critical-path timeline risk; critical path estimate validated against real ticket-level hours and recalibrated for the actual solo Kell + Claude Code execution model, not a fictional team — Owner Assignments table corrected accordingly; P3 and P4 broken into real tickets (T-145–T-159), superseding 4 stale P3 tickets; Navigation Shell's stale T-077/T-080 also superseded; P6 (T-160–164) and P7 Prep (T-165–167) ticketed for the first time; Auth verified already fully covered; **pre-execution readiness check found a real missing foundational ticket — T-168 (Shared LLM Proxy Service) — since "Vercel AI SDK" can't run inside the native Swift app; every LLM ticket (T-120/T-147/T-151/T-162) now depends on it**)
 
 ---
 
@@ -114,7 +114,7 @@ This graph was last substantively updated May 14, 2026 and predated several deci
          ┌──────────────┐   ┌──────────────┐   ┌──────────────────┐
          │   P0         │   │    P2        │   │  Navigation Shell │
          │ Onboarding   │   │  Encryption  │   │ (T-076–082, hosts │
-         │              │   │   (E2E)      │   │  tabs — not a     │
+         │              │   │(server-side) │   │  tabs — not a     │
          └──────┬───────┘   └──────┬───────┘   │  standalone pillar│
                 │                  │            └─────────┬─────────┘
                 │ (enables)        │ (enables)             │ (routes to)
@@ -174,6 +174,7 @@ P5 (theme filter), P8 (v2 formation-aligned notifications), P10 (cross-entry pro
 | **P0 (Onboarding)** | Auth | P1 | ✅ YES | No |
 | **P2 (Encryption)** | Auth, P0 | All data ops | ✅ YES | Yes (infrastructure) |
 | **P1 (Capture)** | P0, Auth, P2 | P3, P4, P10 | ✅ YES | No |
+| **T-168 (Shared LLM Proxy Service)** | T-062 (encryption model alignment) | T-120 (P1 Dwelly loop), T-147 (P3), T-151 (P4), T-162 (P6) | ✅ YES — new July 23, 2026 | No — blocks 4 tickets across 4 pillars |
 | **T-125 (Crisis Protocol)** | Bundled into P1's build (not standalone) — detection runs at capture time via OpenAI Moderation API | P3 (inherits non-refusal rule, no detection of its own) | ✅ YES — reclassified MVP + moved to P1 ownership, July 23, 2026 | No — critical path, adds real risk to P1's timeline (L–XL effort) |
 | **P3 (Prayer)** | P1, P2 | P4, P8, P6 (input) | ✅ YES | No |
 | **P4 (Journal)** | P1, P3, P2 | P5, P6, P11 | ✅ YES | No |
@@ -288,6 +289,7 @@ WEEK 1–2:    Auth Pillar ═════════════════�
              P7 Prep (T-165 outreach list, T-166 pitch script, T-167 Discord + contacts) ═ [Parallel — no dependencies, lowest-cost early start, ~6-13 hours total]
 WEEK 3–4:    P0 (Onboarding) ════════════════════════════════
              P2 (Encryption) ════════════════════════════════  [Parallel — T-062, now blocks 4 pillars: P3/P4/P5/P6]
+             T-168 (Shared LLM Proxy Service) ═════════════════ [Starts once T-062 lands — blocks T-120/T-147/T-151/T-162]
 WEEK 5–6:    P1 (Capture) ═══════════════════════════════════
              ├─ T-125 (Crisis Protocol, bundled — OpenAI Moderation API + response) ══ [Same window, real timeline risk — L–XL effort]
              P9 (Account Profile) ═════════════════════════════ [Parallel]
@@ -320,6 +322,7 @@ POST-LAUNCH (WEEK 15+):
 1. **Auth Pillar** (1–2 weeks) — already thoroughly ticketed (T-003 login/JWT, Phase 1, ✅ complete; T-109 signup; T-110 onboarding views incl. AccountView; T-111 schema; T-112 nav gate; T-113 dead-token handling; T-114 device test matrix; T-115 signup abuse protection; T-116 funnel analytics; T-067 forgot-password; T-131 password change) — verified July 23, 2026, no new tickets needed
 2. **P0 Onboarding** (2–3 weeks, starts after Auth)
 3. **P2 Encryption** (2–3 weeks, parallel to P0) — T-062, now confirmed to block **four** pillars (P3, P4, P5, P6 — corrected July 23, 2026, P6 storage dependency added)
+3c. **T-168 Shared LLM Proxy Service** (12-18 hours, starts once T-062 lands) — new foundational ticket (July 23, 2026): a Supabase Edge Function holding the Groq/GPT-4o mini API keys server-side, since Vercel AI SDK can't run inside the Swift app directly. Blocks T-120 (P1), T-147 (P3), T-151 (P4), T-162 (P6) — build once here rather than four times.
 3b. **P7 Prep** (ongoing, starts Week 1, zero dependencies) — **T-165** (outreach list, 2-4h), **T-166** (pitch script, 1-3h), **T-167** (Discord + church/ministry outreach, 3-6h). ~6-13 hours total. Lowest-cost, highest-lead-time item in the whole plan — no reason to wait on it.
 
 **Phase 2: Core Pillars (Weeks 5–12)**
@@ -367,6 +370,8 @@ POST-LAUNCH (WEEK 15+):
 | Risk | Mitigation | Responsible |
 |------|-----------|-------------|
 | ~~LLM selection not locked~~ **RESOLVED** | Groq Llama 3.3 70B (primary) → GPT-4o mini (backup), via Vercel AI SDK. Benchmarked July 4-5 (4,705 tokens/loop, ~$0.00084/loop). Token allocation locked July 9 (T-119). | CTO/LLM owner |
+| **NEW (July 23, 2026): "Vercel AI SDK" was never architecturally real for a native Swift app** | Vercel AI SDK is JS/TypeScript — cannot run inside the iOS app directly. Every LLM ticket (T-120/T-147/T-151/T-162) assumed it as a drop-in without a backend to host it. Confirmed via codebase search: no serverless backend exists at all. **T-168 (Shared LLM Proxy Service, new)** fixes this — a Supabase Edge Function holds the API keys and runs the SDK server-side; the Swift app calls it over HTTPS. Also closes a real security gap (API keys would otherwise ship inside the iOS binary). | Backend/LLM owner |
+| **NEW (July 23, 2026): T-062 now also gates P1's core mechanic, not just P3/P4/P5/P6** | T-120 (P1's Dwelly loop) depends on T-168, which depends on T-062. This was already implicitly correct at the pillar level (P2→P1 arrow in §1's diagram), but wasn't explicit at the ticket level until now. No critical-path timing change — P2 already ran parallel to P0 and finishes before P1 starts in the existing Gantt. | Backend engineer |
 | **Supabase auth setup delayed** | Have Supabase project + auth tables ready before Auth pillar starts | Infra engineer |
 | **Encryption T-062 not complete** | Confirmed hard blocker for P3, P4, P5, and P6's encrypted storage — **four pillars now** (P6 added July 23, 2026 — its Dweller Profile needs its own encrypted storage, not just a read dependency on P4). Highest-urgency ticket in this graph, still 🔲 Not Started with zero code | Crypto engineer |
 | **LLM API integration slow** | P3 prayer generation needs low-latency LLM calls (<3s); test early against real Groq/GPT-4o mini latency | Backend/LLM owner |

@@ -892,7 +892,21 @@
   - **Priority:** 🔴 HIGH (cost control; blocks finalizing the P1 capture conversational flow)
   - **Raised:** July 8, 2026 session (P1 FigJam system design review, comment #3); allocation locked July 9, 2026 session
 
+- [ ] **T-168:** Build Shared LLM Proxy Service (Supabase Edge Function) 🔲 **NOT STARTED**
+  - **🚨 NEW (July 23, 2026) — a real, previously-unticketed foundational blocker, found during pre-execution readiness checks.** Every LLM-dependent ticket (T-120, T-147, T-151, T-160–162) says "wire up LLM calls via the Vercel AI SDK" as if that's a drop-in Swift import — **it can't be.** Vercel AI SDK is a JavaScript/TypeScript library; it cannot run inside a native Swift/iOS app. Confirmed via codebase search: **no serverless backend of any kind exists yet** — no Supabase Edge Functions, no Vercel project, no Node API surface for this. Something has to hold the Groq/OpenAI API keys server-side and expose an HTTPS endpoint the Swift app calls — shipping those keys inside the iOS app bundle would be a real security leak (extractable from any shipped binary).
+  - **Purpose:** A single shared backend service — most likely a Supabase Edge Function (Deno runtime, already the existing backend, matches P2's own documented pipeline: "decrypt on Supabase edge → send to cloud LLM") — that holds the Groq/GPT-4o mini API keys, implements the Vercel AI SDK calling pattern server-side, and exposes a simple HTTPS endpoint (transcript/context in, generated text out) for the Swift app to call. **Build once, reuse across P1's Dwelly loop (T-120), P3's PrayerGenerationManager (T-147), P4's JournalSynthesisManager (T-151), and P6's Dweller Profile generation (T-162)** — the same "build once, don't duplicate 4 times" principle already called out in each of those tickets, just made concrete as its own ticket instead of an assumption repeated four times.
+  - **Deliverables:**
+    1. Supabase Edge Function (or equivalent) implementing the Groq Llama 3.3 70B (primary) → GPT-4o mini (backup) failover pattern via Vercel AI SDK, server-side only
+    2. API keys (GROQ_API_KEY, OPENAI_API_KEY — already present and validated in `.env`, confirmed July 23, 2026) stored as Supabase Edge Function secrets, never shipped in the iOS app bundle
+    3. Simple, generic request/response contract (context in, generated text + token usage out) that T-120/T-147/T-151/T-162 can all call with different prompts/parameters
+    4. Confirm decrypt-transiently-for-processing pattern from P2 is respected — the Edge Function receives plaintext only for the duration of the call, never persists it
+  - **Dependencies:** T-062 (Server-Side Encryption) — the Edge Function's access pattern needs to align with the same encryption model
+  - **Estimated effort:** M–L (12–18 hours — first-build cost; this unblocks T-120/T-147/T-151/T-162 rather than duplicating the same backend work four times)
+  - **Priority:** 🔴 BLOCKING (nothing that says "LLM integration" in this file can actually be built without this existing first)
+  - **Raised:** July 23, 2026 session (pre-execution readiness check, before moving to design)
+
 - [ ] **T-120:** Build Dwelly Agent conversational loop (LLM integration) 🔲 **NOT STARTED**
+  - **Dependency added July 23, 2026:** requires **T-168** (Shared LLM Proxy Service) — this ticket calls that backend, it does not implement Vercel AI SDK directly in Swift.
   - **Purpose:** The "3a) User ends engagement, or 3b) Dwelly Agent responds?" decision and the resulting multi-turn conversation designed on the P1 FigJam board has no corresponding code — this is the core new mechanic of the P1 system design.
   - **Deliverables:**
     1. Wire up LLM calls using the already-locked **Groq Llama 3 70B (primary) → GPT-4o mini (backup)** pairing via the Vercel AI SDK (per `FORMATION_INTELLIGENCE_STRATEGY.md`) — check whether this infra already exists elsewhere in the app (e.g. P4 Journal synthesis) and can be reused before building fresh
@@ -1581,7 +1595,7 @@
     2. Prompt construction: extract feelings/people/intended-outcome from transcript, apply Acknowledge+Counteract structure (never affirm the negative belief), match user's theological language (Lord vs. God, from P0)
     3. **Hard constraint:** output capped at exactly 350 tokens (`max_tokens` parameter) — not a soft UI truncation (P3 Scenario 8)
     4. Validate <3s latency target (per `PILLAR_3_PRAYER_STRATEGY.md`) against real Groq/GPT-4o mini response times for this prompt shape
-  - **Dependencies:** T-146 (Load Context); shared LLM infra with T-120 (P1 Dwelly loop) — build once, reuse
+  - **Dependencies:** T-146 (Load Context); **T-168** (Shared LLM Proxy Service — calls it, doesn't implement Vercel AI SDK directly); shared with T-120 (P1 Dwelly loop) — build once, reuse
   - **Estimated effort:** L (20–28 hours — first-build cost; **10–14 hours if P1's shared LLM service already exists and this just wires into it**)
   - **Priority:** 🔴 HIGH (core mechanic of the pillar)
 
@@ -1624,7 +1638,7 @@
     1. Same **Groq Llama 3.3 70B → GPT-4o mini** pairing via Vercel AI SDK as P1 and P3 — **this is the third pillar needing the same LLM infra**; strongly reuse whichever of P1/P3/P4 builds it first rather than a third independent implementation
     2. Prompt construction: contemplative tone, mirrors user's language, 2-3 paragraph narrative (not structured/bulleted)
     3. Validate <5s latency target (prayer completion → Dwelling Place visible, per PRD success metric) against real Groq/GPT-4o mini timing for this prompt shape
-  - **Dependencies:** P1's transcript (exists once P1 ships); optionally P3's prayer content/resonance signal (exists once P3 ships); shared LLM infra with T-120/T-147
+  - **Dependencies:** P1's transcript (exists once P1 ships); optionally P3's prayer content/resonance signal (exists once P3 ships); **T-168** (Shared LLM Proxy Service); shared with T-120/T-147
   - **Estimated effort:** L (20–28 hours — first-build cost; less if P1/P3's shared LLM service already exists)
   - **Priority:** 🔴 HIGH (core mechanic of the pillar)
 
@@ -1713,7 +1727,7 @@
     2. Each reassessment is shown the user's *existing* profile so it extends rather than duplicates (locked decision #4 on the Pillar 6 page)
     3. Recurrence detection is a judgment call on meaning, not literal word-count/string-matching (locked decision #3)
     4. Excludes soft-deleted entries from the read scope (locked July 23, 2026)
-  - **Dependencies:** T-160 (storage), T-161 (trigger), shared LLM infra with T-120/T-147/T-151
+  - **Dependencies:** T-160 (storage), T-161 (trigger), **T-168** (Shared LLM Proxy Service), shared with T-120/T-147/T-151
   - **Estimated effort:** L (20–28 hours — first-build cost; less if P1/P3/P4's shared LLM service already exists)
   - **Priority:** 🔴 HIGH (core mechanic of the pillar)
 
