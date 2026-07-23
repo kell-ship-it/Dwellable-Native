@@ -1536,7 +1536,7 @@
   - **Priority:** BLOCKING (Phase 2 Foundation — brand trust requirement)
   - **🚨 UPDATED July 22, 2026 — model changed from client-side E2E to server-side encryption.** The old zero-knowledge design ("Kell cannot access your moments") is superseded: Dwelly, Prayer generation, and Journal synthesis all require sending moment content to a cloud LLM (Groq/GPT-4o mini) as plaintext, which is structurally incompatible with a true E2E guarantee. New model: encrypted at rest in Supabase, decrypted transiently only for legitimate processing (display, LLM calls), never persisted as plaintext or logged. Full rationale in `docs/PILLAR_2_SECURITY_STRATEGY.md`. **Still the highest-urgency ticket in the dependency graph** — confirmed via codebase audit to have zero code anywhere (no CryptoKit/AES usage), and hard-blocks encrypted storage for **four** pillars: P3's PrayerArtifact, P4's JournalEntry, P5's SearchableContent index (T-128), and P6's Dweller Profile storage.
   - **Category:** Security & Privacy
-  - **Status:** 🔲 NOT STARTED
+  - **Status:** 🔄 **IN PROGRESS (July 23, 2026) — code complete, awaiting deployment.** Implemented as server-side encryption entirely inside Supabase Edge Functions (the "server-side" option the Development Strategy below explicitly allowed, not the on-device CryptoKit option) — the encryption key never touches the client at all, not even transiently. See implementation note below for exactly what's built vs. what still needs Kell to run.
   - **Brand Statement (updated):** "Your moments are secure with us — encrypted at rest, protected from theft and unauthorized access, processed only to help you pray, reflect, and grow."
   - **Description:**
     Dwellable's competitive advantage is being a trustworthy steward of sacred spiritual data. Moments must be encrypted at rest (protecting against database breach or stolen backups) and decrypted only transiently when the app legitimately needs to act on them — not stored in the clear, not casually browsable.
@@ -1553,25 +1553,33 @@
     4. **Transient Decryption:** On moment retrieval or LLM processing need, decrypt just-in-time; plaintext never persisted or logged beyond the operation
     5. **Recovery Flow:** Password reset is now a normal flow with zero impact on data access (see T-067) — no more "moments lost if password forgotten" scenario
     6. **Testing:** Verify encrypted_content is genuinely encrypted at rest (DB inspection); verify plaintext never appears in logs; verify analytics queries work on metadata only
-  - **Architectural Changes:**
-    - CryptoManager (new) — handles encryption/decryption with CryptoKit, using server-managed key
-    - SupabaseAPIClient — updated to encrypt moment before POST, decrypt on GET/processing
-    - ReviewView + TypeFlowView — wire encryption into save flow
-    - MomentDetailView — wire decryption into view flow
-    - LocalStorageManager — handle encrypted storage of pending moments
-  - **Database Schema Changes:**
-    - Add `encrypted_content` column (TEXT/BYTEA)
-    - Rename `body` → `metadata_summary` (optional, for UI display unencrypted hint) OR remove entirely
-    - Keep: user_id, created_at, updated_at, capture_type, senseOfLord (or encrypt separately)
+  - **Architectural Changes (as actually implemented, July 23, 2026):**
+    - ✅ `supabase/functions/_shared/encryption.ts` — AES-256-GCM encrypt/decrypt helpers, server-managed key read from the `MOMENT_ENCRYPTION_KEY` Edge Function secret (not derived from password, not client-accessible)
+    - ✅ `supabase/functions/save-moment/index.ts` — verifies caller's JWT, encrypts `body`+`sense_of_lord` together, writes via service-role client (bypasses RLS deliberately — `user_id` comes from the verified JWT, not the request body, so it can't be spoofed)
+    - ✅ `supabase/functions/fetch-moments/index.ts` — verifies JWT, fetches that user's rows via service-role client, decrypts transiently, returns plaintext in the response only (never re-persisted)
+    - ✅ `SupabaseAPIClient.swift` — `saveMoment`/`fetchMoments`/`fetchMoment` now call `/functions/v1/save-moment` and `/functions/v1/fetch-moments` instead of direct `/rest/v1/moments`. No client-side CryptoManager needed — encryption key never leaves the server, so there's nothing for the client to hold.
+    - ⏳ **Not yet done:** ReviewView/TypeFlowView/MomentDetailView needed no changes (they already go through SupabaseAPIClient, which now handles encryption transparently) — verify this holds once device-tested. LocalStorageManager's offline queue still stores pending moments as plaintext locally pre-sync, consistent with the existing offline-first pattern (device-local storage, not the server-at-rest threat this ticket addresses) — not a gap introduced by this change.
+  - **Database Schema Changes (as actually implemented):**
+    - ✅ Migration `supabase/migrations/20260723161946_add_encrypted_content_to_moments.sql` — adds `encrypted_content` (text, base64 ciphertext) and `encryption_iv` (text, base64) columns
+    - **Deliberately NOT done in this migration:** did not touch/drop the existing `body` column or backfill existing rows — avoids data-loss risk in the same migration that adds the new columns. Follow-up migration once this is verified working in production.
+  - **⏳ DEPLOYMENT STEPS NEEDED (Kell — I don't have Supabase CLI/Management API access in this environment):**
+    1. `cd "/Volumes/Repo Folder/Dwellable-Native/Dwellable" && supabase login` (opens browser for auth)
+    2. `supabase link --project-ref lhcjobrtmbawlhjyodxz`
+    3. `supabase db push` (runs the migration)
+    4. Generate a real key: `openssl rand -base64 32`
+    5. `supabase secrets set MOMENT_ENCRYPTION_KEY=<output from step 4>`
+    6. `supabase functions deploy save-moment` and `supabase functions deploy fetch-moments`
+    7. Also needs `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_ANON_KEY` set as function secrets if not already available as default Edge Function env vars — check `supabase secrets list` first, Supabase sets some of these automatically
+    8. Test end-to-end: capture a moment in the app, confirm it saves/loads correctly, then check the `moments` table directly in the Supabase dashboard to confirm `encrypted_content` is genuinely ciphertext, not plaintext
   - **Acceptance Criteria:**
-    - [ ] CryptoManager implemented with AES-256-GCM encryption/decryption, server-managed key
-    - [ ] Moment save flow encrypts before persisting
-    - [ ] Moment retrieval/processing flow decrypts transiently, never persists plaintext
-    - [ ] Offline moments encrypted locally before sync
-    - [ ] Analytics queries work on metadata without needing plaintext
-    - [ ] Verify encrypted_content is genuinely encrypted at rest (not plaintext in DB)
-    - [ ] Password reset flow confirmed to have zero impact on data access
-    - [ ] User-facing messaging updated to "secure with us" framing (not zero-knowledge)
+    - [x] Encryption implemented with AES-256-GCM, server-managed key (Edge Function secret, not CryptoManager on-device — see architecture note above for why)
+    - [x] Moment save flow encrypts before persisting (code complete, `save-moment` function)
+    - [x] Moment retrieval/processing flow decrypts transiently, never persists plaintext (code complete, `fetch-moments` function)
+    - [ ] Offline moments encrypted locally before sync — **not applicable as originally scoped**; offline queue is device-local plaintext (existing pattern, protected by device security, not a server-at-rest concern) — recommend closing this criterion as N/A rather than leaving it open
+    - [ ] Analytics queries work on metadata without needing plaintext — needs verification once deployed
+    - [ ] Verify encrypted_content is genuinely encrypted at rest (not plaintext in DB) — **needs Kell to deploy and check the dashboard (step 8 above)**
+    - [ ] Password reset flow confirmed to have zero impact on data access — depends on T-067 (separate ticket), not blocked by this one
+    - [ ] User-facing messaging updated to "secure with us" framing (not zero-knowledge) — already done in docs this session (P0 Screen 6, Settings); verify actual in-app copy once P0/P9 UI is built
   - **Risk Mitigation:**
     - Decrypt operations should be logged (who/when/why) for an internal audit trail, since this is no longer a hard technical wall
     - Confirm LLM provider (Groq/OpenAI) data-retention terms for plaintext sent during processing
