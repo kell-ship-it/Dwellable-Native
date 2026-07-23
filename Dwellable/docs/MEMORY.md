@@ -8,6 +8,32 @@
 
 ---
 
+## Session: July 22, 2026 — Pillar 2 (Security & Encryption) Model Locked
+
+### 🎯 TL;DR
+Began Pillar 2 design (next in sequence after P6). Found and resolved a real, load-bearing conflict: the security strategy doc and T-062 were scoped for pure client-side E2E encryption (zero-knowledge, password-derived key, forgotten password = permanent data loss), while Onboarding Screen 6's already-locked copy and the May 13 Pillar 8 decision both described server-side encryption. **Root cause:** Dwelly, Prayer generation, and Journal synthesis all require sending moment content as plaintext to a cloud LLM — true zero-knowledge E2E was never compatible with the product's own core features.
+
+### Decision Locked
+**Server-side encryption at rest** (AES-256-GCM, server-managed key independent of user password) with **transient decryption for legitimate processing** (display, LLM calls) — never persisted as plaintext, never logged. Promise reframed from "we can never see your moments" to "your moments are secure with us." Notification-body content stays metadata-only (unchanged — separate exposure surface from server-side processing).
+
+### Concrete Unlock
+Password reset/change now has **zero impact on data access** (key is no longer password-derived). T-067 (Password Recovery) reframed from "which flavor of permanent data loss" to a standard, buildable email-reset feature. Account lockout/rate limiting is now safe to implement without risking orphaning a user's data.
+
+### Files Changed
+`PILLAR_2_SECURITY_STRATEGY.md` (full rewrite), `PRD.md`, `PILLAR_AUTHENTICATION_STRATEGY.md`, `TICKETS.md` (T-062, T-067, resolved the flagged Screen-6 contradiction), plus a Tier 2 consistency sweep across `PILLAR_ONBOARDING_STRATEGY.md`, `PILLAR_SETTINGS_STRATEGY.md`, `DEPENDENCY_GRAPH.md`, `FORMATION_INTELLIGENCE_STRATEGY.md`, `PILLAR_ARCHITECTURE_COMPLETE.md`. No ticket status changes — T-062/T-067 remain 🔲 Not Started (spec changed, not implementation state). Full session detail in `TICKETS.md`'s July 22 header entry.
+
+### Pillar Design Sequence
+P9 ✅ → P10 ✅ → P11 ✅ → P8 ✅ → P6 ✅ → **P2 ✅ (locked this session)** → **P7 (Beta & Marketing, next and last)**
+
+### 🚨 Next Session Objective
+**Primary:** Begin **Pillar 7 (Beta & Marketing)** design review — the last undesigned pillar. `P8_BETA_MARKETING_STRATEGY.md` (also referred to historically as "P7" in some older docs — see the July 11 sequencing note further down this file) already exists as a strategy doc; walk through its happy paths with Kell and lock remaining decisions, same process used for P2 this session.
+
+**Also queued:**
+1. Once P7 is locked, all 9+ supporting pillars (P0–P11) will have locked designs — next major phase is implementation ticket sequencing, starting with T-062 (Server-Side Encryption) as the highest-leverage blocker (now blocks four pillars: P3, P4, P5, P6).
+2. Pillar 0 Notion comments #5, #6, #7 may still be outstanding (see Blocking Items below — verify current status against Notion, as this file may be stale relative to Notion/TICKETS.md).
+
+---
+
 ## 🚨 Blocking Items
 
 **Comments #5, #6, #7 on Pillar 0 (Notion)** — Comments #1–#4 resolved. Next work: resolve final three Pillar 0 comments, then begin T-092 (P0 User Scenarios).

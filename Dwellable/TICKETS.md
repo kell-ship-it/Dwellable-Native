@@ -1,5 +1,7 @@
 # Dwellable Native — Full Ticket Registry
 
+**July 22, 2026 session — Pillar 2 (Security & Encryption) model locked, resolving a real cross-doc conflict:** Began the Pillar 2 design pass (next in sequence after P6). Found and resolved a load-bearing contradiction: `PILLAR_2_SECURITY_STRATEGY.md`/T-062 were scoped for pure client-side E2E (zero-knowledge — password-derived key, server never sees plaintext, forgotten password = permanent data loss), while Onboarding Screen 6's already-locked copy ("we temporarily decrypt your moments — just for you") and the May 13 Pillar 8 decision both described server-side encryption. **Root cause:** Dwelly's conversation, Prayer generation, and Journal synthesis all require sending moment content as plaintext to a cloud LLM (Groq/GPT-4o mini) — true zero-knowledge E2E was never actually compatible with the product's core features. **Locked model:** server-side encryption at rest (AES-256-GCM, server-managed key independent of user password), decrypted only transiently for legitimate processing (display, LLM calls), never persisted as plaintext or logged. Notification-body content stays metadata-only (unchanged, separate exposure surface). Promise reframed from "we can never see your moments" to "your moments are secure with us." **Concrete unlock:** password reset/change now has zero impact on data access — T-067 (Password Recovery) reframed from "which flavor of permanent data loss" to a standard, buildable email-reset feature; account lockout/rate limiting is now safe to implement. **Files rewritten:** `PILLAR_2_SECURITY_STRATEGY.md` (full rewrite), `PRD.md` (Pillar 2 section + data model), `PILLAR_AUTHENTICATION_STRATEGY.md` (forgot-password flow + all Argon2id/password-derived-key references removed), `TICKETS.md` (T-062 + T-067 rewritten, flagged Screen-6 contradiction marked resolved, live T-062 dependency tags updated across other tickets). **Tier 2 consistency sweep:** `PILLAR_ONBOARDING_STRATEGY.md` (Screen 6 copy), `PILLAR_SETTINGS_STRATEGY.md`, `DEPENDENCY_GRAPH.md`, `FORMATION_INTELLIGENCE_STRATEGY.md`, `PILLAR_ARCHITECTURE_COMPLETE.md`. Dated historical session logs (MEMORY.md, NOTIFICATIONS_COLLAB_REVIEW.html, etc.) left untouched per established convention (same as the "Soaking"→"Prayer" precedent). No ticket status changes — T-062 and T-067 remain 🔲 Not Started (scope/spec changed, not implementation state). **Pillar design sequence: P9 ✅ → P10 ✅ → P11 ✅ → P8 ✅ → P6 ✅ → P2 ✅ (model locked this session) → P7 (Beta & Marketing, next and last).**
+
 **July 21, 2026 session — Pillar 8 subpages completed, Pillar 6 (Formation Intelligence) MVP scope locked, Pillar 11 amended:** Built P8's three missing subpages (User Scenarios & AC, Technical Tools Needed, System Design/FigJam), correcting an initial draft that had used invented copy instead of the canonical `NOTIFICATIONS_COLLAB_REVIEW.html` Stage A–G spec. **Pillar 6 MVP scope locked:** the original discrete named-theme detection design (dashboard, weekly/monthly review) moves to Post-MVP; **MVP ships as the Dweller Profile** — a single, continuously-evolving narrative understanding of the user (Wispr Flow "Your Voice"-inspired), reassessed on a threshold basis (not real-time, not edit-triggered), reading journal entries directly (not tags, not raw transcript). Pillar 6 owns the detection/generation engine; **Pillar 11 (Growth tab) owns the display**, surfaced as new MVP section **"Your Narrative."** Corrected a stale "on-device first" privacy assumption in the original P6 strategy doc to match the product's actual server-side/cloud LLM architecture (same model already used by Journal synthesis and Notifications). **Pillar 11 amended same session:** Growth tab MVP is now three sections — Your Narrative (new), Your Plain Stats (renamed from Formation Overview), Settings (unchanged) — with **Emotional Themes removed from MVP** as redundant with Pillar 5 Search's already-locked Mood filter. New Post-MVP concepts logged: Archetype (Jotter/Venter/Processor as a hero label, explicitly deferred in favor of the narrative for its stronger return-driving effect), Spiritual Gifts, "[Name]'s Language" (renamed from Glossary), and Closing the Loop (uncategorized — internal signal capture proceeds now via Pillar 3, but no user-facing feature or home pillar decided). Formation Intelligence reframed conceptually as a **personal graph per user** (inspired by, but explicitly not equivalent to, LinkedIn's shared Skills Taxonomy — themes are never standardized or compared across users). Both Notion pages (Pillar 6, Pillar 11) rewritten to reflect all of this. **Remaining for Pillar 6:** pillar-by-pillar feeds-in/feeds-out walkthrough still in progress; FigJam board for Pillar 11 not yet redrawn to match these section changes; P8's own FigJam board built this session at `t2FBAeGOP3PItKWzYWlHnw`.
 
 **July 21, 2026 session (continued/closing) — Pillar 6 fully closed out:** Completed the pillar-by-pillar Formation Intelligence walkthrough — every pillar checked against a 3-question test (does it read content? does it span multiple entries? could it be wrong and need confirmation?). **P2 and P7 both confirmed to have no FI relationship** — P2 is a constraint only (encryption model FI must operate within), P7 isn't designed yet and only has a possible future engagement-metric hook. Refreshed `docs/DEPENDENCY_GRAPH.md` — fixed a months-old pillar-numbering bug (P6 and P7 were swapped throughout; the doc called Formation Intelligence "P7" and treated "Menu Bar" as "P6," but Menu Bar was confirmed back on July 11 to not be a standalone pillar), updated it to reflect P6's MVP pivot and P9/P10/P11 as formalized pillars, and confirmed **T-062 now blocks a fourth pillar** (P6's Dweller Profile storage, joining P3/P4/P5). Built **Pillar 6's remaining subpages** to match P8/P9/P10/P11: **User Scenarios & Acceptance Criteria** (10 scenarios, plus 2 explicitly flagged assumptions still needing Kell's confirmation — pre-threshold empty state copy, soft-delete exclusion from the reassessment read scope), **Technical Tools Needed** (confirmed the reassessment engine, confirmation-loop UI, and Dweller Profile data model are all unbuilt), and a **System Design FigJam board** (`RiXUmpziTdiV4lXuw6SPfU` — engine flow, confirmation loop, cross-pillar map; clean build, no z-order bugs this time unlike P8's board). Corrected a stale "P7 theme detection" reference on Pillar 1's own Notion page and logged the Reflective-Density-as-Dwelly-quality-signal idea there as Post-MVP. **Pillar 6 marked ✅ complete** (page title + Pillars index), matching P8/P9/P10/P11. **Pillar design sequence: P9 ✅ → P10 ✅ → P11 ✅ → P8 ✅ → P6 ✅ → P2 (Security, next) → P7 (Beta & Marketing, last).**
@@ -554,7 +556,7 @@
        - **July 3 session:** Built full P0 scenario set through iterative refinement — corrected screen flow to match actual locked Notion design (not stale docs), established P0/P1 capture boundary, added missing edge cases (abandonment variants, selection combos, account errors) after user review.
        - **July 9 session (evening):** Built P3 scenario set (9 scenarios) covering trigger-parity (post-capture vs. organic), decline/exit/skip-resonance paths, and 4 MVP-scope-boundary verification scenarios (no voice narration, immediate-reflection-only context, 350-token prayer cap, journal-embedded storage). Technical Tools Needed audit confirmed zero existing P3 code and surfaced the archetype-inference and T-062/JournalEntry cross-pillar dependencies above.
     5. 🔲 Cost review ticket (T-093) — Pre-infrastructure audit validation per pillar
-    6. 🔲 Infrastructure readiness (Supabase, E2E encryption T-062, Rich Context system) — DEFERRED to post-infra-audit
+    6. 🔲 Infrastructure readiness (Supabase, server-side encryption T-062, Rich Context system) — DEFERRED to post-infra-audit
     7. 🔲 Beta cohort recruitment strategy (how many users? which segment first?) — DEFERRED
     8. 🔲 LLM Live API Testing (Groq vs GPT-4o mini in real Dwellable environment) — DEFERRED to post-infra-audit
   - **Acceptance Criteria:**
@@ -843,7 +845,7 @@
   - **Priority:** 🟡 MEDIUM (not launch-blocking, but the locked success metrics are unmeasurable without it)
   - **Raised:** July 6, 2026 session (reviewing what else P0 needs with Kell)
 
-**⚠️ Flagged dependency (not a new ticket — already tracked):** Screen 6's locked copy promises live behavior ("we temporarily decrypt your moments... then re-encrypt") but **T-062 (E2E Encryption) is still 🔲 Not Started and BLOCKING**. Moments are currently stored as plaintext in Supabase. Recommend sequencing T-062 before Screen 6 ships — shipping an untrue privacy promise is a trust risk for a privacy-differentiated product. Kell to decide: sequence T-062 first, or ship P0 screens 1–5/6.5–7 and gate Screen 6 specifically until encryption lands.
+**✅ RESOLVED (July 22, 2026):** Screen 6's locked copy ("we temporarily decrypt your moments... then re-encrypt") turned out to be the *correct* description of the model — the actual conflict was that `docs/PILLAR_2_SECURITY_STRATEGY.md` and T-062 were still scoped for pure client-side E2E (zero-knowledge, no server-side decrypt capability at all), which Screen 6's copy contradicted. Resolved this Pillar 2 design session: locked **server-side encryption** (encrypted at rest, transient decrypt for processing) as the model going forward — Screen 6's copy was ahead of the spec, not wrong. **T-062 (Server-Side Encryption) is still 🔲 Not Started and BLOCKING** — sequencing recommendation unchanged: build T-062 before Screen 6 ships, since the copy describes real behavior that doesn't exist in code yet. Kell to decide: sequence T-062 first, or ship P0 screens 1–5/6.5–7 and gate Screen 6 specifically until encryption lands.
 
 ### Pillar 1 (Capture) — System Design Review Follow-ups (July 8, 2026 Session)
 **Context:** Built the P1 (Capture) system design in FigJam from scratch as two separate Sections — Onboarding Capture (continues from P0 Screen 7-8, mandatory) and Post-Onboarding Capture (optional, from Dashboard/Entries). Reviewed line-by-line with Kell across multiple rounds: fixed container type (Frame → Section, so shapes stay independently movable), connector z-order/routing, prompt-origin two-spoke parity between both flows, split "cancel mid-capture" into two correctly-placed checks (mid-recording vs. mid-typing, distinct from declining Dwelly), and moved transcript review earlier in the flow (before the Dwelly loop, not after — was redundant at the end). Also removed a duplicated WhisperKit "download overlay" / "model ready?" branch from P1 after confirming against the live P0 board that model bundling (T-097) already resolves this at install time. New core mechanic: the **Dwelly Agent conversational loop** (3a end engagement / 3b Dwelly responds → 4a token-cost cap → loop or end). Added a "Formation Intelligence Connection" section to the Pillar 1 Notion page tying this loop to the Reflective Density Model (L1-L8, MVMR = L2+L3+L4) and flagging that density-level detection isn't implemented yet (deferred to Pillar 6 work). Created two new Notion sub-pages under Pillar 1: "P1 User Scenarios & Acceptance Criteria" (9 scenarios) and "Technical Tools Needed" (audit of built vs. missing). Codified the whole FigJam workflow into a reusable `/figjam` skill (`~/.claude/skills/figjam/`) for Pillar 2 onward. **Next session objective:** Begin Pillar 2 (Security & Encryption) system design in FigJam using `/figjam`; also reconcile T-056 (pre-existing, appears to duplicate T-118) and lock T-119's exact token-cost limit with Kell.
@@ -980,7 +982,7 @@
   - **Explicitly NOT in scope:** Date range filter (removed — redundant with Screen 1's calendar-based browsing); Pinned filter (paused — doesn't make sense as an active chip while default view is already chronological; revisit later); "Ask a Question" LLM-powered natural-language querying (Post-MVP, ties to P7 Formation Intelligence infra)
   - **SearchIndexManager + SearchableContent model:** encrypted FTS index, client-side decrypt — hard-blocked on T-062 (zero encryption code exists anywhere)
   - **Reuse requirement:** Mood/Object pickers MUST reuse P4's exact components (single-select), not a separate P5-specific picker — if P4 builds bespoke non-reusable pickers instead, this ticket either duplicates that UI work or blocks on a P4 refactor
-  - **Dependencies:** T-062 (E2E Encryption, hard block), P3 (resonance field), P4 (JournalEntry model + Mood/Object components), P1 (transcript)
+  - **Dependencies:** T-062 (Server-Side Encryption, hard block), P3 (resonance field), P4 (JournalEntry model + Mood/Object components), P1 (transcript)
   - **Estimated effort:** L (Large, 2-3 weeks — encrypted FTS index, filter UI, real-time query)
   - **Priority:** 🔴 HIGH (MVP)
   - **Raised:** July 10, 2026 session (P5 Search & Discovery FigJam design + dependency graph resequencing)
@@ -1004,8 +1006,8 @@
 
 - [ ] **T-131:** Build Security & Privacy Section (Pillar 9) 🔲 **NOT STARTED**
   - **Purpose:** Locked P9 section — Change Password flow (Current/New/Confirm + validation), Encryption explanation with "Learn More" link, Data Export (disabled state, post-MVP).
-  - **Scope:** `AuthManager.swift` currently has login/logout only, no password-change method — needs to be added. Section cannot honestly ship encryption-related copy until E2E encryption actually exists in code.
-  - **Dependencies:** **T-062 (E2E Encryption) — HARD BLOCKING.** Confirmed zero CryptoKit/AES/Argon2id usage anywhere in codebase.
+  - **Scope:** `AuthManager.swift` currently has login/logout only, no password-change method — needs to be added. Section cannot honestly ship encryption-related copy until server-side encryption actually exists in code.
+  - **Dependencies:** **T-062 (Server-Side Encryption) — HARD BLOCKING.** Confirmed zero CryptoKit/AES usage anywhere in codebase.
   - **Estimated effort:** M
   - **Priority:** 🔴 BLOCKING (on T-062)
   - **Raised:** July 20, 2026 session (P9 Technical Tools Needed audit)
@@ -1294,32 +1296,19 @@
   - **Priority:** HIGH (Phase 2 Foundation)
   - **Category:** Feature — Security & Privacy (Pillar 2)
   - **Status:** 🔲 NOT STARTED
+  - **🚨 UPDATED July 22, 2026 — reframed from "how do we handle impossibility" to a normal feature.** Under the old client-side E2E model, encryption keys were password-derived, so a forgotten password meant permanently lost data — this ticket used to be about choosing which flavor of that loss to accept. Under the new server-side model (see `docs/PILLAR_2_SECURITY_STRATEGY.md`), the encryption key is server-managed and independent of the password, so password reset is a normal, fully recoverable flow with **zero impact on data access**. This ticket is now standard "forgot password" engineering, not a privacy trade-off decision.
   - **Description:**
-    Design and implement password recovery flow for users who forget their encryption password. This is critical because encryption keys are derived from passwords — if user forgets password, moments become unrecoverable.
-    
-    Options:
-    1. **No recovery** (simplest, most private): Document that forgotten password = lost access. Accept this risk.
-    2. **Recovery key backup** (complex, more helpful): Generate recovery key at signup, let user export/save separately
-    3. **Account recovery via email** (less private): Allow password reset via email, but moments remain inaccessible (key is password-derived)
-  - **Design Requirements (From Pillar 2 risks):**
-    - "Recovery flow if user forgets password?"
-    - "Should encryption keys be backed up to cloud?" (answer: probably not — violates zero-knowledge principle)
-    - Document impact on user experience and data access
+    Implement standard email-based password recovery: user requests reset → receives emailed link with time-limited token → sets new password → regains full access immediately, with all moments (old and new) unaffected.
   - **Technical Tasks:**
-    - [ ] Document three recovery strategy options with trade-offs (privacy vs. convenience)
-    - [ ] Make decision: which strategy to implement?
-    - [ ] If "No recovery": Add warning to onboarding + settings ("Your password cannot be recovered. Store it safely.")
-    - [ ] If "Recovery key": Generate recovery key at encryption setup, show "Save your recovery key" prompt, allow export as text/file
-    - [ ] If "Email recovery": Implement Supabase password reset flow, but clearly document that moments stay encrypted
-    - [ ] Add help text to LoginView + SettingsView explaining password importance
-    - [ ] Test edge case: user resets password, tries to view old moments (should fail gracefully if key is gone)
+    - [ ] Implement Supabase password reset flow (email + reset token + new password screens — see `docs/PILLAR_AUTHENTICATION_STRATEGY.md` §"Forgot Password Flow" for full spec)
+    - [ ] Confirm end-to-end: password reset has no effect on moment/journal accessibility
+    - [ ] Add plain-language help text to LoginView + SettingsView: password protects account access; it does not gate access to your data
+    - [ ] Update onboarding/settings copy to remove any leftover "your password cannot be recovered" language
   - **Acceptance Criteria:**
-    - [ ] Decision documented in PRD or ARCHITECTURE.md (which strategy we chose)
-    - [ ] User-facing messaging clear about password importance and recovery options
-    - [ ] Test with fresh user: can they access moments if they forget password? (per strategy)
-    - [ ] Recovery workflow tested end-to-end (if applicable to chosen strategy)
-    - [ ] No unencrypted keys stored anywhere
-  - **Estimated effort:** 8-12 hours (design + implementation varies by strategy)
+    - [ ] User can reset a forgotten password via email and log back in
+    - [ ] All moments and journals remain fully accessible before and after reset (test explicitly)
+    - [ ] User-facing messaging accurately reflects the new model (password = account access; data = protected separately by Dwellable)
+  - **Estimated effort:** 6-10 hours (simpler than original E2E-constrained scope — standard reset flow, no key-recovery design needed)
   - **When to do:** Week 1-2 of Phase 2 (before/alongside T-062 encryption)
   - **Dependencies:** T-062 (Encryption) must be in progress
   - **Blocks:** Nothing — but affects user trust narrative
@@ -1363,7 +1352,7 @@
     - [ ] Responses visible in MomentDetailView as "prayer responses" list (future view)
   - **Estimated effort:** 16-20 hours (design + SupabaseSchema + encryption integration + testing)
   - **When to do:** Week 2 of Phase 2 implementation (after T-062 encryption complete)
-  - **Dependencies:** Pillar 1 (Capture) ✅ | T-062 (E2E Encryption) must be in progress
+  - **Dependencies:** Pillar 1 (Capture) ✅ | T-062 (Server-Side Encryption) must be in progress
   - **Blocks:** T-065, T-066 (Pillar 3 completion + Pillar 6 integration)
   - **Context:** Prayer is one of two core Prayer flows. Users need a guided but non-prescriptive way to respond spiritually to captured moments.
 
@@ -1405,7 +1394,7 @@
     - [ ] Responses visible in MomentDetailView as "reflection responses" list (future view)
   - **Estimated effort:** 16-20 hours (design + prompt curation + SupabaseSchema + encryption integration + testing)
   - **When to do:** Week 2-3 of Phase 2 implementation (after T-062, can run parallel to T-063)
-  - **Dependencies:** Pillar 1 (Capture) ✅ | T-062 (E2E Encryption) must be in progress
+  - **Dependencies:** Pillar 1 (Capture) ✅ | T-062 (Server-Side Encryption) must be in progress
   - **Blocks:** T-065, T-066 (Pillar 3 completion + Pillar 6 integration)
   - **Context:** Prompts enable deeper reflection than prayer alone. Users discover their own insights through guided questioning (never interpretation).
 
@@ -1490,31 +1479,30 @@
   - **Blocks:** Nothing — enables T-063 & T-064 to fully function
   - **Context:** Response persistence is the foundation for all Prayer features. Without it, user's spiritual work on moments is lost.
 
-- [ ] **T-062:** Implement End-to-End Encryption for Moments (Phase 2 Security/Privacy Pillar)
+- [ ] **T-062:** Implement Server-Side Encryption for Moments (Phase 2 Security/Privacy Pillar)
   - **Priority:** BLOCKING (Phase 2 Foundation — brand trust requirement)
-  - **🚨 UPDATED July 10, 2026 — highest-urgency ticket in the entire dependency graph:** Confirmed via codebase audit to have zero code anywhere (no CryptoKit/AES/Argon2id usage). Now hard-blocks encrypted storage for **three** pillars: P3's PrayerArtifact, P4's JournalEntry, and P5's SearchableContent index (T-128). Its scheduled position (parallel to P0, right after Auth) was already correct — the gap is execution, not sequencing. Recommend this be the first engineering task started, not just a well-scheduled one.
+  - **🚨 UPDATED July 22, 2026 — model changed from client-side E2E to server-side encryption.** The old zero-knowledge design ("Kell cannot access your moments") is superseded: Dwelly, Prayer generation, and Journal synthesis all require sending moment content to a cloud LLM (Groq/GPT-4o mini) as plaintext, which is structurally incompatible with a true E2E guarantee. New model: encrypted at rest in Supabase, decrypted transiently only for legitimate processing (display, LLM calls), never persisted as plaintext or logged. Full rationale in `docs/PILLAR_2_SECURITY_STRATEGY.md`. **Still the highest-urgency ticket in the dependency graph** — confirmed via codebase audit to have zero code anywhere (no CryptoKit/AES usage), and hard-blocks encrypted storage for **four** pillars: P3's PrayerArtifact, P4's JournalEntry, P5's SearchableContent index (T-128), and P6's Dweller Profile storage.
   - **Category:** Security & Privacy
   - **Status:** 🔲 NOT STARTED
-  - **Brand Statement:** "Kell cannot access your moments. Only you can."
+  - **Brand Statement (updated):** "Your moments are secure with us — encrypted at rest, protected from theft and unauthorized access, processed only to help you pray, reflect, and grow."
   - **Description:**
-    Dwellable's competitive advantage is privacy-first spiritual formation. Users must know that as the founder, Kell cannot read their moment contents—only metadata (timestamps, capture counts, session data) for analytics.
-    
-    This requires end-to-end encryption (E2E) where moments are encrypted on-device before upload to Supabase. Server stores encrypted blobs only. User retains exclusive decryption key.
-  - **What users see:** ✅ Privacy guarantee
-  - **What Kell sees:** ✅ Analytics (user count, moment count, capture patterns, timestamps) | ❌ Moment contents
+    Dwellable's competitive advantage is being a trustworthy steward of sacred spiritual data. Moments must be encrypted at rest (protecting against database breach or stolen backups) and decrypted only transiently when the app legitimately needs to act on them — not stored in the clear, not casually browsable.
+
+    This requires server-side encryption where moments are encrypted before persisting to Supabase. The encryption key is **server-managed**, independent of the user's login password (unlike the old design).
+  - **What users see:** ✅ Security & stewardship promise (not a zero-knowledge promise)
+  - **What Dwellable's backend can do (by design, for processing):** ✅ Decrypt transiently to run Dwelly, generate prayers, synthesize journals, and power Formation Intelligence — never persisting plaintext beyond that operation, never logging it
   - **Development Strategy:**
-    1. **Key Derivation:** Derive encryption key from user's password + salt (Argon2id or PBKDF2)
-    2. **On-Device Encryption:** Use iOS CryptoKit (AES-256-GCM) to encrypt moment body before sending
+    1. **Key Management:** Server-managed encryption key (via Supabase Vault or a dedicated secrets/KMS layer) — NOT derived from the user's password
+    2. **Encryption:** AES-256-GCM to encrypt moment body before persisting (can happen server-side or on-device before upload; either way, key is server-managed, not password-derived)
     3. **Data Model Split:**
-       - `moments.encrypted_content` — encrypted moment body (blob, unreadable by Kell)
+       - `moments.encrypted_content` — encrypted moment body (blob, encrypted at rest)
        - `moments.metadata` — unencrypted: created_at, capture_type (voice/text), user_id
-    4. **Key Storage:** Encrypted key stored in iOS Keychain (secured by device passcode)
-    5. **Client-Side Decryption:** On moment retrieval, app decrypts using stored key
-    6. **Recovery Flow:** Design password reset → key recovery or "moments lost" scenario (document for users)
-    7. **Testing:** Verify Supabase admin cannot read encrypted_content field; analytics queries work on metadata only
+    4. **Transient Decryption:** On moment retrieval or LLM processing need, decrypt just-in-time; plaintext never persisted or logged beyond the operation
+    5. **Recovery Flow:** Password reset is now a normal flow with zero impact on data access (see T-067) — no more "moments lost if password forgotten" scenario
+    6. **Testing:** Verify encrypted_content is genuinely encrypted at rest (DB inspection); verify plaintext never appears in logs; verify analytics queries work on metadata only
   - **Architectural Changes:**
-    - CryptoManager (new) — handles encryption/decryption with CryptoKit
-    - SupabaseAPIClient — updated to encrypt moment before POST, decrypt on GET
+    - CryptoManager (new) — handles encryption/decryption with CryptoKit, using server-managed key
+    - SupabaseAPIClient — updated to encrypt moment before POST, decrypt on GET/processing
     - ReviewView + TypeFlowView — wire encryption into save flow
     - MomentDetailView — wire decryption into view flow
     - LocalStorageManager — handle encrypted storage of pending moments
@@ -1523,26 +1511,25 @@
     - Rename `body` → `metadata_summary` (optional, for UI display unencrypted hint) OR remove entirely
     - Keep: user_id, created_at, updated_at, capture_type, senseOfLord (or encrypt separately)
   - **Acceptance Criteria:**
-    - [ ] CryptoManager implemented with AES-256-GCM encryption/decryption
-    - [ ] Moment save flow encrypts on client before upload
-    - [ ] Moment retrieval flow decrypts on client after download
+    - [ ] CryptoManager implemented with AES-256-GCM encryption/decryption, server-managed key
+    - [ ] Moment save flow encrypts before persisting
+    - [ ] Moment retrieval/processing flow decrypts transiently, never persists plaintext
     - [ ] Offline moments encrypted locally before sync
     - [ ] Analytics queries work on metadata without needing plaintext
-    - [ ] Kell can verify they cannot decrypt moments (test: attempt to read encrypted_content as admin)
-    - [ ] Password reset flow defined (document impact on recovery)
-    - [ ] User-facing messaging clarifies privacy guarantee
+    - [ ] Verify encrypted_content is genuinely encrypted at rest (not plaintext in DB)
+    - [ ] Password reset flow confirmed to have zero impact on data access
+    - [ ] User-facing messaging updated to "secure with us" framing (not zero-knowledge)
   - **Risk Mitigation:**
-    - If user forgets password: moments unrecoverable (document this)
-    - OR: Implement recovery key backup (more complex, deferred to P1)
-    - OR: Enable iCloud Keychain backup (test device behavior)
+    - Decrypt operations should be logged (who/when/why) for an internal audit trail, since this is no longer a hard technical wall
+    - Confirm LLM provider (Groq/OpenAI) data-retention terms for plaintext sent during processing
   - **Estimated effort:** 16-24 hours (encryption integration + testing + key management design)
   - **When to do:** Week 1 of Phase 2 development (foundation for all P0 features)
-  - **Why now:** Privacy is Dwellable's brand moat. This must ship with P0 features. Users need confidence that spiritual moments are theirs alone.
-  - **Context:** Current build uses Supabase RLS (row-level security) only—technically, Kell as admin could access plaintext. E2E closes this gap completely.
+  - **Why now:** Data protection is core to Dwellable's trust with users. This must ship with P0 features.
+  - **Context:** Current build uses Supabase RLS (row-level security) only — moments are currently stored as plaintext. This ticket closes that gap.
   - **Follow-up tickets:**
-    - [ ] T-063: Test E2E encryption with long moments (performance baseline)
-    - [ ] T-064: Document password reset + recovery strategy for users
-    - [ ] T-065: Add privacy guarantee messaging to onboarding + settings
+    - [ ] T-063: Test encryption with long moments (performance baseline)
+    - [ ] T-064: Document key management + LLM data-handling for users (replaces old "password reset + recovery" doc scope)
+    - [ ] T-065: Add "secure with us" privacy guarantee messaging to onboarding + settings (replaces old zero-knowledge copy)
 
 ### Voice — WhisperKit Improvements
 - [x] **T-056:** Improve WhisperKit handling for long pauses and applause — **CLOSED, DUPLICATE ✅**

@@ -28,7 +28,7 @@ This graph was last substantively updated May 14, 2026 and predated several deci
 
 1. **LLM selection superseded.** §8 originally referenced "Gemini 2.0 Flash → Mistral 7B" — superseded May 15, 2026. **Actual locked decision: Groq Llama 3.3 70B (primary, free) → GPT-4o mini (backup, paid)**, via Vercel AI SDK. See the Notion "🧠 LLM Decision (LOCKED)" page.
 
-2. **P2 (Encryption) is no longer a standalone pillar in the build sequence.** Encryption is a cross-cutting layer designed across every data-capturing pillar (capture, prayer, journal, settings), not a single isolated pillar. Engineering sequencing (§1/§2/§7) can still treat it as parallel-track infrastructure; the *design* work happens as a holistic audit after experience pillars are designed. T-062 (E2E Encryption implementation) remains a real, still-unstarted blocking ticket regardless.
+2. **P2 (Encryption) is no longer a standalone pillar in the build sequence.** Encryption is a cross-cutting layer designed across every data-capturing pillar (capture, prayer, journal, settings), not a single isolated pillar. Engineering sequencing (§1/§2/§7) can still treat it as parallel-track infrastructure; the *design* work happens as a holistic audit after experience pillars are designed. T-062 (Server-Side Encryption implementation) remains a real, still-unstarted blocking ticket regardless. **Model updated July 22, 2026:** client-side E2E → server-side encryption at rest with transient decrypt for processing (see docs/PILLAR_2_SECURITY_STRATEGY.md).
 
 3. **Cross-pillar blocker: P1 archetype inference → P3 Load Context.** P3's Rich Context step needs the user's archetype (Jotter/Venter/Processor) as input. P1's audit confirmed archetype inference is **not implemented in code** yet. P3 engineering cannot fully deliver contextual prayers until P1 ships this.
 
@@ -226,7 +226,7 @@ MVP LAUNCH ✅
 | Pillar | Reason | Target Phase | Duration |
 |--------|--------|--------------|----------|
 | **Account Deletion** | Legal/compliance feature; not MVP-blocking | Phase 2.1 (post-launch) | 1 week |
-| **Multi-device Sync** | E2E encryption + key distribution; Phase 2+ only | Post-MVP | TBD |
+| **Multi-device Sync** | Server-managed key simplifies this vs. old E2E model; still Phase 2+ scheduling | Post-MVP | TBD |
 | **P6 fuller theme graph** | Discrete named themes, parent/child structure, dashboard/weekly/monthly review | Post-MVP | TBD |
 | **P7 (Beta & Marketing)** | Not yet started; depends on P0–P8 broadly functional | Post-MVP launch prep | TBD |
 
@@ -240,7 +240,7 @@ MVP LAUNCH ✅
 - ✅ Auth Pillar
 - ✅ P0 (Onboarding) — all 7 screens
 - ✅ P1 (Capture) — voice + text, same-conversation contextual prompts
-- ✅ P2 (Encryption) — E2E encryption, key derivation
+- ✅ P2 (Encryption) — server-side encryption at rest, server-managed key
 - ✅ P3 (Prayer) — guided prayer only (no open-ended prompts MVP)
 - ✅ P4 (Journal) — AI synthesis, mood selection
 - ✅ Navigation Shell (T-076–082) — 4-tab hosting (Today, Entries, Create, Growth); Entries tab (T-078) includes P5 Screen 1
@@ -354,7 +354,7 @@ POST-LAUNCH (WEEK 15+):
 | **Encryption T-062 not complete** | Confirmed hard blocker for P3, P4, and P5's encrypted storage — three pillars now. Highest-urgency ticket in this graph, still 🔲 Not Started with zero code | Crypto engineer |
 | **LLM API integration slow** | P3 prayer generation needs low-latency LLM calls (<3s); test early against real Groq/GPT-4o mini latency | Backend/LLM owner |
 | **Rich Context context size exceeds token limit** | Test P4 journal synthesis with large moment histories; may need chunking | LLM/Backend owner |
-| **Key derivation too slow on device** | Argon2id ~1 second on iPhone 13; test on slower devices | iOS engineer |
+| **Decryption latency on device/server** | Target <200ms for display/processing use cases; test on slower devices | iOS engineer |
 | **P1 archetype inference not built, blocks P3 context** | P1 must ship archetype inference before P3's Load Context step is contextually complete | iOS/Backend engineer |
 | **PrayerArtifact storage blocked on T-062 + P4 JournalEntry model** | P3 ships with nullable/stubbed `journalEntryId` until both land | Backend engineer |
 | **Three pillars (P1, P3, P4) each need identical unbuilt LLM infra** | Build one shared Groq→GPT-4o mini calling service, reuse across all three | Backend/LLM owner |

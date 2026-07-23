@@ -30,7 +30,7 @@
 - Preference patterns: Notification frequency, prayer style, theme preference (dark/light post-MVP)
 - Trust behavior: Does user engage with encryption explanation? Read "Learn More"?
 - Feedback patterns: What users report as bugs, request as features, ask for support on
-- Encryption comfort level: Whether user understands and trusts E2E encryption
+- Encryption comfort level: Whether user understands and trusts that their moments are securely protected
 - Intent check feedback: Are they finding Dwellable helpful toward their stated intent?
 
 **What system infers:**
@@ -156,7 +156,7 @@
   - Validation: Password must be 8+ chars, mix of upper/lower/number/symbol
   - Success state: "Password updated" + dismiss
 - **Encryption Explanation:** Plain-language one-liner + "Learn More" link
-  - Link routes to separate help article explaining E2E encryption, key derivation, Keychain storage
+  - Link routes to separate help article explaining server-side encryption at rest and how the app processes data (see docs/PILLAR_2_SECURITY_STRATEGY.md's User Communication section for the plain-language framing)
   - Goal: Users understand "Dwellable cannot read my moments"
 
 **Post-MVP Features:**
@@ -333,7 +333,7 @@
 |--------|-------|--------|--------------|
 | T-XXX | Build: Settings Modal Shell (5 sections, navigation) | M | None |
 | T-XXX | Build: Account & Profile Section (display + edit intent) | M | T-XXX |
-| T-XXX | Build: Security & Privacy Section (password change + encryption info) | M | T-XXX, T-062 (E2E encryption) |
+| T-XXX | Build: Security & Privacy Section (password change + encryption info) | M | T-XXX, T-062 (server-side encryption) |
 | T-XXX | Build: Preferences Section (prayer frequency + notification link) | S | T-XXX |
 | T-XXX | Build: Support & Feedback Section (forms + links) | M | T-XXX |
 | T-XXX | Build: Legal & About Section (links + version display) | S | T-XXX |
@@ -354,7 +354,7 @@
 | **Intent edit confusing** | Users unsure how to edit intent | Link to simplified intent modal (or full Onboarding flow); test language first |
 | **Feedback/bug reports noisy** | High volume of unhelpful reports; support overwhelmed | Add form validation (require minimum 10 chars) + categorization (bug vs. feature vs. feedback) |
 | **Legal links break** | Users can't access terms/privacy | Host docs on website with permanent URLs; monitor for 404s |
-| **Encryption explanation too technical** | Users don't understand E2E encryption | Plain-language one-liner + link to detailed guide (write plain-English explanation, not technical) |
+| **Encryption explanation too technical** | Users don't understand how their data is protected | Plain-language one-liner ("your moments are secure with us") + link to detailed guide (write plain-English explanation, not technical) |
 | **Account recovery missing** | Users locked out of account | Defer email editing to post-MVP; implement robust password reset flow (separate ticket) |
 
 ---
@@ -362,7 +362,7 @@
 ## 11. Cross-Pillar Dependencies
 
 - **Pillar 0 (Onboarding):** Settings displays data from P0 (name, email, intent, prayer rhythm). Intent edit flow should route back to P0 intent editor.
-- **Pillar 2 (Security & Privacy):** Settings explains E2E encryption (P2 responsibility). Link to help article should be written by P2 owner.
+- **Pillar 2 (Security & Privacy):** Settings explains the security/stewardship model (P2 responsibility). Link to help article should be written by P2 owner.
 - **Pillar 8 (Notifications):** Notification preferences button in Settings routes to Pillar 8 notification settings.
 - **Pillar 11 (Growth):** Settings' gear icon lives in Growth's top-right corner only (UPDATED July 11, 2026) — Growth already nests a quick-edit Preferences subsection (prayer frequency, notification link) that references the same underlying fields as this pillar's Preferences section. Menu Bar/Navigation has no dedicated pillar (implementation only, T-076–T-082).
 

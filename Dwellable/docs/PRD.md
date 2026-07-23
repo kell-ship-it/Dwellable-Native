@@ -112,28 +112,29 @@ Pattern surfacing, semantic search across moments, themed views, optional biblic
 
 ---
 
-### Pillar 2: Security & Privacy (E2E Encryption)
+### Pillar 2: Security & Privacy (Server-Side Encryption)
 
 **Status:** 🔄 Phase 2 Beta (T-062 In Progress)  
-**Locked:** AES-256-GCM encryption, key derivation from password, client-side encryption/decryption
+**Locked (updated July 22, 2026):** AES-256-GCM encryption at rest, server-managed key (not password-derived), transient decryption for processing (Dwelly, Prayer, Journal synthesis), metadata-only constraint on notification copy
+
+**Model note:** Supersedes the earlier client-side E2E / zero-knowledge design. The product's core features (Dwelly conversation, Prayer generation, Journal synthesis) require sending moment content to a cloud LLM (Groq/GPT-4o mini) as plaintext, which is incompatible with a "no one but the user can ever decrypt" guarantee. The promise is now "your moments are secure with us" (protected at rest, in transit, and from unauthorized access) rather than "we can never see your moments." See `docs/PILLAR_2_SECURITY_STRATEGY.md` for full rationale.
 
 **Open Questions:**
-- Recovery flow if user forgets password?
-- Should encryption keys be backed up to cloud?
-- Multi-device support (user syncing across devices)?
-- How to handle backup/restore with encryption?
+- Where does the server-managed encryption key live (Supabase Vault vs. dedicated KMS)?
+- Multi-device support (architecturally simpler now, still needs a design pass)?
+- Should decrypt operations be logged for an internal audit trail?
+- LLM provider data-retention confirmation (Groq/OpenAI request-log windows)?
 
-**Exclusions:** Zero-knowledge architecture (user can recover, but only they can decrypt), server-side decryption, cloud key storage
+**Exclusions:** Zero-knowledge / pure client-side E2E (superseded — see model note above)
 
-**Risks:** Encryption UX complexity; recovery scenarios; performance on older devices; testing encrypted data flows
+**Risks:** Key management implementation details; testing encrypted data flows; being clear and honest with users about what "secure" means now vs. the old "we never see it" framing
 
 #### Implementation Tickets
-- T-062: Implement End-to-End Encryption for Moments (16-24 hours, BLOCKING)
-  - AES-256-GCM encryption implementation
-  - Key derivation from password
+- T-062: Implement Server-Side Encryption for Moments (16-24 hours, BLOCKING)
+  - AES-256-GCM encryption implementation, server-managed key
   - Encrypted storage and sync
-  - Client-side decryption on read
-- T-XXX: Password recovery mechanism (design + engineering)
+  - Transient decryption on read/processing (never persisted as plaintext, never logged)
+- T-067: Password Recovery Mechanism (now a normal recoverable flow — password reset no longer affects data access)
 - *(Dependencies: Pillar 1 (Capture) must be complete; blocking for Pillar 3)*
 
 ---
@@ -197,7 +198,6 @@ struct JournalEntry: Codable {
     let deleted: Bool                           // Soft delete flag
     let deletedAt: Date?                        // Timestamp of soft delete
     let encryptedContent: Data                  // AES-256-GCM encrypted (same as Pillar 2)
-    let encryptionKey: String                   // Derived from user password (Argon2id)
 }
 ```
 
@@ -232,7 +232,7 @@ struct JournalEntry: Codable {
 
 **Exclusions:** AI-generated moment imagery (post-MVP), analysis format (Rosebud-style), insight/affirmation format, structured form-based synthesis, collaborative journaling
 
-**Encryption:** AES-256-GCM, same key derivation as Pillar 2 (Argon2id from password), encrypted at rest and in transit
+**Encryption:** AES-256-GCM, server-managed key (Pillar 2), encrypted at rest and in transit
 
 #### Implementation Tickets
 *(To be created after all pillar happy paths locked)*
@@ -478,7 +478,7 @@ struct UsageEvent: Codable {
 - HTTPS enforced; no HTTP fallback
 - Certificate pinning (SHA256 public key validation)
 - Brute force protection (5-attempt lockout, 10-min timeout)
-- E2E Encryption (T-062) — client-side encryption before sync
+- Server-Side Encryption (T-062) — encrypted at rest, transient decrypt for processing
 
 **Offline-First Sync:**
 - Moments stored locally in Keychain + UserDefaults
