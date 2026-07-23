@@ -382,16 +382,18 @@
 **Status Update:** All Phase 2 Pillars (0-8) now have documented happy paths + locked Formation Intelligence framework. Ready for implementation ticket creation and Phase 2 launch planning.
 
 ### Pillar 6 (Menu Bar) Implementation Tickets (May 6 Session)
+**⚠️ Note (July 23, 2026): this section predates P9/P10/P11's actual pillar designs (locked July 2026, months after this May 6 ticket set).** T-076 (tab shell) and T-079 (Create tab) remain valid as bare infrastructure. T-077 and T-080 below describe a superseded, simpler design than what P10/P11 actually locked — see the correction notes on each.
 
 - [ ] **T-076:** Build SwiftUI NavigationStack with 4 tabs 🔲 **NOT STARTED**
-  - Create tab-based navigation skeleton (Today | Entries | Create | Insights)
+  - **Corrected July 23, 2026:** Tab labels updated to match the actually-locked pillar names — **Today | Entries | Create | Growth** (not "Insights," which predates P11's "Growth Tab" naming). This ticket builds the bare tab-hosting shell only; each tab's real content is built by its own pillar's tickets (Today → T-135–139; Entries → T-078; Create → T-079; Growth → T-140–144), not by this ticket or T-077/T-080 below.
   - NavigationStack vs. bottom tab bar per design spec
   - Test on iPhone 13, 14, 15, 16
   - Estimated effort: M (Medium, 12-15 hours)
   - Dependencies: None
   - Priority: HIGH (Phase 2 Foundation)
 
-- [ ] **T-077:** Wire Today tab to recent moments (7-day filter) 🔲 **NOT STARTED**
+- [ ] **T-077 (SUPERSEDED July 23, 2026 — see note above):** Wire Today tab to recent moments (7-day filter) 🔲 **NOT STARTED**
+  - **This design (generic 7-day recent-moments list) is superseded by P10's actually-locked Today tab spec: personalized greeting, most recent unprayed moment, daily prompt — see T-135 (UI shell), T-136 (greeting), T-137 (hasPrayed field/query), T-138/T-139 (daily prompt). Do not build against this ticket — build T-135–139 instead.**
   - Pull last 7 days of moments from MomentsListView
   - Show in reverse chronological order
   - Empty state: "No moments this week. Create one?"
@@ -420,7 +422,8 @@
   - Dependencies: T-076
   - Priority: HIGH
 
-- [ ] **T-080:** Build Insights dashboard (WAR, Formation Rate, etc.) 🔲 **NOT STARTED**
+- [ ] **T-080 (SUPERSEDED July 23, 2026 — see note above T-076):** Build Insights dashboard (WAR, Formation Rate, etc.) 🔲 **NOT STARTED**
+  - **This design (a generic WAR/Formation Rate/Prayer Depth/D7 Retention insights dashboard) is superseded by P11's actually-locked Growth tab spec: Your Narrative (Dweller Profile display), Your Plain Stats, Settings — see T-140 (UI shell), T-141 (stats engine), T-143 (nested settings). Do not build against this ticket — build T-140–144 instead.**
   - Display metrics: Weekly Active Reflections (WAR), Formation Engagement Rate, Prayer Depth, Prayer Rate, D7 Retention, Avg Session Length
   - Visualizations: Line charts (trends), cards (current week stats)
   - Tap stat → detailed breakdown
@@ -429,11 +432,12 @@
   - Priority: HIGH
 
 - [ ] **T-081:** Polish: Empty states, loading states, error handling 🔲 **NOT STARTED**
+  - **Dependencies corrected July 23, 2026:** references T-077/T-080 replaced with the tickets that actually supersede them (T-135–139 for Today, T-140–144 for Growth), since T-077/T-080 themselves are superseded and shouldn't be built.
   - Empty states for all tabs (no moments, no entries, no data)
   - Loading spinners during data fetch
   - Error handling (network failures, etc.)
   - Estimated effort: M (12-15 hours)
-  - Dependencies: T-077, T-078, T-080
+  - Dependencies: T-135–139 (Today), T-078 (Entries), T-140–144 (Growth)
   - Priority: MEDIUM
 
 - [ ] **T-082:** Test: Device testing + QA (iPhone 13, 14, 15, 16) 🔲 **NOT STARTED**
@@ -1242,11 +1246,10 @@
   - Comprehensive cost breakdown for 10K users Year 1 (~$13-20K)
   - Detailed model comparison table with 5 models
 
-- [ ] **T-076 (Previously):** Update PRD with references to all pillar strategy docs 🔲 **NEEDS REVIEW**
-  - PRD.md updated to reference Pillars 0, 1, 3, 4, 5
-  - Needs: Add references to Pillars 2, 6, 7 with doc links
+- [ ] **(Historical, un-numbered July 23, 2026 — collided with real T-076/T-077 below, renumbering removed):** Update PRD with references to all pillar strategy docs 🔲 **LARGELY MOOT**
+  - Original scope: PRD.md missing references to Pillars 2, 6, 7. Given this session's extensive PRD.md updates (Pillar 2 rewrite, Pillar 7 lock), this is effectively superseded — verify PRD.md's pillar cross-references are current before treating as a real gap.
 
-- [ ] **T-077 (Previously):** Create DWELLABLE_THOUGHTS.md catch-all file ✅ **COMPLETE**
+- [x] **(Historical, un-numbered July 23, 2026 — collided with real T-076/T-077 below, renumbering removed):** Create DWELLABLE_THOUGHTS.md catch-all file ✅ **COMPLETE**
   - Captures random architectural questions and design considerations
   - Current entries: (1) Prayer reflection placement, (2) Reflection display format (conversational vs. final)
 
