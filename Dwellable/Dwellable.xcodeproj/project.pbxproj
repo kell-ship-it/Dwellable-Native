@@ -1,0 +1,637 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 70;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0100 /* DwellableApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0101 /* DwellableApp.swift */; };
+		0102 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0103 /* LoginView.swift */; };
+		0104 /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0105 /* CaptureView.swift */; };
+		0106 /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0107 /* ReviewView.swift */; };
+		0108 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0109 /* AppView.swift */; };
+		0110 /* MomentsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0111 /* MomentsListView.swift */; };
+		0112 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0113 /* AuthManager.swift */; };
+		0114 /* Moment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0115 /* Moment.swift */; };
+		0116 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0117 /* Theme.swift */; };
+		0118 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0119 /* Config.swift */; };
+		012140 /* AudioFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012141 /* AudioFileManager.swift */; };
+		0122 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0123 /* UIKit.framework */; };
+		0124 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0125 /* SwiftUI.framework */; };
+		0126 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0127 /* Foundation.framework */; };
+		0128 /* AudioRecordingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0129 /* AudioRecordingManager.swift */; };
+		012a /* TranscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012b /* TranscriptionManager.swift */; };
+		012c /* TranscribingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012d /* TranscribingView.swift */; };
+		012e /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012f /* APIClient.swift */; };
+		0132 /* MockAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0133 /* MockAPIClient.swift */; };
+		0134 /* SupabaseAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0135 /* SupabaseAPIClient.swift */; };
+		0136 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0137 /* KeychainManager.swift */; };
+		013a /* LocalStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013b /* LocalStorageManager.swift */; };
+		013c /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013d /* SyncManager.swift */; };
+		013e /* TypeFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013f /* TypeFlowView.swift */; };
+		0144 /* MomentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0145 /* MomentDetailView.swift */; };
+		0146 /* MomentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0147 /* MomentRow.swift */; };
+		0148 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0149 /* SettingsView.swift */; };
+		12c0 /* UsageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12c1 /* UsageTracker.swift */; };
+		2317A7B72F734EEE00B7F8F0 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA000002 /* WhisperKit */; };
+		23A6B1202F60D59E006F12BD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23A6B11F2F60D59E006F12BD /* Assets.xcassets */; };
+		A001 /* ModelSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000 /* ModelSetupView.swift */; };
+		E001 /* APIClientEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = E002 /* APIClientEnvironment.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		23FB52922F5F7485001E0468 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0015 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0010;
+			remoteInfo = Dwellable;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0101 /* DwellableApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DwellableApp.swift; sourceTree = "<group>"; };
+		0103 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		0105 /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
+		0107 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
+		0109 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
+		0111 /* MomentsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentsListView.swift; sourceTree = "<group>"; };
+		0113 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		0115 /* Moment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Moment.swift; sourceTree = "<group>"; };
+		0117 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		0119 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		0121 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		012141 /* AudioFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileManager.swift; sourceTree = "<group>"; };
+		0123 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		0125 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		0127 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		0129 /* AudioRecordingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecordingManager.swift; sourceTree = "<group>"; };
+		012b /* TranscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionManager.swift; sourceTree = "<group>"; };
+		012d /* TranscribingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscribingView.swift; sourceTree = "<group>"; };
+		012f /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		0130 /* Dwellable.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dwellable.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0133 /* MockAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAPIClient.swift; sourceTree = "<group>"; };
+		0135 /* SupabaseAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseAPIClient.swift; sourceTree = "<group>"; };
+		0137 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
+		013b /* LocalStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStorageManager.swift; sourceTree = "<group>"; };
+		013d /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
+		013f /* TypeFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeFlowView.swift; sourceTree = "<group>"; };
+		0145 /* MomentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentDetailView.swift; sourceTree = "<group>"; };
+		0147 /* MomentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentRow.swift; sourceTree = "<group>"; };
+		0149 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		12c1 /* UsageTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageTracker.swift; sourceTree = "<group>"; };
+		23A6B11F2F60D59E006F12BD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		23FB528C2F5F7485001E0468 /* DwellableUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DwellableUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		23FB529B2F5F7935001E0468 /* Dwellable.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Dwellable.xctestplan; sourceTree = "<group>"; };
+		A000 /* ModelSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSetupView.swift; sourceTree = "<group>"; };
+		E002 /* APIClientEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClientEnvironment.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		23FB528D2F5F7485001E0468 /* DwellableUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = DwellableUITests; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0140 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2317A7B72F734EEE00B7F8F0 /* WhisperKit in Frameworks */,
+				0122 /* UIKit.framework in Frameworks */,
+				0124 /* SwiftUI.framework in Frameworks */,
+				0126 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		23FB52892F5F7485001E0468 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0001 /* Dwellable */ = {
+			isa = PBXGroup;
+			children = (
+				0101 /* DwellableApp.swift */,
+				0150 /* Views */,
+				0151 /* Managers */,
+				0152 /* Models */,
+				0153 /* Utilities */,
+				E003 /* Environment */,
+				0119 /* Config.swift */,
+				0121 /* Info.plist */,
+				23A6B11F2F60D59E006F12BD /* Assets.xcassets */,
+			);
+			path = Dwellable;
+			sourceTree = "<group>";
+		};
+		0150 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				0103 /* LoginView.swift */,
+				0105 /* CaptureView.swift */,
+				0107 /* ReviewView.swift */,
+				012d /* TranscribingView.swift */,
+				0109 /* AppView.swift */,
+				0111 /* MomentsListView.swift */,
+				013f /* TypeFlowView.swift */,
+				0145 /* MomentDetailView.swift */,
+				0147 /* MomentRow.swift */,
+				0149 /* SettingsView.swift */,
+				A000 /* ModelSetupView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		0151 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				0113 /* AuthManager.swift */,
+				0129 /* AudioRecordingManager.swift */,
+				012141 /* AudioFileManager.swift */,
+				012b /* TranscriptionManager.swift */,
+				012f /* APIClient.swift */,
+				0133 /* MockAPIClient.swift */,
+				0135 /* SupabaseAPIClient.swift */,
+				0137 /* KeychainManager.swift */,
+				013b /* LocalStorageManager.swift */,
+				013d /* SyncManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		0152 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				0115 /* Moment.swift */,
+				12c1 /* UsageTracker.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		0153 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				0117 /* Theme.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		0160 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0123 /* UIKit.framework */,
+				0125 /* SwiftUI.framework */,
+				0127 /* Foundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		0170 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0130 /* Dwellable.app */,
+				23FB528C2F5F7485001E0468 /* DwellableUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0180 = {
+			isa = PBXGroup;
+			children = (
+				23FB529B2F5F7935001E0468 /* Dwellable.xctestplan */,
+				0001 /* Dwellable */,
+				23FB528D2F5F7485001E0468 /* DwellableUITests */,
+				0170 /* Products */,
+				0160 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		E003 /* Environment */ = {
+			isa = PBXGroup;
+			children = (
+				E002 /* APIClientEnvironment.swift */,
+			);
+			path = Environment;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0010 /* Dwellable */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0011 /* Build configuration list for PBXNativeTarget "Dwellable" */;
+			buildPhases = (
+				0141 /* Sources */,
+				0142 /* Resources */,
+				0140 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Dwellable;
+			packageProductDependencies = (
+				AA000002 /* WhisperKit */,
+			);
+			productName = Dwellable;
+			productReference = 0130 /* Dwellable.app */;
+			productType = "com.apple.product-type.application";
+		};
+		23FB528B2F5F7485001E0468 /* DwellableUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 23FB52962F5F7485001E0468 /* Build configuration list for PBXNativeTarget "DwellableUITests" */;
+			buildPhases = (
+				23FB52882F5F7485001E0468 /* Sources */,
+				23FB52892F5F7485001E0468 /* Frameworks */,
+				23FB528A2F5F7485001E0468 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				23FB52932F5F7485001E0468 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				23FB528D2F5F7485001E0468 /* DwellableUITests */,
+			);
+			name = DwellableUITests;
+			packageProductDependencies = (
+			);
+			productName = DwellableUITests;
+			productReference = 23FB528C2F5F7485001E0468 /* DwellableUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0015 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 2630;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					23FB528B2F5F7485001E0468 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 0010;
+					};
+				};
+			};
+			buildConfigurationList = 0016 /* Build configuration list for PBXProject "Dwellable" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 0180;
+			packageReferences = (
+				AA000001 /* XCRemoteSwiftPackageReference "WhisperKit" */,
+			);
+			productRefGroup = 0170 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0010 /* Dwellable */,
+				23FB528B2F5F7485001E0468 /* DwellableUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0142 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				23A6B1202F60D59E006F12BD /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		23FB528A2F5F7485001E0468 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0141 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0100 /* DwellableApp.swift in Sources */,
+				0102 /* LoginView.swift in Sources */,
+				0104 /* CaptureView.swift in Sources */,
+				0106 /* ReviewView.swift in Sources */,
+				012c /* TranscribingView.swift in Sources */,
+				0108 /* AppView.swift in Sources */,
+				0110 /* MomentsListView.swift in Sources */,
+				013e /* TypeFlowView.swift in Sources */,
+				0144 /* MomentDetailView.swift in Sources */,
+				0146 /* MomentRow.swift in Sources */,
+				0148 /* SettingsView.swift in Sources */,
+				A001 /* ModelSetupView.swift in Sources */,
+				0112 /* AuthManager.swift in Sources */,
+				0128 /* AudioRecordingManager.swift in Sources */,
+				012140 /* AudioFileManager.swift in Sources */,
+				012a /* TranscriptionManager.swift in Sources */,
+				012e /* APIClient.swift in Sources */,
+				0132 /* MockAPIClient.swift in Sources */,
+				0134 /* SupabaseAPIClient.swift in Sources */,
+				0136 /* KeychainManager.swift in Sources */,
+				013a /* LocalStorageManager.swift in Sources */,
+				013c /* SyncManager.swift in Sources */,
+				0114 /* Moment.swift in Sources */,
+				12c0 /* UsageTracker.swift in Sources */,
+				0116 /* Theme.swift in Sources */,
+				0118 /* Config.swift in Sources */,
+				E001 /* APIClientEnvironment.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		23FB52882F5F7485001E0468 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		23FB52932F5F7485001E0468 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0010 /* Dwellable */;
+			targetProxy = 23FB52922F5F7485001E0468 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0013 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 110;
+				DEVELOPMENT_TEAM = 38X95M6CUB;
+				INFOPLIST_FILE = Dwellable/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kellgolden.Dwell;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		0014 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 110;
+				DEVELOPMENT_TEAM = 38X95M6CUB;
+				INFOPLIST_FILE = Dwellable/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kellgolden.Dwell;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		0018 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_DIALECT = "gnu++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		0019 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_DIALECT = "gnu++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		23FB52942F5F7485001E0468 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 110;
+				DEVELOPMENT_TEAM = 38X95M6CUB;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kellgolden.DwellableUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Dwellable;
+			};
+			name = Debug;
+		};
+		23FB52952F5F7485001E0468 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 110;
+				DEVELOPMENT_TEAM = 38X95M6CUB;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kellgolden.DwellableUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Dwellable;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0011 /* Build configuration list for PBXNativeTarget "Dwellable" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0013 /* Debug */,
+				0014 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		0016 /* Build configuration list for PBXProject "Dwellable" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0018 /* Debug */,
+				0019 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		23FB52962F5F7485001E0468 /* Build configuration list for PBXNativeTarget "DwellableUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				23FB52942F5F7485001E0468 /* Debug */,
+				23FB52952F5F7485001E0468 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AA000001 /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/WhisperKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AA000002 /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA000001 /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = WhisperKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 0015 /* Project object */;
+}
