@@ -193,7 +193,7 @@ Dwellable — Native iOS app built with Swift and SwiftUI.
 
 ```bash
 # Build and run on simulator
-xcodebuild -scheme Dwellable -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build
+xcodebuild -scheme Dwellable -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 
 # Install to booted simulator
 xcrun simctl install booted <path-to-app>

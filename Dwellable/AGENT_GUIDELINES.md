@@ -13,7 +13,7 @@ Read `TICKETS.md` and output the complete ticket table to Kell before doing anyt
 State which ticket is next (first 🔄 In Progress, or first 🔲 Not Started if none in progress). Wait for Kell's confirmation before writing any code.
 
 **Step 3 — Verify project location.**
-Confirm you are in `/Users/kell/Desktop/Dwellable-Native/Dwellable/` and not in the legacy `dwellable-rn` repo.
+Confirm you are in `/Volumes/Repo Folder/Dwellable-Native/Dwellable/` and not in the legacy `dwellable-rn` repo. *(Corrected July 23, 2026 — this path has moved drives twice; if it drifts again, check `pwd` against the actual mounted volume rather than trusting this file.)*
 
 ---
 
