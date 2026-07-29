@@ -103,10 +103,13 @@ Example: "Layer 1 analytics: track moment creation (voice vs. text) + app sessio
 ```bash
 cd "/Volumes/Repo Folder/Dwellable-Native/Dwellable"
 
-# Clean + build
-xcodebuild clean -scheme Dwellable
+# Clean + build — -derivedDataPath keeps all build output inside the repo (gitignored),
+# instead of the ~/Library/Developer/Xcode/DerivedData default. Xcode.app GUI builds
+# already do this via WorkspaceSettings.xcsettings; CLI builds need the flag explicitly.
+xcodebuild clean -scheme Dwellable -derivedDataPath DerivedData
 xcodebuild build -scheme Dwellable \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -derivedDataPath DerivedData
 
 # Check for errors
 # If output contains "BUILD SUCCEEDED", proceed
@@ -117,7 +120,7 @@ xcodebuild build -scheme Dwellable \
 
 ```bash
 # After successful build, install and launch
-xcrun simctl install booted build/Release-iphonesimulator/Dwellable.app
+xcrun simctl install booted DerivedData/Build/Products/Release-iphonesimulator/Dwellable.app
 xcrun simctl launch booted com.kellgolden.Dwell
 
 # View logs
@@ -133,7 +136,8 @@ xcrun simctl spawn booted log stream --predicate 'process == "Dwellable"' --leve
 
 # Or via CLI:
 xcodebuild build -scheme Dwellable \
-  -destination 'platform=iOS,name=iPhone 13,genericName=Generic'
+  -destination 'platform=iOS,name=iPhone 13,genericName=Generic' \
+  -derivedDataPath DerivedData
 ```
 
 ### TestFlight Upload
@@ -141,7 +145,7 @@ xcodebuild build -scheme Dwellable \
 ```bash
 # Archive app
 xcodebuild archive -scheme Dwellable \
-  -archivePath build/Dwellable.xcarchive \
+  -archivePath DerivedData/Dwellable.xcarchive \
   -configuration Release
 
 # Upload via Xcode Organizer or App Store Connect
