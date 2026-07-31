@@ -42,8 +42,23 @@ After the completion above, Kell asked for two more things before moving to Pill
 
 **Follow-up fix (same session, after Kell reviewed):** Kell asked for the disabled Continue button to be visibly "grayed out" (already was) plus an explanatory prompt — added "Select an option to continue." centered above the button on both zero-selected screens. This exposed the acknowledgment-line nit flagged above more clearly (now visibly contradicted the new hint), so removed the "Thank you, I'll keep that in mind…" / "That sounds like a good rhythm" lines from both zero-selected reference screens — they only make sense post-selection. Nit resolved, not just flagged.
 
+### 🔗 Same-Day Extension #2: 12 Happy-Path Screens Rebound to Tokens + QA Checklist Built
+
+Kell asked to close both remaining follow-ups: rebind the 12 happy-path screens to the new `Onboarding/Gold` tokens, and produce a manual QA checklist for the 9 edge-case screens.
+
+**Rebinding found and fixed 3 real bugs during the work (not just mechanical rewiring):**
+1. **Variable-collection name collision** — the stale `Onboarding/Colors` (cream, ids `123:x`) and new `Onboarding/Gold Colors` (ids `257:x`) collections both have identically-named variables (`text/heading`, `accent/gold`, etc.). A naive name-only lookup grabbed the OLD cream-theme variable for several bindings — its `text/heading` is near-black, so several `what-dwellable-does` text elements went briefly unreadable (near-invisible dark-on-dark) until caught via screenshot verification and fixed by scoping all lookups to the new collection IDs explicitly, then repairing every fill/stroke that had landed on an old-collection variable.
+2. **Checkmark glyph distortion** — applying `Onboarding/Badge Label` text style (built for the DWELLY badge) to `intent-selection`'s tiny 18×18 checkmark glyphs (same font/size by coincidence) added letterSpacing and altered layout enough to visually distort the ✓ into what looked like a stray mark. Fixed by excluding short glyph-text (≤2 characters) from blanket text-style application — only font-family and color get corrected for those, not the full paragraph style.
+3. **Lost `UPPER` textCase** — `account-creation`'s field labels ("EMAIL ADDRESS", "PASSWORD") lost their uppercase transform when the `Onboarding/Field Label` text style was applied, since the style itself didn't carry `textCase: 'UPPER'` at creation time. Fixed by setting it on the style (so future applications carry it) and restoring it on the 3 already-affected labels.
+
+**Also applied, per already-locked decisions:** `what-dwellable-does`'s 3 icon-circle backgrounds standardized to the shared neutral token (Kell's decision from earlier this session); container corner-radius drift (24 vs. 26) collapsed to 24; the stray DM Sans checkmark font swapped to Instrument Sans, matching everywhere else.
+
+**Full 12-screen visual sweep run after fixes** — every screen confirmed pixel-matching its pre-rebind appearance except the explicitly-intended corrections above. No further regressions found.
+
+**QA checklist built:** `docs/P0_EDGE_CASE_QA_CHECKLIST.md` — per-screen checkboxes with direct Figma node-id links for all 9 edge-case screens, plus 3 flagged open product questions (duplicate-email deep-link vs. static copy, network-error retry behavior, moment-types-loading retry scope) that aren't blocking but shouldn't get lost before engineering picks this up.
+
 ### 🚨 Next Session Objective (updated)
-**Pillar 0 (happy path + design system + edge cases) is now fully done.** Two small optional follow-ups, neither blocking: (1) the intent/rhythm acknowledgment-line copy nit above, (2) the 12 existing happy-path screens still use their original raw hardcoded values rather than being rebound to the new `Onboarding/Gold` tokens — cosmetically identical today since the tokens were extracted to match them exactly, but a future edit to any one screen won't propagate without rebinding. Neither is urgent. **Primary next-session focus: Pillar 1 (Capture)** — natural next step, and `capture-method`'s content/styling already exists as a head start (see above).
+**Pillar 0 is now completely done — happy path, design system, edge cases, tokens rebound, QA checklist delivered.** Nothing outstanding. **Primary next-session focus: Pillar 1 (Capture)** — natural next step, and `capture-method`'s content/styling already exists as a head start (see above). If Kell has worked through `docs/P0_EDGE_CASE_QA_CHECKLIST.md` by then, start by checking whether any of its 3 flagged open questions got answered.
 
 ---
 
