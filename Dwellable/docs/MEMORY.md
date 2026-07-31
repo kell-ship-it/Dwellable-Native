@@ -1,5 +1,41 @@
 # Dwellable Native — Session Memory
 
+## Session: July 30, 2026 — Full Pillar 0 Onboarding Row Designed in Figma (Cream/Gold Direction Locked)
+
+### 🎯 TL;DR
+Designed and iterated a complete 9-screen Pillar 0 onboarding flow in the `Dwellable — Existing Experience Baseline` Figma file (file key `t5MUGEtpeFcUixobvHiYMc`, page `P0 — Onboarding`), moved off the old dark/gold Phase-1 identity in favor of the new **cream/warm-gold palette**. Established real design-system foundations partway through: a proper `Onboarding/Colors` Figma variable collection (13 tokens) and unified font system (**Cormorant Garamond** headings + **SF Pro** body/subhead/button). Kell then restructured the whole file into a clean new 13-screen canonical row at y=2498 with descriptive names (see below), including 3 new screens beyond what I'd built: `dwelly-intro`, `personalized-transition`, and `capture-method`. **No engineering ticket status changes** (pure design). **Two backlog items added:** BL-002 (Moments Animation + Background SDK Init) and BL-003 (Voiceover Narration for Building screen, postponed).
+
+### What Was Done
+- 9 onboarding screens designed, iterated, and reordered: Welcome → Education → Privacy → Intent → Rhythm → Notifications → Account → Name → Building
+- Screen order restructured mid-session: **FYI cluster first** (Welcome/Education/Privacy), then **Input cluster** (rest) — after Kell flagged sporadic interleaving
+- **Name screen added** to unblock T-136's Today-tab greeting dependency; progress bars swept from /8 to /9
+- **Building-your-account screen** went through several concept iterations before landing on a rich list-card + tap-to-modal design with "When the Lord breaks through the fog" headline and a valence-paired examples list ("peace in hardship", "comfort in a tense season", "joy in a new beginning")
+- **Ontology work:** landed on a definition of "God moment" as recognition-based (person notices God in the ordinary), spanning 5 non-exhaustive channels (internal, devotional, communal, circumstantial, sudden-revelation) — the 5 pills on the Building screen span all 5, not by coincidence
+- **Conversational-copy experiment:** built a full-flow comparison row applying Abbey-app-style acknowledgment beats to each headline; Kell to decide whether to adopt into live flow
+- **Kell restructured the file** into 13 new canonical screens at y=2498: `welcome, dwelly-intro, what-dwellable-does, name-entry, personalized-transition, intent-selection, rhythm-selection, gentle-reminders, privacy, account-creation, moment-types-loading, moment-example-modal, capture-method`
+
+### Key Decisions Locked
+- **Cream/warm-gold palette** is the new direction (dark/gold Phase-1 identity retired for onboarding)
+- **Cormorant Garamond** for headings/wordmarks + **SF Pro** for all other text
+- **Account creation moves to late in flow** (position 7, was 5) since password no longer affects data access post-T-062-server-side-encryption; unblocks Account → Building-loading → Capture as one continuous forward motion
+- **Onboarding answers stage locally** (UserDefaults) before account creation, batch-synced to Supabase on account creation — standard progressive-onboarding pattern; T-111 (ProfileManager + schema migration) already scoped for this
+- **Voiceover deferred** to BL-003 with draft script attached; Figma cannot preview audio, needs mute/skip affordance + localization consideration
+
+### 🚨 Next Session Objective
+
+**Confirmed Pending Items:**
+1. **Confirm the new 13-screen canonical row at y=2498 is authoritative** — Kell restructured the file at session close; next agent should not touch the older iterations at other y-values, and should verify Kell's 3 new screens (`dwelly-intro`, `personalized-transition`, `capture-method`) are the intended forward-plan additions before continuing any onboarding design work.
+2. **Decide on the conversational-headline experiment** — the comparison row (separate from live) applied Abbey-app-style acknowledgment beats to headlines. Kell to confirm adopt/reject/iterate before this pattern lives permanently in the canonical row.
+3. **Design the 3 new screens Kell added** (`dwelly-intro`, `personalized-transition`, `capture-method`) — placeholders exist as named frames but their content still needs to be built out to match the design system established this session (Cormorant/SF Pro, `Onboarding/Colors` variables, progress bar, safe-area clearance for Dynamic Island).
+
+**Rationale:** The Pillar 0 design work is 90% locked but the last-minute file restructure introduced canonical changes the next session needs to respect. All engineering tickets remain untouched — the actual build phase for P0 (T-109/T-110/T-111/T-112/T-115/T-116) is still not started, unblocked by this design work but not activated yet.
+
+### Session Frustrations Logged
+- Multiple batch edits (headline copy sweeps, font changes) shipped without per-screen visual verification, causing overflow bugs Kell had to catch. **Rule for next session:** verify every screen visually after any batch text/font/layout change, not just spot-check.
+- Sent stale cached screenshots to Kell twice by reusing file paths from earlier operations. **Rule:** always save the fresh screenshot bytes to a new path before sending.
+
+---
+
 ## 🔄 Permanent Naming Change (July 20, 2026)
 
 **"Soaking" → "Prayer" / "Pray", everywhere, permanently.** Pillar 3 was originally named "Soaking" (also seen as "Soaking/Guided Prayer," "Soaking (Guided Prayer)" throughout earlier sessions below). Kell's reasoning: "Soaking" reads as a Protestant/Pentecostal-specific term for a particular prayer practice — too narrow/denominational for what this pillar actually is, and less widely understood than just calling it "Prayer." Renamed permanently across the pillar's own name, every other pillar's docs/FigJam boards that reference it, `PRD.md`, `DEPENDENCY_GRAPH.md`, `TICKETS.md`/`.csv`, and the strategy file itself (`PILLAR_3_SOAKING_STRATEGY.md` → `PILLAR_3_PRAYER_STRATEGY.md`). Field name `has_soaking` → `has_prayed` (P10's unprayed-moment query).
