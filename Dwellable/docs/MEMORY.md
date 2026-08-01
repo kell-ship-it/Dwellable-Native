@@ -82,8 +82,26 @@ Kell answered all 4 open questions flagged in the QA checklist. Three had real d
 
 **The exact same white-default-fill bug hit a FOURTH time**, this time on the checklist's own section-frame wrappers (`figma.createAutoLayout()` again left with its default opaque white, never cleared). Caught immediately via screenshot and fixed. Four occurrences in one session (`StatementCard`, `ProgressDots`, `button-wrapper`, and now the checklist sections) means the "clear fills by default" standing rule noted above isn't sticking as a habit — worth being extra deliberate about this specific step on every single new frame going forward, not just remembering the rule exists.
 
+### 🔗 Same-Day Extension #5: Interactive Prototype Built (Happy Path + All 9 Edge Cases)
+
+Kell ran the QA checklist himself and confirmed it clean, then asked for a real click-through Figma prototype covering both the happy path and every edge case.
+
+**Key constraint discovered:** Figma's `NODE`/`NAVIGATE` prototype action only accepts destinations that are a top-level frame **on the same page** — cross-page navigation isn't supported at the Plugin API level. Since the 9 edge-case screens lived on a separate `Onboarding — Edge Cases` page from the happy path's `P0 — New Onboarding` page, the first hub-link attempt failed outright. **Fixed by moving all 9 edge-case frames onto the same page** as the happy path (new row at y=2450, clear of the y=1388 happy-path row — first placement attempt also collided with the happy-path row's x-range and had to be corrected).
+
+**What's wired:**
+- **Happy path, full linear chain:** welcome → dwelly-intro → what-dwellable-does → name-entry → personalized-transition → intent-selection → rhythm-selection → gentle-reminders (+ its "Not now" secondary path) → privacy → account-creation → moment-types-loading. Each `moment-pill` row opens `moment-example-modal` as a Figma OVERLAY (not a full navigate); the modal's "Got it" closes it via the `CLOSE` action, returning to the loading screen underneath.
+- **`Prototype Start` hub** (new frame, left of the happy-path row): one link into the happy path (Welcome), plus a direct link to each of the 9 edge cases — since most error states aren't reachable by tapping something on the happy path itself, this hub is the primary way to reach them.
+- **Every edge-case screen got a `← Back` link**, wired to the `BACK` prototype action (returns to whatever was viewed previously, regardless of entry point — more robust than hardcoding a return destination).
+- **3 bonus realistic hotspots:** `account-creation`'s actual Email/Password/Confirm-Password input fields are each tappable, jumping straight to their corresponding format-error screen — a more intuitive/discoverable way to preview those three states than routing through the hub every time.
+
+**Two more bugs hit and fixed, same root causes as earlier today:**
+1. Setting `.reactions` on a text node **before** `appendChild()`-ing it into the tree threw `"Reaction ... was invalid"` — reactions apparently require the node to already be parented. Fixed by reordering: append first, set reactions after.
+2. The `← Back` links initially landed at the very bottom of the screen, overflowing past the visible frame — the *exact* auto-layout-override problem from the `moment-types-loading` fix earlier this session, just not yet generalized as a habit. Fixed the right way this time: `layoutPositioning = 'ABSOLUTE'` on the back-link text node lets it sit at a fixed x/y without disrupting the parent's auto-layout flow, rather than fighting the flow with plain `.x`/`.y` assignment.
+
+**How to use it:** open the file in Figma, select the `Prototype Start` frame (or any screen), and enter Presentation/Play mode. Click through the happy path normally, or use the hub's edge-case links to jump directly to any error state. Every edge-case screen has `← Back` in the top-left to return.
+
 ### 🚨 Next Session Objective (updated)
-**Pillar 0 is now completely done — happy path, design system, 9 edge cases (all open questions resolved), tokens rebound, QA checklist delivered both in the repo and directly on the Figma page.** Nothing outstanding. **Primary next-session focus: Pillar 1 (Capture)** — natural next step, and `capture-method`'s content/styling already exists as a head start (see above). **Carry forward the standing rule:** explicitly clear `.fills = []` on every new `createAutoLayout()`/`createFrame()` call immediately after creation — this has now bitten four separate times in one session and should not need a fifth catch-via-screenshot.
+**Pillar 0 is now completely done — happy path, design system, 9 edge cases (all open questions resolved and QA'd by Kell), tokens rebound, QA checklist (repo + Figma), and a fully wired interactive prototype.** Nothing outstanding. **Primary next-session focus: Pillar 1 (Capture)** — natural next step, and `capture-method`'s content/styling already exists as a head start (see above). **Two standing rules to carry forward, both bitten multiple times this session:** (1) explicitly clear `.fills = []` on every new `createAutoLayout()`/`createFrame()` call immediately after creation; (2) for any node needing a fixed position inside an auto-layout parent, set `layoutPositioning = 'ABSOLUTE'` before assigning x/y — plain `.x`/`.y` assignment is silently overridden by the auto-layout flow. Both are now proven recurring failure modes in this specific file, not one-off mistakes.
 
 ---
 
