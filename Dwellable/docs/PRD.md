@@ -67,6 +67,8 @@ Establish core capture functionality. Validate that users will adopt a faith-spe
 **Phase 2 Beta — Return + Reflection + Formation Intelligence (IN PROGRESS)**
 Introduce return mechanisms (gallery, nudges, reflection prompts). Build sustained dwelling practice. Add Rich Context-powered personalization. Design Phase 2 pillars to close the return gap identified in Phase 1.
 
+**MVP core loop (locked August 3, 2026): Capture → Process (Dwelly conversation) → Journal.** Three things, deliberately — Kell judged that's already enough scope risk without adding a fourth. Prayer (Pillar 3) is deferred to Post-MVP as a nice-to-have layered on top of an already-complete loop, not essential to prove the core hypothesis.
+
 **Post-Launch — Formation Intelligence**
 Pattern surfacing, semantic search across moments, themed views, optional biblical anchoring. AI as a question-asker, never an interpreter.
 
@@ -141,8 +143,10 @@ Pattern surfacing, semantic search across moments, themed views, optional biblic
 
 ### Pillar 3: Prayer (Responding to Captures)
 
-**Status:** ✅ Design Complete, Implementation Not Started  
+**Status:** ⭕ Deferred to Post-MVP (August 3, 2026)  
 **Locked:** 2-option skeleton (Prayer + Prompts), Rich Context powered, invitational framing ("Want to?"), Gallery + Soak Mode + Reflection Prompts + Notifications architecture
+
+**Post-MVP deferral (August 3, 2026):** Kell scoped MVP down to three things — Capture, Process (the Dwelly conversation), and Journal — judging that even those three are already a lot to ship well. Prayer is a nice-to-have layered on top of an already-complete loop (you can capture and journal without ever praying over a moment), not essential to prove the core hypothesis, so it moves to Post-MVP. The onboarding "demo loop" screens (Pillar 0 / 07x sequence) were corrected to reflect this: capture → Dwelly processes → journal entry, with no prayer step shown. Design work above remains valid for whenever Prayer is picked back up; only the MVP sequencing changed.
 
 **Design Skeleton:** See [`docs/PILLAR_3_PRAYER_STRATEGY.md`](PILLAR_3_PRAYER_STRATEGY.md) for full design specification, competitor research (Prayer Lock, Untold, Calm, Medito, Dwell, Day One, Stoic), skeletal system architecture, and success metrics (WAR 40-50% by week 8).
 

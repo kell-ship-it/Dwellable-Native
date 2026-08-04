@@ -1,5 +1,50 @@
 # Dwellable Native — Session Memory
 
+## Session: August 4, 2026 — Nav-Chrome HTML Prototype Built + Iteratively Corrected Against Live Figma
+
+### 🎯 TL;DR
+Built `docs/P0_NavChrome_Prototype.html`, a standalone 20-screen click-through HTML port of the nav-chrome (back button + login link) work from the prior session, including the previously-missing `welcome-screen` cover. Then ran a long iterative correction pass after Kell caught repeated real mismatches against the live Figma file — fonts, colors, icons, images, spacing, and in three cases (`11-gentle-reminders`, `12-privacy`, `13-account-creation`) full structural rebuilds, since those screens had moved from big-CTA-button patterns to a simple "tap to continue →" text-link pattern since last touched.
+
+### Key Learning (carry forward)
+Several screens were built once early in the session from a single Figma pull and never re-verified as the live file kept changing underneath — including one case (`11-gentle-reminders`'s notification icon) where Kell edited Figma *mid-session* and a stale pull looked like a browser-caching issue at first. Fix going forward: pull each screen's **full current spec fresh** before touching it — never assume an earlier-in-session pull, or a similar-looking sibling screen, still matches. Figma is a live, actively-edited source.
+
+### Files Changed
+- `docs/P0_NavChrome_Prototype.html` (new)
+- `TICKETS.md` (session log entry, no ticket status changes — pure design/prototype work)
+
+### 🚨 Next Session Objective
+
+**Confirmed Pending Items:**
+1. Kell to review the fully-corrected `P0_NavChrome_Prototype.html` end-to-end and confirm/reject adopting the nav-chrome copy (back button + login link) as the canonical P0 design, or continue iterating.
+2. Resolve the Pillar 8 Stage C–G / Pillar 3 (Prayer, now Post-MVP) dependency question flagged in the August 3 session — still open.
+3. Once the nav-chrome design is confirmed, decide whether to reapply the same back-button/login-link treatment to the original (untouched) row in Figma, or formally adopt the HTML prototype as the reference and archive the original.
+
+**Rationale:** The prototype is now believed accurate against Figma, but every prior "I think it's correct" claim this session turned out to have a real gap — so the next session should open by having Kell confirm it directly rather than assuming this closeout entry is the final word.
+
+---
+
+## Session: August 3, 2026 — Pillar 3 (Prayer) Deferred to Post-MVP
+
+### 🎯 TL;DR
+While reviewing the merged Problem-First onboarding demo loop, flagged that `07e-dwelly-prays` was missing from the capture→process→journal sequence. Kell confirmed this is intentional: **MVP scope is now deliberately Capture → Process (Dwelly conversation) → Journal — three things, not four.** Prayer (Pillar 3) moves to Post-MVP.
+
+### Key Decision Locked
+**Pillar 3 (Prayer) is Post-MVP**, not merely resequenced. Rationale (Kell): even three things (Capture, Process, Journal) may already be a lot of scope to ship well. Capture alone is insufficient (too many existing tools already do plain capture — Notes, Voice Memos). Processing alone is insufficient without a place to recall what's been captured (the Journal). Prayer, by contrast, is a nice-to-have layered on top of an already-complete loop — you can capture and journal a moment without ever praying over it — so it doesn't carry the same all-or-nothing necessity the other three do.
+
+### What Was Done
+- Confirmed with Kell this was a deliberate cut, not an oversight from the onboarding merge work
+- Updated `docs/PRD.md`: Pillar 3 status line (✅ Design Complete → ⭕ Deferred to Post-MVP) + new "MVP core loop" callout under Build Phases
+- Updated `TICKETS.md` with a dated session entry (no engineering ticket status changes — this is a scope/sequencing decision, not implementation progress)
+- All existing Pillar 3 design artifacts (2-option skeleton, Rich Context integration, Gallery/Soak Mode/Reflection Prompts architecture) left untouched — still valid whenever Prayer is picked back up post-MVP
+
+### Open Item Flagged (not resolved this session)
+Pillar 8 (Notifications)'s Stage C–G was reclassified July 20, 2026 as depending on "Pillar 3 shipping first" — framed then as a **sequencing** dependency, not a phase deferral. Now that Prayer isn't in MVP scope at all, that framing likely needs revisiting (does Stage C–G wait for Post-MVP too, or get redesigned to not depend on Prayer?). Next session should raise this with Kell explicitly rather than assume either answer.
+
+### 🚨 Next Session Objective
+**Primary:** Resolve the Pillar 8 Stage C–G / Pillar 3 dependency question flagged above. **Also:** continue Pillar 1 (Capture) design work per the July 31 handoff — still the primary next-pillar focus once this scope question is closed.
+
+---
+
 ## Session: July 31, 2026 — Pillar 0 Design LOCKED COMPLETE (12/12 Screens) + Doc Corrections
 
 ### 🎯 TL;DR
