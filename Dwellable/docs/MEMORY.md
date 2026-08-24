@@ -1,5 +1,31 @@
 # Dwellable Native — Session Memory
 
+## Session: August 24, 2026 — Dwelly Rename Finished in Canonical Artifact, Real Flame Located, Merge Scripted (Not Built)
+
+### 🎯 TL;DR
+Three threads, all design/prototype (no engineering ticket changes). **(1)** Root-caused why the prior session rebuilt the P1 onboarding-capture flow instead of reusing the existing canonical Artifact: an auto-compaction dropped the artifact from the carried-forward record, so the next turn acted on incomplete history and never checked the artifact list. **(2)** Finished the "Dwellable" → "Dwelly" rename in the canonical capture-flow Artifact (5 residual mentions), tagline **"Steward every moment with God" deliberately unchanged**, and republished to the same URL (`bf748e9b-1737-435d-838d-f3bca8f689fb`). **(3)** Located the real flame logo Kell flagged as "off" — it's the base64 PNG in `docs/P0_NavChrome_Prototype.html` s01 (166×120, outlined gold, S-curve top, pinched waist), extracted to scratchpad `p0_flame.png`.
+
+### ⚠️ Explicitly NOT Done (do not assume these are live)
+- The **three-prototype merge** (P0 onboarding → capture flow, one continuous click-through in the canonical Artifact) was only **scripted** in `scratchpad/merge.py` — never run, never built, never verified in-browser, never published.
+- The **flame swap** into the canonical Artifact is likewise pending — the old teardrop-SVG `ICONS.flame` is still what's live.
+
+### Key constraints locked (carry forward)
+- Tagline **"Steward every moment with God" stays unchanged** through the rename.
+- Do **NOT** freehand-redraw the flame — use the real `p0_flame.png` asset.
+- Edit the canonical Artifact **in place** via the Artifact tool's `url:` param; stop forking new `docs/*.html` files for this flow. Canonical URL: `https://claude.ai/code/artifact/bf748e9b-1737-435d-838d-f3bca8f689fb`.
+- On resume, **check the artifact list first** before assuming a flow doesn't already exist (this is the root cause of the earlier rebuild).
+
+### 🚨 Next Session Objective (August 24, 2026)
+
+**Confirmed Pending Items:**
+1. **Build, verify, and publish the three-prototype merge.** Run `scratchpad/merge.py` (or rebuild it), open the merged file in the Browser pane, click through BOTH phases end-to-end (onboarding s01→s20 auto-advancing into the capture flow via `startCaptureFlow()`), fix any collision/handoff bugs, then publish to the canonical Artifact URL. This is the primary unfinished deliverable — Kell asked to "bring the three prototypes together into one."
+2. **Swap the real flame logo into the canonical Artifact.** Replace the old teardrop-SVG `ICONS.flame` in the capture flow with the real `p0_flame.png` flame (as base64 PNG or a faithful SVG derived from it), preserve the existing animation, apply consistently across onboarding + capture, and verify it renders correctly before publishing.
+3. **"Improve the Dwelly design" — get specific direction from Kell.** He asked to improve the design but the concrete scope is undefined; open next session by confirming what "improve" means (fidelity pass on the merged prototype, specific screens, or a broader redesign) rather than guessing.
+
+**Rationale:** The rename and asset-location work landed, but the actual thing Kell asked for — one unified, correctly-branded prototype — is scripted but not built or verified. Verifying in-browser before publishing matters here specifically because a botched merge is exactly what frustrated Kell before.
+
+---
+
 ## Session: August 4, 2026 — Nav-Chrome HTML Prototype Built + Iteratively Corrected Against Live Figma
 
 ### 🎯 TL;DR
@@ -2531,3 +2557,18 @@ Last updated: May 7, 2026, Session Close
 - **Jun 30:** Resumed — Notion workspace as single source of truth; MEMORY gap reconstructed
 
 Last reconstructed: June 30, 2026
+
+---
+
+## Next Session Objective (August 20, 2026)
+
+**Confirmed Pending Items:**
+1. Resolve T-174 (Pillar 6 naming collision for Menu/Navigation) before doing further Menu work — refer to ticket T-076 directly rather than a pillar number until this is cleaned up.
+2. Build T-076 — SwiftUI NavigationStack shell, 4 tabs (Today | Entries | Create | Growth).
+3. Follow with T-079 (wire Create tab to existing CaptureView) and, longer-term, T-173 (port T-172's validated Capture error-state behaviors into native CaptureView.swift — today's Scenario 1-8 work is HTML/JS prototype only, not yet in the Swift app).
+
+**Rationale:** Pillar 1 (Capture) design is now locked end-to-end — happy paths plus all 8 error/edge-case scenarios (mic denied, transcription silence/failure with escalation, max duration with resume, Dwelly offline with two distinct recovery paths, Cancel-vs-Stop) are fully validated in a working, click-through HTML prototype. Further Capture design work has diminishing returns right now. Menu/Navigation (T-076) is what actually makes Capture reachable inside a real navigable app, and it's a comparatively small, well-scoped ticket (no dependencies), so it's the highest-leverage next step. The Pillar 6 naming collision (T-174) is flagged first specifically so it doesn't get silently propagated further while doing this work — `PILLAR_6_MENU_BAR_STRATEGY.md` and the May 6 ticket set both call Menu "Pillar 6," but a later authoritative pass locked a different "Pillar 6 = Formation Intelligence," and this file's own Source-of-Truth Index above files Menu under "Supporting Pillars," outside the core numbering entirely.
+
+**Note:** This file (docs/MEMORY.md) had not been updated since June 30, 2026 prior to this entry, despite many Notion-logged sessions in July/August — Notion has been the more actively maintained source of truth for that window (see Sessions → 2026 in Notion). Worth reconciling at some point; not attempted this session (out of scope).
+
+Last updated: August 20, 2026, Session Close
