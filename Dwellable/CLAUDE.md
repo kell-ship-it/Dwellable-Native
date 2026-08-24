@@ -38,18 +38,17 @@ When you type EXACTLY these slash commands, execute the protocol WITHOUT clarifi
 4. **`docs/WORKFLOW.md`** — Development process, build commands, testing strategy
 
 ### Step 2: Read Current State
-5. **`docs/MEMORY.md`** — Last session notes, blockers, what was done
+5. **`docs/MEMORY.md`** — Last session notes, blockers, what was done. Recent sessions only — older entries live in `docs/MEMORY_ARCHIVE.md`, read that only if you need detail on a specific past session.
 6. **`docs/KEY_LEARNINGS.md`** — Critical lessons (build issues, race conditions, etc.)
 
 ### Step 3: Read Tickets & Get Approval
-7. **`TICKETS.md`** — Output the full ticket table to Kell **right now**.
+7. **`TICKETS.csv`** — Read the structured ticket registry (cheaper than the prose log in `TICKETS.md`). Output a **summary to Kell right now**, not the full table:
 
-   The table must include EVERY ticket — ✅ Complete, 🔄 In Progress, 🔲 Not Started, and ⚪ Deferred. No partial lists. Use this format:
+   - Counts by status (✅ Complete / 🔄 In Progress / 🔲 Not Started / ⚪ Deferred), total tickets
+   - Full detail (ID, Title, Epic, Priority, Status) for every ticket that is **not** ✅ Complete — this is normally a short list
+   - Do not list complete tickets individually; the count above covers them
 
-   | # | ID | Title | Epic | Priority | Status |
-   |---|---|---|---|---|---|
-   | 1 | S-001 | Build LoginView | UI Screens | BLOCKING | ✅ Complete |
-   | ... | | | | | |
+   `TICKETS.md`'s recent session-log entries add narrative context if needed; `TICKETS_ARCHIVE.md` holds older entries (July 23, 2026 and earlier) — read only on demand.
 
 8. **State which ticket is next** (first 🔄 In Progress, or first 🔲 Not Started).
 
@@ -69,12 +68,7 @@ When you type EXACTLY these slash commands, execute the protocol WITHOUT clarifi
 - **`TICKETS.md`** — Update header count, mark tickets complete/in-progress/not-started, add new tickets if created
 - **`TICKETS.csv`** — Sync spreadsheet version with TICKETS.md
 
-**Output the full ticket table** — same format as session open, all tickets, all statuses visible:
-```
-| # | ID | Title | Epic | Priority | Status |
-|---|---|---|---|---|---|
-| 1 | S-001 | Build LoginView | UI Screens | BLOCKING | ✅ Complete |
-```
+**Output the same summary format as session open** — counts by status, plus full detail for every non-✅-Complete ticket. Do not dump the full table.
 
 ### Step 2: Identify Pending Work for Next Session
 
@@ -222,10 +216,12 @@ Dwellable/
 │   ├── PRD.md               # Product specification
 │   ├── ARCHITECTURE.md      # System design & tech decisions
 │   ├── WORKFLOW.md          # Development workflow
-│   ├── MEMORY.md            # Session logs
+│   ├── MEMORY.md            # Session logs (recent only)
+│   ├── MEMORY_ARCHIVE.md    # Older session logs (read on demand)
 │   └── KEY_LEARNINGS.md     # Critical lessons
-├── TICKETS.md               # Full ticket registry (all tickets, all statuses)
-├── TICKETS.csv              # Spreadsheet version
+├── TICKETS.md               # Recent session log + backlog
+├── TICKETS_ARCHIVE.md       # Older session log entries (read on demand)
+├── TICKETS.csv              # Structured ticket registry — source of truth for ticket status
 ├── CLAUDE.md                # This file
 ├── AGENT_GUIDELINES.md      # Session protocol rules
 └── MEMORY.md                # Global project memory
@@ -272,8 +268,7 @@ Dwellable/
 
 ## Session Protocol
 
-**At session START and session END, always present the full ticket table from TICKETS.md.**
-The table must include ALL tickets — ✅ Complete, 🔄 In Progress, and 🔲 Not Started.
+**At session START and session END, present a ticket summary** (counts by status + full detail for non-complete tickets only), read from `TICKETS.csv`. Do not dump the full ticket table.
 
 See `AGENT_GUIDELINES.md` for full session rules.
 

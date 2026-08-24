@@ -15,11 +15,7 @@ Update both files:
 - `TICKETS.md` — header count, mark tickets complete/in-progress/not-started, add any new tickets discovered this session
 - `TICKETS.csv` — sync spreadsheet version with TICKETS.md
 
-Output the full ticket table (same format as session open, all tickets, all statuses):
-
-| # | ID | Title | Epic | Priority | Status |
-|---|---|---|---|---|---|
-| 1 | S-001 | Build LoginView | UI Screens | BLOCKING | ✅ Complete |
+Output the same summary format as session open — counts by status, plus full detail for every non-✅-Complete ticket (from `TICKETS.csv`). Do not dump the full table.
 
 ## Step 2: Identify Pending Work for Next Session
 

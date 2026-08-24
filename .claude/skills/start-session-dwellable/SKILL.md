@@ -28,18 +28,20 @@ Do not start any technical work until these are confirmed.
 
 ## Step 3: Read Current State
 
-5. `docs/MEMORY.md` — last session notes, blockers, what was done
+5. `docs/MEMORY.md` — last session notes, blockers, what was done. This holds recent sessions only; older entries live in `docs/MEMORY_ARCHIVE.md` — read that only if you need detail on a specific past session.
 6. `docs/KEY_LEARNINGS.md` — critical lessons (build issues, race conditions, etc.)
 7. The Notion Protocol dashboard (Projects → Dwellable → ⚙️ Protocol) — file hierarchy, credentials location, if anything there has changed since this skill was last updated
 8. The most recent Notion session page (Projects → Dwellable → 📅 Sessions → 2026) — for "Next Session Objectives" from last time
 
 ## Step 4: Tickets & Approval
 
-9. Read `TICKETS.md` and output the **full** ticket table to the user right now — every ticket, every status (✅ Complete, 🔄 In Progress, 🔲 Not Started, ⚪ Deferred). No partial lists. Format:
+9. Read `TICKETS.csv` (the structured ticket registry — cheaper than the prose log in `TICKETS.md`) and output a **summary** to the user right now, not the full table:
 
-   | # | ID | Title | Epic | Priority | Status |
-   |---|---|---|---|---|---|
-   | 1 | S-001 | Build LoginView | UI Screens | BLOCKING | ✅ Complete |
+   - Counts by status (✅ Complete / 🔄 In Progress / 🔲 Not Started / ⚪ Deferred), total tickets
+   - Full detail (ID, Title, Epic, Priority, Status) for every ticket that is **not** ✅ Complete — normally a short list
+   - Do not list complete tickets individually; the count covers them
+
+   `TICKETS.md`'s recent session-log entries add narrative context if needed; `TICKETS_ARCHIVE.md` holds older entries (read only on demand).
 
 10. State which ticket is next (first 🔄 In Progress, or first 🔲 Not Started).
 11. Wait for the user's confirmation before writing any code.
