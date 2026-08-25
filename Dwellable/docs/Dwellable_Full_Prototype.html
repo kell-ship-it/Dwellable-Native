@@ -479,9 +479,23 @@
      at the screen's standard content margin (~24px), not the arrow-adjusted 54px
      used on onboarding screens that actually have a back arrow. The reference has
      no visible muted remainder -- opacity dropped near-invisible to match. */
-  #section-capture .onboarding-continuity-row { position: absolute; left: 24px; top: 68px; width: 354px; height: 22px; display: flex; align-items: center; z-index: 10; }
+  #section-capture .onboarding-continuity-row { position: absolute; left: 24px; top: 68px; width: 354px; height: 22px; display: flex; align-items: center; gap: 8px; z-index: 10; }
   #section-capture .onboarding-continuity-row .loading-bar-track { position: relative; width: 354px; height: 6px; border-radius: 3px; background: #3a3530; opacity: 1; }
-  #section-capture .onboarding-continuity-row .loading-bar-fill { position: absolute; top: 0; left: 0; height: 6px; border-radius: 3px; background: var(--app-gold); transition: width 0.3s ease; box-shadow: 0 0 6px rgba(201,178,122,0.5); }
+  #section-capture .onboarding-continuity-row .loading-bar-fill { position: absolute; top: 0; left: 0; height: 6px; border-radius: 3px; background: var(--app-gold); transition: width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 6px rgba(201,178,122,0.5); }
+  /* the flame carries the per-loop signal now -- the bar just tells the truth
+     about onboarding (92% while loops are in progress, 100% once the loop is
+     actually done). Fills bottom-up inside the same flame mark used everywhere
+     else in the app (ICONS.flame), so no new visual vocabulary is introduced.
+     Both the bar and the flame settle with a soft spring overshoot rather than
+     a flat linear/ease curve -- cubic-bezier(0.34, 1.56, 0.64, 1) is a standard
+     "back-out" easing: it overshoots past the target value then eases back,
+     which reads as a gentle bounce instead of a mechanical snap. */
+  #section-capture .onboarding-continuity-row .flame-slot { position: relative; width: 18px; height: 18px; flex: none; transition: filter 0.3s ease; }
+  #section-capture .onboarding-continuity-row .flame-slot.flame-glow { filter: drop-shadow(0 0 6px rgba(201,178,122,0.6)); animation: flame-bounce-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  #section-capture .onboarding-continuity-row .flame-outline { position: absolute; inset: 0; }
+  #section-capture .onboarding-continuity-row .flame-fill-clip { position: absolute; left: 0; bottom: 0; width: 18px; overflow: hidden; transition: height 0.55s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes flame-bounce-pop { 0% { transform: scale(1); } 55% { transform: scale(1.18); } 100% { transform: scale(1); } }
+  #section-capture .onboarding-continuity-row .flame-fill-clip svg { position: absolute; bottom: 0; left: 0; }
   #section-capture .onboarding-milestone { display: flex; align-items: center; justify-content: center; gap: 6px; font-family: 'Instrument Sans', sans-serif; font-size: 12px; font-weight: 600; color: var(--app-gold); padding: 4px 0 14px; }
 
   /* ---------- chat header (replaces the logo once inside a conversation) ---------- */
@@ -1106,7 +1120,7 @@
 <path d="M42.6679 25.3341C37.3339 20.8894 33.778 15.1114 32 8C27.555 11.5557 25.3326 15.1114 25.3326 18.6671C25.3326 24.0007 29.333 26.6675 29.333 32.001C29.333 33.7692 28.6306 35.465 27.3802 36.7153C26.1298 37.9655 24.4339 38.668 22.6656 38.668C20.8973 38.668 19.2014 37.9655 17.951 36.7153C16.7006 35.465 15.9982 33.7692 15.9982 32.001C14.267 34.3091 13.3312 37.1163 13.3312 40.0013C13.3312 44.9523 15.2981 49.7004 18.7992 53.2012C22.3002 56.7021 27.0487 58.6688 32 58.6688C36.9513 58.6688 41.6998 56.7021 45.2008 53.2012C48.7019 49.7004 50.6688 44.9523 50.6688 40.0013C50.6688 34.6678 48.0018 29.7787 42.6679 25.3341Z" stroke="#C9B27A" stroke-width="2" stroke-linecap="round"/>
 </svg>
           <div style="text-align:center;">
-            <p class="serif" style="margin:0; font-size:52px; line-height:1.1; color:var(--text-heading);">dwelly</p>
+            <p class="serif" style="margin:0; font-size:52px; line-height:1.1; color:var(--text-heading);">Dwelly</p>
             <p style="margin:10px 0 0; font-size:13px; font-weight:500; letter-spacing:0.5px; color:#f6f3eb; text-transform:uppercase;">Steward every moment with God</p>
           </div>
         </div>
@@ -1131,7 +1145,7 @@
         <button class="nav-back" data-back>&larr;</button><div class="loading-bar-track"></div><div class="loading-bar-fill" style="width:21.0px;"></div>
         <div style="position:absolute; left:38px; top:284px; width:346px; display:flex; flex-direction:column; gap:24px;">
           <div style="display:flex; flex-direction:column; gap:10px;">
-            <p class="headline-serif" style="font-size:42px; margin:0;">Welcome to dwelly</p>
+            <p class="headline-serif" style="font-size:42px; margin:0;">Welcome to Dwelly</p>
             <p style="color:var(--accent-gold); font-size:18px; font-weight:500; margin:0;">Before we begin, what should we call you?</p>
           </div>
           <div style="display:flex; align-items:center;">
@@ -2248,15 +2262,28 @@ function logoHeader() {
 // only earns a place here once there's actually something to save (live text
 // in the field, e.g. mid-typing or a ready transcript). Positioned over the
 // logo rather than replacing it, since the brand moment still applies here.
-// this is a continuation of the onboarding bar, not a fresh count of this row's
-// own steps -- it should read as "near the end of the whole journey" throughout
-// capture, only reaching 100% once the loop actually finishes (Done / last step).
-// Read fresh on every render() call so it updates as currentStep advances.
+// Bar and flame now have two separate jobs (locked this session): the bar is
+// a single static truth about onboarding -- it holds at 92% for as long as
+// the loop is still in progress, and jumps straight to 100% the instant the
+// loop actually finishes. It never climbs gradually per-step; that job
+// belongs entirely to the flame, which fills bottom-up in exact proportion
+// to how far through the loop the user is. Read fresh on every render() call
+// so it updates as currentStep advances.
 function continuityBar() {
   const total = activeScreens().length;
   const stepFraction = total > 1 ? (currentStep + 1) / total : (1 / total);
-  const fraction = 0.85 + 0.15 * stepFraction; // stays in the 85%-100% band
-  return `<div class="onboarding-continuity-row"><div class="loading-bar-track"><div class="loading-bar-fill" style="width:${Math.round(354 * fraction)}px;"></div></div></div>`;
+  const done = isLast();
+  const barFraction = done ? 1 : 0.92;
+  const flameFraction = done ? 1 : stepFraction;
+  const flameH = Math.max(18 * flameFraction, 0.5);
+  const flame = ICONS.flame;
+  return `<div class="onboarding-continuity-row">
+    <div class="loading-bar-track"><div class="loading-bar-fill" style="width:${Math.round(354 * barFraction)}px;"></div></div>
+    <div class="flame-slot${done ? ' flame-glow' : ''}">
+      <svg class="flame-outline" width="18" height="18" viewBox="0 0 21.0024 28.5012" fill="none"><path d="M 10.5012 0 C 11.5013 4.0002 13.5015 7.2503 16.5019 9.7504 C 19.5022 12.2505 21.0024 15.0006 21.0024 18.0008 C 21.0024 20.7856 19.896 23.4565 17.9267 25.4257 C 15.9573 27.3949 13.2863 28.5012 10.5012 28.5012 C 7.7161 28.5012 5.0451 27.3949 3.0757 25.4257 C 1.1064 23.4565 0 20.7856 0 18.0008 C 0 16.3779 0.5264 14.7988 1.5002 13.5006 C 1.5002 14.4952 1.8953 15.449 2.5986 16.1523 C 3.302 16.8556 4.2559 17.2507 5.2506 17.2507 C 6.2453 17.2507 7.1992 16.8556 7.9026 16.1523 C 8.6059 15.449 9.001 14.4952 9.001 13.5006 C 9.001 10.5004 6.7508 9.0004 6.7508 6.0003 C 6.7508 4.0002 8.0009 2.0001 10.5012 0 Z" stroke="#c9b27a" stroke-width="2" opacity="0.35"/></svg>
+      <div class="flame-fill-clip" style="height:${flameH}px;"><svg width="18" height="18" viewBox="0 0 21.0024 28.5012"><path d="M 10.5012 0 C 11.5013 4.0002 13.5015 7.2503 16.5019 9.7504 C 19.5022 12.2505 21.0024 15.0006 21.0024 18.0008 C 21.0024 20.7856 19.896 23.4565 17.9267 25.4257 C 15.9573 27.3949 13.2863 28.5012 10.5012 28.5012 C 7.7161 28.5012 5.0451 27.3949 3.0757 25.4257 C 1.1064 23.4565 0 20.7856 0 18.0008 C 0 16.3779 0.5264 14.7988 1.5002 13.5006 C 1.5002 14.4952 1.8953 15.449 2.5986 16.1523 C 3.302 16.8556 4.2559 17.2507 5.2506 17.2507 C 6.2453 17.2507 7.1992 16.8556 7.9026 16.1523 C 8.6059 15.449 9.001 14.4952 9.001 13.5006 C 9.001 10.5004 6.7508 9.0004 6.7508 6.0003 C 6.7508 4.0002 8.0009 2.0001 10.5012 0 Z" fill="#c9b27a"/></svg></div>
+    </div>
+  </div>`;
 }
 
 function entryHeader(doneVisible) {

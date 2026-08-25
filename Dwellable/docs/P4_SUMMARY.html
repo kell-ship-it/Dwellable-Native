@@ -232,62 +232,46 @@
         <div class="section">
             <h2>What We're Building</h2>
             <div class="flow-box">
-                <p><strong>Pillar 4 (Journal Synthesis)</strong> transforms captured conversations into meaningful journal entries via LLM synthesis, with optional guided prayer and user-customizable moods/tags. Users can re-engage, add reflections, and reflect on their spiritual journey over time.</p>
+                <p><strong>Pillar 4 (Journal Detail)</strong> is the single screen a synthesized journal lives in — reached either from the Entries list/calendar or directly from the "Open" pill Dwelly surfaces at the end of a capture loop. No separate raw-transcript tab, no confirmation screen, no prayer step in the loop (Prayer is Post-MVP, per Pillar 3's own status — not a Pillar-4-specific cut).</p>
             </div>
 
             <div class="flow-step">
                 <div class="step-number">1</div>
                 <div class="step-content">
-                    <strong>Capture Complete</strong>
-                    <p>User finishes conversational moment capture (Pillar 1). Taps "Done" to signal completion.</p>
+                    <strong>Capture Loop Completes</strong>
+                    <p>User finishes the conversational loop with Dwelly (Pillar 1). Dwelly's own closing message includes the journal preview inline in the same thread — no separate confirmation screen, no "want to pray about this?" prompt.</p>
                 </div>
             </div>
 
             <div class="flow-step">
                 <div class="step-number">2</div>
                 <div class="step-content">
-                    <strong>Confirmation Screen (Option A)</strong>
-                    <p>App shows: "Captured your moment! We briefly talked about [x, y, z], would you like to pray over these things?" Displays key themes extracted from conversation. Primary CTA: "Pray About This" (routes to Pillar 3). Secondary: "Skip" or "View Moment".</p>
+                    <strong>Journal Synthesis (Background)</strong>
+                    <p>LLM generates the journal entry from the conversation transcript the moment the loop ends — auto-generated title + 2-3 paragraph body + suggested moods. Runs in the background; the inline preview card and "Open" pill are ready as soon as synthesis completes.</p>
                 </div>
             </div>
 
             <div class="flow-step">
                 <div class="step-number">3</div>
                 <div class="step-content">
-                    <strong>Guided Prayer (v1)</strong>
-                    <p>User enters Pillar 3 (Soaking) guided prayer flow focused on the captured moment. Prayer is guided (v1), freeform prayer deferred to v2. Prayer attaches to journal entry.</p>
+                    <strong>Open → Journal Detail</strong>
+                    <p>Tapping "Open" (from the inline card right after capture, or from an entry in the Entries list/calendar later) goes directly to the single Journal Detail screen. One view — no Entry/Dwelling Place split.</p>
                 </div>
             </div>
 
             <div class="flow-step">
                 <div class="step-number">4</div>
                 <div class="step-content">
-                    <strong>Journal Synthesis (Background)</strong>
-                    <p>LLM generates full journal entry from conversation transcript. Output: auto-generated title + 2-3 paragraph body + suggested moods. Synthesis runs async in background while user prays.</p>
-                </div>
-            </div>
-
-            <div class="flow-step">
-                <div class="step-number">5</div>
-                <div class="step-content">
-                    <strong>Dwelling Place Tab</strong>
-                    <p>User sees generated journal entry in "Dwelling Place" tab (not "Analysis" tab). Can view original conversation in "Entry" tab. Journal is editable post-synthesis.</p>
-                </div>
-            </div>
-
-            <div class="flow-step">
-                <div class="step-number">6</div>
-                <div class="step-content">
                     <strong>Editing & Customization</strong>
-                    <p>User can: select/modify mood tags from predefined list, add additional photos (camera or upload), edit any journal fields. Delete capability included. Re-engagement: can add reflections (encourages re-capture for new moments).</p>
+                    <p>User can: select/modify mood tags from predefined list, add a photo of their experience (camera or library), edit journal text. Delete capability included. Re-engagement: can add reflections to old entries (encourages re-capture for new moments).</p>
                 </div>
             </div>
 
             <div class="flow-step" style="background: #fef3c7; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                <div class="step-number" style="background: #f59e0b;">6b</div>
+                <div class="step-number" style="background: #f59e0b;">4b</div>
                 <div class="step-content">
-                    <strong>Synthesis Failure Fallback (Error Path)</strong>
-                    <p><strong>If synthesis fails after retries:</strong> Journal body automatically populates with the original transcript — the Dwelly capture conversation already stored from Pillar 1 (no new field required). Title defaults to "Your Reflection." User sees the journal in Dwelling Place with a note: "We couldn't synthesize your journal, but here's what you reflected on." User can: (1) manually edit the transcript-based body, (2) tap "Retry synthesis" to reattempt LLM generation, or (3) accept and move forward. No friction — user's reflection is preserved either way.</p>
+                    <strong>Pending / Not-Yet-Synthesized State (locked this session)</strong>
+                    <p>The journal entry is created immediately and shows up in the Entries list right away, in a <strong>pending state</strong> — not withheld until synthesis finishes. This covers <em>every</em> reason synthesis hasn't completed yet: offline, LLM provider outage/rate-limit, or the app's own API budget exhausted — one rule, no special-casing. The screen shows a soft "Processing your journal..." state (raw transcript visible only as a temporary placeholder, never presented as the finished artifact) and swaps in the synthesized version silently once it's ready. <strong>No permanent raw-transcript fallback, ever.</strong> Retries are bounded with backoff; if they're genuinely exhausted, the only addition is a manual "Retry" tap on the same pending card — never a silent downgrade to raw transcript as the accepted journal. A "your journal is ready" push notification on completion is a good future hook — deferred to Pillar 9 (Notifications), not built here.</p>
                 </div>
             </div>
         </div>
@@ -299,13 +283,14 @@
 Journal Entry {
   <strong>id:</strong> unique_identifier
   <strong>date_created:</strong> timestamp
-  <strong>title:</strong> auto_generated_headline (LLM) OR "Your Reflection" (fallback)
-  <strong>body:</strong> full_journal_text (2-3 paragraph synthesis) OR original_transcript (fallback)
+  <strong>status:</strong> "pending" | "ready"  // NEW — locked this session, see Flow 4b
+  <strong>title:</strong> auto_generated_headline (LLM) OR null while status = "pending"
+  <strong>body:</strong> full_journal_text (2-3 paragraph synthesis) OR null while status = "pending"
   <strong>moods:</strong> [tag1, tag2, tag3] (user-selected from predefined palette)
   <strong>photos:</strong> [photo_id_1, photo_id_2, ...] (user can add/remove)
-  <strong>prayer_reference:</strong> prayer_id (links to attached prayer artifact)
+  <strong>prayer_reference:</strong> prayer_id | null  // Post-MVP -- Pillar 3 (Prayer) itself is Post-MVP, field stays nullable for when it's picked back up
   <strong>original_moment_id:</strong> moment_id (links back to Pillar 1 conversation)
-  <strong>original_transcript:</strong> string (the Dwelly capture conversation from Pillar 1; also used as fallback journal body if synthesis fails)
+  <strong>original_transcript:</strong> string (the Dwelly capture conversation from Pillar 1; shown as a temporary placeholder while status = "pending" -- never a permanent fallback)
   <strong>edited:</strong> boolean (tracks post-synthesis modifications)
   <strong>deleted:</strong> boolean (soft delete capability)
 }
@@ -323,15 +308,15 @@ Journal Entry {
                 </div>
 
                 <div class="tool-card">
-                    <strong>iOS Keychain + Secure Enclave</strong>
-                    <p>Encryption at rest. Conversation transcript + journal body encrypted with master key (AES-256-GCM). Same encryption as Pillar 2 (Security). Offline-capable.</p>
-                    <span class="badge badge-locked">New P2</span>
+                    <strong>Server-Side AES-256-GCM (Pillar 2)</strong>
+                    <p>Corrected this session: <strong>not</strong> zero-knowledge/full E2E. Journal body + transcript encrypted at rest with a server-managed key (Supabase Edge Functions), transiently decrypted only for legitimate processing (synthesis). Matches Pillar 2's actual current model — "your moments are secure with us," not "we can never see them."</p>
+                    <span class="badge badge-locked">Pillar 2</span>
                 </div>
 
                 <div class="tool-card">
                     <strong>Supabase / PostgreSQL</strong>
-                    <p>Cloud sync for journals. Encrypted journals synced to Supabase. Server never sees plaintext. Full-text search on client-side (decrypted locally).</p>
-                    <span class="badge badge-locked">New P2</span>
+                    <p>Cloud sync and storage for journals, via the same server-side encryption as Pillar 2 (T-062). Full-text search on client-side against decrypted content.</p>
+                    <span class="badge badge-locked">Pillar 2</span>
                 </div>
 
                 <div class="tool-card">
@@ -358,11 +343,11 @@ Journal Entry {
             <h2>Design Exploration & Rejected Approaches</h2>
 
             <div class="decision-locked">
-                <strong>Two-Tab Architecture (Entry + Dwelling Place):</strong> Preserves original conversation (Entry tab, raw transcript) while providing synthesized reflection space (Dwelling Place tab). Users see both contexts. Rejected: hiding conversation behind synthesis (loses original dialogue). Rejected: single journal view with embedded conversation (cluttered, reduces focus on reflection).
+                <strong>SUPERSEDED this session — Single Journal Detail view, not a two-tab architecture:</strong> The Entry + Dwelling Place split is cut. There is one Journal Detail screen. It's reached from the Entries list/calendar or directly via "Open" after a capture loop. Raw transcript is not a permanent, separately-tabbed artifact — it only ever appears as a temporary placeholder during the pending state (Flow 4b), swapped out once synthesis completes.
             </div>
 
             <div class="decision-locked">
-                <strong>Confirmation Screen Placement:</strong> Appears AFTER capture, BEFORE prayer. Shows app understood the moment ("talked about X, Y, Z"), invites prayer. This creates natural transition from capture → prayer → journal. Rejected: skipping to journal immediately (less contemplative, loses prayer moment). Rejected: prayer only after journal (user already read synthesis, less open to reflection).
+                <strong>SUPERSEDED this session — No confirmation screen, no prayer step in the loop:</strong> Prayer is Post-MVP (Pillar 3's own status). The loop is Capture → Dwelly's closing message with the journal card inline → Open → Journal Detail. No intermediate confirmation screen asking to pray.
             </div>
 
             <div class="decision-locked">
@@ -382,19 +367,19 @@ Journal Entry {
             <h2>Locked Decisions</h2>
 
             <div class="decision-locked">
-                <strong>Confirmation Screen Option A:</strong> "Captured your moment! We briefly talked about [x, y, z], would you like to pray over these things?" — Specific, warm, shows app listened. Requires theme extraction from conversation (LLM-powered), but value justifies complexity.
+                <strong>REMOVED this session — Confirmation Screen:</strong> No longer exists. The "want to pray about X, Y, Z?" screen assumed Prayer was in the MVP loop; it isn't. Dwelly's own closing message in the capture loop carries the journal hand-off instead.
             </div>
 
             <div class="decision-locked">
-                <strong>Prayer Integration (v1):</strong> Guided prayer only in v1 MVP. Prayer attaches to journal. Designer determines whether prayer becomes separate artifact with reference, or note field on journal (deferred to designer).
+                <strong>Prayer Integration: Post-MVP.</strong> Not a Pillar-4-specific cut — Pillar 3 (Prayer) itself is Post-MVP. <code>prayer_reference</code> stays as a nullable field for when Prayer is picked back up; nothing in Pillar 4's MVP flow depends on it.
             </div>
 
             <div class="decision-locked">
-                <strong>Tab Naming: Entry + Dwelling Place:</strong> "Entry" = raw conversation. "Dwelling Place" = synthesized journal. Naming is intentional, theologically grounded (dwelling = abiding, contemplation, presence).
+                <strong>REMOVED this session — "Entry + Dwelling Place" tab naming:</strong> No longer applicable now that there's a single Journal Detail view instead of two tabs.
             </div>
 
             <div class="decision-locked">
-                <strong>Encryption: AES-256-GCM (Same as Pillar 2):</strong> Conversation transcript + journal body encrypted at rest on device + in transit. Same master key derivation (Argon2id). Transcript not editable, not searchable on server (client-side search only). Offline-capable.
+                <strong>Encryption: Server-Side AES-256-GCM (matches Pillar 2's actual current model), corrected this session:</strong> Journal body + transcript encrypted at rest with a server-managed key, transiently decrypted only for legitimate processing (e.g. synthesis) — not the zero-knowledge/full-E2E model this doc previously described. Transcript not searchable server-side (client-side search only). Offline-capable at the capture layer.
             </div>
 
             <div class="decision-locked">
@@ -426,19 +411,39 @@ Journal Entry {
             </div>
 
             <div class="decision-locked">
-                <strong>Synthesis Failure Fallback (Original Transcript):</strong> If LLM synthesis fails after retries, journal body automatically populates with the <code>originalTranscript</code> field — the Dwelly capture conversation already stored from Pillar 1 (no new field needed). Default title: "Your Reflection." User sees journal preserved with a note explaining the fallback. User can: retry synthesis, edit the transcript body, or accept as-is. This ensures no reflection is ever lost due to synthesis failures. Fallback transcript is encrypted same as synthesized body (AES-256-GCM). This was already the locked design as of July 9, 2026 — no schema changes required.
+                <strong>SUPERSEDED this session — Pending State replaces the permanent transcript fallback:</strong> The July 9 version of this decision let the raw transcript become the <em>permanent</em> journal body after failed retries, with an "accept as-is" option. That's gone. Now: any reason synthesis hasn't completed (offline, LLM provider outage, exhausted API budget) puts the entry in <code>status: "pending"</code> — same state, same soft "Processing your journal..." treatment, no special-casing per cause. Raw transcript shows only as a temporary placeholder while pending, never as an accepted permanent artifact. Retries are bounded with backoff; a manual "Retry" tap is the only fallback surfaced if they're exhausted — never a silent downgrade. No reflection is ever lost; it's just never presented as "finished" until it actually is. Fallback/placeholder transcript is encrypted the same as the synthesized body (AES-256-GCM).
             </div>
         </div>
 
         <div class="section">
             <h2>Tentative / TBD</h2>
 
-            <div class="decision-tentative">
-                <strong>Synthesis Latency UX:</strong> Deferred until happy path fully finalized. Options: silent background work vs loading spinner vs confirmation screen that shows progress. Recommend confirmation screen shows "Generating your journal..." while prayer completes.
+            <div class="decision-locked">
+                <strong>RESOLVED this session — Synthesis Latency UX:</strong> No confirmation screen to show progress on anymore. Latency is handled by the pending state (Flow 4b) — the entry appears immediately with a "Processing your journal..." treatment and swaps in silently once ready.
+            </div>
+
+            <div class="decision-locked">
+                <strong>NEW this session — Journal Detail: 4 states, one destination.</strong> Ready (baseline view), Edit (same screen, fields unlock in place, header swaps to ✕/Save — no modal, matches Apple Journal/How We Feel), Offline (Ready + one small persistent status row, content fully usable, edits queue and sync later), Pending (title slot shows the date, body slot holds the raw transcript labeled "In your words" in italics so it can't be mistaken for finished synthesis, status line is cause-agnostic — "Still working on this," never "Offline," since pending covers connectivity, LLM outage, or exhausted API budget alike per the single pending-state rule already locked).
+            </div>
+
+            <div class="decision-locked">
+                <strong>NEW this session — View Original Capture.</strong> A read-only screen showing the real transcript — the actual conversation with Dwelly from capture, exactly as it happened — reached via "View original capture →" on the Ready journal screen. <strong>Not AI-generated, not a screenshot/image.</strong> It's the same structured transcript data (already stored for synthesis and reused as the pending-state placeholder) rendered through the same chat-bubble component already built for the live capture screen. Cost is close to zero — no new storage, no new processing, just a read-only route to data and a UI component that both already have to exist elsewhere.
+            </div>
+
+            <div class="decision-locked">
+                <strong>NEW this session — Mood Picker: custom tag counts toward the same limit.</strong> A dashed "+ Custom" chip at the end of the predefined palette opens an inline text field (no separate modal). A typed custom mood becomes a normal selected chip with its own remove (✕) — but it counts toward the same 2-3 mood cap as predefined ones, not an unlimited additional bucket. Keeps moods personal without turning the system into an open-ended tag list.
+            </div>
+
+            <div class="decision-locked">
+                <strong>NEW this session — Photo Add Flow: native only, no custom screen.</strong> Tapping "+ Add a photo" opens the standard iOS action sheet (Take Photo / Choose from Library). Filled slot shows a "Remove" affordance on tap. No bespoke picker UI to design or build.
             </div>
 
             <div class="decision-tentative">
-                <strong>Prayer Artifact Storage:</strong> Designer to determine: separate prayer artifact with reference to journal, OR note field attached to journal. Both approaches valid; designer chooses based on UX patterns.
+                <strong>On-Device LLM for Offline Title/Synthesis (raised this session):</strong> Real option exists — Apple's on-device Foundation Models framework (ships with recent iOS, free, no added binary size, fully offline) is the most promising path, more viable than bundling a third-party quantized model (Mistral 7B, Phi-3-mini, etc. via MLX/CoreML). Still recommend keeping this deferred to v2+ as already scoped below ("Offline Synthesis Capability") — quality needs real testing against the cloud model, and it needs its own reconciliation flow (on-device draft → replace with real synthesis once online) that hasn't been designed.
+            </div>
+
+            <div class="decision-tentative">
+                <strong>Prayer Artifact Storage:</strong> Still deferred — moot for MVP now that Prayer is Post-MVP. Revisit when Pillar 3 is picked back up.
             </div>
 
             <div class="decision-tentative">
@@ -459,13 +464,12 @@ Journal Entry {
 
             <div class="open-questions">
                 <ul>
-                    <li><strong>Synthesis Latency UI:</strong> Should confirmation screen show progress ("Generating journal...") or is silent background work sufficient?</li>
                     <li><strong>Empty Capture Handling:</strong> Photo-only vs text-only vs both? Quality thresholds before synthesis?</li>
                     <li><strong>Journal Search Scope:</strong> Should user be able to search journal text + conversation transcript together, or separately?</li>
                     <li><strong>Reflection Limits:</strong> Can users add unlimited reflections to old journal entries, or should we encourage fresh captures?</li>
                     <li><strong>Export/Sharing (v2+):</strong> Should journals be exportable as PDFs, shareable as text, embeddable in community?</li>
                 </ul>
-                <p style="margin-top: 15px; font-size: 13px; color: #166534;"><strong>✅ Resolved (locked July 9, 2026):</strong> <em>Error State Handling</em> — If synthesis fails after retries, fallback to the original transcript (Dwelly's P1 capture conversation) as journal body. User's reflection is preserved; no friction. Locked decision added above.</p>
+                <p style="margin-top: 15px; font-size: 13px; color: #166534;"><strong>✅ Resolved this session:</strong> <em>Error/Not-Yet-Synthesized State Handling</em> — single pending state for every cause (offline, LLM outage, exhausted API budget), no permanent raw-transcript fallback. <em>Synthesis Latency UX</em> — handled by the same pending state, no confirmation screen needed. Both superseded the July 9, 2026 versions of these decisions — see Locked Decisions above.</p>
             </div>
         </div>
 
@@ -476,7 +480,7 @@ Journal Entry {
                 <ul style="list-style-position: inside; margin: 0;">
                     <li><strong>Journal Creation Rate:</strong> >80% of captured moments result in journal entries (completion rate through full synthesis flow)</li>
                     <li><strong>Synthesis Quality:</strong> >75% user satisfaction with auto-generated journal titles + bodies (rated via post-journal prompt or editing engagement)</li>
-                    <li><strong>Prayer Engagement:</strong> >60% of users pray about captured moments (via confirmation screen CTA)</li>
+                    <li><em>Prayer Engagement metric removed this session — Prayer is Post-MVP, no confirmation-screen CTA to measure against.</em></li>
                     <li><strong>Re-engagement:</strong> >40% of users add reflections to old journal entries or re-capture moments</li>
                     <li><strong>Mood Tag Customization:</strong> >70% of users modify suggested moods (indicates personalization)</li>
                     <li><strong>Photo Addition (Post-Synthesis):</strong> >30% of users add photos after journal synthesis</li>
@@ -496,27 +500,23 @@ Journal Entry {
                 </tr>
                 <tr>
                     <td><strong>Pillar 1 (Capture)</strong></td>
-                    <td>Journal entry links back to original moment. User can navigate between Entry (conversation) and Dwelling Place (synthesis). Conversation provides rich context for synthesis.</td>
+                    <td>Journal entry links back to original moment (<code>original_moment_id</code>). The capture conversation provides the rich context synthesis works from; the raw transcript itself only surfaces as a temporary placeholder during the pending state, not a permanent second view.</td>
                 </tr>
                 <tr>
                     <td><strong>Pillar 2 (Security)</strong></td>
-                    <td>Conversation transcript + journal body encrypted at rest + transit (AES-256-GCM). Same key derivation as Pillar 2. Full E2E encryption.</td>
+                    <td>Corrected this session: server-side AES-256-GCM encryption at rest, transient decryption for processing — not full E2E/zero-knowledge. Matches Pillar 2's actual current model.</td>
                 </tr>
                 <tr>
-                    <td><strong>Pillar 3 (Soaking)</strong></td>
-                    <td>Confirmation screen routes to Pillar 3 guided prayer. Prayer attaches to journal. Prayer becomes contemplative response to synthesized journal.</td>
+                    <td><strong>Pillar 3 (Prayer) — Post-MVP</strong></td>
+                    <td>No integration in the MVP loop. <code>prayer_reference</code> stays nullable on the journal entry for whenever Prayer is picked back up post-MVP.</td>
                 </tr>
                 <tr>
-                    <td><strong>Pillar 5 (Patterns/Search)</strong></td>
-                    <td>Journal entries searchable via full-text (client-side), filterable by moods/tags, browsable chronologically. Supports pattern recognition across journal library.</td>
+                    <td><strong>Pillar 5 / Search &amp; Entries List</strong></td>
+                    <td>Journal entries searchable via full-text (client-side), filterable by moods/tags. The Entries list/calendar (T-078) is where users browse chronologically and land on this detail screen — out of scope for Pillar 4 itself.</td>
                 </tr>
                 <tr>
-                    <td><strong>Pillar 6 (Community)</strong></td>
-                    <td>Post-MVP: journal entries can be shared with trusted people. v1 focus on personal reflection; v2+ sharing/collaboration.</td>
-                </tr>
-                <tr>
-                    <td><strong>Pillar 7 (Notifications)</strong></td>
-                    <td>Notifications can nudge users to journal about past moments, encourage re-engagement, or remind to review synthesis.</td>
+                    <td><strong>Pillar 9 (Notifications) — Deferred</strong></td>
+                    <td>"Your journal is ready" push on pending → ready transition is a good future hook, not built now since Notifications design itself is still deferred.</td>
                 </tr>
             </table>
         </div>

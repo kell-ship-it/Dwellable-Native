@@ -2,6 +2,17 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
+## Next Session Objective (August 25, 2026 — later same-day close)
+
+**Confirmed Pending Items:**
+1. **Build Pillar 4's Journal Detail states into real Figma designs.** Everything designed this session (Ready / Edit / Offline / Pending states, mood picker + custom tag, photo add flow, View Original Capture) exists only as HTML mockups/Artifacts. Kell's explicit instruction at session close: move all of it into actual Figma designs next session, the same way this session moved the loop-signal (bar+flame) work from an HTML playground into the real P0/P1 Figma pages.
+2. **Live click-through verification of the updated P0/P1 Figma prototypes.** This session edited 15 P0 screens + 37 P1 screens via the plugin API and spot-checked a handful via screenshot, but never did a full Play-mode click-through of either page's existing wired prototype (42 reactions on P0, 28 on P1) to confirm every frame — not just the sampled ones — renders and flows correctly end to end.
+3. **Resolve "Empty Capture Handling" (still Tentative in `P4_SUMMARY.html`)** before going deep on Journal Detail's body-slot Figma work — whether photo-only/text-only/hybrid captures are allowed affects whether a journal can exist with no transcript at all, which the pending-state body-slot design assumes always exists.
+
+**Rationale:** Kell was explicit and specific about item 1 at session close — everything built this session is prototype-only, not yet real. Item 2 is a verification gap: large-scale plugin-API edits across 52 real production frames were spot-checked, not fully click-tested, and Figma work next session will build directly on top of these edits. Item 3 is a real open dependency the Journal Detail Figma work will hit almost immediately.
+
+---
+
 ## Session: August 25, 2026 — Three-Prototype Merge Built + Verified + Onboarding Capture Simplified to One Loop
 
 ### 🎯 TL;DR
