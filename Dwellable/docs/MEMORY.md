@@ -2,6 +2,44 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
+## Session: August 25, 2026 — Three-Prototype Merge Built + Verified + Onboarding Capture Simplified to One Loop
+
+### 🎯 TL;DR
+Fully rebuilt and verified the combined prototype ([`docs/Dwellable_Full_Prototype.html`](Dwellable_Full_Prototype.html), same Artifact URL `054b3364-c5b3-4c16-9714-470fbadc8b3d`). Onboarding sequence shortened (4 screens cut vs the old P0), real Dwelly capture flow spliced in as its own module (Kell's `dwelly_capture_flow` Artifact `bf748e9b`, NOT the old static file — the confusion in prior sessions was mine), and post-onboarding app stitched at the end. All CSS/JS namespaced so nothing cross-collides. Onboarding pre-capture screens got a persistent gold pill loading bar (starts at name-entry `s03`, reaches 100% at `s20 preparing-space`), and the capture-flow entry screen carries the same bar continuing through the loop as an 85%-100% band.
+
+**Big shift Kell locked at end of session: onboarding capture is now ONE loop only** — entry → user's message → Dwelly's response → journal reveal. No Done button, no exit affordance, no conversation continuation. Applied to all 4 rows (Self/Dwelly-prompted × Text/Voice) in `capture_flow_clean.html`. The Done button lives on for the real post-onboarding capture flow (open-ended conversations that genuinely need an exit).
+
+### Key decisions locked (carry forward)
+- **Onboarding capture is a single guided loop.** No Done during onboarding. Cap enforced in code by trimming each ROW's `screens[]` array. Applies only to the onboarding version; post-onboarding capture retains multi-turn conversation + Done exit.
+- **Loading bar visual language locked**: gold pill (#c9b27a) on a visible dark track (#3a3530), 6px tall, positioned at (24, 68) inset from the screen edges (not full-width). Same treatment applied consistently across all 18 pre-capture screens + the capture entry.
+- **Onboarding sequence trimmed** — cut `s05` (Did you know God…), `s06` (What happens if we forget…), `s08` (Most of the time you probably aren't carrying…), `s09` (So instead like many of us…). Real copy for the surviving screens (s07 "Imagine you're on a walk…") corrected to match the Figma playground reference verbatim.
+- **Dwelly rename applied everywhere in-app** — every "Dwellable" instance in in-app copy is now "Dwelly." The two remaining "Dwellable" strings in the prototype are dev-only labels (`<title>` and `.stage-header`) preserved intentionally. Same for the 2 leftover "Dwellable" text nodes in Figma playground screens (`11-gentle-reminders` app-name, `12-privacy` description), both corrected.
+- **New "capture your first moment →" CTA** added to `14-preparing-space` bottom-right (matching the "create account →" style exactly — Inter Regular 13px, gold, right-aligned at x=24 from right edge, y=840). Wired to trigger the same `stitchGoTo('section-capture')` bridge the auto-advance timer uses.
+- **New flame vector** pulled directly from Figma (`1227:1497` node → SVG asset `c0e7df94-84cd-41a5-a23b-0789ca10c306.svg`) and swapped into the welcome screen's `<img class="flame-icon">` — reuses the existing 3.2s flicker animation.
+- **Prayer-hands reward icon 🙏 REMOVED** — was there earlier this session on the bar; Kell felt it was too busy. Now bar is bar-only.
+- **Post-first-message Done placement**: dropped mid-decision when Kell chose the one-loop route instead. If ever reintroduced, the working absolute-positioned pattern was `.done-below-bar { position: absolute; top: 100-150px; right: 24px; }` — but pixel-tuning was hard because two Done elements were being rendered simultaneously by both `entryHeader()` and `chatHeader()`. Documented for whoever picks this back up in post-onboarding capture.
+
+### 🚨 Session frustrations logged (root-cause + carry-forward rules)
+- **Twice this session shipped changes that Kell had to correct against real Figma.** Root cause: I was editing the old standalone `P0_NavChrome_Prototype.html` file instead of pulling from the actively-iterated Figma playground page. **Rule going forward: before editing any onboarding screen, pull the exact current copy/layout via `get_metadata` + `get_screenshot` against the Figma playground first. Never trust the standalone HTML source alone — it drifts.**
+- **Pixel-tuning got stuck for ~4 rounds on the Done placement** because two Done elements existed in the DOM simultaneously (one from `entryHeader()`, one from `chatHeader()`), and my CSS updates were being visually overridden by whichever one rendered first. **Rule: when a CSS change appears to have no effect, `querySelectorAll` for the target class BEFORE assuming the rule doesn't apply — orphaned duplicate elements are the most common cause of "no-move" bugs in this prototype.**
+- **The "canonical artifact" URL from Aug 24's MEMORY entry was still misleading in my head for the first several turns of this session.** `dwelly_capture_flow` (`bf748e9b`) is the real capture flow content, and the Combined Prototype (`054b3364`) is a distinct, separately-published artifact. Both live on. Do not overwrite `bf748e9b` when republishing the merge.
+
+### Files touched
+- `docs/Dwellable_Full_Prototype.html` (rebuilt via `/tmp/dwelly_check/assemble.py` from `P0_NavChrome_Prototype.html` + local `capture_flow_clean.html` + `P1_PostOnboarding_Prototype.html`, republished as Artifact `054b3364-c5b3-4c16-9714-470fbadc8b3d`)
+- `docs/P0_NavChrome_Prototype.html` (4 screens cut, s07 copy corrected, flame SVG swapped, "capture your first moment →" CTA added to s20, loading bar added to s03-s20, "Dwellable" → "Dwelly" throughout in-app copy)
+- Figma playground page `t5MUGEtpeFcUixobvHiYMc / 1212:48` (new pill-bar rendered on all 18 sequence screens + capture entry, Dwelly rename for 2 remaining `Dwellable` text nodes, "capture your first moment →" CTA added to `14-preparing-space`)
+
+### 🚨 Next Session Objective (August 25, 2026)
+
+**Confirmed Pending Items:**
+1. **Pillar 4 — Journal Creation design work.** Kell explicitly requested P4 next at session close. Reference `docs/P4_SUMMARY.html` (design skeleton complete). This is the second half of the MVP core loop (Capture → Process → **Journal**) and the natural next design area now that P0 (Onboarding) and the P1 capture flow are prototyped and stitched.
+2. **Verify the combined prototype's onboarding-capture handoff → journal reveal reads correctly end-to-end**, given today's one-loop + no-Done changes. Live click-through in Browser pane before doing any P4 work — the transition from Dwelly's response to the journal card is now the pivotal moment the whole flow builds toward, and P4 will be layered on top of exactly this handoff.
+3. **Wordmark treatment resolved: uppercase "Dwelly" (initial cap), not lowercase.** Kell chose uppercase at session close. Apply consistently in all future design/copy, including anywhere the current prototype still renders "dwelly" lowercase (welcome-screen wordmark and any body copy). This is a locked decision, not a pending question.
+
+**Rationale:** P4 is the natural next design area — Kell asked for it explicitly, and the prototype hand-off point that P4 will build on top of just got substantially reshaped today (one-loop cap changes what "processing complete" means). Verifying that handoff before adding to it prevents re-work.
+
+---
+
 ## Session: August 24, 2026 — Dwelly Rename Finished in Canonical Artifact, Real Flame Located, Merge Scripted (Not Built)
 
 ### 🎯 TL;DR
