@@ -283,11 +283,12 @@
 Journal Entry {
   <strong>id:</strong> unique_identifier
   <strong>date_created:</strong> timestamp
-  <strong>status:</strong> "pending" | "ready"  // NEW — locked this session, see Flow 4b
+  <strong>status:</strong> "pending" | "approved"  // RENAMED Aug 26, 2026 — was "ready", see Flow 4b
   <strong>title:</strong> auto_generated_headline (LLM) OR null while status = "pending"
   <strong>body:</strong> full_journal_text (2-3 paragraph synthesis) OR null while status = "pending"
-  <strong>moods:</strong> [tag1, tag2, tag3] (user-selected from predefined palette)
-  <strong>photos:</strong> [photo_id_1, photo_id_2, ...] (user can add/remove)
+  <strong>moods:</strong> [tag1, tag2, tag3] (user-selected from predefined palette, via the Tag toolbar icon in edit mode)
+  <strong>photos:</strong> [photo_id_1, photo_id_2, ...] (user can add/remove, via the Photo/Camera toolbar icons)
+  <strong>starred:</strong> boolean  // NEW Aug 26, 2026 — favorite/unfavorite, always-visible icon on the View header
   <strong>prayer_reference:</strong> prayer_id | null  // Post-MVP -- Pillar 3 (Prayer) itself is Post-MVP, field stays nullable for when it's picked back up
   <strong>original_moment_id:</strong> moment_id (links back to Pillar 1 conversation)
   <strong>original_transcript:</strong> string (the Dwelly capture conversation from Pillar 1; shown as a temporary placeholder while status = "pending" -- never a permanent fallback)
@@ -327,7 +328,7 @@ Journal Entry {
 
                 <div class="tool-card">
                     <strong>SwiftUI Native</strong>
-                    <p>UI components: Entry/Dwelling Place tabs, journal text display, mood tag picker, photo carousel, edit interface. No external frameworks.</p>
+                    <p>UI components: single Journal Detail screen (View + Edit, no tab split), mood tag picker, photo carousel, ⋯ overflow menu, edit toolbar. No external frameworks.</p>
                     <span class="badge badge-locked">New P2</span>
                 </div>
 
@@ -423,11 +424,23 @@ Journal Entry {
             </div>
 
             <div class="decision-locked">
-                <strong>NEW this session — Journal Detail: 4 states, one destination.</strong> Ready (baseline view), Edit (same screen, fields unlock in place, header swaps to ✕/Save — no modal, matches Apple Journal/How We Feel), Offline (Ready + one small persistent status row, content fully usable, edits queue and sync later), Pending (title slot shows the date, body slot holds the raw transcript labeled "In your words" in italics so it can't be mistaken for finished synthesis, status line is cause-agnostic — "Still working on this," never "Offline," since pending covers connectivity, LLM outage, or exhausted API budget alike per the single pending-state rule already locked).
+                <strong>UPDATED Aug 26, 2026 — Journal Detail: 2 statuses (Pending / Approved), one destination.</strong> "Ready" renamed to <strong>Approved</strong>. Approved has a View screen (baseline read display — not a toggled "mode," just what renders when you tap an entry) and an Edit screen (entered only via the ⋯ menu's "Edit Entry," same destination, header swaps in place — no modal). Offline is not a separate screen: it's Approved View or Edit with one small persistent status row/toast, content fully usable, edits queue and sync later. Pending (title slot shows the date, body slot holds the raw transcript labeled "In your words" in italics so it can't be mistaken for finished synthesis, status line is cause-agnostic — "Still working on this," never "Offline") is <strong>view-only — no edit affordance exists in Pending at all.</strong> No Approved → Pending transition ever; editing never re-triggers synthesis.
             </div>
 
             <div class="decision-locked">
-                <strong>NEW this session — View Original Capture.</strong> A read-only screen showing the real transcript — the actual conversation with Dwelly from capture, exactly as it happened — reached via "View original capture →" on the Ready journal screen. <strong>Not AI-generated, not a screenshot/image.</strong> It's the same structured transcript data (already stored for synthesis and reused as the pending-state placeholder) rendered through the same chat-bubble component already built for the live capture screen. Cost is close to zero — no new storage, no new processing, just a read-only route to data and a UI component that both already have to exist elsewhere.
+                <strong>NEW Aug 26, 2026 — View screen header: Star + ⋯ overflow menu.</strong> Header shows a back arrow, an always-visible Star icon (favorite/unfavorite), and a **⋯** icon that opens a menu with exactly three items: Edit Entry, View Original, Delete Entry. Supersedes the earlier "View original capture →" in-body link — View Original is now a menu item, not inline body text.
+            </div>
+
+            <div class="decision-locked">
+                <strong>NEW Aug 26, 2026 — Edit screen header + toolbar (Day One–pattern, Kell-authored reference frame "EDIT — FILLED STATE").</strong> Header: ✕ (close, left) — "Edit Entry" (centered title) — Undo icon — gold checkmark (Save; saves and returns to View in one action). Floating pill toolbar above the keyboard: <strong>Photo · Camera · Mic (voice transcription, inserts at cursor) · Tag</strong> — exactly these four, no Send/arrow icon. Tapping Tag opens the existing Mood Picker (palette/custom-tag/limit-reached, unchanged). Tapping Photo opens the native action sheet (still additive to, not a replacement of, the native-picker-only decision below); Camera skips straight to the camera. Date is visible but not editable in edit mode. Empty-field placeholders: italic serif "Untitled" (title), "Start writing..." (body).
+            </div>
+
+            <div class="decision-locked">
+                <strong>NEW Aug 26, 2026 — View Original Capture.</strong> A read-only screen showing the real transcript — the actual conversation with Dwelly from capture, exactly as it happened — reached via the ⋯ menu's "View Original" item (moved off the body link, see above). <strong>Not AI-generated, not a screenshot/image.</strong> It's the same structured transcript data (already stored for synthesis and reused as the pending-state placeholder) rendered through the same chat-bubble component already built for the live capture screen. Cost is close to zero — no new storage, no new processing, just a read-only route to data and a UI component that both already have to exist elsewhere.
+            </div>
+
+            <div class="decision-locked">
+                <strong>NEW Aug 26, 2026 — Soft delete confirmation copy corrected.</strong> An early Figma draft this session incorrectly said "This can't be undone... permanently removed." Corrected to reflect the already-locked 30-day soft delete: "This entry will be moved to Recently Deleted and permanently removed after 30 days. You can restore it before then."
             </div>
 
             <div class="decision-locked">
