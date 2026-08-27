@@ -2,7 +2,20 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
-## Next Session Objective (August 27, 2026 close)
+## Next Session Objective (August 27, 2026 close, later same-day session)
+
+**Confirmed Pending Items:**
+1. **Finish syncing `docs/P4_SUMMARY.html` and the Notion "P4 User Scenarios & Acceptance Criteria" Design Status table.** This is the THIRD session in a row this has slipped — flagged Aug 26, flagged again Aug 27 (first session), still not done after Aug 27 (this, second session). P4 itself is now fully confirmed complete (all 11 scenarios built or deliberately descoped), so this is pure bookkeeping catch-up, not design work — should not slip a fourth time.
+2. **Get Kell's decision on T-159** (Synthesis Error Fallback): the ticket's original premise — raw transcript permanently stands in as the journal body after retries exhaust — contradicts the Aug 27 (earlier) decision that Pending retries silently/indefinitely with no permanent fallback ever. Does Pending truly never dead-end, or is there still some ceiling? Update T-159 once answered.
+3. **Create the Notion "P5 User Scenarios & Acceptance Criteria" page** (doesn't exist yet — P4 has one, P5 doesn't) and **sync `docs/PILLAR_5_SEARCH_STRATEGY.md`** to reflect this session's locked corrections: Prayed/Object filters dropped (Mood + free-text only), Pending entries excluded from search entirely, Search confirmed to run fully offline, and the new T-176/T-177 tickets.
+
+**Rationale:** Item 1 is overdue debt actively costing future sessions time (re-deriving what's already decided). Item 2 blocks T-159 from being buildable — right now it describes a design that was explicitly reversed. Item 3 mirrors item 1's mistake at the start rather than after the fact — Pillar 5 was fully designed this session (6 scenarios, ~14 Figma screens) but its own docs are already behind, same failure mode as P4's.
+
+**Broader next-session scope (Kell's explicit call at this close):** after the 3 catch-up items above, move on to designing **Pillars 9, 10, and 11** (per current `TICKETS.csv` epic naming — confirm exact pillar names/scope at session start the same way Pillar 5's numbering was double-checked this session, since this file's pillar numbering has drifted/collided more than once before, e.g. the T-174 Pillar 6 naming collision).
+
+---
+
+## Next Session Objective (August 27, 2026 close, first same-day session — superseded by the entry above)
 
 **Confirmed Pending Items:**
 1. **Update `docs/P4_SUMMARY.html` with every decision locked across the last two sessions** — it is now stale against: Pending badge/flame treatment (real Dwelly flame asset, dot+text pattern, two-line reassurance copy), no manual Retry anywhere in Pending (sync retries silently and indefinitely in the background instead), the offline indicator dropped entirely from Edit and View (nothing in either screen actually depends on connectivity — Save always writes locally first), the hero-photo layout (full-bleed photo above title, title left-aligned, moods between title and body), the Edit Moods bottom-sheet picker, the toolbar dropping its Tag icon in favor of an inline "+ Add mood" pill in the mood row, and the View Original chat thread's staggered same-sender clustering (replacing uniform stacked bubbles). Also add the new T-120 requirement (Dwelly must wait for multi-texters to finish sending before responding) to whichever doc owns Pillar 1's conversational-loop spec, if `P4_SUMMARY.html` isn't the right home for it.
