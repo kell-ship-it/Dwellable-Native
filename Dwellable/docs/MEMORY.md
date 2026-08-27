@@ -2,7 +2,18 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
-## Next Session Objective (August 27, 2026 close, later same-day session)
+## Next Session Objective (August 27, 2026 close, third same-day session)
+
+**Confirmed Pending Items:**
+1. **Design Rhythm/Intent change behavior + their relationship as formation drivers (T-178).** Kell's explicit framing at session close: Rhythm and Intent aren't static profile fields — they're meant to be behavioral drivers of the whole formation loop (e.g. a "deepen intimacy with God" intent should imply/expect a matching capture rhythm), but nothing in the system connects them today. Needs a design pass covering: what happens experientially when a user changes Rhythm or Intent post-onboarding from the new Account Profile screen; whether/how a mismatch between the two should ever be surfaced (must stay invitational per the Authority Guardrails — never prescriptive, never "you should pray more"); and what part of the app (if any) reflects this relationship back to the user. This was raised as a systems-design question, not yet scoped as an engineering ticket.
+2. **Continue Pillar 9 (Account Profile) subpage design, one at a time, Artifact-first.** Base screen (identity fields + grouped Settings card) is confirmed and built in Figma (new page "P9 - Account Profile"). Next: the 4 Settings subpages (Security & Privacy, Preferences, Support & Feedback, Legal & About) plus the previously-artifact-confirmed Recently Deleted screen (T-176) — each needs its own Claude Artifact confirmed by Kell before touching Figma, per the standing rule locked this session (see `feedback_artifact_before_figma` memory).
+3. **Write the Intent Check's new timing rule into docs/tickets.** Locked this session but not yet written down: the Intent Check prompt ("Is Dwellable helping you [intent]?") must not fire from first login — it should wait until the user has used the app ~2 weeks / after the free trial ends. Needs updating wherever Scenario 3 (Weekly Intent Check) is documented (Notion P9 User Scenarios page, `PILLAR_SETTINGS_STRATEGY.md`) plus a ticket note for the actual trigger-condition logic. Also carry forward: the "Getting to Know You" rotating-question concept was explored and parked (not deleted) — revisit only if Kell brings it back up.
+
+**Rationale:** Item 1 is Kell's own explicit systems-thinking flag at close — a real product question (do Rhythm and Intent need to reconcile with each other?) that shouldn't get lost before Pillar 9's subpages are built on top of fields that might behave differently than assumed. Item 2 continues the in-progress pillar using the newly-corrected workflow order. Item 3 is small but time-sensitive bookkeeping debt of exactly the kind that's slipped multiple sessions in a row on other pillars this cycle (P4/P5) — better to write it down now while the decision is fresh than let it become another multi-session catch-up item.
+
+---
+
+## Next Session Objective (August 27, 2026 close, second same-day session — superseded by the entry above)
 
 **Confirmed Pending Items:**
 1. **Finish syncing `docs/P4_SUMMARY.html` and the Notion "P4 User Scenarios & Acceptance Criteria" Design Status table.** This is the THIRD session in a row this has slipped — flagged Aug 26, flagged again Aug 27 (first session), still not done after Aug 27 (this, second session). P4 itself is now fully confirmed complete (all 11 scenarios built or deliberately descoped), so this is pure bookkeeping catch-up, not design work — should not slip a fourth time.
