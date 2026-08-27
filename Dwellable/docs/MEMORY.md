@@ -2,14 +2,25 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
-## Next Session Objective (August 25, 2026 — later same-day close)
+## Next Session Objective (August 26, 2026 close, later same-day session)
 
 **Confirmed Pending Items:**
-1. **Build Pillar 4's Journal Detail states into real Figma designs.** Everything designed this session (Ready / Edit / Offline / Pending states, mood picker + custom tag, photo add flow, View Original Capture) exists only as HTML mockups/Artifacts. Kell's explicit instruction at session close: move all of it into actual Figma designs next session, the same way this session moved the loop-signal (bar+flame) work from an HTML playground into the real P0/P1 Figma pages.
-2. **Live click-through verification of the updated P0/P1 Figma prototypes.** This session edited 15 P0 screens + 37 P1 screens via the plugin API and spot-checked a handful via screenshot, but never did a full Play-mode click-through of either page's existing wired prototype (42 reactions on P0, 28 on P1) to confirm every frame — not just the sampled ones — renders and flows correctly end to end.
-3. **Resolve "Empty Capture Handling" (still Tentative in `P4_SUMMARY.html`)** before going deep on Journal Detail's body-slot Figma work — whether photo-only/text-only/hybrid captures are allowed affects whether a journal can exist with no transcript at all, which the pending-state body-slot design assumes always exists.
+1. **Design and build the pending/offline branch of P4 scenarios in Figma**, following the same one-screen-at-a-time, Artifact-then-Figma pattern used all session: queued edits made while offline, the synthesis-fails fallback (raw transcript stands in as journal body, per the already-locked spec in `P4_SUMMARY.html`), and reconnect-mid-edit. Kell explicitly said the online state is essentially done ("we had most of it so far for online") and pending/offline is the next branch.
+2. **Sync the Notion "P4 User Scenarios & Acceptance Criteria" Design Status table** — it was not updated during this session's online-state work; needs to catch up to the 13 online scenarios actually completed (Pending/View/Star/Ellipsis/Delete from the earlier same-day entry, plus Delete-popover-redesign, Edit happy path, Add Photo/Camera/Voice, hero-photo layout, Edit Moods sheet, Add Custom Mood, No Tags, Minimum Content states, View Original Conversation from this entry) before it drifts further out of sync with the actual Figma state.
+3. **Note for whoever opens Figma next:** this file (`Dwellable — Existing Experience Baseline`) had duplicate/renumbered copies of several P4 sections appear mid-session from what looks like Kell working in Figma concurrently with the design agent (e.g. `EDIT ENTRY — NO TAGS` existed 3× at different node IDs by session end). Before building more, do a quick pass confirming which copy is canonical, since stale node-ID references (like the ones this session hit) will error immediately on `getNodeByIdAsync`.
 
-**Rationale:** Kell was explicit and specific about item 1 at session close — everything built this session is prototype-only, not yet real. Item 2 is a verification gap: large-scale plugin-API edits across 52 real production frames were spot-checked, not fully click-tested, and Figma work next session will build directly on top of these edits. Item 3 is a real open dependency the Journal Detail Figma work will hit almost immediately.
+**Rationale:** Kell drove a full numbered inventory of the "online" (synced) state this session and confirmed all 13 items are covered — pending/offline is the clearly-named next branch, not a new discovery. The Notion sync is overdue bookkeeping debt from skipping it mid-session to keep pace with Kell's rapid-fire scenario list. The duplicate-section note protects the next session from repeating this session's own detached-section bug.
+
+---
+
+## Next Session Objective (August 26, 2026 close, first same-day session — superseded by the entry above, kept for the historical record)
+
+**Confirmed Pending Items:**
+1. **Build Scenario 2 (Edit — Approved, happy path) in Figma + publish as a Claude Artifact.** The locked pattern is settled (✕ / centered "Edit Entry" / Undo / gold checkmark-Save header, floating Photo·Camera·Mic·Tag toolbar above the keyboard, date read-only, "Untitled"/"Start writing..." empty-state placeholders) — this is the next screen in the one-at-a-time queue Kell set this session, and unblocks the toolbar's real destinations (Tag → Mood Picker, Photo/Camera → native picker).
+2. **Build Scenario 6 (View Original Capture) next**, since the Ellipsis Menu screen built this session already points to it as a live destination — the read-only transcript screen it should navigate to doesn't exist yet in this rebuild.
+3. **Build the remaining 5 scenarios** (4: Synthesis Fails fallback, 7: Add/Remove Photo, 8: Edit Moods via Tag, 10: Approved-edited-then-goes-offline, 11: Connection-restored-mid-edit) — same pattern each time: screenshot-verify at true 393×852 size, publish as its own Claude Artifact, wait for Kell's review before the next one. Mark each ✅ Done in the Notion "P4 User Scenarios & Acceptance Criteria" Design Status table as it's confirmed.
+
+**Rationale:** Kell explicitly asked to pick this up "one screen at a time" with an artifact for each, after this session's docs-first reset (Notion page fully rewritten against the current single-screen architecture, `P4_SUMMARY.html` synced) and a working, confirmed header/menu/toolbar pattern. 4 of 11 scenarios are done (Pending, View, Star/Unstar, Soft Delete — Design Status tracked in Notion); 7 remain, in the order above.
 
 ---
 
