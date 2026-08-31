@@ -2,7 +2,18 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
-## Next Session Objective (August 31, 2026 close)
+## Next Session Objective (August 31, 2026 close, second session)
+
+**Confirmed Pending Items:**
+1. **Design Pillar 6 (Formation Intelligence) — first-round UI design pass.** Kell's explicit call at this session's close: Pillar 6 and Pillar 7 are the only two pillars left needing a first-round design pass — everything else (including Pillar 11/Growth, fully designed this session) is done. Pillar 6 owns the Dweller Profile detection/generation engine that Growth's "Your Narrative" (built this session) displays — no screens exist for Pillar 6 itself yet, only the strategy doc and the display surface in Growth.
+2. **Design Pillar 7 (Beta & Marketing) — first-round UI design pass.** The other pillar Kell flagged as still needing first-round design. Once P6 and P7 are done, the full pillar set has a first design pass — the explicit gate before moving to the next phase (item 3).
+3. **T-190 Cross-Pillar Sensory Design Pass — reframed as actual HTML prototypes per pillar, not just written schemas.** Kell's explicit sequencing at close: after P6/P7 close out first-round UI design, go pillar-by-pillar building a real HTML prototype demonstrating sound, haptic feedback, and animation for each — not the written iOS-API-vocabulary schema format used for T-187 (notifications). This is meant to be done alongside a UX designer collaborator who is joining the project. Cost analysis per pillar comes after this, explicitly sequenced last — do not start on cost work before the sensory-prototype pass is done.
+
+**Rationale:** All three items are Kell's own explicit sequencing stated at this session's close, in the exact order given (P6/P7 first-round design → sensory HTML prototypes → costs). Six smaller decision/cleanup tickets were also raised this session (T-191–T-196, all Pillar 11/Growth) and remain open but are explicitly lower priority — Kell said to pause on resolving them and move on to other design work instead. The Aug 31 (first session) carry-forward items (T-084/T-085/T-087 ticket-text rewrite, Pillar 9's Legal & About/T-134, Account Deletion/T-095, T-178) are also still untouched and should not be forgotten, but Kell's explicit close-of-session direction this time was P6/P7 design first — do not reprioritize away from that without checking with Kell.
+
+---
+
+## Next Session Objective (August 31, 2026 close, first session — superseded by the entry above)
 
 **Confirmed Pending Items:**
 1. **Cross-Pillar Sensory Design Pass (T-190) — first pass at sound, animation, and haptic feedback for every pillar that has UI.** Kell's explicit ask at close: go through every pillar with a UI (Capture, Journal/P4, Search/P5, Account Profile/P9, Today/P10, Growth/P11, etc.) and produce a first-pass sensory schema for each, following the exact pattern built this session for T-187 (notifications) — real iOS API vocabulary (named `UIImpactFeedbackGenerator` styles, animation curves/durations, sound choices), not vague adjectives, with haptics flagged for on-device validation rather than treated as fully spec'd from design alone. Not final polish — a strong first draft Kell will then hand to a UX designer collaborator joining the project to flesh out further.
