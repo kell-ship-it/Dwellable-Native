@@ -2,7 +2,18 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
-## Next Session Objective (August 28, 2026 close)
+## Next Session Objective (August 31, 2026 close)
+
+**Confirmed Pending Items:**
+1. **Cross-Pillar Sensory Design Pass (T-190) — first pass at sound, animation, and haptic feedback for every pillar that has UI.** Kell's explicit ask at close: go through every pillar with a UI (Capture, Journal/P4, Search/P5, Account Profile/P9, Today/P10, Growth/P11, etc.) and produce a first-pass sensory schema for each, following the exact pattern built this session for T-187 (notifications) — real iOS API vocabulary (named `UIImpactFeedbackGenerator` styles, animation curves/durations, sound choices), not vague adjectives, with haptics flagged for on-device validation rather than treated as fully spec'd from design alone. Not final polish — a strong first draft Kell will then hand to a UX designer collaborator joining the project to flesh out further.
+2. **Rewrite T-084/T-085/T-087's actual ticket text** to match the corrected funnel (A/B/C/D, no prayer events) — the `notification_funnel_correction` Claude Artifact and the corrected Notion Pillar 8 page both already reflect this, but the three underlying engineering tickets in `TICKETS.csv` were never actually edited to match (only referenced as needing the rewrite). Low urgency but real drift risk if left another session.
+3. **Continue the Pillar 9 backlog carried from Aug 28**, still untouched: Legal & About subpage (T-134, last of the 4 Settings subpages), in-app Account Deletion flow (T-095, Apple compliance requirement), and T-178 (Rhythm/Intent as formation-loop behavioral drivers).
+
+**Rationale:** Item 1 is Kell's own explicit instruction at this session's close, and follows directly from the sensory-design rigor just established for notifications — doing it now while the pattern is fresh avoids re-deriving the schema format next time. Item 2 is bookkeeping debt in the same spirit as past sessions' doc-drift catches (P4/P5) — the design artifacts are correct, the tickets that reference them aren't, yet. Item 3 is carried forward unchanged from Aug 28 — none of it was touched this session since the notification funnel work took priority, and it's now two sessions old.
+
+---
+
+## Next Session Objective (August 28, 2026 close — superseded by the entry above)
 
 **Confirmed Pending Items:**
 1. **Design the Legal & About subpage (T-134) — the last of Pillar 9's 4 Settings subpages.** Security & Privacy, Preferences, and Support & Feedback are all done (MVP + Post-MVP parity, built in Figma). Legal & About hasn't been touched at all yet: About Dwellable, Version History (dynamic, not hardcoded per T-134), Terms of Service / Privacy Policy links. Follow the same pattern established this session — Artifact first for Kell's confirmation, then build in Figma into both the "MVP" and "Post-MVP" Figma sections on the "P9 - Account Profile" page, maintaining the parity rule (whatever's in MVP must exist in Post-MVP too).
