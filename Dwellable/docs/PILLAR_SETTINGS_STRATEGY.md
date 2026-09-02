@@ -126,6 +126,8 @@
 - If "Not Yet" → routes to feedback form (gather insight)
 - Data logged for future Formation Intelligence
 
+**Correction (Sept 1, 2026):** Intent and Rhythm editing do NOT happen here. Both moved from Account Profile to Growth (P11) on Aug 31, 2026 (see T-195) — this doc had not caught up. For Formation Intelligence's integration with Intent editing (Row 4), see `docs/PILLAR_GROWTH_STRATEGY.md` and `docs/PILLAR_6_FORMATION_INTELLIGENCE_TECHNICAL_SPEC.md`, Row 4. Rhythm editing, wherever it lives, never touches Formation Intelligence in MVP regardless — it's self-reported data only, not part of the `DwellerProfile` model.
+
 ---
 
 ### **Section 2: Security & Privacy**

@@ -75,6 +75,10 @@ P0 is the **identity foundation** — it establishes who the user is before they
 - **Storage:** Saved to user profile (informs future prompt personalization)
 - **Time on screen:** 15-20 seconds
 
+### Formation Intelligence Integration (Row 1)
+
+When the user submits their Intent selection here, this is the **first-ever write** to that user's `DwellerProfile` — the record is created at this moment, with `statedIntent` set and nothing else populated yet. Immediately after, a lookup-table match (no LLM call — deterministic) selects the first-capture prompt set for Screen 7. Full mechanism, error handling (profile-creation failure doesn't block onboarding), and the open ticket defining what each Intent option concretely means: see `docs/PILLAR_6_FORMATION_INTELLIGENCE_TECHNICAL_SPEC.md`, Row 1 and Section 3.4.
+
 ### Screen 4: **Rhythm**
 - **Question:** "How often will you capture moments?"
 - **Copy:** "This helps us invite you back at the right time—no guilt, no streaks."

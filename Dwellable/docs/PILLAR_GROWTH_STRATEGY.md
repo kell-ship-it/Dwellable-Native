@@ -180,6 +180,22 @@
   - Inner ring: transcendent/spiritual (encountering God, breakthrough)
   - Visualization: "You're spending more time in reflection. Your emotional range is deepening."
 
+### Formation Intelligence Integration ("Your Narrative" + Intent/Rhythm editing)
+
+**Note:** this doc predates the more recent Growth redesign (T-196) and does not yet reflect "Your Narrative," or Intent/Rhythm editing (moved here from Account Profile per T-195, Aug 31 2026), as surfaces of this pillar — added here only as an integration pointer, not a fix to this doc's broader staleness.
+
+**Your Narrative (Row 6, Row 7):**
+- "Your Narrative" is generated and updated by Formation Intelligence (P6), not by this pillar directly.
+- When a user taps "Yes, that's me" or "Not quite" on their Narrative, call this **Narrative Confirmation** (not "Confirmation Loop" — that term is reserved for Dwelly's conversation loops). The tap triggers Formation Intelligence logic, not Growth's own.
+- "Not quite" is rate-limited to once a month and, when used, immediately regenerates the Narrative — an exception to the normal monthly cadence.
+
+**Intent editing (Row 4) — lives here, not Account Profile, as of Aug 31 2026 (T-195):**
+- When a user edits Intent from Growth, it overwrites `DwellerProfile.statedIntent` directly — synchronous write, no LLM call. The change must propagate live (not cached) back into this same screen's Narrative display.
+- Open items not yet locked: whether Intent changes should be rate-limited, and whether the prior value should be retained.
+- Rhythm editing (also moved here per T-195) does **not** touch Formation Intelligence at all in MVP — self-reported data only, this pillar's own concern, not part of the `DwellerProfile` model.
+
+Full mechanism: see `docs/PILLAR_6_FORMATION_INTELLIGENCE_TECHNICAL_SPEC.md`, Row 4, Row 6, and Row 7.
+
 ---
 
 ### **Section 3: Settings (Nested)**

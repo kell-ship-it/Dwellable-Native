@@ -2,6 +2,17 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
+## Next Session Objective (September 1, 2026 close)
+
+**Confirmed Pending Items:**
+1. **Clarify whether Pillar 6 (Formation Intelligence) needs any dedicated UI screens at all.** Today's full session reframed Pillar 6 entirely as backend infrastructure — a shared engine (Theme Detection → Dweller Profile Engine) that every other pillar reads from, with no screen of its own; all its outputs surface through other pillars' UI (Growth's Narrative, eventually Today/Notifications/Dwelly). The original session-open framing assumed P6 needed a "first-round UI design pass" like every other pillar — that assumption may no longer hold. Resolve this explicitly before treating P6 as "done" or "not done" on the design-pass tracker.
+2. **Resolve T-198 (qualifying paid tier definition) and T-199 (precise "once a month" window).** Both are blocking — T-198 blocks Row 7's reconciliation gate from being implementable at all, T-199 blocks the rate-limit fields (`narrativeConfirmationUsedThisMonth`, any Intent-change limit) from resetting correctly. T-200 (the actual engineering ticket to build the Dweller Profile Engine) cannot start until these are answered.
+3. **Design Pillar 7 (Beta & Marketing) — first-round UI design pass.** Per Kell's own sequencing at the start of this session, P6 and P7 were the two pillars left needing first-round design. P6 is now closed out at the systems/infrastructure level (full technical spec + two FigJam boards); once item 1 above is resolved, P7 is the next pillar in the queue.
+
+**Rationale:** Item 1 is a direct consequence of today's own work — Formation Intelligence turned out to be infrastructure, not a screen, which changes what "first-round UI design" even means for this pillar and shouldn't be quietly assumed either way. Items 2-3 are the two real blockers this session surfaced and explicitly did not resolve (deliberately, since neither had enough information to decide safely): the paid-tier and rate-limit-window questions are genuine product/business decisions, not engineering unknowns, and Pillar 7 is the last item in Kell's own stated queue from session-open.
+
+---
+
 ## Next Session Objective (August 31, 2026 close, second session)
 
 **Confirmed Pending Items:**
