@@ -2,6 +2,17 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
+## Next Session Objective (September 3, 2026 close)
+
+**Confirmed Pending Items:**
+1. **T-203: Check Figma's version history on "P6 - Menu / Navigation"** to determine whether the missing Tab Bar Shell Final / Capture Icon Options / 4 Nav Style Variation content (present earlier in the Sept 3 session, gone by the time Scenarios 1-3 were attempted, cause unknown) is recoverable. Needed before deciding whether to rebuild those scenarios from scratch or reconstruct them fresh.
+2. **T-202: Design the real "Sit with this" Capture-entry screen** in Figma — verse-prompted opening into Capture, currently only sketched as an HTML artifact concept, no real screen exists anywhere in the file.
+3. **Send the finished Figma file + the "Designer Audit Proposal Checklist" Notion page to the external designer.** This entire Sept 3 session's reorg (all 10 pillar pages into numbered scenarios, marked "✅ Ready for Review", 17 non-pillar pages archived) was done specifically to make the file ready for that handoff — the natural next real-world action, not just another design task.
+
+**Rationale:** Items 1-2 are the two concrete gaps this session surfaced and explicitly ticketed rather than guessed through — both are small, bounded, and block nothing else. Item 3 is the actual point of the whole session: the file is now genuinely ready for external review, and sending it is the step that turns this session's design-audit prep into something that produces feedback.
+
+---
+
 ## Next Session Objective (September 1, 2026 close)
 
 **Confirmed Pending Items:**
