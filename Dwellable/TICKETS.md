@@ -1,5 +1,15 @@
 # Dwellable Native — Full Ticket Registry
 
+**September 13-14, 2026 session — Ashley's design-audit response reviewed and negotiated to a revised scope; no engineering/design ticket changes (pure vendor communication):**
+
+**Ashley (paid design-audit reviewer) responded after 8 days:** genuinely positive on the concept ("awesome," "a fan already"), but flagged that a thoughtful full audit of all 10 pillars — the original $100/1-2-week proposal — is realistically 8+ hours of work, which $100 doesn't fairly compensate. She offered two alternatives, both timeboxed to 3-4 hours: (1) a deep conceptual+recommendations audit of a single highest-risk workflow, deferring everything else to live-user feedback later, or (2) a UI-consistency-only skim across as much of the file as she can reach.
+
+**Landed on a variant of Option 1, not exactly as she framed it.** After walking through what each option actually means (in particular clarifying "iterative approach" = shipping the other 9 flows as-is and learning from real user behavior/analytics instead of a designer's upfront review, not a hybrid deep-dive-plus-light-skim), Kell chose: Onboarding as the sole deep-dive scope (Welcome through first capture — matches what Jeremy/Ryan's informal briefs already flagged as the one area Kell is least confident about), full acceptance of the iterative/live-usage approach for the remaining 9 pillars, and a separate non-committal ask for what the *original* full-scope audit would cost if commissioned later (asked purely for future planning, explicitly decoupled from this round's decision). Reply drafted and left in Gmail Drafts, not yet sent — pending Kell's final read before going out.
+
+**No Figma, Notion, or ticket changes this session** — the Jeremy/Ryan Reviewer Briefs and Pillar 11 artifacts from the prior session are unchanged and still awaiting review.
+
+---
+
 **September 10-12, 2026 session — Pillar 11 (Growth) reviewer artifacts built, external design-audit reviewers (Jeremy, Ryan) fully onboarded via Figma cover-page briefs, T-062 deploy attempted and blocked (no ticket status change — code was already complete, this session only progressed deployment):**
 
 **Pillar 11 (Growth) design artifacts built for Kell's review** (no Figma changes yet — Artifact-first per standing rule): "Your Narrative" section mockup (populated / pre-threshold / "Not quite"-feedback states, per Pillar 6's locked confirmation-loop scenarios) and a full MVP-vs-Post-MVP comparison across new-user and seasoned-user states (Archetype, Color Wheel, Spiritual Gifts, "[Name]'s Language," Steward Score). Surfaced a real doc-drift finding first: the Notion "P11 User Scenarios & Acceptance Criteria" page was a day stale against its own parent strategy page — Emotional Themes had been cut in favor of "Your Narrative" the day after the scenarios doc was written, and no scenarios existed yet for the section that replaced it. Not yet resolved: new P11 scenario/AC text for Your Narrative has not been written back to Notion.
