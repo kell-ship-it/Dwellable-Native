@@ -11,7 +11,8 @@ struct Theme {
     // Text Colors
     static let text = Color(red: 0.91, green: 0.91, blue: 0.93)
     static let secondaryText = Color(red: 0.61, green: 0.64, blue: 0.71)
-    static let tertiaryText = Color(red: 0.42, green: 0.45, blue: 0.50)
+    static let tertiaryText = Color(red: 0.455, green: 0.498, blue: 0.549)
+    static let faintText = Color(red: 0.42, green: 0.45, blue: 0.50)
     static let placeholderText = Color(red: 0.85, green: 0.85, blue: 0.85)
     static let white = Color.white
     static let inputPlaceholder = Color(red: 0.184, green: 0.188, blue: 0.22)
@@ -19,6 +20,7 @@ struct Theme {
 
     // Accent & State Colors
     static let gold = Color(red: 0.79, green: 0.70, blue: 0.48)
+    static let goldMuted = Color(red: 0.79, green: 0.70, blue: 0.48, opacity: 0.35)
     static let goldDark = Color(red: 0.1, green: 0.08, blue: 0.05)
     static let error = Color(red: 0.95, green: 0.2, blue: 0.2)
     static let errorLight = Color(red: 0.95, green: 0.2, blue: 0.2, opacity: 0.1)
