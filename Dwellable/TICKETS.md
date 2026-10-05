@@ -1,5 +1,28 @@
 # Dwellable Native — Full Ticket Registry
 
+**October 5, 2026 session — Onboarding redesign architecture locked (21-screen → 7-screen), coverage map rebuilt with real Figma screen names, shareable brief built for Ashley + Digital Cotton, 7 new tickets raised (T-236–T-242):**
+
+**Coverage map fully corrected:** prior session had estimated screen names; this session rebuilt the coverage map artifact (`claude.ai/artifact/5GX3BFAsodMewJ2vX4ZpZ6`) from the actual Figma frame names on page `P0 — Onboarding — ✅ Ready for Review` (file `t5MUGEtpeFcUixobvHiYMc`, node 14:2). Key corrections: total old flow = **21 screens** (not 20), video consolidation = **14→1** (not 7→1), `01-cold-open` is a Psalm 105:2 scripture screen (not a "problem" frame — `02-problem` and `03-solution` are separate frames later in the sequence). Full Figma name inventory now locked in the artifact.
+
+**New 7-screen flow architecture confirmed:** (1) Welcome, (2) Animated Intro Video [T-239, ~40s, skippable], (3) Account Creation, (4) Name Entry, (5) Intent Selection, (6) Notification Permission, (7) First Capture. Login = separate branch from Screen 1 [T-240]. Key changes from old flow: 14-screen educational/video section consolidated into one video; Rhythm screen removed; account creation front-loaded to position 3; returning-user login branch is a new screen that didn't exist. Design sequencing locked: T-214 (WCAG color tokens) → T-216 (HIG/WCAG checklist) → T-238 (redesign), so new screens are built correctly from the start.
+
+**Shareable brief built** (`claude.ai/artifact/AEULcfAWWAqsCSyfVmxsMw`) — private until Kell shares via Share menu. Contains: 21→7 before/after, video arc description, 4 locked decisions, 4 open questions for reviewer feedback, new ticket list T-238–T-242. For Digital Cotton (share any time); Ashley will discuss in person (Friday meeting already scheduled).
+
+**7 new tickets raised this session:**
+- **T-236** — Formalize text alignment system (instructive=left, scripture=center, logo=center) — Ashley onboarding audit, all screens. Folds into T-214.
+- **T-237** — Standardize 28px horizontal content padding across onboarding — Ashley onboarding audit, all screens. Folds into T-214.
+- **T-238** — Redesign Onboarding — New 7-Screen Architecture (HIGH, needs Figma, depends on T-060)
+- **T-239** — Design and Produce 40s Animated Intro Video — Onboarding Screen 2 (HIGH, Large, depends on T-238)
+- **T-240** — Design Returning User Login Screen / Flow Gap (HIGH, depends on T-238 + T-098)
+- **T-241** — Name Entry — Use Native iOS TextField / Ashley Onboarding Review #4 (MEDIUM, depends on T-238 + T-110)
+- **T-242** — Intent Selection — Add 'I Am Not Sure Yet' Option / Ashley Onboarding Review #7 (MEDIUM, depends on T-238 + T-197)
+
+**Two known gaps NOT YET ticketed:** Ashley review item #5 (source text not captured) and Digital Cotton comment #25 points 6–7 (quote style consistency + "qualified" context) — both carried to next session.
+
+**Ticket counts after this session: 212 total (43 ✅ Complete / 3 🔄 In Progress / 161 🔲 Not Started / 5 ⚪ Deferred)**
+
+---
+
 **September 16, 2026 session — Full 27-comment Digital Cotton Figma review (For Ryan file) worked point-by-point to closure with Kell; 32 new tickets raised (T-204–T-235, one closed same-session), 5 existing tickets amended, a completed reply drafted for the reviewer:**
 
 **Review verification, done before anything was treated as actionable:** cross-checked all 27 comments against the actual rendered screens (Figma API screenshots + the real Reviewer Brief document), published as a hedged report artifact ("Digital Cotton Review") grading each comment Confirmed / Likely / Unverified. Comment #27 (addressed to an AI agent, referencing an external "tokenstoagents.ai" standard) was initially held out as a possible prompt-injection pattern — Kell confirmed Digital Cotton is a real designer and explained the comment as "agent drift" critique of AI-assisted design inconsistency, not injection; its substance turned out to already be covered by T-214/T-216, closed with no separate ticket needed.
