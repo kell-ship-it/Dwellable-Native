@@ -2,16 +2,21 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
-## Next Session Objective (October 5, 2026 close)
+## Next Session Objective (October 5, 2026 — 2nd session close)
 
 **Confirmed Pending Items:**
-1. **T-214 — Build WCAG AA color token system in Figma** — Pre-verified color tokens (bg, fg, gold, accessible muted, surfaces, error states) scoped to WCAG AA minimums (4.5:1 normal text, 3:1 large text/icons). This is the linchpin: every new screen in T-238 must be built with these tokens, not raw colors. Must happen before any redesign work starts.
-2. **T-216 — Build standing HIG + WCAG compliance checklist doc** — A written reference (Figma or doc) covering tap target minimums (44×44pt), contrast requirements, VoiceOver labeling, and other iOS HIG requirements that every new design must satisfy. Depends on T-214 (tokens come first, checklist references them). Together T-214 + T-216 close the "no compliance baseline" gap before T-238 design begins.
-3. **T-238 — Redesign Onboarding — New 7-Screen Architecture in Figma** — After T-214 + T-216 are done, design the 7-screen flow (Welcome → Video → Account Creation → Name → Intent → Notifications → First Capture) in Figma on page `P0 — Onboarding — ✅ Ready for Review`, using T-214 color tokens. See coverage map artifact (`claude.ai/artifact/5GX3BFAsodMewJ2vX4ZpZ6`) for full 21→7 mapping and actual old Figma frame names.
+1. **T-238 — Begin Figma redesign of 7-screen onboarding** — T-214 (color tokens) and T-216 (HIG/WCAG checklist) are both complete. Start the new architecture on Figma page `P0 — Onboarding — ✅ Ready for Review` (file `t5MUGEtpeFcUixobvHiYMc`, node 14:2). Use `Dwellable/Colors` variables throughout. Coverage map artifact: `claude.ai/artifact/5GX3BFAsodMewJ2vX4ZpZ6`. Begin with Screens 1–3 (Welcome, Animated Intro placeholder, Account Creation).
+2. **White-on-gold accessibility decision (micro-ticket needed)** — White text on gold CTA button fails WCAG AA at 2.06:1 (flagged in T-214 token description). This must be decided before Account Creation screen (Screen 3 in T-238) is designed, since it uses the primary gold CTA button. Options: dark text on gold (7.72:1 — passes easily), or a design treatment change. Ticket this and make the call at session start.
+3. **Ticket Ashley review item #5 and Digital Cotton comment #25 points 6–7** — Both have been carried for three sessions without source text. Pull Ashley's review from Notion and DC comment #25 from the For Ryan Figma file at session start; write both tickets before any design work begins.
 
-**Rationale:** The 7-screen architecture is locked and briefed (Ashley meeting Friday, Digital Cotton brief ready to share). The only thing blocking actual Figma design is the missing token foundation — building new screens on raw colors would require a full rework once T-214 lands. Doing T-214 → T-216 → T-238 in sequence means every new screen is built correctly from the start and requires no WCAG rework afterward.
+**Rationale:** T-214 and T-216 are done — the blocking prerequisites for T-238 are cleared. The white-on-gold contrast gap is a fast design decision (one call from Kell) but must be made before Screen 3 is built. The two untickteted gaps are a process debt that has grown stale enough to risk being forgotten entirely.
 
-**Two gaps to ticket at session start (not yet ticketed):** Ashley review item #5 (source text not captured this session) and Digital Cotton comment #25 points 6–7 (quote style consistency + "qualified" reference context on Today tab). Both need source text pulled before tickets can be written.
+**Key assets this session created:**
+- `docs/HIG_WCAG_COMPLIANCE_CHECKLIST.md` — standing design-review checklist (T-216)
+- `Dwellable/Dwellable/Utilities/Theme.swift` — updated: tertiaryText fixed, faintText + goldMuted added
+- Figma `Dwellable/Colors` collection — text/tertiary fixed to #747F8C, text/faint + accent/gold-muted added, all 12 tokens have descriptions
+
+**Two gaps still unticketted (third session carry):** Ashley review item #5 and Digital Cotton comment #25 points 6–7. Source text still not captured.
 
 ---
 
