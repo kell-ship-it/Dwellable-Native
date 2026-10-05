@@ -2,6 +2,15 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
+## Next Session Objective (September 16, 2026 close)
+
+**Confirmed Pending Items:**
+1. **Resolve and ticket comment #25's points 6 and 7** (quote style consistency across the app, and adding short context to the "qualified" reference on the Today tab's "On This Day" card) — both surfaced explicitly in the "Today Tab, All Locked" mockup as gaps, neither decided nor ticketed yet, unlike every other point in that comment.
+
+**Rationale:** This is the one loose end from this session's own review pass — the two points were self-caught, not decided, and not yet in TICKETS.csv. Kell narrowed next session's objective to this single item at close. Two other follow-ups remain tracked elsewhere rather than as objectives: the finished reply to Digital Cotton (drafted, awaiting Kell to send; T-210 also awaits his answer on the progress bar), and starting actual Figma implementation (T-076 standard tab bar and T-214 color tokens are the foundational pair — every ticket from this session is still at "design pass" only).
+
+---
+
 ## Next Session Objective (September 3, 2026 close)
 
 **Confirmed Pending Items:**
