@@ -17,7 +17,7 @@
 **7 new tickets raised this session:**
 - **T-236** — Formalize text alignment system (instructive=left, scripture=center, logo=center) — Ashley onboarding audit, all screens. Folds into T-214.
 - **T-237** — Standardize 28px horizontal content padding across onboarding — Ashley onboarding audit, all screens. Folds into T-214.
-- **T-238** — Redesign Onboarding — New 7-Screen Architecture (HIGH, needs Figma, depends on T-060)
+- **T-238** 🔄 — Redesign Onboarding — New 7-Screen Architecture (HIGH, 1/7 screens design-complete, depends on T-060) — **AC: Each screen must pass all 10 sections of HIG/WCAG checklist (docs/HIG_WCAG_COMPLIANCE_CHECKLIST.md) before design-complete. Agent delivers checklist pass/fail alongside each screen.** — Screen 1 ✅ Welcome (Oct 5, 2026): dark bg, flame icon, dwelly wordmark, gold CTA (dark text passes WCAG), "Log in" white+underline (fixes gold contrast fail). Section "7-Screen Flow — T-238 (New Architecture)" created on P0 Onboarding Figma page.
 - **T-239** — Design and Produce 40s Animated Intro Video — Onboarding Screen 2 (HIGH, Large, depends on T-238)
 - **T-240** — Design Returning User Login Screen / Flow Gap (HIGH, depends on T-238 + T-098)
 - **T-241** — Name Entry — Use Native iOS TextField / Ashley Onboarding Review #4 (MEDIUM, depends on T-238 + T-110)
