@@ -1,5 +1,11 @@
 # Dwellable Native — Full Ticket Registry
 
+**October 5, 2026 session (3rd) — No ticket status changes. Figma design-system infrastructure established: "📐 Principles & Guardrails" reference page built (pageId 2142:92, file t5MUGEtpeFcUixobvHiYMc) with all 12 Dwellable/Colors tokens, spacing scale, typography, and the full HIG/WCAG compliance checklist in one canonical reference. "🔄 T-238 — Onboarding Redesign (7-Screen)" dedicated Figma page created (pageId 2159:92) — Screen 1 (01 — Welcome ✅) cloned from P0 at proper position, placeholder frames for Screens 2–7 with flow labels. T-238 remains 🔄 In Progress (1/7 screens design-complete). Visual delta between old welcome-screen (node 1227:2032) and new Screen 1 (node 2134:93) documented: one visible change ("Log in" gold→white+underline to fix 3.8:1 WCAG fail), remaining changes are token rebindings (deprecated VariableID:257/123 sets → VariableID:1:xx). No ticket count change.**
+
+**Ticket counts after this session: 212 total (45 ✅ Complete / 3 🔄 In Progress / 159 🔲 Not Started / 5 ⚪ Deferred)**
+
+---
+
 **October 5, 2026 session (2nd) — T-216 (HIG/WCAG checklist) and T-214 (WCAG AA color token system) both complete. Order corrected: checklist built first so token values could be informed by the criteria. text/tertiary fixed (#6B7380 fails at 4.12:1 → #747F8C passes at 4.86:1) in both Theme.swift and Figma Dwellable/Colors collection. text/faint and accent/gold-muted added. White-on-gold button contrast flagged (2.06:1 — fails AA, decision needed before T-238 gold buttons are designed). T-238 ready to start next session.**
 
 **Ticket counts after this session: 212 total (45 ✅ Complete / 3 🔄 In Progress / 159 🔲 Not Started / 5 ⚪ Deferred)**

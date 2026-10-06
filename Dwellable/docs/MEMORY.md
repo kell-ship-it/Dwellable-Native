@@ -2,6 +2,24 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
+## Next Session Objective (October 5, 2026 — 3rd session close)
+
+**Confirmed Pending Items:**
+1. **T-238 Screen 2 — Design Animated Intro Video screen** — Figma page "🔄 T-238 — Onboarding Redesign (7-Screen)" (pageId 2159:92, file t5MUGEtpeFcUixobvHiYMc) is set up with placeholder at position 2. Screen needs: video player frame (402×874px), skip button (top-right, "Skip" label, passes 44pt HIG tap target), correct token bindings from Dwellable/Colors. Run full 10-section HIG/WCAG checklist before marking design-complete.
+2. **White-on-gold contrast decision + micro-ticket** — White text on gold CTA button fails WCAG AA at 2.06:1 (flagged in T-214). Must be resolved before Screen 3 (Account Creation). Options: dark text on gold (passes at 7.72:1) or full treatment change. Ticket this as a standalone micro-ticket at session start, make the call with Kell, then proceed to Screen 3 design.
+3. **Ticket Ashley review item #5 and Digital Cotton comment #25 points 6–7** — Carried four sessions without source text. Pull Ashley's review from Notion and DC comment #25 from the For Ryan Figma file (node from September 16 session) at session start; write both tickets before design work begins.
+
+**Rationale:** The dedicated T-238 Figma page is now set up cleanly — Screen 2 is the natural next design step. The white-on-gold decision is a blocking call before Screen 3. The two unticketed Ashley/DC gaps are now four sessions stale and risk being forgotten entirely.
+
+**Key assets created this session:**
+- Figma page "📐 Principles & Guardrails" (pageId 2142:92) — canonical color tokens, spacing, typography, HIG/WCAG checklist reference
+- Figma page "🔄 T-238 — Onboarding Redesign (7-Screen)" (pageId 2159:92) — Screen 1 placed, Screens 2–7 placeholder frames set up
+- Visual delta documented: old welcome-screen (1227:2032) vs new 01-Welcome (2134:93) — "Log in" gold→white+underline is the only visible change
+
+**Two gaps still unticketed (fourth session carry):** Ashley review item #5 and Digital Cotton comment #25 points 6–7. Source text still not captured.
+
+---
+
 ## Next Session Objective (October 5, 2026 — 2nd session close)
 
 **Confirmed Pending Items:**
