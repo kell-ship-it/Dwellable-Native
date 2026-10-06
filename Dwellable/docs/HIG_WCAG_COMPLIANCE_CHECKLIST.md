@@ -50,6 +50,9 @@ Apply **T-214 color tokens** — do not use raw hex fills. The token set is pre-
 - Back button circle fill/icon contrast (comment #5)
 - Any bare "muted gray" that was eyedropperd from a neighboring hex and not drawn from the token set
 
+**Locked rule — Gold CTA buttons (T-246):**
+- [ ] Gold CTA button text is **dark** (text/primary or text/on-gold), never white. White-on-gold = 2.06:1 (fail). Dark-on-gold = 7.72:1 (AA + AAA pass). Applied first in T-238 Screen 1 "Get Started" button.
+
 ---
 
 ## 3. Typography

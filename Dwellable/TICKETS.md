@@ -1,6 +1,6 @@
 # Dwellable Native — Full Ticket Registry
 
-**October 6, 2026 session — 3 new tickets raised (T-243–T-245): Ashley item #5 source text located and ticketed; DC comment #25 points 6–7 ticketed. Pending carry-forward items fully resolved.**
+**October 6, 2026 session — 4 new tickets raised (T-243–T-246): Ashley item #5 source text located and ticketed; DC comment #25 points 6–7 ticketed; white-on-gold CTA contrast decision formally locked.**
 
 **T-243** ✅ — Onboarding — Value Prop Skip/Escape UX (Ashley Onboarding Review #5) — Source text located in Ashley's review document (screenshot from Kell, Oct 6, 2026). Ashley's concern: "The content here is rich and encouraging for users, but it is drawn out across many steps that the user cannot get out of. This may result in users feeling trapped without a clear way to jump to their dashboard or home screen." Resolution: the 14-screen value prop section is now a single ~40s skippable video (T-239) — skip routes to Screen 3. Concern fully addressed by the new architecture. Marked ✅ Complete (resolved by T-238 + T-239). Skip-button design spec remains in T-239 scope.
 
@@ -8,7 +8,9 @@
 
 **T-245** 🔲 — Today Tab — Add Context to 'Qualified' Reference on On This Day Card (DC Comment #25.7) — Digital Cotton comment #25 point 7: the 'qualified' label on the Today tab's "On This Day" card lacks context for users who haven't encountered it in onboarding or growth content. Add a short explanatory subtitle or contextual line. MEDIUM priority, XS. Depends on T-232.
 
-**Ticket counts after this session: 222 total (46 ✅ Complete / 3 🔄 In Progress / 168 🔲 Not Started / 5 ⚪ Deferred)**
+**T-246** ✅ — Gold CTA Button Text Rule — Dark Text on Gold (LOCKED DECISION) — White-on-gold = 2.06:1 (fail). Dark-on-gold = 7.72:1 (AA + AAA pass). All gold CTA buttons use dark text — never white. Already applied in Screen 1 (T-238). Rule added to HIG/WCAG checklist (Section 2). HIGH priority, XS.
+
+**Ticket counts after this session: 223 total (48 ✅ Complete / 3 🔄 In Progress / 167 🔲 Not Started / 5 ⚪ Deferred)**
 
 ---
 
