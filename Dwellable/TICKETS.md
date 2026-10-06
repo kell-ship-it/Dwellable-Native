@@ -1,5 +1,17 @@
 # Dwellable Native — Full Ticket Registry
 
+**October 6, 2026 session — 3 new tickets raised (T-243–T-245): Ashley item #5 source text located and ticketed; DC comment #25 points 6–7 ticketed. Pending carry-forward items fully resolved.**
+
+**T-243** ✅ — Onboarding — Value Prop Skip/Escape UX (Ashley Onboarding Review #5) — Source text located in Ashley's review document (screenshot from Kell, Oct 6, 2026). Ashley's concern: "The content here is rich and encouraging for users, but it is drawn out across many steps that the user cannot get out of. This may result in users feeling trapped without a clear way to jump to their dashboard or home screen." Resolution: the 14-screen value prop section is now a single ~40s skippable video (T-239) — skip routes to Screen 3. Concern fully addressed by the new architecture. Marked ✅ Complete (resolved by T-238 + T-239). Skip-button design spec remains in T-239 scope.
+
+**T-244** 🔲 — Standardize Quote Style Across App (DC Comment #25.6) — Digital Cotton comment #25 point 6: quote style (pull-quotes, scripture, other quoted text) is inconsistent across the app. Establish single visual system for quotes: type style, color token, indentation, quotation-mark treatment. Apply across all pillars. Fold into T-214 sweep. LOW priority, XS.
+
+**T-245** 🔲 — Today Tab — Add Context to 'Qualified' Reference on On This Day Card (DC Comment #25.7) — Digital Cotton comment #25 point 7: the 'qualified' label on the Today tab's "On This Day" card lacks context for users who haven't encountered it in onboarding or growth content. Add a short explanatory subtitle or contextual line. MEDIUM priority, XS. Depends on T-232.
+
+**Ticket counts after this session: 222 total (46 ✅ Complete / 3 🔄 In Progress / 168 🔲 Not Started / 5 ⚪ Deferred)**
+
+---
+
 **October 5, 2026 session (3rd) — No ticket status changes. Figma design-system infrastructure established: "📐 Principles & Guardrails" reference page built (pageId 2142:92, file t5MUGEtpeFcUixobvHiYMc) with all 12 Dwellable/Colors tokens, spacing scale, typography, and the full HIG/WCAG compliance checklist in one canonical reference. "🔄 T-238 — Onboarding Redesign (7-Screen)" dedicated Figma page created (pageId 2159:92) — Screen 1 (01 — Welcome ✅) cloned from P0 at proper position, placeholder frames for Screens 2–7 with flow labels. T-238 remains 🔄 In Progress (1/7 screens design-complete). Visual delta between old welcome-screen (node 1227:2032) and new Screen 1 (node 2134:93) documented: one visible change ("Log in" gold→white+underline to fix 3.8:1 WCAG fail), remaining changes are token rebindings (deprecated VariableID:257/123 sets → VariableID:1:xx). No ticket count change.**
 
 **Ticket counts after this session: 212 total (45 ✅ Complete / 3 🔄 In Progress / 159 🔲 Not Started / 5 ⚪ Deferred)**
