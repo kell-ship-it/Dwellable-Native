@@ -2,6 +2,23 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
+## Next Session Objective (October 7, 2026)
+
+**Confirmed Pending Items:**
+1. **T-247 — Fix HIG status bars on all T-238 screens** — Screens 01, 03, 04, 05, 06, and new 07 all use text-glyph placeholders instead of proper iOS status bar elements. Flagged by Digital Cotton as making screens look non-production. Replace with: 9:41 time (Instrument Sans SemiBold 17pt), 3-bar cellular signal (vector), Wi-Fi arc, battery icon. Fix all 6 screens in one pass.
+2. **Redesign Screen 07 — Preparing Space (remove progress bar + rebuild)** — Screen 07 was designed this session (node 2240:92) but has two issues: (a) progress bar at top was not requested and contradicts the brief — remove it entirely; (b) status bar needs T-247 fix. After removing the bar, the screen should read as a calm, centered loading state that simply signals "your space is being prepared" — no progress indicator. Brief: dark background, personalized headline, spiritual subtitle, 4 checklist items with animated states, gold "capture your first moment →" text link at bottom.
+3. **T-239 — Design Screen 02 Animated Intro Video frame in Figma** — Screen 02 placeholder exists at node 2168:92. Design the frame for the skippable 40s video: video player area (full-bleed), skip button (top-right, "Skip" text, 44pt tap target per HIG), progress indicator for video. This is a design-only pass — video production is a separate production task.
+
+**Rationale:** Items 1 and 2 are corrections to this session's own output — both are fast fixes that should be completed before any new screens are started, since they're already in Figma and just need editing. Item 3 is the original pending item from last session that was superseded by the preparing-space detour this session.
+
+**Key assets from this session:**
+- Screen 07 — Preparing Space designed in Figma, node 2240:92 (T-238 page, file t5MUGEtpeFcUixobvHiYMc) — draft, has issues pending (see items 1–2)
+- T-247 raised: HIG status bar fix across all T-238 screens
+- Muted text contrast (#666159 on #0A0A0A ≈ 3:1) confirmed as deliberate design choice — not a violation to fix
+- Headspace confirmed as canonical example of animated explainer video onboarding (video appears before signup, explains brand/concept)
+
+---
+
 ## Next Session Objective (October 5, 2026 — 3rd session close)
 
 **Confirmed Pending Items:**
