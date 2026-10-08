@@ -39,7 +39,7 @@ An external reviewer audited a cross-pillar sample of screens. A hedged verifica
 | # | Screen | Finding |
 |---|--------|---------|
 | 1 | Welcome | Logo mark (thin outlined flame) and "dwelly" wordmark (heavy serif) don't share a line weight — inconsistent visual weight between a mark and its wordmark. |
-| 3 | Capture (recording) | **Two states fighting on one screen**: topic-selection cards were still shown while a recording was already live (0:08 elapsed). Once capture/recording starts, the "pick a topic" affordance must disappear, not persist alongside active input. Also: top 40% of the screen was empty, and a third topic card was clipped at the container edge. |
+| 3 | Capture (recording) | **Two states fighting on one screen**: topic-selection cards were still shown while a recording was already live (0:08 elapsed). Broken into 5 points, all ticketed (T-206–T-209, T-213), locked specs below — **all still unbuilt as of Oct 8, 2026.** |
 | 26 | Capture (recording) | A gold progress bar at the top of the Capture screen had no label — "as a user, what is this?" (streak? session progress? recording length?). **This independently confirms the Oct 8, 2026 decision to drop the onboarding-style progress bar from the P1 Capture redesign** — an unlabeled progress indicator doesn't belong on a repeating, open-ended action screen. |
 | 7 | Journal entry detail | Date, body copy, star/ellipsis icons, and status-bar time were all visibly lower-contrast than the headline/mood-tag text next to them — the general shape of the WCAG contrast problem T-214's token sweep was built to fix. |
 | 9 | Entries (calendar/list) | A floating tab bar visually occluded a card's body text — the most concretely verifiable bug in the review. Floating/pill-style overlays need real clearance checked against actual scrollable content, not just a static mockup. |
@@ -49,6 +49,18 @@ An external reviewer audited a cross-pillar sample of screens. A hedged verifica
 | 23 | Account Profile | Missing Sign Out and Delete Account entirely — Apple requires in-app account deletion for any app with account creation (independently matches open ticket T-095). Preferences row icon was literally a clock face (wrong icon for its function). A "Free Trial · 6 days left" row had no chevron or affordable action — looked actionable but wasn't. |
 | 18 | Account Profile vs. Journal Entry | **Inconsistent back-button treatment across the app** — a bare "‹" chevron on one screen, a chevron inside a filled circular button on another. Needs one standardized treatment used everywhere (this is the open T-223 decision). |
 | 17 | Push notification mock | A push notification was shown floating on a solid black frame — notifications should always be mocked on a lock screen or over another app so they can be judged in the context users will actually see them. |
+
+#### Comment #3 breakdown — locked specs for the Capture entry screen (T-206–T-209, T-213)
+
+Published mockups: "Capture Entry, Locked" (`claude.ai/artifact/A8o55msbe8LdK9GHuJtm3n`), "3.2 and 3.4, Before After" (`claude.ai/artifact/YYQ5F6PbXBXnjHFEVrg9rG`).
+
+- **T-206 — Stack cards vertically, not a carousel.** The entry screen has the vertical space for it (unlike a home-screen row competing with other content) — all 3–4 prompt cards lay out as full-width rows, filling the space a horizontal carousel left empty above, nothing clipped at the container edge.
+- **T-207 — Inner padding on cards.** ~14–16px on all sides so copy doesn't run to the card's own border. Sequenced after T-206 (same component).
+- **T-208 — "Speak freely. This space is yours." on recording start.** The instant a *voice recording* starts (tapped-prompt or free-form path), the prompt cards are replaced by this fixed line — shown once, on the entry screen only. It does not reappear once the user moves into the actual conversational screen, where Dwelly's real questions take over. **This is specific to the voice/recording path** — a typed submission has no multi-second "in progress" window the same way, so this state doesn't apply to a direct-text scenario.
+- **T-209 — Helper copy.** Replace "Pulled from what you shared during onboarding — share what's actually on your mind" (over-explains the mechanism, reads stiff) with **"Tap one, or just start talking."**
+- **T-213 — Differentiate self-guided vs. Dwelly-prompted variants.** Two top-level frames (`B-guided-prompt-home`) were confirmed pixel-identical duplicates — nothing currently distinguishes the self-guided entry from the Dwelly-prompted one. Needs an actual design pass (e.g., Dwelly-prompted shows a specific question Dwelly is asking, not the generic multi-topic picker). Sequenced after T-206.
+
+**Note:** these mockups were built before the Oct 8, 2026 decision to drop the onboarding-style progress bar from Capture entirely — the published mockups still show it. Follow the Oct 8 decision (no progress bar), not the older mockup, on that one point; everything else in this breakdown still stands.
 
 ### Likely (strong circumstantial match, not pixel-verified)
 
@@ -64,18 +76,36 @@ An external reviewer audited a cross-pillar sample of screens. A hedged verifica
 
 ---
 
-## 4. Ashley (Designer) — Onboarding Review (published Oct 5, 2026 as "Ashley's Onboarding Review" Artifact, `claude.ai/artifact/3aDPRq9Zau2qyC1iv9TGhn`)
+## 4. Ashley (Designer) — Onboarding UX Audit
 
-Items 2–7 from Ashley's onboarding audit, each with a current-state vs. proposed-state comparison.
+**Primary source:** Ashley Smith's own Notion page, "dwelly: Onboarding UX Audit" (`app.notion.com/p/arswithlove/dwelly-Onboarding-UX-Audit-3eef8d8c79bd80e9b761ca0bef2945db` — her own workspace, outside the connected Notion integration; read via the browser pane, Oct 8, 2026). A secondary artifact ("Ashley's Onboarding Review," `claude.ai/artifact/3aDPRq9Zau2qyC1iv9TGhn`, published Oct 5, 2026) paraphrased part of this but was itself incomplete — missing the general "All Screens" findings below entirely, including the account-creation-first recommendation. **This section is now sourced from Ashley's actual page, not the secondary artifact.**
 
-| # | Finding | Status |
-|---|---------|--------|
-| 2 | The 3 value-prop screens (Cold Open, Intro Name, Value Prop) have no skip/exit — trapped feeling. Add a skip CTA to each. Personalization screens (Intent, Rhythm) and the Account commitment screen should stay required, not skippable. | Skip affordance proposed; **still open with Ashley**: whether to also *combine* the 3 VP screens into fewer — a separate, bigger question from just adding skip. Ask her directly before ticketing a restructure. |
-| 3 | "Already have an account? Log in" appears on the Welcome screen but disappears on every subsequent pre-account screen with no way back to it except the full back-chain. | Proposed: keep the login link persistent on every pre-account screen (simpler default than relying on back-chaining to Welcome). |
-| 4 | The name-entry field reads as styled placeholder text, not a tappable input — users may not realize it's an input at all. Also fails WCAG contrast (#666159 on dark background). | Proposed: swap to a standard iOS text field with a persistent label ("Your name") and a hint ("This is what dwelly will call you"). Two problems, one fix — the field-component swap. |
-| 5 | Password requirements only appear after a failed submission — users don't know the rules until they've already failed once. | Proposed: show requirement hints immediately below the password field, each turning gold as satisfied while typing. **Still blocked**: this depends on a decision that hasn't been made — what are Dwellable's actual password requirements (length, character classes)? Define those first, then this becomes buildable. **This is the "Ashley review item #5" referenced as unresolved across multiple past sessions — it needs Kell's decision on password rules before it can move, not more design work.** |
-| 6 | On duplicate-email error, "log in instead?" renders as underlined inline text — reads as a caption, not a button. | Proposed: replace with a real button ("Log in with this email") that only appears in the duplicate-email error state, taking the user to Login with the email pre-filled. |
-| 7 | The Intent selection screen requires picking one of 5 options with no escape hatch for users who can't articulate why they're here or feel pressured. | Proposed: add a visually de-emphasized "I'm not sure yet" option at the bottom. Storage implication: this stores intent as `null`, not a real selection — Formation Intelligence skips intent-based personalization until the user has captured a few moments, then can surface the question again later as a gentle prompt rather than forcing it at onboarding. |
+### All Screens (general findings, apply everywhere in onboarding)
+
+- **Accessibility:** `#666159` (text/muted) on `#0A0A0A` fails contrast for normal text, made worse by small caption sizing. Change all `#666159` instances to `#A39E98` (already in use on Scenario 2) — this is a direct, specific color swap, not a general "improve contrast" note.
+- **Content alignment:** inconsistent vertical alignment — some onboarding screens are top-aligned, some center-aligned. Pick one and apply it consistently.
+- **Text alignment rule** (already adopted into `HIG_WCAG_COMPLIANCE_CHECKLIST.md` section 3): instructive/body copy → left-aligned (most important thing to consume first); scripture/quoted text → center-aligned; logo/intro screens → centered.
+- **Make account creation the first step after "Get Started."** This is the single biggest structural recommendation and is **not yet reflected in the current 7-screen T-238 architecture**: "Adding 20+ steps before account creation creates a high risk of fall off before the user makes it there." Account creation is the actual goal (it's what makes a user likely to return) — everything before it is pure risk of drop-off.
+- **Provide a skip/return option on the value-prop screens** specifically because they're rich/encouraging but long and currently inescapable — users may feel trapped with no way to jump to their home screen.
+- **Consistent padding:** 28px left/right, applied to header, content, and footer sections (already adopted as T-237 in the checklist).
+
+### Cold Open + Combined Intro Name
+
+- **"Log in" should behave as a back action**, not a link that simply vanishes after Welcome. Right now it disappears the moment the user moves past Welcome, with no way back to it except the full back-chain — Ashley's specific proposed fix is to fold it into the back action (consistent with every other step having a back control), not necessarily to keep a separate persistent link floating on every screen.
+- **Should these be 2 separate screens?** Both exist purely to introduce dwelly — question whether 3 introduction-flavored steps in a row is worth the attention-span/conversion risk of combining into fewer. Raised as an open question for Ashley to weigh in on directly, not yet resolved.
+- **Copy:** "Tap to continue" → just **"Continue"** — reduces words without losing meaning.
+- **Back/forward proximity:** put both actions in the same general area (e.g., both in the bottom action bar) so users don't have to search for how to go back.
+- **Name field:** reads as styled placeholder text, not an actual tappable input — convert to a real text field, and fix the unfilled-state text color to `#A39E98` (same accessibility fix as above).
+
+### Account Creation Errors
+
+- **Show password requirements upfront, not only after a failed submission.** Outline every actual requirement (lowercase/uppercase/special character/etc.) — if Dwellable doesn't have defined password rules yet, that's a prerequisite decision before this can be built. **This is the still-open "Ashley review item" referenced across multiple past sessions as unresolved — it needs Kell's decision on actual password rules, not more design work.**
+- **"Log in instead" needs real button affordance.** An underlined clickable error caption isn't a common/recognizable pattern — make it a button that appears conditionally, or give it clearly-clickable styling.
+
+### Intent Selection (nothing chosen / error state)
+
+- **Text color accessibility** — same `#666159` → `#A39E98` fix applies here too.
+- **Help the user avoid the error in the first place**: either state the requirement plainly ("Please select at least one") or remove the pressure entirely by adding an **"I'm not sure yet"** option. Storage implication (from the secondary artifact, still holds): "not sure yet" stores intent as `null`, Formation Intelligence skips intent-based personalization until the user has captured a few moments, then can resurface the question later as a gentle prompt rather than forcing it at onboarding.
 
 ---
 
