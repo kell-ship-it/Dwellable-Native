@@ -219,7 +219,7 @@ Before marking a screen design-complete, all items above must be checked (or exp
 | Section | Pass / Fail / N/A | Notes |
 |---------|--------------------------|-------|
 | 1. Tap Targets | ✅ Pass | cta-link-hitzone 346×44 |
-| 2. Contrast | ✅ Fixed | Was: subtitle "Making space to receive…" #666159 = **3.23:1** (fail — prior session's MEMORY.md incorrectly called this "deliberate, not a violation"; it's active body copy, not a disabled state, so the disabled-contrast exception doesn't apply). Fixed: bound to new `text/muted-warm` #807b71 (~4.70:1). Item-4 "Readying your daily rhythm…" (#635e52, 3.07:1) correctly remains exempt as a genuine disabled/inactive-state item — must be marked with a disabled/inactive accessibility trait at SwiftUI build time so VoiceOver doesn't read it as equally actionable |
+| 2. Contrast | ✅ Fixed | Was: subtitle "Making space to receive…" #666159 = **3.23:1** (fail — prior session's MEMORY.md incorrectly called this "deliberate, not a violation"; it's active body copy, not a disabled state, so the disabled-contrast exception doesn't apply). Fixed: bound to new `text/muted-warm` #807b71 (~4.70:1). The muted/not-yet-started slot (#635e52, 3.07:1 — now "Preparing your first prompt...", see copy update below) correctly remains exempt as a genuine disabled/inactive-state item — must be marked with a disabled/inactive accessibility trait at SwiftUI build time so VoiceOver doesn't read it as equally actionable |
 | 3. Typography | ✅ Pass (approved deviation) | — |
 | 4. Layout + Spacing | ✅ Pass | Home indicator at y=861, 8pt from true bottom edge |
 | 5. Navigation | — N/A | Final onboarding screen, no back control by design |
@@ -228,6 +228,8 @@ Before marking a screen design-complete, all items above must be checked (or exp
 | 8. VoiceOver | ⚠️ Deferred | — |
 | 9. Loading + Error States | ✅ Pass | Checklist items themselves are a loading-state pattern by design |
 | 10. Color Tokens | ✅ Fixed | Root bg bound to `background/primary`, cta-link bound to `accent/gold`, subtitle bound to new `text/muted-warm`. Headline/checklist-item labels (#f5f5f7) intentionally left as a distinct near-white shade shared with the status-bar component — not unified with `text/primary` (#e8e8ed) since that would be a visual change, not a hygiene fix |
+
+**Copy update — October 8, 2026:** Screen 07's 4 loading items changed from (Setting up your journal / Opening your reflection space / Preparing your first prompt / Readying your daily rhythm) to (**Waking up Dwelly / Setting up your journal / Opening your reflection space / Preparing your first prompt**). "Daily rhythm" was dropped because Rhythm is a post-onboarding, conditional concept not established anywhere in the onboarding flow itself — referencing it here was describing a feature the user hadn't actually set up. "Waking up Dwelly" was chosen as the replacement (placed first, not appended) because it's the one unconditional, concrete thing every user gets regardless of intent/rhythm/notification choices — and it's causally prior to the other three (Dwelly's conversation is what produces the journal, reflection space, and prompt), so it reads as a sequence rather than a stretch to reach four items.
 
 ### Open items carried forward (not fixed this pass — need a decision or can't be verified from Figma)
 
