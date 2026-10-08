@@ -137,6 +137,8 @@ Before marking a screen design-complete, all items above must be checked (or exp
 
 **Process rule (locked October 8, 2026):** This table must be filled in with real, computed values at the moment each screen is marked Design-Complete — not retrofitted later via a separate audit pass. Contrast ratios are calculated from actual fill/text hex values (or a contrast plugin), never eyeballed. Tap targets are verified against actual frame dimensions (`get_metadata`), never judged from a screenshot. See `feedback_hig_wcag_checklist_gate` memory for the incident that prompted this.
 
+**Companion doc:** `docs/DESIGN_LEARNINGS.md` consolidates this checklist's standing HIG/WCAG rules with Digital Cotton's Figma review findings and Ashley's onboarding audit — read it before starting a new pillar's design pass, not just this file.
+
 **Backfill pass — October 8, 2026** (first time this table has actually been filled in; T-238 screens were previously marked ✅ without it)
 
 ### 01 — Welcome (node 2159:130)
