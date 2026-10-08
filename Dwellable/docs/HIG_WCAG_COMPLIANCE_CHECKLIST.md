@@ -135,15 +135,103 @@ This section is structural — it is about hygiene and forward correctness, not 
 
 Before marking a screen design-complete, all items above must be checked (or explicitly deferred with a ticket reference). Deferred items that affect shipping quality should be tracked as new tickets.
 
-| Section | ✅ Pass / ❌ Fail / — N/A | Notes |
+**Process rule (locked October 8, 2026):** This table must be filled in with real, computed values at the moment each screen is marked Design-Complete — not retrofitted later via a separate audit pass. Contrast ratios are calculated from actual fill/text hex values (or a contrast plugin), never eyeballed. Tap targets are verified against actual frame dimensions (`get_metadata`), never judged from a screenshot. See `feedback_hig_wcag_checklist_gate` memory for the incident that prompted this.
+
+**Backfill pass — October 8, 2026** (first time this table has actually been filled in; T-238 screens were previously marked ✅ without it)
+
+### 01 — Welcome (node 2159:130)
+
+| Section | Pass / Fail / N/A | Notes |
 |---------|--------------------------|-------|
-| 1. Tap Targets | | |
-| 2. Contrast | | |
-| 3. Typography | | |
-| 4. Layout + Spacing | | |
-| 5. Navigation | | |
-| 6. Status Bar | | |
-| 7. Iconography | | |
-| 8. VoiceOver | | |
-| 9. Loading + Error States | | |
-| 10. Color Tokens | | |
+| 1. Tap Targets | ✅ Pass | Get Started 346×60, login-prompt-row 44pt tall |
+| 2. Contrast | ✅ Pass | Tagline #747f8c/#0a0a0a = 4.86:1; gold CTA dark-on-gold = 9.54:1; brand name/login-link near-max contrast |
+| 3. Typography | ✅ Pass (approved deviation) | Instrument Serif/Sans, not SF Pro — intentional project type system, not an oversight |
+| 4. Layout + Spacing | ✅ Pass | 28px horizontal padding on action-footer |
+| 5. Navigation | — N/A | Root screen, no back control needed |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` component instance |
+| 7. Iconography | ✅ Pass | No icon-only controls besides brand flame (not a system icon) |
+| 8. VoiceOver | ⚠️ Deferred | Cannot verify accessibility labels from Figma; flag for SwiftUI build time |
+| 9. Loading + Error States | — N/A | No data fetch on this screen |
+| 10. Color Tokens | ✅ Pass | All fills bound to `text/primary`, `text/tertiary`, `accent/gold`, `background/primary` |
+
+### 03 — Account Creation (node 2190:92)
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | back-button 44×44, eye-toggle 44×44, inputs 60pt tall |
+| 2. Contrast | ✅ Fixed | Was: placeholder 4.42:1 (fail), privacy-note raw rgba(…,0.6) = 2.43:1 (fail), border 2.76:1 vs card interior (fail). Fixed: placeholder bound to new `text/placeholder` #8491a0 (~5.6:1), privacy-note alpha removed + bound to `text/tertiary` (4.86:1), borders bound to new `border/input` #67677b (3.26:1 vs card fill) |
+| 3. Typography | ✅ Pass (approved deviation) | Same type-system note as 01 |
+| 4. Layout + Spacing | ✅ Pass | 28px padding consistent |
+| 5. Navigation | ✅ Pass | back-button present, 44×44 |
+| 6. Status Bar | ✅ Pass | Real component instance |
+| 7. Iconography | ⚠️ Unverified | back-button and eye-toggle are image assets — contrast of the glyph itself not verifiable from exported code; visually spot-check |
+| 8. VoiceOver | ⚠️ Deferred | Same as 01 |
+| 9. Loading + Error States | ✅ Pass | 03a (email error) and 03b (loading) sub-states exist |
+| 10. Color Tokens | ✅ Fixed | Was raw hex on placeholders/privacy-note; now all bound, including new `surface/card` token on input fills |
+
+### 04 — Name Entry (node 2203:92)
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | back-button 44×44, skip-row full-width 44pt |
+| 2. Contrast | ✅ Fixed | Was: placeholder raw rgba(…,0.8) = 3.29:1 (fail, worse than 03's), border 2.76:1 (fail). Fixed: bound to `text/placeholder` and `border/input` (same tokens as 03) |
+| 3. Typography | ✅ Pass (approved deviation) | — |
+| 4. Layout + Spacing | ✅ Pass | — |
+| 5. Navigation | ✅ Pass | back-button present |
+| 6. Status Bar | ✅ Pass | — |
+| 7. Iconography | ⚠️ Unverified | back-button image asset, same note as 03 |
+| 8. VoiceOver | ⚠️ Deferred | — |
+| 9. Loading + Error States | ✅ Pass | 04a (name error) sub-state exists |
+| 10. Color Tokens | ✅ Fixed | placeholder + border now bound |
+
+### 05 — Intent Selection (node 2209:92)
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | back-button 44×44, option rows 72pt tall |
+| 2. Contrast | ✅ Fixed | Was: option-card borders #33333d vs card fill = **1.44:1** (fail, worst miss found this pass), option-5 label using muted `#747f8c` inconsistent with siblings + failing at 4.42:1. Fixed: borders bound to `border/input` #67677b (3.26:1), option-5 label bound to `text/primary` matching siblings |
+| 3. Typography | ✅ Pass (approved deviation) | — |
+| 4. Layout + Spacing | ✅ Pass | — |
+| 5. Navigation | ✅ Pass | back-button present |
+| 6. Status Bar | ✅ Pass | — |
+| 7. Iconography | ⚠️ Unverified | back-button, select-indicator image assets |
+| 8. VoiceOver | ⚠️ Deferred | select-indicator rows need an accessibility "selected" trait at build time, not just visual state |
+| 9. Loading + Error States | ✅ Pass | 05a (error) sub-state exists |
+| 10. Color Tokens | ✅ Fixed | **Was entirely raw hex, no tokens bound at all** despite being marked ✅ Design-Complete — root cause of this screen's misses. Now fully bound: `background/primary`, `text/primary`, `text/tertiary`, `accent/gold`, new `surface/card`, new `border/input` |
+
+### 06 — Notification Permission (node 2213:92)
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | back-button 44×44, not-now-row full-width 44pt |
+| 2. Contrast | ✅ Pass | Heading/subtitle/button/not-now all clear thresholds (4.86:1–9.54:1). notification-preview card is an illustrative OS mockup, not a real interactive component — exempted from contrast check (confirmed again this pass) |
+| 3. Typography | ✅ Pass (approved deviation) | — |
+| 4. Layout + Spacing | ✅ Pass | — |
+| 5. Navigation | ✅ Pass | back-button present |
+| 6. Status Bar | ✅ Pass | — |
+| 7. Iconography | ⚠️ Unverified | back-button image asset |
+| 8. VoiceOver | ⚠️ Deferred | — |
+| 9. Loading + Error States | — N/A | No data fetch |
+| 10. Color Tokens | ✅ Fixed | **Was entirely raw hex**, same root cause as Screen 05. Now bound: `background/primary`, `text/primary`, `text/tertiary`, `accent/gold` |
+
+### 07 — Preparing Space (node 2240:92)
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | cta-link-hitzone 346×44 |
+| 2. Contrast | ✅ Fixed | Was: subtitle "Making space to receive…" #666159 = **3.23:1** (fail — prior session's MEMORY.md incorrectly called this "deliberate, not a violation"; it's active body copy, not a disabled state, so the disabled-contrast exception doesn't apply). Fixed: bound to new `text/muted-warm` #807b71 (~4.70:1). Item-4 "Readying your daily rhythm…" (#635e52, 3.07:1) correctly remains exempt as a genuine disabled/inactive-state item — must be marked with a disabled/inactive accessibility trait at SwiftUI build time so VoiceOver doesn't read it as equally actionable |
+| 3. Typography | ✅ Pass (approved deviation) | — |
+| 4. Layout + Spacing | ✅ Pass | Home indicator at y=861, 8pt from true bottom edge |
+| 5. Navigation | — N/A | Final onboarding screen, no back control by design |
+| 6. Status Bar | ✅ Pass | — |
+| 7. Iconography | ⚠️ Unverified | Checkmark glyph contrast against the item-1/2-circle icon fills can't be computed from exported code (rendered via image asset) — visually verify |
+| 8. VoiceOver | ⚠️ Deferred | — |
+| 9. Loading + Error States | ✅ Pass | Checklist items themselves are a loading-state pattern by design |
+| 10. Color Tokens | ✅ Fixed | Root bg bound to `background/primary`, cta-link bound to `accent/gold`, subtitle bound to new `text/muted-warm`. Headline/checklist-item labels (#f5f5f7) intentionally left as a distinct near-white shade shared with the status-bar component — not unified with `text/primary` (#e8e8ed) since that would be a visual change, not a hygiene fix |
+
+### Open items carried forward (not fixed this pass — need a decision or can't be verified from Figma)
+
+- Icon-only back-button and eye-toggle glyph contrast (03, 04, 05, 06) — rendered as image assets, not computable from exported code. Needs a visual spot-check.
+- Checkmark glyph contrast on Screen 07's circle icons — same limitation.
+- VoiceOver accessibility labels/traits — none of this is expressible in Figma; must be implemented and verified at SwiftUI build time (T-110 build ticket), not blocked in design.
+- Screen 02 (Intro Video) is still undesigned — this checklist will need to run against it once built.
