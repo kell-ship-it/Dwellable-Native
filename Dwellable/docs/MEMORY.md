@@ -2,6 +2,24 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
+## Mid-session addendum 4 (October 12, 2026 — same session, P1 type system + mic button completed)
+
+**9 new Text Styles added** for content P0 never had: `Body/Message` (chat bubble text, 80 instances — by far the largest group), `Label/Badge` (DWELLY sender badge), `Heading/Journal`, `Body/JournalPreview`, `Quote/Scripture`, `Caption/Counter` ("Response X of 3"), `Caption/Date`, `Label/Tag-Large` (prompt card titles), `Caption/Status` ("Transcribing...", "0:08"). Plus a 10th small one, `Label/Expand`, added when the "Open" toggle labels turned up during binding. `Label/Field`'s description was extended to cover its secondary use as a small topic-tag label rather than creating a duplicate style with identical properties.
+
+**2 real drift cases fixed:** the same heading ("What's stirring in you today?") existed at both 38px and 26px — consolidated to 38px (`Heading/Hero`). A transition-screen caption sat at an off-by-one 14px instead of matching `Body/Secondary`'s 15px — fixed.
+
+**214 real text nodes bound** across P1 to the full style set (new + existing matching P0 styles). Caught one more miss while binding: a 16th compose field (`64:1007`, "input-bar") that my original 15-field pass hadn't found — fixed with the same border/placeholder/font-size treatment as the other 15.
+
+**Built `Icon/Mic-Button`, converted all 16 instances.** Audited first (not just built blind) — all 16 were already pixel-identical (44×44, same fill) despite not being componentized, except one outlier built as a frame instead of an ellipse (`64:1009`, `mic-fixed`) with the same visual result. Unified all 16 into one component, including the structural outlier. Verified visually on two screens including the outlier.
+
+**Scaffolding correctly excluded, not accidentally bound:** scenario-group labels ("Own Reflection," "SCENARIO 1/2/3"), grid labels, Design-Complete badges, and 3 genuine dev-documentation paragraphs (describing what each scenario does, for internal reference — not in-app copy).
+
+**Status against Kell's two standing questions:**
+1. **Is the design system complete?** Closer, not finished. Type system and the dominant compose-field pattern (field + mic button) are done for P1. Still open: `cancel-btn`/`stop-btn` (recording controls, 1 instance each), `open-pill` (3 instances), `collapse-icon`/`expand-icon`, the send/arrow button pattern on the transcript-editing screens, and the 16-value corner-radius inconsistency flagged earlier (only the compose-field radius question got resolved, not the rest).
+2. **Is P1 retroactively aligned?** Yes for typography and the compose field (fonts, colors, mic button all unified and bound). Not yet for the remaining smaller controls above.
+
+---
+
 ## Mid-session addendum 3 (October 12, 2026 — same session, P1 Capture Onboarding work begins)
 
 **Discovered P1 Capture Onboarding actually exists in the `dwelly-redesign` file**, on its own page (`🔄 P1 — Capture Onboarding (12 Scenarios)`, node `15:122`) that simply didn't show up in a basic page listing call — had to read `figma.root.children` directly to find it. **26 real finished screens** exist across 3 of the 12 planned scenarios (Scenario 1 Direct Text Reflection: 6 screens, Scenario 2 Guided Prompt: 5 screens, Scenario 3 Voice Recording: 9 screens, plus 6 shared Transition/Capture-Entry lead-ins) — the other 9 scenarios (error/edge states) aren't designed yet. 2 unwrapped draft screens ("Focused conversational," "Quiet question-first editorial") look like abandoned early explorations, left untouched.
