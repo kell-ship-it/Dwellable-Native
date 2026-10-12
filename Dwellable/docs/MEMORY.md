@@ -2,6 +2,35 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
+## Mid-session addendum 2 (October 12, 2026 — same session, continued further)
+
+**Audited the full "change once, cascade everywhere" picture for T-238, not just typography.** Kell asked what else needs to be systematized beyond the type system. Mapped Figma's actual cascade mechanisms against current state:
+
+| Mechanism | Governs | Status |
+|---|---|---|
+| Text Styles | Typography | ✅ Done (13 styles, this session) |
+| Variables (color) | Fill/stroke colors | 🟡 Partial — T-214 tokens cover most original content, gaps likely in what was built fresh this session (device chrome especially) |
+| Variables (number) | Corner radius, spacing, padding, sizing | ❌ Not started — every radius/gap/padding is a hardcoded number repeated per screen |
+| Components | Reusable whole elements (shape+color+text+icon bundled) | 🟡 Partial — only `ios-status-bar` existed before this session |
+
+**Built item #1 of the gap list: a real `Button/CTA` component**, in both files. One master component (346×60, pill shape, gold fill bound to the existing color variable, centered dark text bound to the `Button/CTA` text style) on a new "🧩 Components" page. Converted all 9 real text-label CTA buttons across both files into instances of it: Get Started, Create Account (×2 — main + 02a error), Continue (×4 — Name Entry main+error, Intent Selection main+error), Allow Notifications, Capture Your First Moment. Verified each instance's `mainComponentId` resolves to the master (not just visually matching) — editing the master now changes every button app-wide, corner radius/fill/sizing included, not just the label text. **Deliberately left alone:** Screen 02b's (Loading) button, which shows a spinner instead of text — different pattern, not yet unified.
+
+**Built item #2: `Input/Text` and `Input/Password` components**, in both files, on the same "🧩 Components" page. `Input/Text` covers Email and Name fields (container + a placeholder/value text child); `Input/Password` adds the masked-dots value and the fixed eye-toggle icon. Converted all 8 real input fields into instances: Email (main + 02a error + 02b loading), Name (main + 04a error), Password (×3). Error-state instances (02a email, 04a name) keep the red border via a per-instance stroke override — still real instances, so corner radius/fill/sizing still cascade from the master, only the error color is intentionally instance-specific. Verified every instance's `mainComponentName` resolves correctly in both files.
+
+**Built item #3: icon library — `Button/Back`, `Icon/Checkmark`, `Icon/Radio-Unselected`**, in both files. Auditing the back-button chevron surfaced a real find: **two genuinely different chevron shapes** were in use (4×12 on 5 screens, 7×16 on the other 3) — not just the centering issue fixed earlier. Standardized on the 4×12 version (majority pattern, least visual disruption) as the single `Button/Back` component (44×44 circular tap area + centered chevron bundled as one unit, not just the bare icon — so editing it now changes the whole back-button, container included). Converted all 8 back-buttons, both Screen 07 checkmarks, and all 8 Intent Selection radio indicators into instances. Eye-toggle was *not* separately componentized — it's already unified as a nested element inside the `Input/Password` master from the previous pass, so a standalone icon component would be redundant right now.
+
+**Built item #4: a `Dwellable/Spacing` Variables collection** (FLOAT type), in both files — `radius/full` (100), `radius/input` (14), `radius/device-frame` (68), `radius/device-screen` (54), `size/button-height` (60), `size/content-width` (346), `size/tap-target-min` (44). Bound to all 4 master components (corner radius + width + height on `Button/CTA`, `Button/Back`, `Input/Text`, `Input/Password` — cascades to all their instances automatically) and all 10 device-frame bodies + inner screens (corner radius only, since those aren't componentized yet — gap #5 below). **Real gotcha hit and fixed:** `node.setBoundVariable('cornerRadius', variable)` fails *silently* — Figma binds radius per-corner, not as one property. Had to rebind all of it via `topLeftRadius`/`topRightRadius`/`bottomLeftRadius`/`bottomRightRadius` individually; caught it by explicitly checking `boundVariables` after the first attempt, not by trusting that the call not throwing meant it worked.
+
+**Honest scope limit, not fixable without bigger surgery:** the 28px content margin and most inter-element gaps are **not** bindable to a Variable right now, because screens use fixed absolute x/y positions on each child, not Figma auto-layout with padding/gap. Figma only exposes `paddingLeft/Right/Top/Bottom` and `itemSpacing` as bindable — those only exist on auto-layout frames. Enforcing the margin rule via Figma itself (not just documentation) would mean converting every screen to auto-layout first — a real, separate, much bigger initiative, not something to fold into "add some variables."
+
+**Remaining gaps, in priority order (not yet built):**
+5. Device-frame chrome as a component (Dynamic Island, side buttons, home indicator — raw shapes repeated across all 10 screens, built fast this session; radius is now variable-bound per-frame, but the shapes themselves still aren't one shared component, and side-button/Dynamic-Island fills are likely still raw hex)
+6. Color variable coverage audit on everything built this session
+7. Longer-term: a published Team Library so the two files share one source of truth instead of two independent copies of each style/component/variable
+8. (New, surfaced by this pass) Converting screens to auto-layout, which would be the prerequisite for actually enforcing the 28px margin / spacing rules via Figma rather than just documentation
+
+---
+
 ## Mid-session addendum (October 12, 2026 — same session, continued)
 
 **All of this session's T-238 fixes replicated into the `dwelly-redesign` file** (file key `jBOzv1vO2C2DSMePqRl4c4`, page "P0 - Onboarding Re-Design", node `0:1`) — Kell pointed out this file existed and asked for today's work brought over, since it was still sitting at the pre-fix state. That file's page is a structural mirror of the old file (`t5MUGEtpeFcUixobvHiYMc`) shifted by a constant offset — same frame names, same node structure — so every fix below was re-applied there using the same logic against the new file's node IDs: screen 2/3 swap, back-button caret centering (8 instances), Name field shrink, Screen 07 CTA button conversion, and the full 13-style type system (same styles, same 84-node binding pattern, same dev-label auto-unbind). Both files are now in sync.
