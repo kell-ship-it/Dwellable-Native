@@ -2,6 +2,25 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
+## Mid-session addendum 5 (October 12, 2026 — same session, remaining P1 controls componentized)
+
+**Found another real, documented-but-unfixed bug matching this session's recurring pattern:** `expand-icon` was 14×14 while `collapse-icon` was 20×20 — and project history shows 14×14 had *already* been flagged once as "unreadable" and fixed for collapse-icon specifically; expand-icon just never got the same fix applied. Scaled it (and its 4 child rectangles) up to match.
+
+**Built and converted 5 more components:**
+- `Icon/Send-Button` — the gold circular send control on both transcript-editing screens (2 instances)
+- `Icon/Cancel-Button` and `Icon/Stop-Button` — the recording-state controls (1 instance each, but componentized for when more recording screens get built)
+- `Button/Open-Pill` — small reveal/expand pill (3 instances)
+
+All verified via `getMainComponentAsync()` resolving correctly, and visually on the recording screen + both transcript-editing screens.
+
+**P1 component coverage is now essentially complete:** compose field, mic button, send button, cancel/stop controls, open-pill all componentized. Remaining un-componentized: `collapse-icon`/`expand-icon` themselves (each built from 4 raw rectangles, single-instance on their respective screens — low priority since they're not repeated), and the brand flame mark (23 instances, but already pixel-consistent without being a component — cosmetic-only gap).
+
+**Status against Kell's two standing questions:**
+1. **Is the design system complete?** For P1's actual built content (26 screens, 3 of 12 scenarios) — yes, essentially. Typography and every interactive control type are now named, componentized, and bound to shared variables. What's *not* done: the 9 unbuilt P1 scenarios obviously have nothing to align yet, and the original 16-value corner-radius question was only resolved for the compose field specifically, not audited element-by-element across every remaining shape.
+2. **Is P1 retroactively aligned?** Yes, for everything that exists today in P1's 26 real screens.
+
+---
+
 ## Mid-session addendum 4 (October 12, 2026 — same session, P1 type system + mic button completed)
 
 **9 new Text Styles added** for content P0 never had: `Body/Message` (chat bubble text, 80 instances — by far the largest group), `Label/Badge` (DWELLY sender badge), `Heading/Journal`, `Body/JournalPreview`, `Quote/Scripture`, `Caption/Counter` ("Response X of 3"), `Caption/Date`, `Label/Tag-Large` (prompt card titles), `Caption/Status` ("Transcribing...", "0:08"). Plus a 10th small one, `Label/Expand`, added when the "Open" toggle labels turned up during binding. `Label/Field`'s description was extended to cover its secondary use as a small topic-tag label rather than creating a duplicate style with identical properties.
