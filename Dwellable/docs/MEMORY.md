@@ -2,6 +2,36 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
+## Mid-session addendum (October 12, 2026 — same session, continued)
+
+**All of this session's T-238 fixes replicated into the `dwelly-redesign` file** (file key `jBOzv1vO2C2DSMePqRl4c4`, page "P0 - Onboarding Re-Design", node `0:1`) — Kell pointed out this file existed and asked for today's work brought over, since it was still sitting at the pre-fix state. That file's page is a structural mirror of the old file (`t5MUGEtpeFcUixobvHiYMc`) shifted by a constant offset — same frame names, same node structure — so every fix below was re-applied there using the same logic against the new file's node IDs: screen 2/3 swap, back-button caret centering (8 instances), Name field shrink, Screen 07 CTA button conversion, and the full 13-style type system (same styles, same 84-node binding pattern, same dev-label auto-unbind). Both files are now in sync.
+
+**Bug found and fixed in both files: `setTextStyleIdAsync` silently reset `textCase` and `letterSpacing` on every bound node**, not just `fontName`/`fontSize`. My Text Style definitions only specified font and size, so binding overwrote anything a node had locally — caught because Screen 01's tagline visibly lost its uppercase transform, going from "STEWARD EVERY MOMENT WITH GOD" to "Steward every moment with God." Checked `textCase`/`letterSpacing` on affected nodes directly rather than trusting the screenshot alone. Fixed by setting the properties on the **style** (not per-node, so it propagates to every bound instance): `Eyebrow/Tagline` now carries `textCase: UPPER` + 1.5px letter-spacing (tracking value is a reasonable reconstruction, not recovered from an original source — the only node using that style, so low risk, but worth a visual confirm from Kell); `Label/Field` now carries the 0.3px letter-spacing confirmed from this session's own earlier font audit. Other styles (`Heading/H1`, `Button/CTA`, etc.) were spot-checked and didn't show a similar regression, but this is worth remembering as a real gotcha: **a Text Style governs every typographic property, not just the ones you explicitly set** — future style creation should either explicitly copy `textCase`/`letterSpacing`/`lineHeight` from a representative existing node first, or accept that binding will reset them to the style's (often default) values.
+
+---
+
+## Next Session Objective (October 12, 2026 — 5th session)
+
+**Confirmed Pending Items:**
+1. **Resolve the "Skip for now" discrepancy on Screen 04 (Name Entry).** Kell believed he'd already removed this per Ashley's feedback (it reads as mandatory, shouldn't be skippable), but it's still present in the file as of this session — found during the Name field fix below, not touched since it wasn't clear which state was intended. Confirm with Kell and remove if still wanted.
+2. **T-239 — Design Screen 03 (Intro Video)**, the last undesigned screen in the 7-screen flow (renumbered from Screen 02 after this session's swap — see below).
+3. **Extend real Figma Text Styles + the "name the meaning" discipline to other pillars.** T-238's type system (see below) was scoped to the onboarding page only, as the proving ground. Not yet started elsewhere.
+
+**Also carried forward, lower priority:** `TICKETS.md`/`TICKETS.csv` reconciliation (stale since Oct 7, flagged in a prior close attempt), icon-only glyph contrast spot-check (back-button/eye-toggle/checkmarks, can't verify from Figma), and Screen 03's (Intro Video) placeholder Skip/Mute labels — a 14th font combination not folded into the new type scale since that screen is getting rebuilt anyway under T-239.
+
+**Completed this session — Ashley's call feedback:**
+- **Screen order swapped:** Account Creation is now Screen 02, Intro Video is now Screen 03 — per Ashley's recommendation to front-load account creation right after "Get Started" (her single biggest structural recommendation from her original audit, previously unaddressed). Physically moved the screen content, renamed labels/badges, and renumbered the Account Creation error/loading sub-states (03a/03b → 02a/02b) to match.
+- **Back-button carets centered.** All 8 instances (02, 02a, 02b, 04, 04a, 05, 05a, 06) had their chevron/vector icon off-center by 1.5–2px (x=17 or x=18 instead of the mathematically centered x). Fixed all 8.
+- **Name field (Screen 04 + 04a) shrunk to match Email/Password exactly** — was 72pt tall with 20px placeholder text (the outlier Ashley flagged), now 60pt tall with 16px text, same corner radius, fill, and border tokens as Email/Password. No more unexplained size mismatch between the two screens.
+- **Screen 07's CTA converted from a text link to a proper oval gold button**, matching the dominant-CTA pattern used everywhere else (Get Started, Create Account, Continue, Allow Notifications).
+- **Decisions recorded (no Figma change needed):**
+  - No skip option added to Intent Selection (Ashley suggested it; Kell is keeping it mandatory since it feeds the contextual prompt).
+  - No progress tracker added after account creation (Ashley suggested it for completion-rate reasons; recommended against it since the risk it addresses is already mitigated by account creation now being screen 2, and a visible tracker conflicts with the already-locked no-progress-bar decision from Screen 07).
+  - Corner radii — Kell had already fixed this directly in Figma prior to this session; verified consistent (14pt) across inputs during the Name field fix.
+- **Built the real semantic type system Ashley asked for.** Audited every text node on the T-238 page: 18 distinct raw font combinations were in use. Consolidated into 13 named Figma Text Styles (`Display/Brand`, `Heading/Hero`, `Heading/H1`, `Eyebrow/Tagline`, `Body/Secondary`, `Body/Emphasis`, `Body/Input`, `Label/Field`, `Button/CTA`, `Link/Inline`, `Body/Small`, `Caption/Note`, `Caption/Micro`), each with a documented "when to use it" rule in `docs/DESIGN_LEARNINGS.md` Section 5 — not just a size, an actual meaning. Bound 84 text nodes to these styles, so editing a style definition now cascades to every instance (the exact behavior Ashley described). Fixed one real drift as part of this: error messages were an orphaned 12px between two real caption sizes — folded up to 13px (`Caption/Note`). Caught and corrected a mis-bind during the pass: 7 Figma-canvas grid/dev-labels (screen numbers, "Validation state," etc.) got coincidentally matched to content styles purely by shared font signature — unbound them, since they're file scaffolding, not product content, and binding them would risk a future style edit silently resizing canvas annotations nobody meant to touch.
+
+---
+
 ## Next Session Objective (October 8, 2026 — 4th session)
 
 **Confirmed Pending Items:**

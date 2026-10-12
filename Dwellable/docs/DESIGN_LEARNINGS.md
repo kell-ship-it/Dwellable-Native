@@ -1,8 +1,10 @@
 # Design Learnings — Standing Reference
 
-**Purpose:** This is the single anchor file for every redesign/design pass across the app — Apple HIG, WCAG AA, Digital Cotton's Figma review, and Ashley's onboarding audit, combined. Read this before starting a new pillar's design pass, not just `HIG_WCAG_COMPLIANCE_CHECKLIST.md` alone — that file is the per-screen pass/fail gate; this file is the accumulated "why," including feedback from actual human reviewers that doesn't reduce to a checkbox.
+**Terminology (locked October 8, 2026):** The combined standard — Apple HIG + WCAG AA + Digital Cotton's Figma review + Ashley's onboarding audit — is called the **Redesign Principles**. Use this term in docs, tickets, and sign-off records going forward instead of "HIG/WCAG checklist," which undersells the Digital Cotton and Ashley components. The checklist file itself keeps its existing name (`HIG_WCAG_COMPLIANCE_CHECKLIST.md`) to avoid a rename/link-rot pass across the repo, but its 10-section gate IS the Redesign Principles sign-off — the two terms refer to the same thing.
 
-**Companion doc:** `docs/HIG_WCAG_COMPLIANCE_CHECKLIST.md` — the 10-section per-screen sign-off gate, run at the moment each screen is marked Design-Complete (see `feedback_hig_wcag_checklist_gate` memory for why that process is now locked).
+**Purpose:** This is the single anchor file for every redesign/design pass across the app — the four Redesign Principles sources (Apple HIG, WCAG AA, Digital Cotton's Figma review, Ashley's onboarding audit), combined. Read this before starting a new pillar's design pass, not just `HIG_WCAG_COMPLIANCE_CHECKLIST.md` alone — that file is the per-screen pass/fail gate; this file is the accumulated "why," including feedback from actual human reviewers that doesn't reduce to a checkbox.
+
+**Companion doc:** `docs/HIG_WCAG_COMPLIANCE_CHECKLIST.md` — the 10-section per-screen Redesign Principles sign-off gate, run at the moment each screen is marked Design-Complete (see `feedback_hig_wcag_checklist_gate` memory for why that process is now locked).
 
 ---
 
@@ -106,6 +108,41 @@ Published mockups: "Capture Entry, Locked" (`claude.ai/artifact/A8o55msbe8LdK9GH
 
 - **Text color accessibility** — same `#666159` → `#A39E98` fix applies here too.
 - **Help the user avoid the error in the first place**: either state the requirement plainly ("Please select at least one") or remove the pressure entirely by adding an **"I'm not sure yet"** option. Storage implication (from the secondary artifact, still holds): "not sure yet" stores intent as `null`, Formation Intelligence skips intent-based personalization until the user has captured a few moments, then can resurface the question later as a gentle prompt rather than forcing it at onboarding.
+
+---
+
+## 5. Type System (October 12, 2026 — built from Ashley's design-system request)
+
+**Why this exists:** Ashley's call feedback asked for two things that are really one thing — a semantic type scale ("what does H1 mean, what does this CTA mean") backed by a mechanism where changing one definition updates everywhere it's used, instead of hunting down every instance by hand. That mechanism is Figma **Text Styles**. Before this pass, T-238's text properties were set per-node — 18 distinct family/style/size combinations were in use where a disciplined scale should have ~13. Audited every text node on the T-238 page, consolidated the real drift (error messages were an orphaned 12px between two real caption sizes — folded into 13px), and created 13 named Text Styles, applied to all 84 matching nodes. **A change to a style definition in Figma now cascades to every bound instance automatically** — this is the behavior Ashley described.
+
+**Where to find them (three layers, each for a different purpose):**
+- **In-context annotated examples (look here first — this is the one that actually explains "why is it called that"):** a dedicated Figma page, "📐 Type System — Annotated Examples," in both files. Three real built screens (Welcome, Account Creation, Preparing Space — chosen because between them they cover all 13 styles) with numbered gold markers pointing at the actual element, and a legend below each screen explaining what each number is and why it's named that. This is the one to show Ashley — it answers "what does this mean" by pointing at the real thing, not an isolated word out of context.
+- **The specimen sheet:** a second page, "📐 Type System — Redesign Principles," in both files. All 13 styles as standalone live-rendered examples with their meaning — faster to scan when you already know roughly what you're looking for.
+- **The enforceable version:** Figma → Text Styles panel (the "/" in each name groups them into folders — Display, Heading, Body, Label, Button, Link, Caption). This is what a text layer actually binds to; the other two are human-readable views of these same 13 styles.
+
+| Style | Font | Size | Meaning — when to use it |
+|---|---|---|---|
+| `Display/Brand` | Instrument Serif Regular | 52px | The "dwelly" brand wordmark only. Used exactly once, on the Welcome screen. Never reuse for anything else, even if it's "a big headline." |
+| `Heading/Hero` | Instrument Serif Regular | 38px | A screen that **is** the emotional moment, not just a step — e.g. "Almost there, Jordan." Use sparingly; this is for screens meant to feel like a pause, not a form. |
+| `Heading/H1` | Instrument Serif Regular | 28px | The standard screen title for every functional screen (Account Creation, Name Entry, Intent Selection, Notification Permission). This is the default heading — reach for `Heading/Hero` only when you have a specific reason not to use this. |
+| `Eyebrow/Tagline` | Instrument Sans Medium | 13px | A small tracked label directly under a brand mark or hero moment. Currently just the Welcome screen's tagline. |
+| `Body/Secondary` | Instrument Sans Regular | 15px | Descriptive/subtitle text directly under a heading. This is the default body copy — explains what the screen is asking for. |
+| `Body/Emphasis` | Instrument Sans Medium | 15px | Same size as `Body/Secondary` but with more visual weight, for body text that needs to stand out slightly without becoming a heading — currently Screen 07's loading checklist items. |
+| `Body/Input` | Instrument Sans Regular | 16px | Text typed or shown inside an input field or a selectable option row — placeholder text, a typed value, or an option label. |
+| `Label/Field` | Instrument Sans Medium | 12px | A **persistent** form field label (Email, Password, Name) that stays visible once the user starts typing — never a disappearing placeholder standing in for a label. |
+| `Button/CTA` | **Inter** Semi Bold | 16px | Every primary button label, always centered, always on a filled oval button. This is the one place Inter is the *correct* choice — everywhere else in the app Inter is deprecated in favor of Instrument Sans/Serif, but buttons kept Inter intentionally. Pairs with the locked rule: gold buttons always use dark text, never white (see Section 2). |
+| `Link/Inline` | Instrument Sans SemiBold | 14px | The clickable half of a label+link row — "Log in", "Sign in". Bold weight is what signals "this part is tappable," paired with `Body/Small` for the non-clickable half of the same row. |
+| `Body/Small` | Instrument Sans Regular | 14px | The non-clickable half of a label+link row ("Already have an account?"), and small standalone UI control labels (Skip, Mute). |
+| `Caption/Note` | Instrument Sans Regular | 13px | Secondary notes (the encryption/privacy note) and **error messages**. Error text used to be a one-off 12px; standardized up to this size rather than keep a size that exists only for errors. |
+| `Caption/Micro` | Instrument Sans Regular | 11px | The smallest footnote-level text — terms/privacy legal text, and illustrative OS-chrome text (e.g. the mocked-up notification preview). If you think you need something smaller than this, you probably need to shorten the copy instead. |
+
+**What's deliberately excluded from this scale** (not bugs, don't "fix" these into a style): the status bar's `9:41` time (Instrument Sans SemiBold 17px) is OS chrome rendered via the `ios-status-bar` component, not product type; the ✓ checkmark glyphs and password-mask dots are icon-level glyphs, not prose; Figma-canvas grid labels (screen numbers, "Design-Complete" badges, dev annotations like "Validation state") are file scaffolding for navigating this Figma page, not in-app content, and were deliberately left unbound from these styles so editing a real style never accidentally resizes a canvas label.
+
+**Known gap, not yet done:** Screen 03's (Intro Video) placeholder Skip/Mute button labels are Instrument Sans Medium 14px — a 14th combination this pass didn't fold in, since that screen is still undesigned (T-239) and will likely be rebuilt from scratch rather than patched. Resolve when Screen 03 actually gets designed, not before.
+
+**Gotcha — binding a node to a Text Style governs *every* typographic property, not just the ones the style explicitly sets.** When these 13 styles were first created, only `fontName`/`fontSize` were specified; binding then silently reset `textCase` and `letterSpacing` on every matched node to the style's defaults, which wiped the Welcome screen tagline's uppercase transform and the field labels' 0.3px tracking. Caught via screenshot (the tagline visibly lost its caps), confirmed by reading the node's actual `textCase`/`letterSpacing` values, and fixed by setting the missing properties on the style itself so the fix propagates: `Eyebrow/Tagline` carries `textCase: UPPER` + 1.5px tracking (reconstructed, not recovered — it's the only node using this style so the blast radius was small, but worth a visual confirm against intent); `Label/Field` carries 0.3px tracking (this one *was* recovered from an earlier audit in the same session, so it's exact). **Rule for next time:** before creating a new Text Style from an existing node's values, read and copy `textCase`, `letterSpacing`, and `lineHeight` from that node too — don't assume `fontName`/`fontSize` is the whole picture.
+
+**Scope note:** this pass covered the T-238 onboarding page only, as the proving ground. Extending real Text Styles (and this same "name the meaning, not the pixel value" discipline) to other pillars is future work, not yet started.
 
 ---
 
