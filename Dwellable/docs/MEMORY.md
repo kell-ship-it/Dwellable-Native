@@ -2,6 +2,18 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need historical detail on a specific past session.
 
+## Mid-session addendum 6 (October 12, 2026 — same session, corner-radius sweep closed out)
+
+**Finished the corner-radius audit flagged earlier.** Pulled every `cornerRadius` value across P1 with the element names attached (not just the raw numbers) to tell real drift from legitimate variation. Verdict: almost all of the 16 distinct values are *correct* — chat bubbles (18), badges (20), prompt cards (16), journal cards (14), status-bar chrome (1/1.5/3/100) are each internally consistent within their own element type; different shapes are supposed to have different radii, that's not drift.
+
+**Found one real instance of drift:** the 16 compose fields themselves were split between radius 28 (4 of them, the Scenario 3 Voice Recording screens) and 30 (the other 12). Unified all 16 to 30. Verified with a fresh name-based search across the whole page (not a cached ID list) — all 16 confirmed at exactly one value.
+
+**Note on node IDs:** mid-fix, 2 of the original 16 field IDs from earlier in the session no longer resolved — Figma appears to have re-indexed some node IDs over the course of this session's many structural edits (reparenting, instance swaps, etc.). Re-found them by name instead of trusting the stale IDs; the underlying content was intact throughout, just referenced under new IDs. Worth remembering: **don't fully trust a node ID cached from earlier in a long session — re-resolve by name/structure if a lookup unexpectedly fails, rather than assuming content was lost.**
+
+**Status against Kell's two standing questions:** both now fully "yes" for P1's 26 real screens — design system complete and P1 retroactively aligned, including the corner-radius sweep.
+
+---
+
 ## Mid-session addendum 5 (October 12, 2026 — same session, remaining P1 controls componentized)
 
 **Found another real, documented-but-unfixed bug matching this session's recurring pattern:** `expand-icon` was 14×14 while `collapse-icon` was 20×20 — and project history shows 14×14 had *already* been flagged once as "unreadable" and fixed for collapse-icon specifically; expand-icon just never got the same fix applied. Scaled it (and its 4 child rectangles) up to match.
