@@ -2,7 +2,18 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
-## Next Session Objective (October 15, 2026)
+## Next Session Objective (October 15, 2026 — evening close)
+
+**Confirmed Pending Items:**
+1. **Confirm which pillar comes next and begin its Figma design pass.** P0, P1, P4, P6 (Menu Bar/Nav), and P5 (Search & Discovery) are now built/reviewed in the `dwelly-redesign` file. Prayer (P3) stays deferred post-MVP. Candidates not yet started: Today tab (P10, has a locked strategy doc `PILLAR_TODAY_STRATEGY.md`), Growth tab (P11), Account Profile (P9), Notifications (P8). Kell said "let's pick up the next one in the next session" without naming it — don't guess, ask directly before starting new screens. Same reference→juxtapose→design workflow established this session (check the original pillar design in the old baseline file `t5MUGEtpeFcUixobvHiYMc`, compare against `DESIGN_LEARNINGS.md` + the current component/type system, then build).
+2. **Resolve the deferred "gold for non-CTA elements" judgment call.** Flagged twice this session, never decided: the TabBar's active-tab state and Search's inline match-highlighting both use gold even though neither is a literal CTA under the locked "gold = CTA signal only" heuristic. Both read as legitimate navigation/affordance conventions (not decorative), but this wasn't explicitly ruled on — surface it as one combined decision before it quietly becomes precedent by repetition.
+3. **Revisit the Pillar 6 entry-point wiring placeholder once Growth (P11) exists.** A flagged note sits on the Menu Bar page (`🔄 P6 — Menu / Navigation (Redesign)`) recording the confirmed capture/review entry-point map (onboarding, Today's 3 cards, header "+", notifications = capture; Entries/post-capture preview/notifications = review; Search now exists, Growth doesn't yet). The header toolbar + TabBar were built as chrome only — actually wiring these entry points into real screens was explicitly deferred until Search, Entries, and Growth all exist. Search and Entries are now done; Growth is the remaining blocker.
+
+**Rationale:** Item 1 is the literal next step Kell asked for. Item 2 is a real, repeating gap in the design-principles decision record — letting it ride a third time would make it precedent by accident rather than by choice. Item 3 is a concrete, already-flagged piece of unfinished scope with a clear unblock condition (Growth), not a guess.
+
+---
+
+## Next Session Objective (October 15, 2026 — midday, superseded by evening close above)
 
 **Confirmed Pending Items:**
 1. **Confirm which pillar comes after P4 and begin its Figma design pass.** Kell closed this session saying to "pick up on the next pillar next" without naming it. P0, P1, and P4 are now built/reviewed; Prayer (P3) is deferred post-MVP, and the Entries Tab is explicitly marked not-final pending "Pillar 5/6." Candidates to confirm with Kell at session start: Today tab (already has a locked strategy doc, `PILLAR_TODAY_STRATEGY.md`), or Pillar 5/6 (Search/Entries). Don't guess — ask directly before starting new screens.
@@ -10,6 +21,25 @@
 3. **Decide whether to run the broader P4 background-fill token audit.** A full-page sweep this session found 619 unbound raw-color fills across P4, but nearly all are pre-existing device-bezel chrome, OS-mockup elements, or older background fills unrelated to this session's new components — out of scope for the targeted component audit Kell asked for. Flagged, not actioned. Worth a real decision on whether it's worth a dedicated pass or intentionally left alone (legitimate OS-chrome exceptions already established elsewhere in `DESIGN_LEARNINGS.md`).
 
 **Rationale:** Item 1 is the explicit instruction to close on. Items 2 and 3 are small, concrete loose threads from this session that would otherwise sit unresolved indefinitely if not surfaced at the next session's start.
+
+---
+
+## Session: October 15, 2026 (evening) — Pillar 6 (Menu Bar/Nav) + Pillar 5 (Search & Discovery) designed, cross-pillar bugs found and fixed
+
+**What was done:** Picked up the established workflow (reference the original pillar design in the old baseline file → juxtapose against `DESIGN_LEARNINGS.md` → design from that) for two pillars in one session.
+
+**Pillar 6 — Menu Bar/Nav:** The original design (`t5MUGEtpeFcUixobvHiYMc`, page "P6 - Menu / Navigation") had a 3-tab bar (Today/Entries/Growth) plus a header pill bundling Plus/Search/Profile into one bordered control — the exact pattern Digital Cotton comment #8 flagged as three unrelated jobs reading as a single control. Fixed by splitting it: Profile moved into a new `TabBar / 4-Tab` component (Today/Entries/Growth/Profile-avatar, resolving T-215), Search stays bare in the header (not a CTA, so no gold/circle per the locked heuristics), and Capture became its own component (`Button/Capture-Launch`) — gold + circular per the Icon Circle Rule (§8), since it's the one real commit action. Iterated through several icon-pairing directions with Kell (outlined-pair/Letterboxd-style, bare-pair/stoic-style, search-field-pill/5-Minute-Journal-style — pulled via the Mobbin connector once it was confirmed connected) before landing on bare search icon + squircle (not circular) capture button, applied at the master-component level so it cascades everywhere.
+
+**Pillar 5 — Search & Discovery:** No screens existed yet anywhere in Figma (only `docs/PILLAR_5_SEARCH_STRATEGY.md`, locked Aug 27, 2026). Built Screen 1 (Calendar + Entries List, using the corrected P6 nav) and all 5 locked Search states (Idle/Recent Searches, Real-time Results with inline gold-highlighted matches via `setRangeFills` rather than word-by-word concatenation — the latter silently drops spaces — No-results, One-removed, All-cleared).
+
+**Real bugs found and fixed, not just polish:**
+1. **11 journal-preview-card instances** across P1 and P4 had drifted onto the wrong body-text color token (`text/supporting` instead of the canonical `text/body` used by the real View screen) — only 2 were caught on the first pass (a `findOne` bug grabbed just the first match); a full `findAll` scan found all 11 and rebound them.
+2. **Invented a back-button treatment** (gold-outlined circle) for the 5 search screens before checking what already existed — `Button/Back` (bare chevron, no circle, deliberately changed from an earlier opacity-wash per §8) was already locked and used 35x across P0/P4. Replaced all 5 with the real component.
+3. **Hand-drew "✕" text glyphs** (7 instances) instead of reusing the existing `Icon/Close` component. Fixing this surfaced a real Plugin API gotcha: resizing a component instance down (44→20px) does NOT proportionally scale a nested TEXT child — the glyph stayed at 44px internally and got clipped to a near-invisible sliver. Fixed by keeping `Icon/Close` at its native 44×44 size instead (which also matches the HIG tap-target convention of a large invisible hit zone around a small visual glyph).
+4. **Search field was a custom one-off** instead of reusing `Input/Text`'s established tokens (wrong fill/stroke variables, 15px instead of 16px text) — rebound to match.
+5. **Ran the actual 10-section HIG/WCAG checklist** (not an eyeballed pass) against all 6 P5 screens and computed real contrast ratios rather than trusting the token assignment. Found `text/supporting` fails WCAG AA (3.5–3.7:1, needs 4.5:1) against its typical backgrounds — a **system-wide gap**, since this token is used across every pillar built so far (date/meta labels, mood-chip text, status copy per the original §10 taxonomy). Fixed at the variable level: `(0.447,0.420,0.353)` → `(0.52,0.49,0.41)`, confirmed 4.85:1, cascades automatically to every bound instance file-wide. Also fixed two tap-target gaps the same checklist pass caught: mood filter chips (32pt → 44pt) and calendar day cells (rebuilt with real 44×44 tap frames, visual numbers unchanged).
+
+**Process note:** mid-session-close, a ticket-status edit script hit a pre-existing ragged-CSV-row issue (two rows — T-176, T-238 — have unescaped quotes in `Notes` that split into extra columns) and corrupted `TICKETS.csv` down to 135 rows on the first attempt. Caught immediately via row-count verification, recovered cleanly via `git checkout --` (file was uncommitted but tracked), and redone correctly on retry: extra ragged-row fragments merged back into `Notes` instead of being dropped, written to a temp file and verified before replacing the original. No data lost, but worth remembering: never write a modified CSV straight back over itself without a verified temp-file + row-count check first, especially on a file with known ragged rows.
 
 ## Component/token audit of everything added this session, plus a real vector-copy positioning bug caught immediately by Kell (October 15, 2026 session)
 
