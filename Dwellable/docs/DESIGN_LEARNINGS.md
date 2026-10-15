@@ -146,6 +146,119 @@ Published mockups: "Capture Entry, Locked" (`claude.ai/artifact/A8o55msbe8LdK9GH
 
 ---
 
+## 6. Chat/Conversation Bubble Spacing (locked October 13, 2026)
+
+**Why this exists:** while adding the 3rd exchange to P1's conversation flows, a clipping bug surfaced — a bubble's height was computed with the wrong font weight and in the wrong operation order, silently cutting off text mid-sentence. Kell caught it visually and asked for the underlying padding/spacing principles to be made explicit rather than re-derived ad hoc each time. These values were already in consistent use across the file; this section makes them the documented standard.
+
+| Element | Value | Why |
+|---|---|---|
+| Bubble internal padding | 16px horizontal, 14px vertical | Text never crowds the bubble edge; matches the established `Input/Text` field padding elsewhere in the system |
+| Badge → bubble gap | 8px | Tight enough to read as "this badge belongs to this bubble," not floating |
+| Message group → next group gap | 28px | Enough visual separation to read as a new "turn," not just a line break |
+| Chat screen margins | 24px | Narrower than the app-wide 28px content margin (T-237) — intentional, already-locked exception for conversational density (more text fits per line in a chat context) |
+| Bubble width | Fixed 280px | Never hug-content — keeps the whole conversation visually aligned into one column regardless of message length |
+
+**Process principle — this is what actually broke, not just a number:** a bubble's height must always come from Figma genuinely measuring the wrapped text, never a hand-estimated or copy-pasted value. The correct recipe: set the text node's `characters` **first** while it's still in default auto-resize mode, **then** call `resize(fixedWidth, *)` to force the wrap and read back the real computed height. Doing this in the reverse order (resizing before setting characters) locks the node into a fixed box before Figma ever computes the real height — the box stays at whatever stale size it started with, and the real content silently clips. Also use the correct font **weight** when measuring (this file's chat bubbles are Instrument Sans **Medium** 13px, not Regular) — measuring with the wrong weight produces a plausible-looking but wrong wrap point and height.
+
+**Overflow handling (superseded October 13, 2026 — see below):** if a conversation's full history would overflow into the compose bar's reserved zone (the universal 822px bar-bottom convention, locked in `docs/MEMORY.md`'s October 13, 2026 session entries), crop the oldest exchange from view. The original pattern used an "↑ Earlier in this conversation" text label; this has been replaced file-wide by the gradient fade scrim described in Section 7 — never let message content overlap or crowd the compose bar, and never use the old text-label pattern in new work.
+
+---
+
+## 7. Gradient Fade Scrim — the "more above" signal (locked October 13, 2026)
+
+**What it replaced:** every "scrolled" conversation screen used to show a plain "↑ Earlier in this conversation" text label to indicate hidden history above. Kell asked for a ChatGPT-style visual fade instead — the top of the hidden content visibly dims into the header rather than being announced with words. Applied file-wide; the text-label pattern is retired.
+
+**How to build it, in order (skipping steps is what caused every bug below):**
+1. **Reconstruct a real peeking fragment** of the actual scrolled-off message (not a placeholder) — the scrim needs something behind it to fade, or the effect is invisible even though the gradient data is correct.
+2. **Build the scrim as a `GRADIENT_LINEAR` rectangle**, page-bg color, opaque at the top fading to fully transparent, positioned to overlap the peek fragment. `gradientTransform: [[0, 1, 0], [-1, 0, 1]]` is the verified-correct top-to-bottom matrix (confirmed via isolated debug test before trusting it in the real file).
+3. **Z-order matters and is easy to get backwards:** persistent chrome (Done button, flame, badges — and the Response counter where one exists) must render *above* the scrim, or the fade dims the UI chrome along with the conversation. Chat content renders below the scrim; chrome renders above it. Check actual child-index order, don't assume `appendChild` put things where you meant.
+4. **Position the peek to clear any chrome sharing its row** (the Response counter, or the Done button on post-onboarding screens) — a right-aligned user-bubble peek will visually collide with left-aligned header text if placed at the same height. Push the peek below the chrome's row instead.
+5. **If the peek is pushed down to clear chrome, extend the scrim's height to match** — a gradient that fully fades out by y=114 provides no visible dimming to a peek sitting at y=82–128, even though the math is technically correct. The scrim needs real opacity wherever the peek's text actually sits, not just near the top of its own bounding box.
+6. **When shifting real content to make room for the peek, shift every real element together** — dwelly-bubble, its badge, and the user-bubble all need to move as one unit. Moving only one (e.g. just the user-bubble) leaves the others sitting where the new peek now overlaps them.
+
+**Before reusing this pattern on a cloned screen: check whether the clone's source already has it.** A screen cloned *after* its source received the scrim fix inherits the fix already — re-running the build script on it creates a duplicate (two overlapping peeks, two overlapping scrims), not a correction. A screen cloned *before* the fix was applied to its source does not inherit it and needs the full treatment. Read the clone's actual current child list before deciding which case you're in; don't assume from when you think you cloned it.
+
+---
+
+## 8. Icon Circle Treatment — when a button gets a circular background (locked October 14, 2026)
+
+**Why this exists:** every `Icon/*` component had been built on the same 44×44 `surface/icon-button` circular background, uniformly, regardless of what the icon actually did or where it sat on screen. Kell caught the inconsistency against the original reference design (bare Star/Ellipsis in the journal header, no circle) and against `Button/Back`'s own already-different treatment (a near-invisible 7%-opacity wash, not a solid fill) — there had never been an actual rule, just one pattern generalized past where it belonged. Resolved by explicitly emulating ChatGPT's own composer UI: the plus-sign and inline mic (optional, supplementary actions) sit bare inside the compose bar; the send arrow (the commit action) gets a circle even though it's right next to them in the same bar.
+
+**The rule:** a circular background signals **"this is the primary/commit action happening right now on this screen."** Everything else — navigation, secondary utilities, optional/alternate paths, even icons sitting directly next to a circled button in the same bar or toolbar — stays bare. Grouping/proximity has nothing to do with it; role does.
+
+| Component | Treatment | Why |
+|---|---|---|
+| `Icon/Save` | Circle (+ gold) | Commits the edit — same role as a chat app's Send |
+| `Icon/Mic-Button` | Circle | In its real usage context (P1's primary capture/compose bar), it's the main way the user starts the screen's core action — not a supplementary extra |
+| `Icon/Send-Button`, `Icon/Stop-Button` | Circle | Each is the commit/primary action of its screen (send the message; end the recording) |
+| `Icon/Retry-Button` | Circle | Functions as the primary forward action after a transcription failure |
+| `Icon/Close`, `Icon/Undo`, `Icon/Cancel-Button` | Bare | Exit/corrective actions, not commits — matches ChatGPT's un-circled X when canceling a recording |
+| `Icon/Star-Outline`, `Icon/Star-Filled`, `Icon/Ellipsis-Menu` | Bare | Secondary header utilities |
+| `Icon/Photo`, `Icon/Camera` | Bare | Optional add-ons to content that already exists — same role as ChatGPT's plus-sign attachment icon |
+| `Icon/Mic-Inline` *(new component, Oct 14, 2026)* | Bare | A second, bare-only component for mic-as-supplementary-input contexts (e.g. adding a voice note to already-typed text in P4's Edit Toolbar) — a deliberately separate component from `Icon/Mic-Button`, not a per-instance override, because the two represent genuinely different semantic roles depending on context, the same reasoning already used for `Label/Done-Processing` vs. `Button/Done` |
+| `Button/Back` | Bare *(changed from its earlier 7%-opacity wash)* | Pure navigation, not an action in this sense at all — folded into the single rule rather than kept as a third, special-cased category |
+
+**Where it was applied:** master-component-level edits cascade automatically to every instance, so this was fixed once per component rather than screen-by-screen — confirmed across all three pillars (P0: `Button/Back`, 8 instances; P1: `Button/Back`/`Icon/Cancel-Button`, 37 instances; P4: all nine affected components, 117 instances). Verified post-fix: 0 collisions, 0 unresolved component instances, 0 stray fill overrides blocking the cascade, across all three pages.
+
+**Not interactive, not part of this rule:** `Icon/Mic-Denied` — it's a status icon shown inside the permission-denied modal, never itself tappable, so "primary action vs. secondary" doesn't apply to it at all.
+
+---
+
+## 9. Warm Palette Correction — core neutrals were cooler than the canonical design (locked October 14, 2026)
+
+**Why this exists:** Kell flagged the P4 View screen as reading "dull, no warmth" compared to the original canonical reference. Rather than add decorative gold (already rejected once this session — see §8's CTA-only rule), pulled the actual RGB values from the original locked `View (Approved)` screen in the reference file and found the real cause: the entire neutral palette there is warm/brown-tinted, not true gray — including things treated as "just neutral" (background, bright text, muted text), not only the obvious gold accents.
+
+| Token | Old value | New (canonical) value | Where it's used |
+|---|---|---|---|
+| `background/primary` | `0.04, 0.04, 0.04` (true neutral black) | `0.043, 0.039, 0.031` (warm, brown-leaning) | Every screen background, file-wide |
+| `text/primary` | `0.91, 0.91, 0.93` (**blue-leaning** — B channel highest) | `0.965, 0.949, 0.910` (warm cream — R channel highest) | Titles, headings, bright UI text, file-wide |
+| `text/tertiary` | `0.455, 0.498, 0.549` (cool blue-gray) | `0.447, 0.420, 0.353` (warm muted brown-gray) | Response counters, date/meta labels, muted icons |
+| `text/body` *(new token)* | — | `0.706, 0.674, 0.608` (warm taupe) | Body/message copy specifically — deliberately distinct from `text/primary`'s brighter cream, so a screen's title and its paragraph content read as two different weights, not the same flat white |
+
+**Proven by the actual numbers, not a vibe:** `text/primary`'s old value had its *blue* channel as the highest of the three (0.93) — a near-imperceptible but real cool tint, invisible at a glance but exactly the kind of thing that makes a screen read as "a bit dull" without anyone being able to say why.
+
+**Where it was applied:** the three existing token values were corrected in place (cascades automatically to every screen already bound to them — confirmed clean across P0, P1, and P4 without any per-screen edits needed for background/title/muted text). `text/body` is new, so it needed manual rebinding in two targeted places:
+- P4's `View (Approved)` screen — title/date/background rebound to the corrected existing tokens; body paragraphs rebound to the new `text/body`.
+- P1's conversation screens — all 85 Dwelly-message bubble texts (dwelly-bubble + the gradient-fade peek fragments) rebound from `text/primary` to `text/body`, so Dwelly's spoken words read in the same warm taupe as P4's journal body copy.
+
+**Deliberately NOT touched:** user-message bubbles (gold fill, dark `background/primary`-value text for contrast) and P4's mood pills (Kell's explicit call — keep them plain/neutral, not gold-washed, even though the original reference file had a faint gold fill on them). Both are intentional exceptions, not oversights — don't "fix" them to match without asking again.
+
+**Final verification:** 0 collisions, 0 unresolved component instances across all three pages (P0: 11 screens, P1: 80, P4: 37) — a pure color-token change, confirmed not to have disturbed any layout.
+
+---
+
+## 10. Text Color Taxonomy — 7-token structure, locked (October 14, 2026)
+
+**Why this exists:** the token system had quietly grown to 14 distinct text/accent colors, including 5 separate muted-gray variants (`tertiary`, `placeholder`, `faint`, `muted-warm`, `body`) and two golds at the identical RGB value (`gold`, `gold-muted`), with no documented rule for which one a new screen should reach for. Kell asked directly what a normal range looks like — the answer is Apple HIG's own `label`/`secondaryLabel`/`tertiaryLabel`/`quaternaryLabel` ladder (4 emphasis levels) plus a small accent/status set, roughly 7–8 tokens total, not 14.
+
+**Locked structure — a fixed ladder of emphasis, plus meaning-carrying colors that stay outside the ladder:**
+
+| Token | Role | Rule — when to use it |
+|---|---|---|
+| `text/heading` (renamed from `text/primary`) | Dominant line in a block | Screen titles, journal entry titles, headline copy — the one thing you read first |
+| `text/body` | Long-form content you read | Journal entries, Dwelly's conversational replies — unchanged from §9 |
+| `text/supporting` (renamed from `text/tertiary`, absorbs `muted-warm`/`faint`/`secondary`) | Secondary / caption / subtext | Everything that used to be scattered across 4 different muted tokens: date/meta labels, mood-chip text, status copy ("Transcribing...", "Transcribed"), preview-card excerpts, footer disclaimers |
+| `text/placeholder` (narrowed) | Empty input field only | Literal placeholder copy inside a form field (`you@example.com`, password dots, `Type your reflection...`) — nowhere else, not captions, not excerpts |
+| `accent/gold` (absorbs `gold-muted`) | CTA signal + brand accent | One gold, no muted twin — see §8/the gold-CTA rule locked earlier this session |
+| `state/error-text` | Destructive/error meaning | Carries meaning, not emphasis — stays outside the ladder |
+| `state/success` | Success/confirmation meaning | Carries meaning, not emphasis — stays outside the ladder |
+
+**Retired (0 remaining instances, verified):** `text/secondary` (cool-toned, contradicted §9's warm-palette correction outright), `text/muted-warm` and `text/faint` (no distinct job from `text/supporting`), `accent/gold-muted` (identical RGB to `accent/gold`).
+
+**Process:** proposed on a dedicated Figma review page (`🎨 Text Color Taxonomy Review`) showing all 14 old tokens side by side with real usage counts pulled from the file, not guessed. After Kell confirmed the instinct to cut, built a second page (`🎨 Text Color Taxonomy — Proposed 7`) with the final 7 plus a composed mock journal card rendering all 7 together in one realistic layout — reviewed as a system, not as isolated swatches, before anything was implemented live.
+
+**Implementation found a bigger gap than expected:** narrowing `text/placeholder` to "input fields only" surfaced **101 stray instances** (not just the ~11 journal-preview-card excerpts already known) — dates, mood-chip labels, status text, timers, an icon glyph, and a footer note were all riding on `text/placeholder` with no actual placeholder role. All rebound to `text/supporting`. **Lesson:** a verification search scoped to one component name can pass clean while the same bad pattern exists under a different parent elsewhere in the file — this needed a file-wide content/role-based sweep, not a component-scoped one, to actually close the gap.
+
+**Applies app-wide, not per-pillar** — these are collection-level Figma variables (`Dwellable/Colors`), confirmed with Kell directly. Every future pillar inherits this structure automatically; it is not something to re-decide per pillar.
+
+---
+
+## 11. Edit-state sub-flows are mutually exclusive (locked October 15, 2026)
+
+**Rule:** Edit Entry has several distinct entry points — delete the entry, delete the photo, add a mood, take a photo, add a photo, record a voice note, type text directly. Once a user enters one of these specific sub-flows, the others are not simultaneously available from within it. Tapping "Add a photo" does not also offer delete-photo, add-mood, take-photo, or record-voice-note controls in that same moment — each sub-flow is its own focused state, not a mode where everything is always reachable at once.
+
+**Why this matters for the Figma build:** every Edit-state screen should be read as representing one specific sub-flow in progress, not a kitchen-sink state with every control active. When building or reviewing a new Edit variant, check which single entry point it represents and only show the controls relevant to that path — not the full superset of Edit's capabilities.
+
 ## How to use this file
 
 - Before starting a new pillar's redesign pass, skim this file for anything relevant to that pillar (e.g., P1 Capture → DC comments #3, #26, #4 above are directly relevant).
