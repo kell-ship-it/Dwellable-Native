@@ -2,7 +2,22 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
-## Next Session Objective (October 15, 2026 — evening close)
+## Next Session Objective (October 16, 2026 close)
+
+**Confirmed Pending Items:**
+1. **Consolidate the 13 Figma Today-tab scenarios down to the real 2-3 templates.** Kell's own realization mid-session: 11 of the 13 built scenarios (2,3,4,5,6,7,9,10,11,12,14) are the same Happy Path template proven with different filler content, not separate designs. The other 2 (1, 13) are duplicates of the same No-History Edge Case template. Decide first: delete the 10 redundant happy-path duplicates, or relabel them as content stress-tests? Then rebuild clean around exactly 3 templates: Happy Path, No-History Edge Case, Error State.
+2. **Design the Error State template.** Flagged as a real gap this session — zero error-state content or layout exists for Today (e.g. failed to load). Not inferred from anything already built; needs a real decision on what it shows.
+3. **Close out three smaller open items together:** (a) the one Follow-up title sitting right at the 70-char limit ("You said hiding it would've been worse...", 68 chars) — trim it or flex the limit for Follow-up specifically; (b) the prompt pool's rotation/selection logic, never locked (daily? random? weighted toward unengaged categories?); (c) the collision tie-break rule when two of the 3 picks share a cluster tag (current lean: Follow-up always wins since it's tied to the user's real story — never confirmed).
+
+**Also deferred, lower priority:** updating `docs/PILLAR_TODAY_STRATEGY.md` itself to reflect this session's locked structure — Kell's explicit call was to finish consolidating the designs first, system doc after.
+
+**Rationale:** Item 1 unblocks everything else — there's no point designing the Error State or finalizing content rules against a Figma file that's still sprawled across 13 near-duplicate scenarios. Item 2 is a real, named gap (not a guess) that Kell asked about directly and got an honest "we have zero" answer. Item 3 bundles three small, already-identified loose threads that would otherwise sit unresolved indefinitely.
+
+**Full taxonomy, tagging schema, and category reasoning:** `docs/PILLAR_TODAY_PROMPT_TAXONOMY.md` (new this session). Interactive selector artifact (db-backed, live): https://claude.ai/artifact/EgncpLBsP6o3AS1u41nwXs
+
+---
+
+## Next Session Objective (October 15, 2026 — evening close, superseded by October 16 close above)
 
 **Confirmed Pending Items:**
 1. **Confirm which pillar comes next and begin its Figma design pass.** P0, P1, P4, P6 (Menu Bar/Nav), and P5 (Search & Discovery) are now built/reviewed in the `dwelly-redesign` file. Prayer (P3) stays deferred post-MVP. Candidates not yet started: Today tab (P10, has a locked strategy doc `PILLAR_TODAY_STRATEGY.md`), Growth tab (P11), Account Profile (P9), Notifications (P8). Kell said "let's pick up the next one in the next session" without naming it — don't guess, ask directly before starting new screens. Same reference→juxtapose→design workflow established this session (check the original pillar design in the old baseline file `t5MUGEtpeFcUixobvHiYMc`, compare against `DESIGN_LEARNINGS.md` + the current component/type system, then build).
