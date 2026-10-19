@@ -2,6 +2,19 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (October 19, 2026 close)
+
+**Confirmed Pending Items:**
+1. Confirm which pillar to pick up next — Kell said "pick up the next one next session" without naming it. Ask directly, don't guess.
+2. Review and approve the two CSVs sent this session: the 365-verse Scripture bank (`scripture_bank_365_short.csv`) and the 31 drafted subtexts (29 Intercession + 2 Domain, `draft_subtexts.csv`). Wording accuracy — especially exact ESV text — still needs verification before anything here is considered final.
+3. Resolve the ESV licensing question — a commercial app quoting ESV at this scale likely needs permission from Crossway, separate from the content-drafting work itself. Flagged, not yet acted on.
+
+**Rationale:** Item 1 is the literal next step Kell asked for. Items 2 and 3 are real, already-identified loose threads from this session that would otherwise sit unresolved — the Scripture/Intercession content is drafted but explicitly not yet Kell-verified, and the licensing question is a real business/legal step that blocks shipping the content as-is.
+
+**Pillar 10 (Today) is otherwise fully locked this session:** single MVP scenario, zero server/per-user data, Follow-up deferred Post-MVP (needs an LLM to be honest, not available yet), Intercession grown to 30 entries, capture hand-off (Transition + Dwelly Opens) designed for the first time, back-arrow exit rule locked and audited across all of P1 Capture (11 screens fixed). File-wide design-system audit also completed this session at Kell's request: components confirmed 100% in sync across every pillar; ~771 real unbound colors fixed; 3 new tokens created (`surface/dwelly-bubble`, `surface/user-bubble`, `icon/neutral`); one real regression caught (P4 journal-preview-card title color bug had recurred, 103 instances, now fixed again). Full detail: `docs/PILLAR_TODAY_PROMPT_TAXONOMY.md`, Notion session page (private draft, not yet filed under Sessions → 2026 — needs manual move): https://app.notion.com/p/3fecbe07e0c9816da71aff60b55630eb
+
+---
+
 ## Next Session Objective (October 16, 2026 close)
 
 **Confirmed Pending Items:**

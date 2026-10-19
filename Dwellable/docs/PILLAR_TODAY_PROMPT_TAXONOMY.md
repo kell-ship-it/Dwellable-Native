@@ -97,10 +97,38 @@ Tags below are illustrative — at runtime these come from the real entry's actu
 - "Sunday evening. Anything from today you want to hold onto?" — `cluster: general-reflection`
 - "First thing in the morning — what are you carrying into today?" — `cluster: fatigue`
 
-### Intercession (Post-MVP as a standalone door — kept alive narrowly, see fallback rule below)
-- "Is there someone you've been carrying lately? What would it look like to pray for them?" — `cluster: connection`
-- "Who came to mind today without you trying?" — `cluster: connection`
-- "Anyone you've been meaning to check on?" — `cluster: connection`
+### Intercession (MVP, 30 entries — locked Oct 19, 2026; superseded the "Post-MVP standalone door" framing below)
+Tile headline shown first, all independently verified ≤ one line at the real tile width (Instrument Serif 16px, 216px box).
+1. Anyone on your heart lately? — *full opener: "Has anyone been on your heart lately you'd want to talk about?"* — `cluster: connection`
+2. Who came to mind today unprompted? — *full opener: "Who came to mind today without you trying?"* — `cluster: connection`
+3. Anyone you've been carrying lately? — *full opener: "Is there someone you've been carrying lately? What would it look like to pray for them?"* — `cluster: connection`
+4. Someone you haven't checked on lately? — `cluster: connection`
+5. Anyone going through something hard? — `cluster: connection`
+6. Who's been on your mind this week? — `cluster: connection`
+7. Anyone you've meant to pray for? — `cluster: prayer-request`
+8. Someone who needs encouragement? — `cluster: connection`
+9. Anyone you're worried about lately? — `cluster: connection`
+10. Who crossed your mind today? — `cluster: connection`
+11. Anyone you miss checking in with? — `cluster: connection`
+12. Someone celebrating something lately? — `cluster: gratitude`
+13. Anyone who's been quiet lately? — `cluster: connection`
+14. Who's walking through a hard season? — `cluster: connection`
+15. Anyone you've lost touch with? — `cluster: connection`
+16. Someone you're grateful for today? — `cluster: gratitude`
+17. Anyone facing a big decision right now? — `cluster: general-reflection`
+18. Who could use a kind word today? — `cluster: connection`
+19. Anyone you've been avoiding lately? — `cluster: conflict`
+20. Someone struggling that you know of? — `cluster: connection`
+21. Anyone waiting on good news? — `cluster: hope`
+22. Who's been carrying something heavy? — `cluster: connection`
+23. Anyone you haven't prayed for lately? — `cluster: prayer-request`
+24. Someone new on your mind lately? — `cluster: connection`
+25. Anyone you feel distant from lately? — `cluster: conflict`
+26. Who's been generous with you lately? — `cluster: gratitude`
+27. Anyone you want to see God's hand in? — `cluster: hope`
+28. Someone you've been thinking about? — `cluster: connection`
+29. Anyone who needs encouragement? — `cluster: connection`
+30. Who's been showing up for you lately? — `cluster: gratitude`
 
 ---
 
@@ -135,6 +163,84 @@ Tags below are illustrative — at runtime these come from the real entry's actu
 
 ## Open questions
 
-1. **Selection logic for the shared pool** — daily rotation like Scripture? Random per session? Weighted toward categories the user hasn't engaged with (an early, zero-LLM step toward the "spiritual profile" idea discussed this session, without actually building Rich Context)?
-2. **Collision-resolution rule** — the Figma-AI spec says when two of the three picks collide on a cluster tag, "preserve a particularly relevant personal follow-up and replace a more generic prompt." Needs a concrete tie-break: if Mood and Life-Domain both collide with Follow-up, which one yields? (Current lean: Follow-up always wins — it's the one tied to the user's real, specific story; Mood and Life-Domain are both generic banks and either can be swapped for another same-category pick.)
+1. ~~**Selection logic for the shared pool**~~ **Resolved Oct 19, 2026 — see Session Update below.** Date-based, same pattern as Scripture, not history- or engagement-based.
+2. ~~**Collision-resolution rule**~~ **Resolved Oct 19, 2026: no swap, no collision-avoidance logic at all.** Scripture/Mood/Domain/Intercession each compute their day's pick independently from the date, with no cross-checking between them. The original swap rule assumed a runtime selection step that no longer exists now that rotation is pure date-indexed math — there's nothing to swap *from*. Dropped rather than reconciled: an occasional thematic overlap between two of the day's picks (e.g. both landing on a "fatigue"-adjacent tag) is accepted as rare and harmless, not a violation of anything in the Authority Guardrails.
 3. **Where do `cluster` tags get assigned for new content?** Right now it's manual, done in this doc. If the bank grows past ~20-30 entries per category, worth a lightweight authoring checklist so new prompts don't ship untagged (which would silently defeat the overlap rule for anything added later).
+
+---
+
+## Session Update — Oct 19, 2026 (current locked state — supersedes category/rotation sections above where they conflict)
+
+**Structure simplified to 4 categories, all MVP:** Scripture (hero, always on), Mood, Domain, and Sustain/Follow-up-or-Intercession (the 3rd tile). Intercession is no longer Post-MVP or a member of a rotating "Look-beyond" slot — it's promoted to a full MVP category, standing alongside Mood and Domain. It isn't a flavor of Sustain (Sustain is always contextual to something the user actually shared; Intercession never is) — it only *occupies* the 3rd tile's slot, as the fallback when Sustain has nothing to draw from.
+
+**3rd-tile logic, fully resolved:**
+- Any local capture exists (pending or completed, doesn't matter) → Sustain/Follow-up shows that capture's real content.
+- No local capture → ask the server the same way the moments list already does (`MomentsListView.fetchMoments()`) → if that turns up real history (e.g. a fresh/reinstalled device), use it the same as above; if it confirms true zero (including "had captures, deleted them all"), show Intercession. No separate "is this a new device" check needed — the single server-fetch resolves both cases.
+- Intent (P0 onboarding) does **not** drive any of this — dropped; intent-based prompts read too similar to Mood's own open-question format to be a distinct 4th option.
+
+**Rotation, fully resolved: date-based, not history-based, for all four categories.** Scripture, Mood, Domain, and Intercession (when it's the one showing) all pick their entry the same way — today's date indexes into that category's fixed bank (day-of-year modulo bank size), exactly like Scripture already worked. None of them are based on what the user has already seen. This was chosen specifically because it closes a real gap: if rotation depended on remembering what was shown before, a new/reinstalled device would have no memory of that and could repeat content — the same blind spot that affects capture history, but with no reason to accept it here, since nothing about Mood/Domain/Intercession needs to depend on the user's account data at all. Every device, any day, computes the identical answer from the date alone.
+
+**Error state: does not exist, by design.** Scripture/Mood/Domain/Intercession cannot fail (all local, fixed, date-computed). Sustain's server check already degrades gracefully into Intercession rather than erroring. There is no scenario where Today fails to load that isn't an app-wide failure out of this pillar's scope — no error-state screen was built for Today.
+
+**Figma:** the `dwelly-redesign` file's Today page is now 1 scenario (down from 13 — briefly 2, see below). Mood=Grateful and Domain=Dreams, same fixed-bank examples as always.
+
+---
+
+## Session Update — Oct 19, 2026 (later still): no excerpting — full verse only, curated to fit
+
+**Locked: Scripture entries are never abridged.** Earlier the same day the plan was "cap the quote at 2 lines, excerpt anything longer down to its essential clause." Kell reversed that after reviewing a batch of excerpts and disliking the loss of meaning it caused (e.g. 1 Peter 3:9 excerpted to "Do not repay evil for evil" lost the actual point of the verse — the "but bless" half). Decision: **the constraint moves upstream to curation, not display.** Every verse in the bank must already be ≤70 characters in its full, unedited form. If a verse doesn't fit, it doesn't go in the bank — it is never trimmed to fit. There is no "Excerpt" field distinct from "Full Verse" going forward; what's in the bank is what's shown, verbatim.
+
+**Validated at 365/365:** a complete draft bank was built to this rule — every entry ≤70 characters, full verse = displayed text on every row, 0 need for abridging. Delivered as a CSV for Kell's manual verification pass (wording accuracy against a licensed Bible text, not yet confirmed).
+
+**Consequence for future verse selection:** the 70-character cap is now the real editorial filter for what can go in the Scripture bank at all, not a last-step trim. A moving/important verse that happens to run long (e.g. Lamentations 3:22-23 in full, or James 1:23-24 at 133 characters) is understood to be out of scope for this bank, not a candidate to shorten.
+
+---
+
+## Session Update — Oct 19, 2026 (later still): tile headline vs. full opener, line-wrap audit, and the "bring it to God" principle
+
+**Two different strings per prompt, not one.** Every Mood/Domain/Intercession entry now has two forms:
+1. **Tile headline** — what renders on the Today screen itself. Hard-constrained to one line at the tile's real width (Instrument Serif 16px, 216px box) — measured empirically at **~33 characters safe, 39+ reliably wraps.** This is a UI-length compression, nothing more.
+2. **Full opener** — what Dwelly actually says once the user taps the tile and Capture opens. Not length-constrained (chat bubbles wrap freely). Per the already-locked Aug 28 rule, this is literally Dwelly's opening message — no origin chip, no quoted tile text on top of it.
+
+**Line-wrap audit (measured against the real tile, not guessed):** of the 16 live Mood/Domain/Intercession entries, **9 wrapped to 2–3 lines** and had never been checked before. All 5 Domain entries failed; all 3 Intercession entries failed; 1 of 8 Mood entries (Prayerful) failed.
+
+**Locked tile headline / full opener pairs (MVP, Oct 19, 2026):**
+
+| Category | Tile headline | Full opener |
+|---|---|---|
+| Mood — Prayerful | Praying about anything lately? | What's been on your heart to pray about? |
+| Domain — Music | What song have you had on repeat? | What song have you had on repeat? How does it make you feel? *(no "worship" qualifier anywhere — Today never prefaces that, so don't imply it)* |
+| Domain — Dreams | Have you had any dreams lately? | Walk me through a dream you had recently, and let's see where God is. |
+| Domain — Relationships | Conflict with someone lately? | Navigated conflict with a friend or family lately? That can be holy ground too. |
+| Domain — Work | Anything from work surprise you? | Anything from your workday that surprised you? |
+| Domain — Rest/Illness | Been forced to slow down lately? | Been forced to slow down lately? What's that been like? |
+| Intercession 1 | Anyone you've been carrying lately? | Is there someone you've been carrying lately? What would it look like to pray for them? |
+| Intercession 2 | Who came to mind today unprompted? | Who came to mind today without you trying? |
+| Intercession 3 | Anyone on your heart lately? | Has anyone been on your heart lately you'd want to talk about? *(kept broad — "anyone," not narrowed to a specific kind of relationship or obligation)* |
+
+All other Mood entries (Peaceful, Grateful, Reflective, Hopeful, Conflicted, Exhausted, Loved) already fit one line and use the same text for both tile and opener — no second form needed.
+
+**New principle, locked for Dreams, open question for everywhere else: bring it back to God, but as a later turn, not the opener.** Kell's rule: the opening message should let the user just talk first — don't front-load a "where is God in this" question before they've even started. Somewhere later in the same conversation, Dwelly should explicitly ask something like "Do you feel closer to God or farther from Him in this?" — giving the user room to answer honestly (including "farther," without that being treated as a wrong answer, per the Authority Guardrails). **Confirmed for Dreams. Not yet decided whether this applies to all Domain prompts, to every Capture conversation regardless of entry point, or just this one.**
+
+---
+
+## Session Update — Oct 19, 2026 (later same day): Follow-up deferred Post-MVP, Today ships as a single scenario
+
+**Locked: Follow-up (the 3rd tile reading a user's real capture) is deferred Post-MVP.** Working through what the tile actually needs — a real headline from the capture, plus a real follow-up question — made clear that a genuinely *contextual* follow-up requires an LLM to understand what the user actually captured. Truncating the raw transcript isn't contextual, it's just a snippet, and would read as fake personalization. There's no zero-LLM way to do this honestly. This is the same wall the original (May 14, 2026) Daily Prompt hit when it depended on Rich Context/LLM generation — the exact reason the Aug 28, 2026 redesign moved to fixed Scripture content in the first place. Deferring Follow-up now is the same call, applied consistently, rather than shipping a version that fakes personalization it doesn't have.
+
+**For MVP, the 3rd tile always shows Intercession** — not Follow-up, not a broader "Reflections" bank, specifically Intercession, same fixed/date-rotating pattern as Scripture/Mood/Domain. This means Today needs **zero per-user data and zero server calls for MVP** — no capture-history check, no fresh-device branch, none of it live. That logic is still real and still documented (on the Pillar 10 system-design board, dimmed) for whenever Follow-up actually ships Post-MVP, once Formation Intelligence / a real spiritual-profile synthesis step exists to make it genuinely contextual.
+
+**Consequence:** "Happy Path" (has capture history) vs. "Zero History" is no longer a meaningful distinction for Today, since the 3rd tile no longer depends on capture state at all. The Figma file's Today page is back down to a single screen.
+
+**Real trade-off, on record:** Today loses its tie to the user's actual story for now — it's Scripture plus generic, non-personal categories. Entries/Search still covers returning to real past moments; Prayer (P3) and Formation Intelligence (P7) were always where deeper personalization was meant to live, not Today. Not a loss of the product's goal, just not faking it before the pieces that make it real actually exist.
+
+---
+
+## Session Update — Oct 19, 2026 (edge-case pass, after Follow-up deferral)
+
+With Follow-up deferred and the 3rd tile fixed to Intercession, Today now has zero per-user data and zero server dependency — which closed out the entire earlier "fresh device" branch as moot and left a short, real edge-case list:
+
+1. ~~**Mood/Domain/Scripture/Intercession collision rule**~~ — resolved above (dropped, no swap logic).
+2. **Intercession bank size** — resolved: grown from 3 to **30 entries** (see category table above), so it now repeats roughly monthly instead of every 3 days.
+3. **Day-boundary / midnight refresh — locked: recompute "today" only on fresh app open or foreground resume, never live while the screen is already open.** Matches ordinary daily-content app conventions; content should never visibly shift while someone's mid-read.
+4. **Timezone** — no change. Device's own local timezone (T-184) stays the answer; the rare cross-timezone edge case is low-stakes enough not to warrant server-side timezone logic.
