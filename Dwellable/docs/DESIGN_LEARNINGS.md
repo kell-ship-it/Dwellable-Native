@@ -253,6 +253,16 @@ Published mockups: "Capture Entry, Locked" (`claude.ai/artifact/A8o55msbe8LdK9GH
 
 ---
 
+## 10a. No Strokes on Surfaces (locked October 21, 2026)
+
+**Rule:** no component in this system gets a visible border/stroke — every card, input field, and compose bar reads purely through fill contrast against its background (`surface/card` against `background/primary`, etc.), the same way every other card already works. `Typed-Text-Box` already had no stroke; `Input/Text`, `Input/Password`, and `Component/Compose-Text-Pill` were the only 3 components still carrying one (bound to a `border/input` token), which Kell caught as a real inconsistency. Removed at the master-component level — cascades to every instance (P0 onboarding fields, P1 compose pills, Change Password, and any future input field). `border/input` is now an unused, orphaned token — leave it defined but don't bind anything new to it.
+
+## 11a. Header Title Alignment: tab-root vs. modal sheet (locked October 21, 2026)
+
+**Rule:** a screen's own title is **left-aligned** when the screen is a tab-bar root or pushed/NavigationStack screen (Today, Entries, Growth, Profile, and anything reached by pushing deeper) — matches iOS's native large-title convention. A screen's title is **centered** when the screen is presented as a modal `.sheet()` (Account Profile and its full-screen sub-pages) — matches the standard iOS modal-sheet convention (centered title, trailing close/done action). When centering a sheet title next to a single trailing icon (e.g. Icon/Close), add an invisible leading spacer matching that icon's width so the title centers against the *whole screen*, not just the leftover space next to the icon — otherwise it reads visually off-center even though `textAlign: CENTER` is technically applied.
+
+**Arrow/chevron system (confirmed, not changed, October 21, 2026):** two distinct glyphs, each with one fixed meaning, already consistently applied file-wide — `Button/Back` (bare caret `‹`) means "navigate backward"; `Icon/Arrow-Right` (straight arrow `→`) means "this row/card discloses a sub-view," already used 47× across P1 and P10 before Account Profile reused it the same way. Not an inconsistency — don't introduce a third glyph or retrofit these.
+
 ## 11. Edit-state sub-flows are mutually exclusive (locked October 15, 2026)
 
 **Rule:** Edit Entry has several distinct entry points — delete the entry, delete the photo, add a mood, take a photo, add a photo, record a voice note, type text directly. Once a user enters one of these specific sub-flows, the others are not simultaneously available from within it. Tapping "Add a photo" does not also offer delete-photo, add-mood, take-photo, or record-voice-note controls in that same moment — each sub-flow is its own focused state, not a mode where everything is always reachable at once.
