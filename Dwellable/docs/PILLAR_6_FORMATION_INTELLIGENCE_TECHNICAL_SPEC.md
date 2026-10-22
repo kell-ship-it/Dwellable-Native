@@ -47,6 +47,14 @@ These are **two separate LLM calls, kept intentionally separate** (not combined 
 
 **Read model:** each downstream consumer pulls only the slice of the profile it needs (e.g. Today pulls a small recent-theme+tone slice, Dwelly pulls the fuller running summary), never the whole profile on every read. Structured fields, not prose, for the same reason — cheap to slice, cheap to re-parse.
 
+### 2a. There is no per-user model (clarified Oct 22, 2026 — recurring source of confusion, worth stating explicitly)
+
+**There is exactly one model, shared by every user — Groq Llama 3 70B, with GPT-4o mini as backup.** Nothing about the model itself is ever customized, trained, or fine-tuned per user. The `DwellerProfile` is not a model and has no weights — it's a handful of text fields in a database row.
+
+Personalization works by **context injection**, not training: before each call, the relevant slice of a user's `DwellerProfile` (their `statedIntent`, `runningSummary`, etc.) is pasted into the prompt sent to the shared model. The model has no memory between calls — it starts fresh every time and is handed a cheat-sheet. This is the same pattern as ChatGPT's "Memory" feature, and the general industry term for the fuller version of this technique (with search/retrieval added) is **RAG (Retrieval-Augmented Generation)** — Dwelly's version is the simple end of that spectrum, no vector search or embeddings, just "fetch the profile row, paste it into the prompt." No proprietary framework is needed or used; this works with any LLM provider's plain completion API.
+
+This is also why the cost model in Section 5 holds — training or fine-tuning per user would be far more expensive than anything priced in T-099's analysis. What's actually happening (one shared model, a small amount of extra text per call) is cheap precisely because it is this simple.
+
 ---
 
 ## 3. Data Models
@@ -78,7 +86,7 @@ struct DwellerProfile: Codable {
 }
 ```
 
-**Explicitly excluded from this struct:** Rhythm. Confirmed this session — Rhythm is self-reported only and is not part of Formation Intelligence's model for MVP. It lives in Account Profile's own data, not here. Post-MVP candidate to add later, not now.
+**Explicitly excluded from this struct:** Rhythm. Confirmed this session — Rhythm is self-reported only and is not part of Formation Intelligence's model for MVP. It lives in Growth's own data (moved from Account Profile to Growth, Aug 31, 2026, T-195 — not Account Profile, despite this line's earlier draft; see Row 4's correction below), not here. Post-MVP candidate to add later, not now.
 
 **Open question, not yet resolved (T-178):** should this struct also carry `priorStatedIntent: String?`, so a future Narrative could reference "you used to want X, now you want Y"? Flagged, not decided — do not implement until answered.
 
@@ -158,10 +166,13 @@ Each row below states: the triggering event, the technical mechanism recommended
 - **Error handling:** if Call A fails, fall back to the existing locked P4 fallback (raw transcript stands in as the journal body — see `docs/MEMORY.md` Aug 27 decision that this is a permanent silent-retry state, not a dead end). If Call A succeeds but Call B fails, the journal still saves successfully (user-facing outcome unaffected) — Call B should retry via the same silent-background-retry pattern, and worst case gets caught by the next monthly reconciliation (Row 7) if retries exhaust. **This is the one legitimate case where a "missed" Theme Detection run is acceptable to leave for reconciliation** — unlike journal edits (Row 5), which are never picked up by reconciliation by design.
 
 ### Row 4 — Intent changed later
+
+**Status: Post-MVP (Oct 20, 2026 decision).** Intent's write to `DwellerProfile.statedIntent` — i.e. Intent playing any role in the spiritual profile / Formation Intelligence — is deferred. For MVP, Intent editing behaves exactly like Rhythm: self-reported data only, edited and displayed in Growth, **not** part of the `DwellerProfile` model, never read by Formation Intelligence. The mechanism below remains the locked design for when this is picked back up — it is not being discarded, just not built for MVP.
+
 - **Trigger:** user edits Intent via Growth (P11) — corrected Sept 1, 2026: Rhythm and Intent editing moved from Account Profile to Growth on Aug 31, 2026 (see T-195); Row 4 was initially mis-attributed to Account Profile (P9) earlier the same session this doc was written, then corrected against the ticket history.
-- **Mechanism:** synchronous write, no LLM call — overwrites `statedIntent`.
-- **Write:** `DwellerProfile.statedIntent` overwritten. No reconciliation logic runs.
-- **Explicit output:** the new value must propagate to wherever Growth displays the current Intent — confirm this is a live read (not cached) so the Growth tab reflects the change immediately.
+- **Mechanism (Post-MVP):** synchronous write, no LLM call — overwrites `statedIntent`.
+- **Write (Post-MVP):** `DwellerProfile.statedIntent` overwritten. No reconciliation logic runs.
+- **Explicit output (Post-MVP):** the new value must propagate to wherever Growth displays the current Intent — confirm this is a live read (not cached) so the Growth tab reflects the change immediately.
 - **Open items (not yet decided, do not implement without answering):**
   - Should Intent changes be rate-limited (e.g. once a month, like a username change)? Flagged, not locked.
   - Should the profile retain the old value (`priorStatedIntent`, see 3.1)? Flagged, not locked.

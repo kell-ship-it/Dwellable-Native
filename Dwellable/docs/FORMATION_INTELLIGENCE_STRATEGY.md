@@ -2,7 +2,9 @@
 
 **Dwellable's Comprehensive System for Helping Users Become Formed by Their God Moments**
 
-**Status:** 🏆 **INTEGRATED & LOCKED** | **Updated:** May 15, 2026
+**Status:** ⚠️ **SUPERSEDED — historical reference only, not current design.** See `docs/PILLAR_6_FORMATION_INTELLIGENCE_TECHNICAL_SPEC.md` for the current Dweller Profile Engine model (locked Sept 1, 2026). This doc's P0–P8 pillar numbering, "Soaking" terminology, and Prayer-as-MVP scope are all obsolete — Prayer is deferred Post-MVP (locked Aug 3, 2026), current pillar numbering runs P0–P11 with Formation Intelligence as P6, and "Soaking" is retired in favor of "Dwelling." Flagged obsolete Oct 22, 2026 during a cross-pillar consistency audit; left in place for historical context only, not patched line-by-line.
+
+**Status (original):** 🏆 **INTEGRATED & LOCKED** | **Updated:** May 15, 2026
 
 ---
 
