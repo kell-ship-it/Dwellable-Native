@@ -22,14 +22,18 @@ The prior version of this doc assumed an architecture that no longer exists:
 **What Pillar 5 Is:**
 Search & Discovery is the *discovery layer* of Formation Intelligence. Users revisit and re-examine moments, revealing what they're wrestling with, celebrating, and dwelling on over time.
 
-**What P5 Learns:**
+**Locked Oct 23, 2026 — Recent Searches does NOT feed Formation Intelligence.** The paragraphs below describing P5 as a "behavioral signal" source for P6 predate the actual locked `PILLAR_6_FORMATION_INTELLIGENCE_TECHNICAL_SPEC.md` (Sept 1, 2026), whose 7 inputs don't include search at all. Confirmed with Kell: fine with this for now, revisit only as a real Post-MVP question if ever. Left below as historical framing, not current design — do not build against it.
+
+**Recent Searches — storage, locked Oct 23, 2026:** Device-local only (e.g. UserDefaults-style), same pattern as Safari/Mail's recent-searches list. Never synced to Supabase, never part of the encrypted-content model, not read by any other pillar. Pure UX convenience — lets you re-run a past search without retyping it, nothing more.
+
+**What P5 Learns (historical framing, not current design — see note above):**
 - **Search themes:** What topics users return to (anxiety, gratitude, relationships, faith questions)
 - **Temporal patterns:** When users search (after tough weeks, before decisions, during seasons)
 - **Unresolved questions:** Searches without matching results reveal what users are seeking that they haven't yet captured
 - **Re-dwelling patterns:** How often users revisit the same moment or theme
 - **Recent searches:** History of searches reveals obsessions, preoccupations, spiritual concerns across time
 
-**How P5 Prepares P6 (Formation Intelligence):**
+**How P5 Prepares P6 (Formation Intelligence) — historical framing, not current design — see note above:**
 P5 collects the *behavioral signals* that P6 needs. Search interactions, recent searches, filter patterns feed into P6's ability to name themes with confidence.
 
 **Trust Principle (Cross-Pillar):**

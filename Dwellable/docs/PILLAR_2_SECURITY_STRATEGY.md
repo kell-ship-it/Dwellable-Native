@@ -93,7 +93,7 @@ This is only possible if:
 ### Encryption Algorithm
 - **Algorithm:** AES-256-GCM (authenticated encryption, prevents tampering)
 - **Key Management:** Server-managed encryption key(s), independent of the user's login password
-- **Key Storage:** Managed via a server-side key management approach (e.g., a dedicated secrets/KMS layer) — not derived from or gated by user password
+- **Key Storage:** **Locked Oct 23, 2026 — Supabase Vault.** At this stage (small team, early beta, the "secure with us" promise — not a zero-knowledge claim), Vault clears the bar already made to users: built into Supabase, fast to set up, one vendor to operate. Not derived from or gated by user password. Revisit a dedicated KMS (AWS KMS, Google Cloud KMS) if the user base grows significantly or a partner/investor due-diligence review requires key custody independent of Supabase itself.
 - **Data Scope:** All moment transcripts, journals, user profile, metadata
 
 ### Server-Side Encryption
@@ -229,8 +229,9 @@ No encryption key derivation happens here — encryption key is server-managed, 
 
 ### Account Lockout & Brute-Force Protection
 
-Now safe to implement normally, since lockout no longer risks permanently orphaning a user's encryption key:
-- Standard rate limiting / lockout after N failed attempts (Post-MVP; MVP can start with basic rate limiting per T-050's existing brute-force protection work)
+**Locked Oct 23, 2026:** 5 failed login attempts → 10-minute lockout, a repeating cycle (not escalating — resets and applies the same way every time, both MVP and Post-MVP). Extends T-050's existing brute-force-protection work.
+- **MVP:** tracked **per-device**. Stops typos and casual bot abuse; does not stop an attacker who switches devices or clears app data — a known, accepted tradeoff for MVP, not an oversight.
+- **Post-MVP:** adds **per-account** tracking (the real security control), plus a forced password-reset prompt if a user is still locked out when they return.
 
 ---
 
