@@ -148,12 +148,22 @@ Each row below states: the triggering event, the technical mechanism recommended
 - **Trigger:** user submits their Intent selection during onboarding (P0).
 - **Mechanism:** synchronous write, client → Supabase, no LLM call. Creates the `DwellerProfile` row for this user for the first time.
 - **Write:** `statedIntent` field set. No other field populated yet.
-- **Read (explicit output):** a lookup table (Intent value → matching first-capture prompt set) is queried client-side or via a simple non-LLM endpoint — no LLM needed, per the locked decision that this is deterministic.
+- **Read (explicit output):** a lookup table (Intent value → matching first-capture prompt) is queried client-side or via a simple non-LLM endpoint — no LLM needed, per the locked decision that this is deterministic. **Table locked (Oct 26, 2026):**
+
+  | Intent | First-capture prompt |
+  |---|---|
+  | Grow closer to God | "When did you last feel God's presence today?" |
+  | Process my thoughts and feelings | "What's been sitting with you lately?" |
+  | Journal my faith journey | "What's a moment from today you want to remember?" |
+  | I'm not sure yet | "What's on your heart today?" (the existing neutral default used elsewhere) |
+
+  This is Intent's **only** live touchpoint with Formation Intelligence for MVP — see the correction to Row 2 below. Whatever the user writes in response becomes a normal journal entry and flows through Theme Detection (Row 3) like any other; Intent itself is never read again after this.
 - **Error handling:** if the profile-creation write fails, onboarding should not block — retry on next app foreground, consistent with the existing offline-first sync pattern already used for Moments (`SyncManager`).
 
 ### Row 2 — Capture (Dwelly conversation)
 - **Trigger:** every time a capture begins, before Dwelly's first message.
-- **Mechanism:** synchronous read of `DwellerProfile.statedIntent` + `runningSummary`, injected into the prompt sent to the shared LLM proxy for Dwelly's conversational turn.
+- **Mechanism:** synchronous read of `DwellerProfile.runningSummary` only, injected into the prompt sent to the shared LLM proxy for Dwelly's conversational turn.
+- **Correction (Oct 26, 2026):** earlier drafts of this row also read `statedIntent` on every capture. **Dropped.** Intent is not read here — its only touchpoint is the one-time Row 1 lookup that picks the very first capture prompt. After that, Intent's influence enters the system only indirectly, through the content of whatever the user actually writes (which Theme Detection picks up normally in Row 3) — never through a live re-read of the stored value.
 - **Read only — no write.** This row never mutates the profile.
 - **Error handling:** if the profile read fails or the profile doesn't exist yet (shouldn't happen post-onboarding, but defensively), Dwelly should fall back to a generic prompt rather than blocking capture — capture must never be blocked by a Formation Intelligence failure.
 
@@ -173,8 +183,8 @@ Each row below states: the triggering event, the technical mechanism recommended
 - **Mechanism (Post-MVP):** synchronous write, no LLM call — overwrites `statedIntent`.
 - **Write (Post-MVP):** `DwellerProfile.statedIntent` overwritten. No reconciliation logic runs.
 - **Explicit output (Post-MVP):** the new value must propagate to wherever Growth displays the current Intent — confirm this is a live read (not cached) so the Growth tab reflects the change immediately.
+- **Rate limit — locked (Oct 26, 2026):** user may change Intent **once a month.** This is purely a UI-facing cooldown on the edit action itself (there's no LLM call in this row to rate-limit — it was already just a Postgres write); it has no bearing on Formation Intelligence since Intent isn't read by the engine in MVP regardless.
 - **Open items (not yet decided, do not implement without answering):**
-  - Should Intent changes be rate-limited (e.g. once a month, like a username change)? Flagged, not locked.
   - Should the profile retain the old value (`priorStatedIntent`, see 3.1)? Flagged, not locked.
 
 ### Row 5 — Journal edited after creation
@@ -220,7 +230,7 @@ Each row below states: the triggering event, the technical mechanism recommended
 | Consumer | Status | What it reads |
 |---|---|---|
 | Growth "Your Narrative" (P11) | **MVP, live** | `narrativeText`, full |
-| Capture/Dwelly conversation (P1) | MVP (Row 2 is a live read, already specified above) | `statedIntent`, `runningSummary` |
+| Capture/Dwelly conversation (P1) | MVP (Row 2 is a live read, already specified above) | `runningSummary` only (not `statedIntent` — see Row 2 correction) |
 | Today tab contextual prompts (P10) | Post-MVP | small recent-theme+tone slice (not yet specified) |
 | Notifications, contextual (P8) | Post-MVP | theme-status slice (not yet specified) |
 | Search, theme-based filtering (P5) | Post-MVP | `detectedThemeIds` (not yet specified) |
@@ -232,11 +242,11 @@ Per-consumer slice specs are not yet written for the Post-MVP rows — each need
 
 ## 7. Summary of Open Items (do not implement without resolving)
 
-1. Reward/confidence-weighting system for repeated theme confirmation — parked, not decided.
-2. Whether `DwellerProfile` should retain prior Intent values (`priorStatedIntent`).
-3. Whether Intent changes should be rate-limited.
-4. Exact definition of "once a month" for rate-limit resets.
-5. Qualifying paid tier definition for Row 7's gate.
-6. Whether an edited journal should ever feed the profile (Post-MVP question).
-7. Scheduling infrastructure for Row 7 (recommend `pg_cron` or equivalent, not yet confirmed).
-8. Per-consumer read-slice specs for the 5 Post-MVP consumers in Section 6.
+1. ~~Reward/confidence-weighting system for repeated theme confirmation~~ **Resolved (Oct 26, 2026): Post-MVP, parked.**
+2. Whether `DwellerProfile` should retain prior Intent values (`priorStatedIntent`). Still open.
+3. ~~Whether Intent changes should be rate-limited~~ **Resolved (Oct 26, 2026): yes, once a month** — see Row 4.
+4. Exact definition of "once a month" for Narrative Confirmation's rate-limit reset (Row 6) — still open. (Intent's own once-a-month cooldown, Row 4, doesn't need this precision resolved first — it's a simpler UI-only cooldown.)
+5. Qualifying paid tier definition for Row 7's gate. Still open.
+6. ~~Whether an edited journal should ever feed the profile~~ **Confirmed (Oct 26, 2026): no, not ever for MVP.** Remains a real Post-MVP question, not a closed door.
+7. Scheduling infrastructure for Row 7 (recommend `pg_cron` or equivalent, not yet confirmed). Still open.
+8. Per-consumer read-slice specs for the 5 Post-MVP consumers in Section 6. Still open.

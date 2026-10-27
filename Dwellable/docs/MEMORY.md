@@ -2,6 +2,15 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (October 26, 2026 close)
+
+**Confirmed Pending Items:**
+1. **Lock real Monthly/Yearly pricing for the Payment pillar (T-252)** — the Paywall's price fields are still `[price placeholder]`. Needs the qualifying-paid-tier decision first (also blocks Formation Intelligence's Row 7 reconciliation gate), then can finalize the Paywall copy and the StoreKit mock's price line.
+2. **Design the second-capture gate screen** — the free/trial access boundary (first capture + journal entry free, gate hits on the second capture attempt) is locked as a concept but the actual UI for that gate has never been built. This is the other half of the Payment pillar that's still just a decision, not a screen.
+3. **Walk P1 Capture onboarding scenarios 1–3's happy path frame-by-frame** — only Scenarios 5–12's edge cases got the full review pass this session and Oct 23; the core onboarding happy-path screens (Dwelly Opens the Prompt → Conversation Flow → Rich Journal Preview, Scenarios 1–3) were only spot-checked, never walked the way the Post-Onboarding entry points and Scenario 6/8 bugs were caught.
+
+**Rationale:** Items 1–2 are the two concrete gaps left in the Payment pillar after today's full onboarding-sequence build (10 happy-path screens + 5 error states all exist; pricing and the gate screen are the remaining unknowns). Item 3 closes out the P1 Capture audit that's been carried forward since Oct 23 — the same bug class (stale/duplicated content) was found twice already in the parts that *were* reviewed, so the unreviewed happy-path screens are a real risk, not a formality.
+
 ## Next Session Objective (October 23, 2026 close)
 
 **Confirmed Pending Items:**

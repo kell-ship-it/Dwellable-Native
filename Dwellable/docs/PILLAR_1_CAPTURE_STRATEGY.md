@@ -112,7 +112,7 @@ timestamp: ISO8601
 
 Two hooks into Formation Intelligence (P6) bracket this pillar's flow:
 
-- **Before Dwelly's first message (Row 2):** every capture reads the user's `DwellerProfile` — `statedIntent` + `runningSummary` — and injects it into the prompt. This is a **read-only** operation; Capture never writes to the profile. If the read fails, Dwelly falls back to a generic prompt rather than blocking capture.
+- **Before Dwelly's first message (Row 2):** every capture reads the user's `DwellerProfile.runningSummary` only, and injects it into the prompt. This is a **read-only** operation; Capture never writes to the profile. (Corrected Oct 26, 2026 — `statedIntent` is not read here; Intent's only touchpoint is the one-time first-capture-prompt lookup, see Row 1.) If the read fails, Dwelly falls back to a generic prompt rather than blocking capture.
 - **After the capture ends (Row 3):** Journal Synthesis (Pillar 4's Call A, not this pillar) runs on the finished conversation, and once that succeeds, Formation Intelligence's own Theme Detection (Call B) runs afterward as a separate chained call.
 
 Full mechanism for both: see `docs/PILLAR_6_FORMATION_INTELLIGENCE_TECHNICAL_SPEC.md`, Row 2 and Row 3.
