@@ -2,14 +2,14 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
-## Next Session Objective (November 2, 2026 close, continued — T-254 started)
+## Next Session Objective (November 2, 2026 close, continued — T-076/T-215/T-253 TabBar shell built)
 
 **Confirmed Pending Items:**
-1. **Create the 2 real IAP products in App Store Connect** (Monthly `com.kellgolden.Dwell.subscription.monthly` $7.99, Yearly `com.kellgolden.Dwell.subscription.yearly` $59.99, 14-day intro offer on both) — Kell's own action, outside tool access. Once created, swap the placeholder product IDs in `PaymentManager.swift` for the real ones (one-line change each) and test against real StoreKit sandbox data.
-2. **T-255 — Trial-eligibility gate logic.** `PaymentManager.isEligibleForIntroOffer(_:)` already exists; still needs the actual gate wiring — branch to `.secondCaptureGate` vs `.trialAlreadyUsed` `PaywallContext` on the real second-capture trigger, once capture flow + navigation exist.
-3. **T-076/T-215/T-253 — Build the SwiftUI TabBar + header chrome** (unchanged from prior close) — `PaywallView` is built but not wired into any navigation yet since the tab structure doesn't exist. This is still the shared skeleton every pillar screen (including Payment) needs to actually sit inside.
+1. **Wire PaywallView into the new TabBar flow.** `MainTabView` now exists (Today/Entries/Growth/Profile) but `PaywallView` isn't presented anywhere yet — needs a real trigger: the onboarding-skippable paywall after Intro Video, and the second-capture gate from inside the capture flow (`PaymentManager.isEligibleForIntroOffer` already exists for the gate branch).
+2. **Create the 2 real IAP products in App Store Connect** (Monthly `com.kellgolden.Dwell.subscription.monthly` $7.99, Yearly `com.kellgolden.Dwell.subscription.yearly` $59.99, 14-day intro offer on both) — Kell's own action, outside tool access. Swap the placeholder product IDs in `PaymentManager.swift` for the real ones once created.
+3. **Build the real Today/Entries/Growth tab content.** `TodayPlaceholderView`/`GrowthPlaceholderView` are structural stand-ins only (T-135-139, T-140-143); Entries still shows the old Phase-1 `MomentsListView`, not the real P5 calendar+list redesign (T-078).
 
-**Rationale:** T-254's StoreKit 2 code + Paywall UI are built and compiling clean, but the ticket can't fully close without real App Store Connect products (Kell-only action) and a navigation shell to host it in (T-076 et al.). Picking up T-076 next makes sense regardless, since nothing else in the engineering build-out can be demoed end-to-end without it.
+**Rationale:** The navigation shell (T-076/T-215/T-253) is built and verified — for real this time (see KEY_LEARNINGS.md's Nov 2 entry on a file-registration gap caught and fixed this session: new Swift files need manual `project.pbxproj` entries here, since the main app target isn't a synchronized file group). With the shell in place, the next real engineering move is giving each tab actual content, starting with whichever Kell wants to see working end-to-end first.
 
 ## Next Session Objective (November 2, 2026 close)
 

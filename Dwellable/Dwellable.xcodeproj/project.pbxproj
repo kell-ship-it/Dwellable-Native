@@ -14,6 +14,14 @@
 		0108 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0109 /* AppView.swift */; };
 		0110 /* MomentsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0111 /* MomentsListView.swift */; };
 		0112 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0113 /* AuthManager.swift */; };
+		B102 /* PaymentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B101 /* PaymentManager.swift */; };
+		B104 /* PaywallContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B103 /* PaywallContext.swift */; };
+		B106 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B105 /* PaywallView.swift */; };
+		B108 /* TabScreenHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B107 /* TabScreenHeader.swift */; };
+		B10A /* TodayPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B109 /* TodayPlaceholderView.swift */; };
+		B10C /* GrowthPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B /* GrowthPlaceholderView.swift */; };
+		B10E /* AccountProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D /* AccountProfileView.swift */; };
+		B110 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10F /* MainTabView.swift */; };
 		0114 /* Moment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0115 /* Moment.swift */; };
 		0116 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0117 /* Theme.swift */; };
 		0118 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0119 /* Config.swift */; };
@@ -59,6 +67,14 @@
 		0109 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		0111 /* MomentsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentsListView.swift; sourceTree = "<group>"; };
 		0113 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		B101 /* PaymentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentManager.swift; sourceTree = "<group>"; };
+		B103 /* PaywallContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallContext.swift; sourceTree = "<group>"; };
+		B105 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		B107 /* TabScreenHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabScreenHeader.swift; sourceTree = "<group>"; };
+		B109 /* TodayPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayPlaceholderView.swift; sourceTree = "<group>"; };
+		B10B /* GrowthPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrowthPlaceholderView.swift; sourceTree = "<group>"; };
+		B10D /* AccountProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountProfileView.swift; sourceTree = "<group>"; };
+		B10F /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		0115 /* Moment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Moment.swift; sourceTree = "<group>"; };
 		0117 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		0119 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
@@ -145,6 +161,12 @@
 				0147 /* MomentRow.swift */,
 				0149 /* SettingsView.swift */,
 				A000 /* ModelSetupView.swift */,
+				B105 /* PaywallView.swift */,
+				B107 /* TabScreenHeader.swift */,
+				B109 /* TodayPlaceholderView.swift */,
+				B10B /* GrowthPlaceholderView.swift */,
+				B10D /* AccountProfileView.swift */,
+				B10F /* MainTabView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -162,6 +184,7 @@
 				0137 /* KeychainManager.swift */,
 				013b /* LocalStorageManager.swift */,
 				013d /* SyncManager.swift */,
+				B101 /* PaymentManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -171,6 +194,7 @@
 			children = (
 				0115 /* Moment.swift */,
 				12c1 /* UsageTracker.swift */,
+				B103 /* PaywallContext.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -355,6 +379,14 @@
 				0116 /* Theme.swift in Sources */,
 				0118 /* Config.swift in Sources */,
 				E001 /* APIClientEnvironment.swift in Sources */,
+				B102 /* PaymentManager.swift in Sources */,
+				B104 /* PaywallContext.swift in Sources */,
+				B106 /* PaywallView.swift in Sources */,
+				B108 /* TabScreenHeader.swift in Sources */,
+				B10A /* TodayPlaceholderView.swift in Sources */,
+				B10C /* GrowthPlaceholderView.swift in Sources */,
+				B10E /* AccountProfileView.swift in Sources */,
+				B110 /* MainTabView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

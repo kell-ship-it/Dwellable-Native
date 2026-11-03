@@ -131,7 +131,7 @@ final class PaymentManager: ObservableObject {
     }
 
     private func listenForTransactionUpdates() -> Task<Void, Never> {
-        Task.detached { [weak self] in
+        Task { [weak self] in
             for await result in Transaction.updates {
                 guard let self, let transaction = try? self.checkVerified(result) else { continue }
                 await transaction.finish()

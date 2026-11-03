@@ -8,9 +8,7 @@ struct AppView: View {
     var body: some View {
         // AppView is only shown when authenticated, so we can safely force-unwrap currentUser
         if let user = authManager.currentUser {
-            NavigationStack {
-                MomentsListView(userId: user.id, syncManager: syncManager)
-            }
+            MainTabView(userId: user.id, userEmail: user.email, syncManager: syncManager)
             .environment(\.colorScheme, .dark)
             .onAppear {
                 // Set real userId on SyncManager (replaces placeholder "app-sync")
