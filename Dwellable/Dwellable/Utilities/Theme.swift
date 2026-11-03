@@ -98,4 +98,17 @@ struct Theme {
         static let textColor = Theme.error
         static let backgroundColor = Theme.errorLight
     }
+
+    // MARK: - Payment / Redesign Gold Palette
+    // Matches the locked P12 Payment pillar tokens in the `dwelly-redesign` Figma file
+    // (jBOzv1vO2C2DSMePqRl4c4). Distinct from the Phase-1 palette above — warmer near-black,
+    // not pure grayscale. `gold` above already matches `accent/gold` (#c9b27a) exactly.
+    struct Payment {
+        static let background = Color(red: 0x12 / 255, green: 0x10 / 255, blue: 0x0e / 255)   // #12100e
+        static let pillBackground = Color(red: 0x26 / 255, green: 0x24 / 255, blue: 0x1f / 255) // #26241f
+        static let textHeading = Color(red: 0xea / 255, green: 0xe6 / 255, blue: 0xda / 255)   // #eae6da
+        static let textSupporting = Color(red: 0x85 / 255, green: 0x7d / 255, blue: 0x69 / 255) // #857d69
+        static let timelineRail = Color(red: 0x59 / 255, green: 0x52 / 255, blue: 0x42 / 255)  // #595242
+        static let errorRed = Color(red: 0xe0 / 255, green: 0x7a / 255, blue: 0x5f / 255)      // state/error (warm coral)
+    }
 }

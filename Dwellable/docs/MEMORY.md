@@ -2,6 +2,15 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (November 2, 2026 close, continued — T-254 started)
+
+**Confirmed Pending Items:**
+1. **Create the 2 real IAP products in App Store Connect** (Monthly `com.kellgolden.Dwell.subscription.monthly` $7.99, Yearly `com.kellgolden.Dwell.subscription.yearly` $59.99, 14-day intro offer on both) — Kell's own action, outside tool access. Once created, swap the placeholder product IDs in `PaymentManager.swift` for the real ones (one-line change each) and test against real StoreKit sandbox data.
+2. **T-255 — Trial-eligibility gate logic.** `PaymentManager.isEligibleForIntroOffer(_:)` already exists; still needs the actual gate wiring — branch to `.secondCaptureGate` vs `.trialAlreadyUsed` `PaywallContext` on the real second-capture trigger, once capture flow + navigation exist.
+3. **T-076/T-215/T-253 — Build the SwiftUI TabBar + header chrome** (unchanged from prior close) — `PaywallView` is built but not wired into any navigation yet since the tab structure doesn't exist. This is still the shared skeleton every pillar screen (including Payment) needs to actually sit inside.
+
+**Rationale:** T-254's StoreKit 2 code + Paywall UI are built and compiling clean, but the ticket can't fully close without real App Store Connect products (Kell-only action) and a navigation shell to host it in (T-076 et al.). Picking up T-076 next makes sense regardless, since nothing else in the engineering build-out can be demoed end-to-end without it.
+
 ## Next Session Objective (November 2, 2026 close)
 
 **Confirmed Pending Items:**
