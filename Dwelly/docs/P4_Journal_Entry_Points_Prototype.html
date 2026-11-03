@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Journal — 3 Entry Points (Pillar 4)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap');
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #f3f1ee; font-family: 'Instrument Sans', sans-serif;
+    color: #1c1a17; display: flex; gap: 32px; padding: 40px; align-items: flex-start;
+  }
+  :root {
+    --bg-screen: #0a0a0a; --bg-card: #1a1a1c; --border-soft: #2a2a2a;
+    --gold: #c9b27a; --text-heading: #f5f5f7; --text-muted: #a39d98; --text-placeholder: #74695f;
+  }
+
+  /* ---------- hub ---------- */
+  .hub { width: 320px; flex-shrink: 0; }
+  .hub h1 { font-size: 20px; margin: 0 0 4px; }
+  .hub .sub { font-size: 13px; color: #6b6560; line-height: 1.5; margin: 0 0 20px; }
+  .hub h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: #6b6560; margin: 20px 0 8px; }
+  .hub-link {
+    display: block; width: 100%; text-align: left; background: #fff; border: 1px solid #e3ded6;
+    color: #1c1a17; padding: 12px 14px; border-radius: 10px; font-size: 13.5px; margin-bottom: 8px;
+    cursor: pointer; font-family: inherit;
+  }
+  .hub-link.active { background: var(--gold); border-color: var(--gold); color: #0a0a0a; font-weight: 600; }
+  .hub-note { font-size: 12.5px; color: #6b6560; line-height: 1.5; margin-top: 16px; background: #fff; border: 1px solid #e3ded6; border-radius: 10px; padding: 14px; }
+
+  /* ---------- phone shell ---------- */
+  .phone-shell { width: 375px; height: 812px; border-radius: 54px; background: #050505; padding: 12px; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.4); position: relative; flex-shrink: 0; }
+  .phone-screen { width: 100%; height: 100%; border-radius: 42px; overflow: hidden; position: relative; background: var(--bg-screen); }
+  .po-screen { position: absolute; inset: 0; display: none; flex-direction: column; color: var(--text-heading); animation: enter 0.25s ease; }
+  .po-screen.active { display: flex; }
+  @keyframes enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .status-bar { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px 0; flex-shrink: 0; }
+  .status-bar .time { font-weight: 600; font-size: 15px; }
+  .status-dots { display: flex; gap: 4px; }
+  .status-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted); }
+  .home-indicator { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); width: 134px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.32); z-index: 60; }
+  .empty-state { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; text-align: center; color: var(--text-placeholder); font-size: 14px; line-height: 1.6; }
+
+  /* ---------- entry point 1: chat preview card ---------- */
+  .chat-preview-body { flex: 1; padding: 100px 20px 0; }
+  .dwelly-tag { font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.04em; margin-bottom: 8px; }
+  .dwelly-msg { font-size: 14px; color: var(--text-heading); margin-bottom: 16px; }
+  .journal-card { background: #161618; border: 1px solid #2c2c2e; border-radius: 16px; padding: 16px; cursor: pointer; transition: border-color 0.15s; }
+  .journal-card:hover { border-color: var(--gold); }
+  .jc-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .jc-date { font-size: 11px; color: #746b63; letter-spacing: 0.03em; }
+  .jc-open { font-size: 11px; font-weight: 700; color: var(--gold); }
+  .jc-title { font-family: 'Instrument Serif', serif; font-size: 19px; margin: 0 0 10px; }
+  .jc-excerpt { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin: 0 0 14px; }
+  .jc-divider { height: 1px; background: #2c2c2e; margin-bottom: 14px; }
+  .jc-scripture { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 13px; color: var(--gold); margin: 0; }
+
+  /* ---------- entry point 2: entries list (real design, matches main prototype) ---------- */
+  .tab-body { flex: 1; padding: 44px 24px 0; overflow-y: auto; }
+  .tab-body h2 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 26px; margin: 0; }
+  .entries-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .entries-icon-pill { display: flex; align-items: center; background: #1c1815; border: 1px solid var(--gold); border-radius: 20px; height: 40px; }
+  .entries-icon-pill button { background: none; border: none; width: 28px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--gold); position: relative; }
+  .entries-icon-pill button:not(:last-child)::after { content: ''; position: absolute; right: 0; top: 11px; bottom: 11px; width: 1px; background: var(--gold); opacity: 0.6; }
+  .cal-card { background: #1c1815; border: 1px solid #2e2721; border-radius: 16px; padding: 16px; margin-bottom: 24px; }
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cal-nav button { background: none; border: none; color: var(--gold); font-size: 16px; cursor: pointer; padding: 4px 8px; }
+  .cal-nav span { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; color: var(--text-heading); }
+  .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 8px; }
+  .cal-weekdays span { text-align: center; font-size: 12px; font-weight: 500; color: #7f7869; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 8px; }
+  .cal-day { position: relative; height: 35px; display: flex; align-items: center; justify-content: center; }
+  .cal-day-num { width: 28px; height: 28px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--text-heading); }
+  .cal-day.today .cal-day-num { background: var(--gold); color: #0b0a08; font-weight: 600; }
+  .cal-day.gold-text .cal-day-num { color: var(--gold); }
+  .cal-day-dot { position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--gold); }
+  .entries-month-label { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; color: #7f7869; text-transform: uppercase; margin: 0 0 12px; }
+  .entry-card { background: #1c1815; border-radius: 14px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: outline 0.15s; }
+  .entry-card:hover { outline: 1px solid var(--gold); }
+  .entry-card .ec-date { font-size: 11px; font-weight: 600; color: var(--gold); margin: 0 0 8px; }
+  .entry-card h3 { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 19px; margin: 0 0 10px; color: var(--text-heading); }
+  .entry-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0 0 12px; }
+  .entry-card .ec-moods { display: flex; gap: 8px; flex-wrap: wrap; }
+  .entry-card .ec-mood { font-size: 11px; font-weight: 500; color: var(--gold); background: rgba(201,178,122,0.14); border-radius: 20px; padding: 4px 12px; }
+
+  /* ---------- entry point 3: notification tap ---------- */
+  .lock-time { font-size: 56px; font-weight: 400; margin: 60px 0 0 20px; }
+  .lock-date { font-size: 15px; color: var(--text-muted); margin: 4px 0 0 20px; }
+  .notif-banner {
+    position: absolute; left: 24px; right: 24px; top: 24px; z-index: 200;
+    display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px;
+    background: rgba(27,27,29,0.96); border: 1px solid var(--border-soft); border-radius: 18px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45); cursor: pointer;
+    transform: translateY(-140px); opacity: 0; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+  }
+  .notif-banner.shown { transform: translateY(0); opacity: 1; }
+  .notif-icon { width: 32px; height: 32px; border-radius: 50%; background: #1a1a1a; border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .notif-app-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+  .notif-app-name { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; color: var(--text-muted); }
+  .notif-time { font-size: 10px; color: var(--text-placeholder); }
+  .notif-body { font-size: 13px; color: var(--text-heading); line-height: 1.4; }
+
+  /* ---------- journal detail (shared destination) ---------- */
+  .jd-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 4px; }
+  .jd-back { background: none; border: none; padding: 4px; cursor: pointer; color: var(--text-heading); display: flex; align-items: center; }
+  .jd-header-actions { display: flex; align-items: center; gap: 18px; }
+  .jd-star { background: none; border: none; padding: 4px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; }
+  .jd-star.starred { color: var(--gold); }
+  .jd-star.starred svg path { fill: var(--gold); }
+  .jd-more { background: none; border: none; padding: 4px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; }
+  .jd-body { flex: 1; overflow-y: auto; padding: 12px 24px 40px; }
+  .jd-date { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--text-placeholder); text-transform: uppercase; margin: 0 0 8px; }
+  .jd-title { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 26px; line-height: 1.25; color: var(--text-heading); margin: 0 0 16px; }
+  .jd-moods { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .jd-mood-tag { font-size: 11px; font-weight: 600; color: var(--gold); background: #26221c; border-radius: 20px; padding: 5px 12px; }
+  .jd-text { font-size: 15px; color: var(--text-muted); line-height: 1.7; margin: 0 0 14px; }
+  .jd-divider { height: 1px; background: var(--border-soft); margin: 24px 0 20px; }
+  .jd-scripture { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 15px; color: var(--gold); line-height: 1.5; margin: 0; }
+  .jd-menu-overlay { position: absolute; inset: 0; z-index: 60; display: none; }
+  .jd-menu-overlay.open { display: block; }
+  .jd-menu-scrim { position: absolute; inset: 0; }
+  .jd-menu { position: absolute; top: 52px; right: 20px; width: 200px; background: #1c1c1e; border: 1px solid var(--border-soft); border-radius: 14px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.45); }
+  .jd-menu-item { display: block; width: 100%; text-align: left; padding: 13px 16px; background: none; border: none; color: var(--text-heading); font-family: inherit; font-size: 14px; cursor: pointer; }
+  .jd-menu-item:not(:last-child) { border-bottom: 1px solid var(--border-soft); }
+  .jd-menu-danger { color: #e07a5f; }
+</style>
+</head>
+<body>
+
+<div class="hub">
+  <h1>Journal — 3 Entry Points</h1>
+  <p class="sub">Standalone review prototype (Sept 2, 2026) — real content and behavior, pulled directly from the combined prototype and the Figma "P4-Journal Synthesis" / "Entry Points" section, not redrawn. Pick an entry point below; each leads to the same real Journal Detail screen.</p>
+  <h2>Start here</h2>
+  <button class="hub-link active" data-start="chat">1. Chat Preview Card</button>
+  <button class="hub-link" data-start="entries">2. Entries List</button>
+  <button class="hub-link" data-start="notif">3. Notification Tap</button>
+  <div class="hub-note">Tap the journal card / any entry row / the notification banner in the phone to open Journal Detail. Back arrow returns to that entry point's starting screen.</div>
+</div>
+
+<div class="phone-shell">
+  <div class="notif-banner" id="notifBanner" data-open-journal>
+    <div class="notif-icon">🔥</div>
+    <div style="flex:1">
+      <div class="notif-app-row"><span class="notif-app-name">dwelly</span><span class="notif-time">now</span></div>
+      <div class="notif-body">Your journal from today is ready to revisit.</div>
+    </div>
+  </div>
+  <div class="phone-screen">
+
+    <!-- ENTRY POINT 1: chat preview card -->
+    <div class="po-screen active" id="entry-chat">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="chat-preview-body">
+        <p class="dwelly-tag">• DWELLY</p>
+        <p class="dwelly-msg">Okay, let's go ahead and add this to your journal.</p>
+        <div class="journal-card" data-open-journal>
+          <div class="jc-top-row"><span class="jc-date">AUG 14, 2026</span><span class="jc-open">Open</span></div>
+          <p class="jc-title">A Conversation with Mom</p>
+          <p class="jc-excerpt">An unexpected wave of calm broke through the noise of the day. Sitting with Mom, I realized the peace wasn't…</p>
+          <div class="jc-divider"></div>
+          <p class="jc-scripture">"Peace I leave with you; my peace I give to you." — John 14:27</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENTRY POINT 2: entries list (real design) -->
+    <div class="po-screen" id="entry-entries">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="tab-body">
+        <div class="entries-header-row">
+          <h2>Entries</h2>
+          <div class="entries-icon-pill">
+            <button title="Add"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+            <button title="Search"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M9.5 9.5L13 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+            <button title="Profile"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 12.5c0-2.5 2.2-4 5-4s5 1.5 5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+          </div>
+        </div>
+        <div class="cal-card">
+          <div class="cal-nav"><button>‹</button><span>AUGUST 2026</span><button>›</button></div>
+          <div class="cal-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+          <div class="cal-grid">
+            <div class="cal-day"></div><div class="cal-day"></div><div class="cal-day"></div><div class="cal-day"></div><div class="cal-day"></div><div class="cal-day"></div>
+            <div class="cal-day"><span class="cal-day-num">1</span></div>
+            <div class="cal-day"><span class="cal-day-num">2</span></div><div class="cal-day"><span class="cal-day-num">3</span></div><div class="cal-day"><span class="cal-day-num">4</span></div><div class="cal-day"><span class="cal-day-num">5</span></div><div class="cal-day"><span class="cal-day-num">6</span></div><div class="cal-day"><span class="cal-day-num">7</span></div><div class="cal-day"><span class="cal-day-num">8</span></div>
+            <div class="cal-day"><span class="cal-day-num">9</span></div><div class="cal-day"><span class="cal-day-num">10</span></div><div class="cal-day"><span class="cal-day-num">11</span></div><div class="cal-day"><span class="cal-day-num">12</span></div><div class="cal-day"><span class="cal-day-num">13</span></div><div class="cal-day"><span class="cal-day-num">14</span><span class="cal-day-dot"></span></div><div class="cal-day"><span class="cal-day-num">15</span></div>
+            <div class="cal-day"><span class="cal-day-num">16</span></div><div class="cal-day"><span class="cal-day-num">17</span></div><div class="cal-day"><span class="cal-day-num">18</span></div><div class="cal-day"><span class="cal-day-num">19</span></div><div class="cal-day"><span class="cal-day-num">20</span><span class="cal-day-dot"></span></div><div class="cal-day"><span class="cal-day-num">21</span></div><div class="cal-day"><span class="cal-day-num">22</span></div>
+            <div class="cal-day"><span class="cal-day-num">23</span></div><div class="cal-day today"><span class="cal-day-num">24</span><span class="cal-day-dot"></span></div><div class="cal-day"><span class="cal-day-num">25</span></div><div class="cal-day"><span class="cal-day-num">26</span></div><div class="cal-day gold-text"><span class="cal-day-num">27</span></div><div class="cal-day"><span class="cal-day-num">28</span></div><div class="cal-day"><span class="cal-day-num">29</span></div>
+            <div class="cal-day"><span class="cal-day-num">30</span></div><div class="cal-day"><span class="cal-day-num">31</span></div>
+            <div class="cal-day"></div><div class="cal-day"></div><div class="cal-day"></div><div class="cal-day"></div><div class="cal-day"></div>
+          </div>
+        </div>
+        <p class="entries-month-label">August 2026</p>
+        <div class="entry-card" data-open-journal>
+          <p class="ec-date">AUG 24</p><h3>A Conversation with Mom</h3>
+          <p>An unexpected wave of calm broke through the noise of the day.</p>
+          <div class="ec-moods"><span class="ec-mood">Peaceful</span><span class="ec-mood">Grateful</span></div>
+        </div>
+        <div class="entry-card" data-open-journal>
+          <p class="ec-date">AUG 20</p><h3>The Weight Lifted on the Drive Home</h3>
+          <p>I didn't expect the quiet of the highway to say so much.</p>
+          <div class="ec-moods"><span class="ec-mood">Hopeful</span></div>
+        </div>
+        <div class="entry-card" data-open-journal>
+          <p class="ec-date">AUG 14</p><h3>When Doubt Became Permission to Ask</h3>
+          <p>We talked about old memories, the kind that usually stay folded away.</p>
+          <div class="ec-moods"><span class="ec-mood">Reflective</span><span class="ec-mood">Conflicted</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENTRY POINT 3: notification tap host (lock-screen-like background) -->
+    <div class="po-screen" id="entry-notif">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <p class="lock-time">9:41</p>
+      <p class="lock-date">Friday, August 14</p>
+      <div class="empty-state" style="align-items:flex-start; padding-top:280px;">The notification banner slides in automatically on this screen — tap it to open the journal.</div>
+    </div>
+
+    <!-- JOURNAL DETAIL — shared destination for all 3 entry points -->
+    <div class="po-screen" id="journal-detail">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="jd-header">
+        <button class="jd-back" data-back title="Back">
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none"><path d="M8.5 1L1 9L8.5 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="jd-header-actions">
+          <button class="jd-star" data-jd-star title="Favorite">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6-4.5-4.2 6.1-.7L12 3.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="jd-more" data-jd-more title="More">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="19" cy="12" r="1.8" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="jd-body">
+        <p class="jd-date">AUG 14, 2026</p>
+        <h2 class="jd-title">A Conversation with Mom</h2>
+        <div class="jd-moods"><span class="jd-mood-tag">Reflective</span><span class="jd-mood-tag">Grateful</span></div>
+        <p class="jd-text">An unexpected wave of calm broke through the noise of the day. Sitting with Mom, I realized the peace wasn't something I'd chased down or earned — it just showed up, quiet and steady, right in the middle of an ordinary afternoon.</p>
+        <p class="jd-text">It reminded me that stillness doesn't always need a reason. Sometimes it's just there, waiting to be noticed.</p>
+        <div class="jd-divider"></div>
+        <p class="jd-scripture">"Peace I leave with you; my peace I give to you." — John 14:27</p>
+      </div>
+      <div class="jd-menu-overlay" data-jd-menu>
+        <div class="jd-menu-scrim" data-jd-menu-close></div>
+        <div class="jd-menu">
+          <button class="jd-menu-item" data-jd-menu-action="edit">Edit Entry</button>
+          <button class="jd-menu-item" data-jd-menu-action="original">View Original</button>
+          <button class="jd-menu-item jd-menu-danger" data-jd-menu-action="delete">Delete Entry</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="home-indicator"></div>
+</div>
+
+<script>
+(function () {
+  var screens = document.querySelectorAll('.po-screen');
+  var hubLinks = document.querySelectorAll('.hub-link');
+  var banner = document.getElementById('notifBanner');
+  var currentEntryScreen = 'entry-chat';
+  var notifTimer = null;
+
+  function showScreen(id) {
+    screens.forEach(function (s) { s.classList.toggle('active', s.id === id); });
+  }
+
+  hubLinks.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      hubLinks.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var kind = btn.dataset.start;
+      banner.classList.remove('shown');
+      clearTimeout(notifTimer);
+      if (kind === 'chat') { currentEntryScreen = 'entry-chat'; showScreen('entry-chat'); }
+      if (kind === 'entries') { currentEntryScreen = 'entry-entries'; showScreen('entry-entries'); }
+      if (kind === 'notif') {
+        currentEntryScreen = 'entry-notif';
+        showScreen('entry-notif');
+        requestAnimationFrame(function () {
+          void banner.offsetWidth;
+          banner.classList.add('shown');
+        });
+      }
+    });
+  });
+
+  document.addEventListener('click', function (e) {
+    var openJournal = e.target.closest('[data-open-journal]');
+    if (openJournal) {
+      banner.classList.remove('shown');
+      clearTimeout(notifTimer);
+      showScreen('journal-detail');
+      return;
+    }
+    var back = e.target.closest('[data-back]');
+    if (back) { showScreen(currentEntryScreen); return; }
+
+    var star = e.target.closest('[data-jd-star]');
+    if (star) { star.classList.toggle('starred'); return; }
+
+    var more = e.target.closest('[data-jd-more]');
+    if (more) { document.querySelector('[data-jd-menu]').classList.add('open'); return; }
+
+    var menuClose = e.target.closest('[data-jd-menu-close]');
+    if (menuClose) { document.querySelector('[data-jd-menu]').classList.remove('open'); return; }
+
+    var menuAction = e.target.closest('[data-jd-menu-action]');
+    if (menuAction) {
+      document.querySelector('[data-jd-menu]').classList.remove('open');
+      if (menuAction.dataset.jdMenuAction === 'delete') showScreen(currentEntryScreen);
+      return;
+    }
+  });
+})();
+</script>
+</body>
+</html>

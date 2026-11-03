@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Formation Intelligence — API cost &amp; capacity</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    background: #fff;
+    color: #1a1a1a;
+    line-height: 1.6;
+  }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { color: #666; font-size: 15px; margin-bottom: 40px; }
+  h2 { font-size: 19px; font-weight: 600; margin-top: 48px; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+  h3 { font-size: 16px; font-weight: 600; margin-top: 28px; }
+  p { font-size: 15px; color: #333; }
+  .callout {
+    background: #f7f7f5;
+    border-left: 4px solid #999;
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 16px 0;
+    font-size: 15px;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eee; }
+  th { color: #555; font-weight: 600; }
+  .estimate-box {
+    background: #fff8e6;
+    border: 1px solid #f0d78c;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .measured-box {
+    background: #eafaf1;
+    border: 1px solid #a8dfc0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .risk-box {
+    background: #fdecea;
+    border: 1px solid #f0b8b3;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .compare { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; }
+  .card { flex: 1; min-width: 200px; border: 1px solid #ddd; border-radius: 10px; padding: 18px; }
+  .card.cheap { border-left: 4px solid #1D9E75; }
+  .card.grows { border-left: 4px solid #D85A30; }
+  .card .title { font-weight: 700; font-size: 15px; }
+  .card .big { font-size: 24px; font-weight: 700; margin: 10px 0 4px; }
+  .card .detail { font-size: 13px; color: #666; }
+</style>
+</head>
+<body>
+
+<h1>Formation Intelligence — API cost &amp; capacity</h1>
+<div class="subtitle">Sept 2, 2026 — extends the July 5 cost doc, which only covers the old capture→reflection→prayer→journal loop and predates the Pillar 6 (Formation Intelligence) technical spec locked Sept 1</div>
+
+<div class="callout">
+<strong>What's actually new here.</strong> Pillar 6's spec (<code>PILLAR_6_FORMATION_INTELLIGENCE_TECHNICAL_SPEC.md</code>) defines 3 LLM calls that don't exist in any prior cost analysis: <strong>Theme Detection</strong> (fires per journal), <strong>Narrative generation</strong> (fires on a correction, capped 1×/month/user), and <strong>Monthly reconciliation</strong> (fires 1×/month for a gated subset of users, and is the one place cost grows with how long someone's used the app — everything else in Dwelly's cost model so far is flat per-event forever).
+</div>
+
+<div class="estimate-box">
+<strong>These numbers are estimated, not measured.</strong> The July 5 doc's capture-loop numbers came from 4 live runs against real prompts. Theme Detection and the Dweller Profile Engine don't have prompts written or a model chosen yet — the spec explicitly punts model selection to "the shared LLM proxy (T-168)" without naming a provider. Everything below models plausible prompt sizes from the spec's own data shapes (Section 3 of the spec) and should be replaced with real measured numbers the first time these calls actually run.
+</div>
+
+<h2>1. The three new calls</h2>
+
+<h3>Theme Detection (Row 3, Call B)</h3>
+<p>Fires once per journal, immediately after Journal Synthesis (Call A) succeeds. Reads the finished journal plus the user's current theme list; decides whether to reinforce an existing <code>DetectedTheme</code> or start a new one.</p>
+<table>
+  <tr><th>Input</th><th>Est. tokens</th></tr>
+  <tr><td>Journal body (2–3 paragraph synthesis, per P4 spec)</td><td>~250</td></tr>
+  <tr><td>Current theme list (est. 5–15 active themes × ~50-token summary each)</td><td>~350–750</td></tr>
+  <tr><td>System/instruction prompt</td><td>~200</td></tr>
+  <tr><td><strong>Input total</strong></td><td><strong>~800–1,200</strong></td></tr>
+  <tr><td>Output — structured update (new/updated theme fields, no prose)</td><td>~100–150</td></tr>
+  <tr><td><strong>Total per call</strong></td><td><strong>~950–1,350 tokens</strong></td></tr>
+</table>
+<p><strong>Frequency:</strong> exactly as often as journals get created — same event count already costed in the July 5 doc's capture loop. This call rides along on every one of those, it isn't a separate user action.</p>
+
+<h3>Narrative generation (Dweller Profile Engine)</h3>
+<p>Fires two ways: (a) immediately after a "Not quite" correction (Row 6, rate-limited to 1×/month/user), and (b) as part of monthly reconciliation (Row 7, below). Reads accumulated <code>DetectedTheme</code> records — not raw journals — plus the running summary, to regenerate <code>narrativeText</code>.</p>
+<table>
+  <tr><th>Input</th><th>Est. tokens</th></tr>
+  <tr><td>All active theme summaries (est. 5–15 × ~50 tokens)</td><td>~350–750</td></tr>
+  <tr><td><code>runningSummary</code> field</td><td>~250–350</td></tr>
+  <tr><td>System/instruction prompt (invitational-tone guardrails are non-trivial — see VISION.md's Authority Guardrails)</td><td>~300</td></tr>
+  <tr><td><strong>Input total</strong></td><td><strong>~900–1,400</strong></td></tr>
+  <tr><td>Output — Narrative prose + structured profile fields</td><td>~250–400</td></tr>
+  <tr><td><strong>Total per call</strong></td><td><strong>~1,150–1,800 tokens</strong></td></tr>
+</table>
+<p><strong>Frequency (correction path):</strong> capped at 1×/user/month by design (<code>narrativeConfirmationUsedThisMonth</code>) — and only for users who actually tap "Not quite," which should be a small minority. Cheap, flat, bounded.</p>
+
+<h3>Monthly reconciliation (Row 7) — the real cost driver</h3>
+<p>The spec is explicit that this is the one place cost grows with tenure: it rereads <em>every</em> journal and theme from ground truth, not just recent activity, for whichever users pass all three gate conditions (reflection tier + activity since last cycle + qualifying paid tier — that last one isn't defined yet, see Section 3 below).</p>
+<table>
+  <tr><th>Input, by tenure</th><th>Journals</th><th>Est. tokens (journals @ ~250 each + themes + prompt)</th></tr>
+  <tr><td>3 months in (~12 journals/mo × 3)</td><td>~36</td><td>~9,700</td></tr>
+  <tr><td>1 year in</td><td>~144</td><td>~37,300</td></tr>
+  <tr><td>2 years in</td><td>~288</td><td>~73,300</td></tr>
+</table>
+<p style="font-size:13px; color:#777;">Journal-count assumption: ~12/month is a placeholder (roughly 3/week) — no locked engagement-rate figure exists yet to replace it with. Output is the same ~250–400 tokens as any Narrative generation call regardless of input size.</p>
+
+<div class="risk-box">
+<strong>This is a linear-growth cost, and it's gated but not capped.</strong> A reconciliation-eligible user active for 3 years with no drop-off could push a single monthly call past 100K input tokens. The gate (paid tier + activity + reflection tier) controls <em>how many</em> users hit this path, but nothing in the spec bounds an individual user's reconciliation cost as their history grows — worth deciding whether to cap "reread N most-recent journals" instead of "reread everything" before this ships, especially since Row 7's own write-up flags this as the metric to watch, not day-one cost.
+</div>
+
+<h2>2. Per-user-per-year cost, combined with the existing loop</h2>
+<p>Using GPT-4o mini pricing ($0.15/M input, $0.60/M output — the same confirmed real rate the July 5 doc used) as the paid-tier comparison point, since that's the only real published rate already in this codebase's docs. Formation Intelligence's actual provider isn't locked (see Section 3), so treat this as "if it used the same pricing tier as Dwelly's conversation calls," not a confirmed number.</p>
+<table>
+  <tr><th>Call</th><th>Freq/year (assumed ~144 journals/yr)</th><th>Tokens/call</th><th>Est. cost/user/yr</th></tr>
+  <tr><td>Capture loop (measured, July 5 doc)</td><td>144</td><td>4,705</td><td>$0.121</td></tr>
+  <tr><td>Theme Detection (new)</td><td>144</td><td>~1,150 (midpoint)</td><td>~$0.014</td></tr>
+  <tr><td>Narrative — correction path (new, capped)</td><td>≤12 (1×/mo cap, worst case)</td><td>~1,475 (midpoint)</td><td>~$0.002</td></tr>
+  <tr><td>Monthly reconciliation (new, gated subset only)</td><td>12</td><td>~37,300 (1-yr-tenure estimate)</td><td>~$0.87 <em>(gated users only)</em></td></tr>
+</table>
+<p>For a non-gated user (hasn't hit the reflection tier, or not on a qualifying paid tier), Formation Intelligence adds roughly <strong>+12%</strong> to the existing per-user cost ($0.014 Theme Detection on top of $0.121 loop cost) — small. For a <em>gated-in</em> user at 1 year of tenure, reconciliation alone is already ~7× the entire rest of their annual cost combined, and keeps growing every year they stay active. That's the number worth watching, not the flat per-event costs.</p>
+
+<h2>3. What's blocking a precise number</h2>
+<p>Same three items the technical spec itself flags as open (Section 7 there), restated in cost terms:</p>
+<table>
+  <tr><th>Open item</th><th>Why it matters for cost</th></tr>
+  <tr><td>Qualifying paid tier for Row 7's gate (spec 3.4, blocking)</td><td>Directly controls what fraction of the user base ever hits the expensive reconciliation path. Without it, "how many users" in the table above is unknowable.</td></tr>
+  <tr><td>Model/provider choice for Formation Intelligence calls</td><td>Spec says "shared LLM proxy (T-168)" only — doesn't name Gemini, GPT-4o mini, or otherwise. Pricing swings ~4x between Gemini's free tier and GPT-4o mini's paid rate (see July 5 doc's Round 1/2 tournament).</td></tr>
+  <tr><td>Precise "once a month" definition (spec item 4)</td><td>Affects how tightly the correction-path cap actually bounds cost — a loose definition (e.g. resettable by toggling device clock) could let a user trigger more than 12 corrections/year in edge cases.</td></tr>
+</table>
+
+<h2>4. Free-tier capacity check (Gemini 2.0 Flash)</h2>
+<p>If Formation Intelligence's calls route through the same free Gemini tier already recommended for Journal Synthesis in the PRD (2M tokens/month, per the July 5 doc's Round 1 winner):</p>
+<div class="compare">
+  <div class="card cheap">
+    <div class="title">Theme Detection headroom</div>
+    <div class="big">~1,740</div>
+    <div class="detail">calls/month fit in the free 2M-token tier at ~1,150 tokens/call — comfortably covers a beta-scale user base (≈145 users journaling daily) before any paid spend</div>
+  </div>
+  <div class="card grows">
+    <div class="title">Reconciliation headroom</div>
+    <div class="big">~54</div>
+    <div class="detail">1-year-tenure reconciliation runs/month (~37K tokens each) before exhausting the same free tier — this is the one call that could burn through free-tier capacity fast once gated users accumulate history, not because there are many of them, but because each one gets expensive on its own</div>
+  </div>
+</div>
+
+<h2>5. Bottom line</h2>
+<p>Formation Intelligence's two cheap, flat-cost calls (Theme Detection, correction-path Narrative generation) add a small, bounded amount to Dwelly's existing per-user cost — comfortably inside free-tier capacity even at meaningful scale. The one number worth tracking closely once this ships is <strong>monthly reconciliation cost per gated user, which grows every month they stay active and reconcile</strong> — unlike everything else in the app's cost model so far, this doesn't stay flat. The three blocking unknowns (paid-tier gate definition, model choice, "once a month" precision) all need answers before this can move from modeled estimate to the kind of measured, real number the July 5 doc has for the capture loop.</p>
+
+</body>
+</html>

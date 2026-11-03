@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dwelly — P1 Capture (Onboarding) Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg-page: #f3f1ee;
+    --bg-screen: #0a0a0a;
+    --bg-card: #1a1a1c;
+    --bg-card-selected: #1e1a15;
+    --border: #333333;
+    --border-soft: #2a2a2a;
+    --gold: #c9b27a;
+    --red: #b04a3a;
+    --text-heading: #f5f5f7;
+    --text-muted: #a39d98;
+    --text-placeholder: #74695f;
+    --panel-text: #1c1a17;
+    --panel-muted: #6b6560;
+    --panel-border: #e3ded6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg-page);
+    color: var(--panel-text);
+    font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px 80px;
+    min-height: 100vh;
+    flex-wrap: wrap;
+  }
+
+  /* ---- Hub panel ---- */
+  .hub {
+    width: 320px;
+    background: #ffffff;
+    border: 1px solid var(--panel-border);
+    border-radius: 20px;
+    padding: 22px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 40px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+  }
+  .hub h1 {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-weight: 400; font-size: 22px; margin: 0 0 4px;
+  }
+  .hub .sub { font-size: 12px; color: var(--panel-muted); margin: 0 0 20px; line-height: 1.5; }
+  .hub h2 {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--panel-muted); margin: 18px 0 8px;
+  }
+  .hub-link {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    background: transparent; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 9px 12px; font-family: inherit; font-size: 13px; color: var(--panel-text);
+    margin-bottom: 6px; transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .hub-link:hover { border-color: var(--gold); background: #faf7f0; }
+  .hub-link.primary { background: var(--gold); border-color: var(--gold); font-weight: 600; }
+  .hub-link .tag { display: block; font-size: 10px; color: var(--panel-muted); margin-top: 2px; }
+  .hub-note {
+    margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--panel-border);
+    font-size: 12px; color: var(--panel-muted); line-height: 1.6;
+  }
+
+  /* ---- Phone frame ---- */
+  .phone-shell {
+    width: 375px; height: 812px; border-radius: 54px; background: #050505;
+    padding: 12px; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.4);
+    position: relative; flex-shrink: 0;
+  }
+  .phone-screen { width: 100%; height: 100%; border-radius: 42px; overflow: hidden; position: relative; background: var(--bg-screen); }
+  .home-indicator {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 134px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.32); z-index: 60;
+  }
+
+  .screen {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+    color: var(--text-heading); animation: enter 0.28s ease; background: var(--bg-screen);
+  }
+  .screen.active { display: flex; }
+  @keyframes enter { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+  .status-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px 0; flex-shrink: 0;
+  }
+  .status-bar .time { font-size: 15px; font-weight: 600; }
+
+  /* Entry / chat shared */
+  .entry-body { flex: 1; padding: 44px 24px 0; display: flex; flex-direction: column; }
+  .dwelly-avatar { width: 72px; height: 72px; border-radius: 50%; background: #26221c; margin: 40px auto 12px; }
+  .dwelly-label { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 8px; }
+  .entry-body h2 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 26px; margin: 0 0 14px; text-align: center; text-wrap: balance; }
+  .entry-sub { font-size: 12px; color: var(--text-muted); text-align: center; line-height: 1.6; margin: 0 0 auto; padding: 0 20px; }
+  .input-bar {
+    display: flex; align-items: center; justify-content: space-between; background: var(--bg-card);
+    border: 1px solid var(--border-soft); border-radius: 28px; padding: 8px 8px 8px 20px;
+    margin-top: 20px; cursor: pointer;
+  }
+  .input-bar span { font-size: 14px; color: var(--text-placeholder); }
+  .mic-circle { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--gold); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
+  .mic-circle svg { width: 15px; height: 15px; }
+  .input-hint { font-size: 11px; color: var(--gold); text-align: center; margin-top: 12px; margin-bottom: 24px; }
+
+  /* Recording */
+  .rec-body { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: 20px; cursor: pointer; }
+  .rec-body h2 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 22px; margin: 0 0 40px; text-align: center; padding: 0 40px; }
+  .waveform-bar {
+    display: flex; align-items: center; gap: 3px; background: var(--bg-card); border-radius: 28px;
+    padding: 14px 20px; margin: auto 24px 8px;
+  }
+  .wf-dot { width: 2px; height: 14px; background: var(--gold); border-radius: 2px; }
+  .wf-dot:nth-child(3n) { height: 22px; } .wf-dot:nth-child(5n) { height: 8px; }
+  .rec-timer { font-size: 12px; color: var(--text-muted); margin-left: auto; margin-right: 8px; }
+  .rec-stop { width: 20px; height: 20px; border-radius: 5px; background: var(--red); margin-left: 4px; }
+  .rec-hint { text-align: center; font-size: 11px; color: var(--text-muted); margin-bottom: 24px; }
+  .rec-cancel {
+    position: absolute; top: 52px; left: 20px; width: 32px; height: 32px; display: flex;
+    align-items: center; justify-content: center; cursor: pointer; z-index: 40;
+  }
+
+  /* Chat shared */
+  .chat-body { flex: 1; padding: 44px 24px 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .chat-header { text-align: center; margin-bottom: 24px; }
+  .chat-header .dwelly-avatar { width: 56px; height: 56px; margin: 0 auto 8px; }
+  .chat-header .dwelly-label { margin-bottom: 6px; }
+  .chat-header h3 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 18px; margin: 0; }
+  .bubble { border-radius: 18px; padding: 14px 16px; font-size: 13px; line-height: 1.5; margin-bottom: 14px; max-width: 84%; }
+  .bubble.user { align-self: flex-end; background: var(--bg-card-selected); border: 1px solid #3a3226; }
+  .bubble.dwelly { align-self: flex-start; background: var(--bg-card); }
+  .chat-footer { padding: 12px 24px 24px; }
+  .chat-input {
+    display: flex; align-items: center; justify-content: space-between; background: var(--bg-card);
+    border: 1px solid var(--border-soft); border-radius: 28px; padding: 14px 8px 14px 20px; cursor: pointer;
+  }
+  .chat-input span { font-size: 13px; color: var(--text-placeholder); }
+  .chat-hint { text-align: center; font-size: 10px; color: var(--text-muted); margin-top: 10px; }
+
+  /* Saved / journal reveal (first ever) */
+  .journal-body { flex: 1; padding: 40px 24px 0; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; }
+  .journal-body h2 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 26px; margin: 0 0 24px; text-wrap: balance; }
+  .journal-card { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 20px; padding: 20px; }
+  .journal-card .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .journal-card .today-tag { font-size: 11px; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+  .journal-card .mood-tag { font-size: 10px; font-weight: 600; color: var(--gold); background: #26221c; border-radius: 20px; padding: 4px 10px; }
+  .journal-card h3 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 19px; margin: 0 0 10px; }
+  .journal-card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0; }
+  .journal-cta {
+    width: 100%; margin-top: 28px; padding: 16px; border-radius: 28px; background: var(--gold);
+    color: var(--bg-screen); font-family: inherit; font-weight: 600; font-size: 14px; border: none; cursor: pointer;
+  }
+
+  /* Error-state overlays: permission dialog, banners, chips */
+  .overlay { position: absolute; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; }
+  .overlay.active { display: flex; }
+  .overlay .scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.55); }
+  .permission-card {
+    position: relative; width: 280px; background: #f2f2f2; border-radius: 16px; padding: 20px;
+    text-align: center; color: #111; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .permission-icon {
+    width: 44px; height: 44px; border-radius: 12px; background: var(--red); margin: 0 auto 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .permission-card h4 { font-size: 15px; font-weight: 600; margin: 0 0 6px; }
+  .permission-card p { font-size: 12px; color: #555; line-height: 1.5; margin: 0 0 18px; }
+  .permission-btns { display: flex; border-top: 1px solid #ccc; }
+  .permission-btns button {
+    flex: 1; padding: 12px; background: none; border: none; font-family: inherit; font-size: 14px;
+    cursor: pointer; color: #007aff;
+  }
+  .permission-btns button:first-child { border-right: 1px solid #ccc; color: #111; }
+
+  .error-chip {
+    display: flex; align-items: center; justify-content: space-between; background: var(--bg-card);
+    border: 1px solid var(--red); border-radius: 28px; padding: 14px 20px; cursor: pointer;
+  }
+  .error-chip span { font-size: 13px; color: #d99a8f; }
+  .error-chip .retry { font-size: 12px; color: var(--gold); font-weight: 600; }
+
+  .offline-banner {
+    background: #2a1414; border: 1px solid var(--red); border-radius: 14px; padding: 12px 16px;
+    font-size: 12px; color: #e8b3a8; text-align: center; margin: 0 24px 14px;
+  }
+  .resume-pill {
+    align-self: center; background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 24px;
+    padding: 10px 20px; font-size: 12px; color: var(--gold); margin-top: 16px; cursor: pointer;
+  }
+  .settings-card {
+    background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 16px; padding: 18px;
+    margin: 0 24px; text-align: center;
+  }
+  .settings-card p { font-size: 12px; color: var(--text-muted); margin: 0 0 14px; line-height: 1.5; }
+  .settings-btns { display: flex; gap: 10px; }
+  .settings-btns button {
+    flex: 1; padding: 10px; border-radius: 20px; font-family: inherit; font-size: 12px; cursor: pointer; border: 1px solid var(--border-soft);
+    background: transparent; color: var(--text-heading);
+  }
+  .settings-btns button.primary { background: var(--gold); border-color: var(--gold); color: var(--bg-screen); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="hub">
+  <h1>Capture — Onboarding (First Time)</h1>
+  <p class="sub">The very first capture, during onboarding. No tab bar exists yet, no way to leave — closing/backgrounding the app loses everything (no drafts). Finishing this is what unlocks the rest of the app.</p>
+
+  <h2>Happy path</h2>
+  <button class="hub-link primary" data-goto="entry">▶ Entry — "What's stirring in you today?"</button>
+  <button class="hub-link" data-goto="recording">Recording</button>
+  <button class="hub-link" data-goto="conv-review">Conversational Review</button>
+  <button class="hub-link" data-goto="conv-loop">Conversational Loop</button>
+  <button class="hub-link" data-goto="journal-reveal">Journal Reveal (first ever)</button>
+
+  <h2>8 error / edge-case scenarios (T-172)</h2>
+  <button class="hub-link" data-overlay="ov-mic-permission">1 — Mic Permission Denied<span class="tag">OS dialog → Type or Open Settings fallback</span></button>
+  <button class="hub-link" data-goto="err-silence-1">2 — Didn't Catch That (1st)<span class="tag">Silent recording, retry offered</span></button>
+  <button class="hub-link" data-goto="err-silence-2">3 — Didn't Catch That (2nd)<span class="tag">2nd silent attempt, suggests text</span></button>
+  <button class="hub-link" data-goto="err-transcribe-1">4 — Transcription Failed (1st)<span class="tag">Real error, retries same audio</span></button>
+  <button class="hub-link" data-goto="err-transcribe-2">5 — Transcription Failed (2nd)<span class="tag">2nd failure, suggests text</span></button>
+  <button class="hub-link" data-goto="err-max-duration">6 — Max Duration Reached (10 min)<span class="tag">Silent auto-stop, quiet Resume</span></button>
+  <button class="hub-link" data-goto="err-dwelly-offline">7 — Dwelly Doesn't Respond<span class="tag">Timeout, msg already saved</span></button>
+  <button class="hub-link" data-goto="err-cancel-stop">8 — Cancel vs. Stop Recording<span class="tag">Cancel = instant discard, no confirm</span></button>
+
+  <div class="hub-note">
+    This flow has no dismiss/back control anywhere — matches the locked rule that onboarding capture cannot be exited except by force-quitting the app (which loses everything, no drafts exist).
+  </div>
+</div>
+
+<div class="phone-shell">
+  <div class="phone-screen" id="screen">
+
+    <!-- ENTRY -->
+    <div class="screen active" id="entry">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="entry-body">
+        <div class="dwelly-avatar"></div>
+        <p class="dwelly-label">DWELLY</p>
+        <h2>What's stirring in you today?</h2>
+        <p class="entry-sub">Respond to this, or share whatever's on your mind — there's no wrong way to begin.</p>
+        <div class="input-bar" data-morph="recording">
+          <span>Type your reflection…</span>
+          <div class="mic-circle" data-overlay="ov-mic-permission"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="#c9b27a" stroke-width="1.4"/><path d="M6 11a6 6 0 0 0 12 0M12 17v3" stroke="#c9b27a" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+        </div>
+        <p class="input-hint">Tap to type, or hold the mic to speak</p>
+      </div>
+    </div>
+
+    <!-- RECORDING -->
+    <div class="screen" id="recording">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="rec-body" data-goto="conv-review">
+        <div class="dwelly-avatar"></div>
+        <p class="dwelly-label">DWELLY</p>
+        <h2>What's stirring in you today?</h2>
+        <div class="waveform-bar">
+          <div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div>
+          <div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div>
+          <div class="wf-dot"></div><div class="wf-dot"></div>
+          <span class="rec-timer">0:08</span><div class="rec-stop"></div>
+        </div>
+        <p class="rec-hint">Speak softly. This space is entirely yours.<br><span style="color:var(--gold)">Tap anywhere to continue →</span></p>
+      </div>
+    </div>
+
+    <!-- CONVERSATIONAL REVIEW -->
+    <div class="screen" id="conv-review">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="chat-body" data-goto="conv-loop" style="cursor:pointer;">
+        <div class="chat-header">
+          <div class="dwelly-avatar"></div>
+          <p class="dwelly-label">DWELLY</p>
+          <h3>What's stirring in you today?</h3>
+        </div>
+        <div class="bubble user">I've been feeling a quiet kind of peace lately, even though a lot is still unsettled.</div>
+        <div class="bubble dwelly">That's worth noticing — peace that isn't waiting for things to resolve first. What do you think that peace is rooted in?</div>
+      </div>
+      <div class="chat-footer">
+        <div class="chat-input" data-goto="conv-loop"><span>Add more, or send to Dwelly</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#c9b27a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <p class="chat-hint" style="color:var(--gold)">Tap to continue the conversation →</p>
+      </div>
+    </div>
+
+    <!-- CONVERSATIONAL LOOP -->
+    <div class="screen" id="conv-loop">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="chat-body" data-goto="journal-reveal" style="cursor:pointer; padding-top: 56px;">
+        <div class="bubble user">I've been feeling a quiet kind of peace lately, even though a lot is still unsettled.</div>
+        <div class="bubble dwelly">That's worth noticing — peace that isn't waiting for things to resolve first. What do you think that peace is rooted in?</div>
+        <div class="bubble user">I think just trusting that I'm not carrying it alone.</div>
+        <div class="bubble dwelly">That trust sounds like the real anchor here. This feels like a good first moment to hold onto.</div>
+      </div>
+      <div class="chat-footer">
+        <div class="chat-input" data-goto="journal-reveal"><span>Add more, or finish here</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#c9b27a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <p class="chat-hint"><span style="color:var(--gold)">Tap here to finish your first moment →</span></p>
+      </div>
+    </div>
+
+    <!-- JOURNAL REVEAL (first ever) -->
+    <div class="screen" id="journal-reveal">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="journal-body">
+        <p class="eyebrow">Your First Moment</p>
+        <h2>Held, and worth returning to.</h2>
+        <div class="journal-card">
+          <div class="row"><span class="today-tag">Today</span><span class="mood-tag">Peaceful</span></div>
+          <h3>Trusting the Quiet</h3>
+          <p>You noticed a quiet peace that wasn't waiting for things to resolve — rooted in not carrying it alone. A steady first moment to return to.</p>
+        </div>
+        <button class="journal-cta" data-goto="entry">Continue to Dwelly →</button>
+      </div>
+    </div>
+
+    <!-- SCENARIO 2: Didn't Catch That (1st) -->
+    <div class="screen" id="err-silence-1">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="entry-body" style="padding-top:56px;">
+        <div class="dwelly-avatar" style="margin-top:0;"></div>
+        <p class="dwelly-label">DWELLY</p>
+        <h2 style="font-size:20px;">What's stirring in you today?</h2>
+        <div style="flex:1"></div>
+        <div class="error-chip" data-goto="recording"><span>Didn't catch that</span><span class="retry">Try again →</span></div>
+        <p class="input-hint">Recording completed but transcription came back empty.</p>
+      </div>
+    </div>
+
+    <!-- SCENARIO 3: Didn't Catch That (2nd) -->
+    <div class="screen" id="err-silence-2">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="entry-body" style="padding-top:56px;">
+        <div class="dwelly-avatar" style="margin-top:0;"></div>
+        <p class="dwelly-label">DWELLY</p>
+        <h2 style="font-size:20px;">What's stirring in you today?</h2>
+        <div style="flex:1"></div>
+        <div class="error-chip" data-goto="recording"><span>Still didn't catch that</span><span class="retry">Try again →</span></div>
+        <div class="input-bar" data-goto="entry" style="margin-top:10px;"><span>Or type it instead…</span>
+          <div class="mic-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#c9b27a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <p class="input-hint">Second silent attempt — text is offered as an easy way out.</p>
+      </div>
+    </div>
+
+    <!-- SCENARIO 4: Transcription Failed (1st) -->
+    <div class="screen" id="err-transcribe-1">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="entry-body" style="padding-top:56px;">
+        <div class="dwelly-avatar" style="margin-top:0;"></div>
+        <p class="dwelly-label">DWELLY</p>
+        <h2 style="font-size:20px;">What's stirring in you today?</h2>
+        <div style="flex:1"></div>
+        <div class="error-chip" data-goto="conv-review"><span>Transcription failed</span><span class="retry">Retry →</span></div>
+        <p class="input-hint">A real technical error, not silence — retries on the SAME retained audio, no re-recording needed.</p>
+      </div>
+    </div>
+
+    <!-- SCENARIO 5: Transcription Failed (2nd) -->
+    <div class="screen" id="err-transcribe-2">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="entry-body" style="padding-top:56px;">
+        <div class="dwelly-avatar" style="margin-top:0;"></div>
+        <p class="dwelly-label">DWELLY</p>
+        <h2 style="font-size:20px;">What's stirring in you today?</h2>
+        <div style="flex:1"></div>
+        <div class="error-chip" data-goto="recording"><span>Transcription failed again</span><span class="retry">Retry →</span></div>
+        <div class="input-bar" data-goto="entry" style="margin-top:10px;"><span>Or type it instead…</span>
+          <div class="mic-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#c9b27a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <p class="input-hint">Second consecutive technical failure — same fallback as the silence path.</p>
+      </div>
+    </div>
+
+    <!-- SCENARIO 6: Max Duration Reached -->
+    <div class="screen" id="err-max-duration">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="chat-body" style="padding-top: 56px;">
+        <div class="chat-header">
+          <div class="dwelly-avatar"></div>
+          <p class="dwelly-label">DWELLY</p>
+        </div>
+        <div class="bubble user">[10 minutes of transcribed reflection, auto-stopped]</div>
+        <div style="flex:1"></div>
+        <div class="resume-pill" data-goto="conv-review">↻ Resume recording</div>
+        <p class="chat-hint" style="margin-top:8px;">Auto-stops silently at 10 min, no warning beforehand, transcribes normally. A quiet system-level "Resume" follows — never a simulated Dwelly message.</p>
+      </div>
+    </div>
+
+    <!-- SCENARIO 7: Dwelly Doesn't Respond -->
+    <div class="screen" id="err-dwelly-offline">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="chat-body" style="padding-top: 56px;">
+        <div class="bubble user">I've been feeling a quiet kind of peace lately, even though a lot is still unsettled.</div>
+        <div class="offline-banner">Dwelly is offline — your reflection is already saved. Retrying…</div>
+        <div style="flex:1"></div>
+      </div>
+      <div class="chat-footer">
+        <div class="chat-input" data-goto="conv-review"><span>Tap to retry the conversation</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#c9b27a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <p class="chat-hint">LLM timeout/offline mid-conversation. Retries once silently first — this is the 2nd-failure state. Your message is always already saved.</p>
+      </div>
+    </div>
+
+    <!-- SCENARIO 8: Cancel vs Stop -->
+    <div class="screen" id="err-cancel-stop">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="rec-cancel" data-goto="entry" title="Cancel = instant discard, no confirmation shown per spec">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M1 1L13 13M13 1L1 13" stroke="#a39d98" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="rec-body" data-goto="conv-review">
+        <div class="dwelly-avatar"></div>
+        <p class="dwelly-label">DWELLY</p>
+        <h2>What's stirring in you today?</h2>
+        <div class="waveform-bar">
+          <div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div>
+          <div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div>
+          <span class="rec-timer">0:14</span><div class="rec-stop"></div>
+        </div>
+        <p class="rec-hint">Tap the × to Cancel (instant discard, no confirm) — tap the red square to Stop (proceeds to transcription).<br><span style="color:var(--gold)">Tap here to Stop →</span></p>
+      </div>
+    </div>
+
+    <!-- OVERLAY: Mic permission (OS-style) -->
+    <div class="overlay" id="ov-mic-permission">
+      <div class="scrim" data-close-overlay></div>
+      <div class="permission-card">
+        <div class="permission-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="white" stroke-width="1.6"/><path d="M6 11a6 6 0 0 0 12 0M12 17v3" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <h4>"Dwelly" would like to access the Microphone</h4>
+        <p>Dwelly uses your microphone to capture voice moments. We only record when you tap the mic button.</p>
+        <div class="permission-btns">
+          <button data-goto="ov-mic-denied-fallback" data-close-overlay>Don't Allow</button>
+          <button data-close-overlay>Allow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fallback shown after Don't Allow — reuses entry screen with a settings card -->
+    <div class="screen" id="ov-mic-denied-fallback">
+      <div class="status-bar"><span class="time">9:41</span></div>
+      <div class="entry-body">
+        <div class="dwelly-avatar"></div>
+        <p class="dwelly-label">DWELLY</p>
+        <h2 style="font-size:20px;">What's stirring in you today?</h2>
+        <div style="flex:1"></div>
+        <div class="settings-card">
+          <p>Microphone access required to record — you can still type, or open Settings to allow it.</p>
+          <div class="settings-btns">
+            <button data-goto="entry">Type instead</button>
+            <button class="primary" data-goto="entry">Open Settings</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+</div>
+
+<script>
+  const screens = document.querySelectorAll('.screen');
+  const overlays = document.querySelectorAll('.overlay');
+
+  function showScreen(id) {
+    screens.forEach(s => s.classList.toggle('active', s.id === id));
+    overlays.forEach(o => o.classList.remove('active'));
+  }
+  function openOverlay(id) {
+    document.getElementById(id).classList.add('active');
+  }
+  function closeOverlays() {
+    overlays.forEach(o => o.classList.remove('active'));
+  }
+
+  document.addEventListener('click', (e) => {
+    const overlayCloser = e.target.closest('[data-close-overlay]');
+    const gotoEl = e.target.closest('[data-goto]');
+    const morphEl = e.target.closest('[data-morph]');
+    const overlayOpener = e.target.closest('[data-overlay]');
+
+    // The mic circle (data-overlay) sits nested INSIDE the input bar (data-morph) — the deeper,
+    // more specific element always wins here, so overlayOpener takes priority whenever present.
+    if (overlayOpener) {
+      openOverlay(overlayOpener.dataset.overlay);
+      return;
+    }
+    if (morphEl) {
+      // simple crossfade into recording — full Container Transform/Slide Up handled in the
+      // post-onboarding prototype; onboarding entry uses a plain transition since there's no
+      // "+" button here to morph from.
+      if (overlayCloser) closeOverlays();
+      showScreen(morphEl.dataset.morph);
+      return;
+    }
+    if (gotoEl) {
+      if (overlayCloser) closeOverlays();
+      showScreen(gotoEl.dataset.goto);
+      return;
+    }
+    if (overlayCloser) {
+      closeOverlays();
+    }
+  });
+
+  showScreen('entry');
+</script>
+
+</body>
+</html>

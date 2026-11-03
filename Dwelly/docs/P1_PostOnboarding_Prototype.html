@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dwelly — P1 Capture (Post-Onboarding) Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg-page: #f3f1ee;
+    --bg-screen: #0a0a0a;
+    --bg-card: #1a1a1c;
+    --bg-card-selected: #1e1a15;
+    --border: #333333;
+    --border-soft: #2a2a2a;
+    --gold: #c9b27a;
+    --text-heading: #f5f5f7;
+    --text-muted: #a39d98;
+    --text-placeholder: #74695f;
+    --panel-text: #1c1a17;
+    --panel-muted: #6b6560;
+    --panel-border: #e3ded6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg-page);
+    color: var(--panel-text);
+    font-family: "Instrument Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px 80px;
+    min-height: 100vh;
+    flex-wrap: wrap;
+  }
+
+  /* ---- Hub panel ---- */
+  .hub {
+    width: 300px;
+    background: #ffffff;
+    border: 1px solid var(--panel-border);
+    border-radius: 20px;
+    padding: 22px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 40px;
+  }
+  .hub h1 {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-weight: 400; font-size: 22px; margin: 0 0 4px;
+  }
+  .hub .sub { font-size: 12px; color: var(--panel-muted); margin: 0 0 20px; line-height: 1.5; }
+  .hub h2 {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--panel-muted); margin: 18px 0 8px;
+  }
+  .hub-link {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    background: transparent; border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 9px 12px; font-family: inherit; font-size: 13px; color: var(--panel-text);
+    margin-bottom: 6px; transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .hub-link:hover { border-color: var(--gold); background: #faf7f0; }
+  .hub-link.primary { background: var(--gold); border-color: var(--gold); font-weight: 600; }
+  .mode-toggle { display: flex; gap: 6px; margin-bottom: 4px; }
+  .mode-btn {
+    flex: 1; cursor: pointer; background: transparent; border: 1px solid var(--panel-border);
+    border-radius: 10px; padding: 8px 6px; font-family: inherit; font-size: 12px; color: var(--panel-muted);
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  }
+  .mode-btn.selected { background: var(--gold); border-color: var(--gold); color: var(--panel-text); font-weight: 600; }
+  .hub-note {
+    margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--panel-border);
+    font-size: 12px; color: var(--panel-muted); line-height: 1.6;
+  }
+
+  /* ---- Phone frame ---- */
+  .phone-shell {
+    width: 375px; height: 812px; border-radius: 54px; background: #050505;
+    padding: 12px; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.4);
+    position: relative; flex-shrink: 0;
+  }
+  .phone-screen { width: 100%; height: 100%; border-radius: 42px; overflow: hidden; position: relative; background: var(--bg-screen); }
+  .home-indicator {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 134px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.32); z-index: 60;
+  }
+
+  .screen {
+    position: absolute; inset: 0; display: none; flex-direction: column;
+    color: var(--text-heading); animation: enter 0.28s ease;
+    /* Each screen paints its own opaque background — without this, screens are transparent
+       and multiple render on top of each other at the same pixel during a slide transition,
+       showing both screens' text at once. */
+    background: var(--bg-screen);
+  }
+  .screen.active { display: flex; }
+  @keyframes enter { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+  /* Container Transform — the "+" button itself expands & unfolds into the full screen */
+  .screen.morphing {
+    inset: auto;
+    animation: none;
+    overflow: hidden;
+    transition: top 0.5s cubic-bezier(0.32, 0.72, 0, 1), left 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+                width 0.5s cubic-bezier(0.32, 0.72, 0, 1), height 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+                border-radius 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .screen.morphing > * { opacity: 0; transition: opacity 0.25s ease; }
+  .screen.morphing.morph-open > * { opacity: 1; transition-delay: 0.28s; }
+
+  /* Slide Up — standard iOS full-screen modal, slides in from the bottom edge.
+     Uses a real @keyframes animation (not a JS-timed transition) — a declarative animation
+     reliably plays its "from" state the instant the class is applied, with no risk of the
+     browser coalescing the start and end states into one frame like a manually-timed
+     transition can. */
+  .screen.sliding {
+    inset: 0;
+    z-index: 50;
+    box-shadow: 0 -30px 60px rgba(0,0,0,0.65);
+    animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  /* Exit — same speed as the entrance, reversed. */
+  .screen.sliding-out {
+    inset: 0;
+    z-index: 50;
+    box-shadow: 0 -30px 60px rgba(0,0,0,0.65);
+    animation: slideDown 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  }
+  @keyframes slideDown {
+    from { transform: translateY(0); }
+    to { transform: translateY(100%); }
+  }
+
+  .status-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px 0; flex-shrink: 0;
+  }
+  .status-bar .time { font-size: 15px; font-weight: 600; }
+  .status-dots { display: flex; gap: 4px; }
+  .status-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--text-muted); }
+
+  /* Tab screens */
+  .tab-body { flex: 1; padding: 44px 24px 0; }
+  .tab-body h2 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 26px; margin: 0; }
+  .plus-button {
+    position: absolute; top: 56px; right: 24px; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--bg-card); border: 1px solid var(--gold); display: flex; align-items: center;
+    justify-content: center; cursor: pointer; z-index: 30; transition: transform 0.15s ease;
+  }
+  .plus-button:hover { transform: scale(1.06); }
+  .plus-button:active { transform: scale(0.92); }
+  .tab-tray {
+    position: absolute; bottom: 34px; left: 20px; right: 20px; height: 84px;
+    background: var(--bg-card); border-radius: 32px; display: flex; align-items: center;
+    justify-content: space-around; box-shadow: 0 10px 30px rgba(0,0,0,0.35); z-index: 20;
+  }
+  .tab-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-muted); }
+  .tab-item.active { color: var(--gold); font-weight: 600; }
+  .tab-item span { font-size: 12px; }
+  .tab-item svg { width: 22px; height: 22px; }
+
+  /* Back arrow (was an oversized X) */
+  .dismiss-x {
+    position: absolute; top: 54px; left: 20px; width: 22px; height: 22px; display: flex;
+    align-items: center; justify-content: center; cursor: pointer; z-index: 40;
+  }
+  .dismiss-x svg { width: 12px; height: 12px; }
+  .dismiss-x:hover svg path { stroke: var(--text-heading); }
+  .status-dots { display: none; }
+
+  /* Capture entry */
+  .entry-body { flex: 1; padding: 44px 24px 0; display: flex; flex-direction: column; }
+  .flame-badge {
+    width: 44px; height: 44px; border-radius: 12px; background: var(--bg-card);
+    display: flex; align-items: center; justify-content: center; margin: 40px auto 8px;
+  }
+  .flame-badge svg { width: 22px; height: 22px; }
+  .wordmark { text-align: center; font-size: 12px; font-weight: 600; color: var(--gold); margin: 0 0 76px; }
+  .entry-body h2 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 26px; margin: 0 0 18px; text-wrap: balance; }
+  .pill-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .pill { flex: 1; background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 16px; padding: 14px 16px; cursor: pointer; transition: border-color 0.15s ease; }
+  .pill:hover { border-color: var(--gold); }
+  .pill strong { display: block; font-size: 13px; margin-bottom: 4px; }
+  .pill span { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+  .caption-line { font-size: 11px; color: var(--text-muted); line-height: 1.6; margin-bottom: auto; }
+  .input-bar {
+    display: flex; align-items: center; justify-content: space-between; background: var(--bg-card);
+    border: 1px solid var(--border-soft); border-radius: 28px; padding: 8px 8px 8px 20px;
+    margin-top: 20px; cursor: pointer;
+  }
+  .input-bar span { font-size: 14px; color: var(--text-placeholder); }
+  .mic-circle { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--gold); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .mic-circle svg { width: 15px; height: 15px; }
+  .input-hint { font-size: 11px; color: var(--gold); text-align: center; margin-top: 12px; margin-bottom: 24px; }
+
+  /* Recording */
+  .rec-body { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: 20px; cursor: pointer; }
+  .dwelly-avatar { width: 72px; height: 72px; border-radius: 50%; background: #26221c; margin: 40px 0 12px; }
+  .dwelly-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 8px; }
+  .rec-body h2 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 22px; margin: 0 0 40px; text-align: center; padding: 0 40px; }
+  .waveform-bar {
+    display: flex; align-items: center; gap: 3px; background: var(--bg-card); border-radius: 28px;
+    padding: 14px 20px; margin: auto 24px 8px;
+  }
+  .wf-dot { width: 2px; height: 14px; background: var(--gold); border-radius: 2px; }
+  .wf-dot:nth-child(3n) { height: 22px; } .wf-dot:nth-child(5n) { height: 8px; }
+  .rec-timer { font-size: 12px; color: var(--text-muted); margin-left: auto; margin-right: 8px; }
+  .rec-stop { width: 20px; height: 20px; border-radius: 5px; background: #b04a3a; margin-left: 4px; }
+  .rec-hint { text-align: center; font-size: 11px; color: var(--text-muted); margin-bottom: 24px; }
+
+  /* Transcription / conversation shared */
+  .chat-body { flex: 1; padding: 44px 24px 0; display: flex; flex-direction: column; overflow-y: auto; }
+  .chat-header { text-align: center; margin-bottom: 24px; }
+  .chat-header .dwelly-avatar { width: 56px; height: 56px; margin: 0 auto 8px; }
+  .chat-header .dwelly-label { margin-bottom: 6px; }
+  .chat-header h3 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 18px; margin: 0; }
+  .bubble { border-radius: 18px; padding: 14px 16px; font-size: 13px; line-height: 1.5; margin-bottom: 14px; max-width: 84%; }
+  .bubble.user { align-self: flex-end; background: var(--bg-card-selected); border: 1px solid #3a3226; }
+  .bubble.dwelly { align-self: flex-start; background: var(--bg-card); }
+  .dwelly-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; color: var(--gold); margin: 4px 0 8px; }
+  .inline-journal-card {
+    align-self: stretch; background: var(--bg-card); border: 1px solid var(--border-soft);
+    border-radius: 18px; padding: 18px; margin-top: 6px; cursor: pointer; transition: border-color 0.15s ease;
+  }
+  .inline-journal-card:hover { border-color: var(--gold); }
+  .inline-journal-card .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .inline-journal-card .today-tag { font-size: 11px; color: var(--text-muted); letter-spacing: 0.03em; }
+  .inline-journal-card .open-tag { font-size: 11px; font-weight: 600; color: var(--gold); }
+  .inline-journal-card h3 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 17px; margin: 0 0 8px; color: var(--text-heading); }
+  .inline-journal-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+  .chat-footer { padding: 12px 24px 24px; }
+  .chat-input {
+    display: flex; align-items: center; justify-content: space-between; background: var(--bg-card);
+    border: 1px solid var(--border-soft); border-radius: 28px; padding: 14px 8px 14px 20px; cursor: pointer;
+  }
+  .chat-input span { font-size: 13px; color: var(--text-placeholder); }
+  .chat-hint { text-align: center; font-size: 10px; color: var(--text-muted); margin-top: 10px; }
+
+  /* Modal overlay */
+  .overlay { position: absolute; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; }
+  .overlay.active { display: flex; }
+  .overlay .scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.65); }
+  .modal-card {
+    position: relative; width: 300px; background: var(--bg-card); border: 1px solid var(--border-soft);
+    border-radius: 24px; padding: 24px 20px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    color: var(--text-heading);
+  }
+  .modal-card h3 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 20px; margin: 0 0 10px; }
+  .modal-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0 0 20px; }
+  .modal-btn-primary {
+    width: 100%; padding: 15px; border-radius: 26px; background: var(--gold); color: var(--bg-screen);
+    font-family: inherit; font-weight: 600; font-size: 14px; border: none; cursor: pointer; margin-bottom: 10px;
+  }
+  .modal-btn-link { background: none; border: none; color: var(--text-muted); font-size: 12px; font-family: inherit; cursor: pointer; }
+
+  /* Saved / creating / journal reveal */
+  .center-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 32px; text-align: center; cursor: pointer; }
+  .check-badge, .spin-badge {
+    width: 64px; height: 64px; border-radius: 50%; border: 1.5px solid var(--gold);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 24px;
+  }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; }
+  .center-body h2 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 24px; margin: 0 0 10px; }
+  .center-body p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+
+  .journal-body { flex: 1; padding: 40px 24px 0; }
+  .journal-body .eyebrow { text-align: left; }
+  .journal-body h2 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 26px; margin: 0 0 24px; }
+  .journal-card { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 20px; padding: 20px; }
+  .journal-card .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .journal-card .today-tag { font-size: 11px; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+  .journal-card .mood-tag { font-size: 10px; font-weight: 600; color: var(--gold); background: #26221c; border-radius: 20px; padding: 4px 10px; }
+  .journal-card h3 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: 19px; margin: 0 0 10px; }
+  .journal-card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0 0 14px; }
+  .journal-card .reviewed { font-size: 11px; color: var(--text-placeholder); border-top: 1px solid var(--border-soft); padding-top: 12px; }
+  .journal-cta {
+    width: 100%; margin-top: 28px; padding: 16px; border-radius: 28px; background: var(--gold);
+    color: var(--bg-screen); font-family: inherit; font-weight: 600; font-size: 14px; border: none; cursor: pointer;
+  }
+
+  /* Icons */
+  svg.icon-flame path, svg.icon-mic path, svg.icon-mic rect { stroke: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="hub">
+  <h1>Capture — Post-Onboarding</h1>
+  <p class="sub">Tap the "+" on any tab to enter Capture. The X frees you before you've sent anything — once a message exists, it warns you first.</p>
+
+  <h2>"+" transition</h2>
+  <div class="mode-toggle">
+    <button class="mode-btn" data-transition-mode="morph">Container Transform</button>
+    <button class="mode-btn selected" data-transition-mode="slide">Slide Up ✓ Locked</button>
+  </div>
+
+  <h2>Start here</h2>
+  <button class="hub-link primary" data-goto="tab-today">▶ Today (nav menu)</button>
+  <button class="hub-link" data-goto="tab-entries">Entries</button>
+  <button class="hub-link" data-goto="tab-growth">Growth</button>
+
+  <h2>Jump to a step</h2>
+  <button class="hub-link" data-goto="capture-entry">Capture Entry</button>
+  <button class="hub-link" data-goto="recording">Recording</button>
+  <button class="hub-link" data-goto="transcription">Live Transcription</button>
+  <button class="hub-link" data-goto="conv-review">Conversational Review</button>
+  <button class="hub-link" data-goto="conv-loop">Conversational Loop</button>
+  <button class="hub-link" data-overlay="modal-start-over">"Start over?" modal</button>
+  <button class="hub-link" data-goto="done-natural">Done — Natural Completion</button>
+  <button class="hub-link" data-goto="done-early">Done — Early Exit (via Save Moment)</button>
+  <button class="hub-link" data-goto="journal-reveal">Journal Reveal (full)</button>
+
+  <div class="hub-note">
+    Error states (mic denied, transcription failure, max duration, Dwelly offline, Cancel-vs-Stop) are identical to Capture Onboarding's — not rebuilt here. Only real difference: the "Start over?" modal applies here once a moment's begun; onboarding has no exit at all.
+  </div>
+</div>
+
+<div class="phone-shell">
+  <div class="phone-screen" id="screen">
+
+    <!-- TODAY -->
+    <div class="screen active" id="tab-today">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="tab-body"><h2>Today</h2></div>
+      <div class="plus-button" data-morph="capture-entry" title="Start capturing">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#c9b27a" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div class="tab-tray">
+        <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg><span>Today</span></div>
+        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="8" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="12.5" y="5" width="8" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/></svg><span>Entries</span></div>
+        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="12" width="3" height="8" rx="1" fill="currentColor"/><rect x="10.5" y="7" width="3" height="13" rx="1" fill="currentColor"/><rect x="17" y="3" width="3" height="17" rx="1" fill="currentColor"/></svg><span>Growth</span></div>
+      </div>
+    </div>
+
+    <!-- ENTRIES -->
+    <div class="screen" id="tab-entries">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="tab-body"><h2>Entries</h2></div>
+      <div class="plus-button" data-morph="capture-entry" title="Start capturing">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#c9b27a" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div class="tab-tray">
+        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg><span>Today</span></div>
+        <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="8" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="12.5" y="5" width="8" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/></svg><span>Entries</span></div>
+        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="12" width="3" height="8" rx="1" fill="currentColor"/><rect x="10.5" y="7" width="3" height="13" rx="1" fill="currentColor"/><rect x="17" y="3" width="3" height="17" rx="1" fill="currentColor"/></svg><span>Growth</span></div>
+      </div>
+    </div>
+
+    <!-- GROWTH -->
+    <div class="screen" id="tab-growth">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="tab-body"><h2>Growth</h2></div>
+      <div class="plus-button" data-morph="capture-entry" title="Start capturing">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#c9b27a" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div class="tab-tray">
+        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg><span>Today</span></div>
+        <div class="tab-item"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="8" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="12.5" y="5" width="8" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/></svg><span>Entries</span></div>
+        <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="12" width="3" height="8" rx="1" fill="currentColor"/><rect x="10.5" y="7" width="3" height="13" rx="1" fill="currentColor"/><rect x="17" y="3" width="3" height="17" rx="1" fill="currentColor"/></svg><span>Growth</span></div>
+      </div>
+    </div>
+
+    <!-- CAPTURE ENTRY -->
+    <div class="screen" id="capture-entry">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="dismiss-x" data-goto="tab-today" title="Nothing sent yet — exits freely">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M9 1L3 7L9 13" stroke="#a39d98" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="entry-body">
+        <div class="flame-badge"><svg class="icon-flame" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 3-2 4-2 7a4 4 0 0 0 8 0c0-1-.5-2-1-2.5.5 2-1 3-1 3 .5-3-2-4-2-6-1 1-2 2-2 3.5S13 9 13 9s-3-1-1-7z" stroke-width="1.3" stroke-linejoin="round"/></svg></div>
+        <p class="wordmark">DWELLY</p>
+        <h2>What's stirring in you today?</h2>
+        <div class="pill-row">
+          <div class="pill" data-goto="recording"><strong>Relationships</strong><span>Did God show up in a connection today?</span></div>
+          <div class="pill" data-goto="recording"><strong>Quiet moments</strong><span>Any stillness stand out to you?</span></div>
+        </div>
+        <p class="caption-line">Pulled from what you shared during onboarding — tap one, or share what's actually on your mind.</p>
+        <div class="input-bar" data-goto="recording">
+          <span>Type your reflection…</span>
+          <div class="mic-circle"><svg viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="#c9b27a" stroke-width="1.4"/><path d="M6 11a6 6 0 0 0 12 0M12 17v3" stroke="#c9b27a" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+        </div>
+        <p class="input-hint">Tap to type, or hold the mic to speak</p>
+      </div>
+    </div>
+
+    <!-- RECORDING -->
+    <div class="screen" id="recording" data-goto-body="transcription">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="dismiss-x" data-goto="tab-today" title="Nothing sent yet — exits freely">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M9 1L3 7L9 13" stroke="#a39d98" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="rec-body" data-goto="transcription">
+        <div class="dwelly-avatar"></div>
+        <p class="dwelly-label">DWELLY</p>
+        <h2>What's stirring in you today?</h2>
+        <div class="waveform-bar">
+          <div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div>
+          <div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div><div class="wf-dot"></div>
+          <div class="wf-dot"></div><div class="wf-dot"></div>
+          <span class="rec-timer">0:08</span><div class="rec-stop"></div>
+        </div>
+        <p class="rec-hint">Speak softly. This space is entirely yours.<br><span style="color:var(--gold)">Tap anywhere to continue →</span></p>
+      </div>
+    </div>
+
+    <!-- TRANSCRIPTION -->
+    <div class="screen" id="transcription">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="dismiss-x" data-goto="tab-today" title="Nothing sent yet — exits freely">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M9 1L3 7L9 13" stroke="#a39d98" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="chat-body" data-goto="conv-review" style="cursor:pointer;">
+        <div class="chat-header">
+          <div class="dwelly-avatar"></div>
+          <p class="dwelly-label">DWELLY</p>
+          <h3>What's stirring in you today?</h3>
+        </div>
+        <div class="bubble user" style="align-self:center; max-width:100%; text-align:center; background:var(--bg-card); border:none;">
+          I noticed a quiet kind of peace today during the drive home, even though the day was hard.
+        </div>
+      </div>
+      <div class="chat-footer">
+        <div class="chat-input" data-goto="conv-review">
+          <span>I noticed a quiet kind of peace today during the drive home, even though the day was hard…</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#c9b27a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <p class="chat-hint" style="color:var(--gold)">Tap to send →</p>
+      </div>
+    </div>
+
+    <!-- CONVERSATIONAL REVIEW -->
+    <div class="screen" id="conv-review">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="dismiss-x" data-overlay="modal-start-over" title="Already in a moment — warns first">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M9 1L3 7L9 13" stroke="#a39d98" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="chat-body" data-goto="conv-loop" style="cursor:pointer;">
+        <div class="chat-header">
+          <div class="dwelly-avatar"></div>
+          <p class="dwelly-label">DWELLY</p>
+          <h3>What's stirring in you today?</h3>
+        </div>
+        <div class="bubble user">I noticed a quiet kind of peace today during the drive home, even though the day was hard.</div>
+        <div class="bubble dwelly">It sounds like that peace showed up right in the middle of something hard. What do you think made space for it?</div>
+      </div>
+      <div class="chat-footer">
+        <div class="chat-input" data-goto="conv-loop"><span>Add more, or send to Dwelly</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#c9b27a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <p class="chat-hint" style="color:var(--gold)">Tap to continue the conversation →</p>
+      </div>
+    </div>
+
+    <!-- CONVERSATIONAL LOOP -->
+    <div class="screen" id="conv-loop">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="dismiss-x" data-overlay="modal-start-over" title="Already in a moment — warns first">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M9 1L3 7L9 13" stroke="#a39d98" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="chat-body" data-goto="done-natural" style="cursor:pointer; padding-top: 56px;">
+        <div class="bubble user">I noticed a quiet kind of peace today during the drive home, even though the day was hard.</div>
+        <div class="bubble dwelly">It sounds like that peace showed up right in the middle of something hard. What do you think made space for it?</div>
+        <div class="bubble user">I think just choosing to be quiet for a second instead of rushing.</div>
+        <div class="bubble dwelly">That's worth noticing — choosing stillness on purpose. Has that shown up for you before?</div>
+        <div class="bubble user">A few times lately, actually.</div>
+        <div class="bubble dwelly">Sounds like a pattern worth sitting with. Anything else about today you want to hold onto?</div>
+        <div class="bubble user">No, I think that's it for now.</div>
+      </div>
+      <div class="chat-footer">
+        <div class="chat-input" data-goto="done-natural"><span>End here, or keep reflecting…</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#c9b27a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <p class="chat-hint">Tap outside the thread anytime to save and finish. <span style="color:var(--gold)">Tap here to finish →</span></p>
+      </div>
+    </div>
+
+    <!-- DONE — NATURAL COMPLETION (inline, same shape as Header Done — Early Exit below) -->
+    <div class="screen" id="done-natural">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="chat-body" style="padding-top: 56px;">
+        <div class="bubble user">I noticed a quiet kind of peace today during the drive home, even though the day was hard.</div>
+        <div class="dwelly-tag">• DWELLY</div>
+        <div class="bubble dwelly">Hey, we've talked about this a few times now — let's go ahead and save what you've shared to your journal.</div>
+        <div class="inline-journal-card" data-goto="journal-reveal">
+          <div class="row"><span class="today-tag">Aug 20, 2026</span><span class="open-tag">Open</span></div>
+          <h3>When Peace Found You Mid-Drive</h3>
+          <p>An unexpected wave of calm broke through the noise of the day. Sitting with the quiet, the peace wasn't something you chased — it just showed up.</p>
+        </div>
+      </div>
+      <div class="chat-footer"><p class="chat-hint" style="color:var(--gold)">Tap the card to open your journal →</p></div>
+    </div>
+
+    <!-- DONE — EARLY EXIT (via "Save Moment" in the Start Over modal) -->
+    <div class="screen" id="done-early">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="chat-body" style="padding-top: 56px;">
+        <div class="bubble user">I noticed a quiet kind of peace today during the drive home, even though the day was hard.</div>
+        <div class="dwelly-tag">• DWELLY</div>
+        <div class="bubble dwelly">Okay — I've saved what you've shared so far. Come back anytime to keep going.</div>
+        <div class="inline-journal-card" data-goto="journal-reveal">
+          <div class="row"><span class="today-tag">Aug 20, 2026</span><span class="open-tag">Open</span></div>
+          <h3>When Peace Found You Mid-Drive</h3>
+          <p>An unexpected wave of calm broke through the noise of the day. Sitting with the quiet, the peace wasn't something you chased — it just showed up.</p>
+        </div>
+      </div>
+      <div class="chat-footer"><p class="chat-hint" style="color:var(--gold)">Tap the card to open your journal →</p></div>
+    </div>
+
+    <!-- JOURNAL REVEAL -->
+    <div class="screen" id="journal-reveal">
+      <div class="status-bar"><span class="time">9:41</span><div class="status-dots"><span></span><span></span><span></span></div></div>
+      <div class="journal-body">
+        <p class="eyebrow">Your Journal</p>
+        <h2>Your first moment, held.</h2>
+        <div class="journal-card">
+          <div class="row"><span class="today-tag">Today</span><span class="mood-tag">Reflective</span></div>
+          <h3>When Peace Found You Mid-Drive</h3>
+          <p>You noticed a quiet kind of peace today during the drive home, even though the day itself was hard. That steadiness right in the middle of the noise is worth sitting with.</p>
+          <p class="reviewed">Reviewed 0 times so far.</p>
+        </div>
+        <button class="journal-cta" data-goto="tab-today">Review your journal</button>
+      </div>
+    </div>
+
+    <!-- MODAL OVERLAY: Start Over -->
+    <div class="overlay" id="modal-start-over">
+      <div class="scrim" data-close-overlay></div>
+      <div class="modal-card">
+        <h3>Start over?</h3>
+        <p>If you leave now, this conversation will be lost and you'll need to start over.</p>
+        <button class="modal-btn-primary" data-goto="done-early" data-close-overlay>Save Moment</button>
+        <button class="modal-btn-link" data-goto="tab-today" data-close-overlay>Start Over</button>
+      </div>
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+</div>
+
+<script>
+  const screens = document.querySelectorAll('.screen');
+  const overlays = document.querySelectorAll('.overlay');
+
+  function showScreen(id) {
+    screens.forEach(s => s.classList.toggle('active', s.id === id));
+    overlays.forEach(o => o.classList.remove('active'));
+  }
+  function openOverlay(id) {
+    document.getElementById(id).classList.add('active');
+  }
+  function closeOverlays() {
+    overlays.forEach(o => o.classList.remove('active'));
+  }
+
+  // Container Transform: the tapped "+" button expands & unfolds into the full-screen target.
+  function morphToScreen(originEl, targetId) {
+    const container = document.getElementById('screen');
+    const target = document.getElementById(targetId);
+    const originRect = originEl.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    // Show target pinned exactly over the button's position/size first
+    target.classList.add('active', 'morphing');
+    target.style.top = (originRect.top - containerRect.top) + 'px';
+    target.style.left = (originRect.left - containerRect.left) + 'px';
+    target.style.width = originRect.width + 'px';
+    target.style.height = originRect.height + 'px';
+    target.style.borderRadius = '20px';
+
+    // Wait for the browser to actually PAINT the small starting rect before triggering the
+    // transition to full-screen — a synchronous reflow (offsetWidth) guarantees layout but not
+    // a paint, so both states can get coalesced into one frame and look like a jump/stutter.
+    // Double rAF: the first callback runs before the next paint: too early. The second one runs
+    // after that paint has happened, so this is the first safe place to change the end state.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        target.classList.add('morph-open');
+        target.style.top = '0px';
+        target.style.left = '0px';
+        target.style.width = '100%';
+        target.style.height = '100%';
+        target.style.borderRadius = '42px';
+
+        setTimeout(() => {
+          screens.forEach(s => { if (s !== target) s.classList.remove('active'); });
+          // Deliberately not reverting 'morphing'/'morph-open' or the inline styles here — the
+          // next morph call always resets them fresh, and reverting them at this point is what
+          // caused the earlier "double take" shrink-then-regrow bug.
+        }, 520);
+      });
+    });
+  }
+
+  // Slide Up: plain full-screen modal, slides up from the bottom edge.
+  // The @keyframes animation on .screen.sliding does the actual motion — no JS timing tricks needed.
+  // The screen underneath (the tab) is NOT touched at all — it's already fully rendered and
+  // stays that way the whole time, like a bed sheet that's always there under a comforter.
+  // Each .screen paints its own opaque background (see .screen base rule), so wherever the
+  // sliding sheet overlaps it, the tab underneath is fully occluded — no dimming/blackout
+  // trick needed, and nothing "appears" at the end, since it was there the entire time.
+  function slideToScreen(targetId) {
+    const target = document.getElementById(targetId);
+    // Remove + force reflow + re-add so the animation actually restarts on repeat visits
+    // (re-adding a class the element already has is a no-op and would skip the animation).
+    target.classList.remove('sliding');
+    void target.offsetWidth;
+    target.classList.add('active', 'sliding');
+    setTimeout(() => {
+      screens.forEach(s => { if (s !== target) s.classList.remove('active'); });
+    }, 320);
+  }
+
+  // Slide Down — the exit, at the same speed as the entrance, reversed.
+  function slideOutScreen(currentId, targetId) {
+    const current = document.getElementById(currentId);
+    const target = document.getElementById(targetId);
+    // The destination tab is made active immediately, fully rendered underneath from the very
+    // first frame — the sliding sheet is what moves away, uncovering it, not the other way
+    // around. Nothing needs to be dimmed or revealed after the fact.
+    target.classList.add('active');
+    current.classList.remove('sliding-out');
+    void current.offsetWidth;
+    current.classList.add('sliding-out');
+    setTimeout(() => {
+      current.classList.remove('active', 'sliding', 'sliding-out');
+    }, 320);
+  }
+
+  let transitionMode = 'slide'; // LOCKED: Slide Up. 'morph' (Container Transform) kept selectable for reference only.
+
+  document.addEventListener('click', (e) => {
+    const overlayCloser = e.target.closest('[data-close-overlay]');
+    const morphEl = e.target.closest('[data-morph]');
+    const gotoEl = e.target.closest('[data-goto]');
+    const overlayOpener = e.target.closest('[data-overlay]');
+    const modeBtn = e.target.closest('[data-transition-mode]');
+
+    if (modeBtn) {
+      transitionMode = modeBtn.dataset.transitionMode;
+      document.querySelectorAll('[data-transition-mode]').forEach(b => b.classList.toggle('selected', b === modeBtn));
+      return;
+    }
+    if (morphEl) {
+      if (transitionMode === 'slide') {
+        slideToScreen(morphEl.dataset.morph);
+      } else {
+        morphToScreen(morphEl, morphEl.dataset.morph);
+      }
+      return;
+    }
+    if (overlayOpener && !gotoEl) {
+      openOverlay(overlayOpener.dataset.overlay);
+      return;
+    }
+    if (gotoEl) {
+      if (overlayCloser) closeOverlays();
+      const destIsTab = gotoEl.dataset.goto.startsWith('tab-');
+      const currentScreen = Array.from(screens).find(s => s.classList.contains('active') && s.classList.contains('sliding'));
+      // Only slide DOWN when actually leaving the capture flow back to a tab — forward
+      // progress within the flow (Recording -> Transcription, etc.) stays a plain swap.
+      if (transitionMode === 'slide' && destIsTab && currentScreen && currentScreen.id !== gotoEl.dataset.goto) {
+        slideOutScreen(currentScreen.id, gotoEl.dataset.goto);
+      } else {
+        showScreen(gotoEl.dataset.goto);
+      }
+      return;
+    }
+    if (overlayCloser) {
+      closeOverlays();
+    }
+  });
+
+  showScreen('tab-today');
+</script>
+
+</body>
+</html>

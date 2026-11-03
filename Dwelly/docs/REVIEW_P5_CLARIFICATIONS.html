@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pillar 5: Design Clarifications & Decisions</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 780px; margin: 40px auto; padding: 0 24px; background: #0f0f0f; color: #e8e8e8; }
+  h1 { font-size: 22px; color: #C9B27C; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 13px; margin-bottom: 32px; }
+  h2 { font-size: 15px; color: #C9B27C; text-transform: uppercase; letter-spacing: 0.08em; margin: 32px 0 12px; border-bottom: 1px solid #2a2a2a; padding-bottom: 6px; }
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 13px; font-weight: 600; color: #C9B27C; margin-bottom: 8px; }
+  .insight { background: #1a1a1a; border-left: 3px solid #C9B27C; padding: 12px 14px; margin-bottom: 16px; border-radius: 4px; font-size: 13px; color: #ccc; line-height: 1.6; }
+  .option-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+  .option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-radius: 8px; border: 1px solid #2a2a2a; background: #141414; cursor: pointer; transition: all 0.15s; font-size: 14px; }
+  .option:hover { border-color: #444; background: #1a1a1a; }
+  .option.selected { border-color: #C9B27C; background: #1f1a10; color: #C9B27C; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #444; flex-shrink: 0; margin-top: 2px; transition: all 0.15s; }
+  .option.selected .dot { border-color: #C9B27C; background: #C9B27C; }
+  .option-text { flex: 1; }
+  .option-other input { background: transparent; border: none; outline: none; color: #e8e8e8; font-size: 14px; font-family: inherit; flex: 1; }
+  .option-other input::placeholder { color: #555; }
+  .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .pros, .cons { padding: 12px 14px; border-radius: 8px; border: 1px solid #2a2a2a; background: #141414; }
+  .pros { border-left: 3px solid #6dbe6d; }
+  .cons { border-left: 3px solid #be6d6d; }
+  .pros h4 { color: #6dbe6d; margin: 0 0 8px; font-size: 13px; }
+  .cons h4 { color: #be6d6d; margin: 0 0 8px; font-size: 13px; }
+  .pros ul, .cons ul { margin: 0; padding-left: 16px; font-size: 13px; color: #aaa; }
+  .pros li, .cons li { margin-bottom: 6px; }
+  textarea.notes { width: 100%; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 14px; color: #e8e8e8; font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; box-sizing: border-box; }
+  textarea.notes::placeholder { color: #555; }
+  .done-btn { margin-top: 32px; width: 100%; padding: 14px; background: #C9B27C; color: #0f0f0f; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+  .done-btn:hover { opacity: 0.85; }
+  .copy-area { display: none; margin-top: 16px; background: #141414; border: 1px solid #333; border-radius: 8px; padding: 14px; font-size: 13px; color: #aaa; white-space: pre-wrap; }
+  code { background: #1a1a1a; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #aaa; }
+</style>
+</head>
+<body>
+
+<h1>Pillar 5: Design Clarifications & Decisions</h1>
+<p class="subtitle">Answer key design questions. Lock final decisions for Phase 2.</p>
+
+<!-- PATH 1: TIMESTAMPS -->
+<div class="section">
+  <div class="section-title">Path 1: Edit Timestamps</div>
+  <div class="insight">
+    <strong>Your Question:</strong> "What's the risk of not enabling time stamp revisions?"
+    <br><br>
+    Should we track when edits were made? Timestamps create an audit trail of how the user refined their journal. Risks of <em>not</em> tracking: user can't remember when they edited, no history of evolution. Risks of <em>tracking</em>: added complexity, more metadata to encrypt.
+  </div>
+  <div class="option-group" id="timestamps">
+    <div class="option" onclick="select('timestamps', this)"><div class="dot"></div><div class="option-text">Track edit timestamps — show when each edit was made (audit trail)</div></div>
+    <div class="option" onclick="select('timestamps', this)"><div class="dot"></div><div class="option-text">Don't track timestamps — simple, MVP (recommended)</div></div>
+    <div class="option option-other" onclick="select('timestamps', this)"><div class="dot"></div><div class="option-text"><input type="text" placeholder="Other..."></div></div>
+  </div>
+</div>
+
+<!-- PATH 2: MOOD MUTABILITY -->
+<div class="section">
+  <div class="section-title">Path 2: Mood Mutability & Formation Intelligence</div>
+  <div class="insight">
+    <strong>Your Insight:</strong> Moods are training data for the user's spiritual journey LLM. When user edits moods, they're telling Formation Intelligence "I was wrong about that day's spiritual state." This retrains the model's understanding.
+    <br><br>
+    <strong>Three Approaches:</strong>
+  </div>
+  <div class="option-group" id="moods">
+    <div class="option" onclick="select('moods', this)"><div class="dot"></div><div class="option-text">
+      <strong>Option A: Locked at Creation</strong> — Moods set at journal creation, immutable. Preserves authentic historical record. User sees "⚠️ Editing moods retrains your spiritual journey model" warning if they try to change.
+    </div></div>
+    <div class="option" onclick="select('moods', this)"><div class="dot"></div><div class="option-text">
+      <strong>Option B: Freely Editable</strong> — User can change moods anytime. Formation Intelligence treats all mood states equally. Simpler UX, less friction.
+    </div></div>
+    <div class="option" onclick="select('moods', this)"><div class="dot"></div><div class="option-text">
+      <strong>Option C: Auto-Generated + Override</strong> — Formation Intelligence infers moods from transcript; user can accept or override. User can't change after journal is created (hybrid of A+B).
+    </div></div>
+    <div class="option option-other" onclick="select('moods', this)"><div class="dot"></div><div class="option-text"><input type="text" placeholder="Other..."></div></div>
+  </div>
+</div>
+
+<!-- PATH 3: PHOTO CAPTIONS -->
+<div class="section">
+  <div class="section-title">Path 3: Photo Captions</div>
+  <div class="insight">
+    <strong>Your Question:</strong> "Will captions per photo conflict with the content of the journal entry?"
+    <br><br>
+    Good UX concern. If each photo has a caption AND the journal body discusses the photo, there's redundancy. Options: keep captions lean (1 sentence), optional, or skip captions entirely for MVP.
+  </div>
+  <div class="option-group" id="captions">
+    <div class="option" onclick="select('captions', this)"><div class="dot"></div><div class="option-text">Include captions — optional, brief (one sentence). Searchable.</div></div>
+    <div class="option" onclick="select('captions', this)"><div class="dot"></div><div class="option-text">Include captions — mandatory, full text. Searchable.</div></div>
+    <div class="option" onclick="select('captions', this)"><div class="dot"></div><div class="option-text">Skip captions for MVP — lean, simple. User photo metadata only.</div></div>
+    <div class="option option-other" onclick="select('captions', this)"><div class="dot"></div><div class="option-text"><input type="text" placeholder="Other..."></div></div>
+  </div>
+</div>
+
+<!-- PATH 7: ARCHIVE/DELETE FLOW -->
+<div class="section">
+  <div class="section-title">Path 7: Archive/Delete Terminology & Flow</div>
+  <div class="insight">
+    <strong>Your Note:</strong> "Archive, Delete (30 days to recover before fully deleted)"
+    <br><br>
+    Clarifying the soft-delete recovery flow. User perspective: tap delete → item goes away → recoverable for 30 days → after 30 days, gone forever.
+  </div>
+  <div class="option-group" id="delete-flow">
+    <div class="option" onclick="select('delete-flow', this)"><div class="dot"></div><div class="option-text">Single "Delete" button — soft delete, 30-day recovery, then permanent purge. (recommended)</div></div>
+    <div class="option" onclick="select('delete-flow', this)"><div class="dot"></div><div class="option-text">"Archive" button (hide) + "Delete" button (soft delete). Two-step.</div></div>
+    <div class="option" onclick="select('delete-flow', this)"><div class="dot"></div><div class="option-text">"Delete" shows confirmation: "Recoverable for 30 days. After 30 days, permanently deleted."</div></div>
+    <div class="option option-other" onclick="select('delete-flow', this)"><div class="dot"></div><div class="option-text"><input type="text" placeholder="Other..."></div></div>
+  </div>
+</div>
+
+<!-- TEXT FORMATTING SCOPE -->
+<div class="section">
+  <div class="section-title">Text Formatting Scope for Phase 2</div>
+  <div class="insight">
+    <strong>Your Requirement:</strong> "For v1 - Bold, italics, lists, adding images, line breaks, GAI v2, take photos, voice to text transcription...trying to keep this very lean."
+    <br><br>
+    Clarifying: does Phase 2 include a rich-text editor, or plain text + markdown shortcuts, or just buttons for bold/italics/lists?
+  </div>
+  <div class="option-group" id="formatting">
+    <div class="option" onclick="select('formatting', this)"><div class="dot"></div><div class="option-text">Lean rich-text editor — buttons for bold, italics, lists, links. No fonts/colors/sizes.</div></div>
+    <div class="option" onclick="select('formatting', this)"><div class="dot"></div><div class="option-text">Plain text + markdown shortcuts — user types <code>**bold**</code>, <code>*italic*</code>, <code>- list</code>. No WYSIWYG.</div></div>
+    <div class="option" onclick="select('formatting', this)"><div class="dot"></div><div class="option-text">Plain text only + line breaks. No formatting for MVP (defer to Post MVP).</div></div>
+    <div class="option option-other" onclick="select('formatting', this)"><div class="dot"></div><div class="option-text"><input type="text" placeholder="Other..."></div></div>
+  </div>
+</div>
+
+<!-- CONTINUE CHAT POST-JOURNAL -->
+<div class="section">
+  <div class="section-title">Continue Chat with Prompts Post-Journal Creation?</div>
+  <div class="insight">
+    <strong>Your Flagged Issue:</strong> "Dwellers wanting to continue conversation with prompts but are now in Journal mode."
+    <br><br>
+    Once journal synthesis happens, user transitions from conversation mode (Pillar 1) to journal viewing/editing (Pillar 5). Should we allow continuing the original conversation, or must the user start a new capture?
+  </div>
+
+  <div style="background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+    <strong style="color: #C9B27C;">Option A: YES — Continue Conversation</strong>
+    <div class="pros-cons" style="margin-top: 10px;">
+      <div class="pros">
+        <h4>✓ Pros</h4>
+        <ul>
+          <li>User can refine capture mid-stream</li>
+          <li>More flexible, natural workflow</li>
+          <li>Second prompt attempt feels unblocked</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>✗ Cons</h4>
+        <ul>
+          <li>Ambiguity: which prompts belong to which journal?</li>
+          <li>"Journal creep" risk — user keeps adding</li>
+          <li>UI complexity: parallel tabs/modes</li>
+          <li>Formation Intelligence confusion</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+    <strong style="color: #C9B27C;">Option B: NO — Conversation Ends at Journal Creation (MVP)</strong>
+    <div class="pros-cons" style="margin-top: 10px;">
+      <div class="pros">
+        <h4>✓ Pros</h4>
+        <ul>
+          <li>Clear, simple flow</li>
+          <li>One mode at a time</li>
+          <li>Clear moment/journal boundaries</li>
+          <li>Formation Intelligence unambiguous</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>✗ Cons</h4>
+        <ul>
+          <li>More rigid UX</li>
+          <li>User must start new capture</li>
+          <li>Might frustrate mid-conversation users</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="option-group" id="continue-chat">
+    <div class="option" onclick="select('continue-chat', this)"><div class="dot"></div><div class="option-text"><strong>Option A:</strong> YES — Allow continuing conversation after journal creation</div></div>
+    <div class="option" onclick="select('continue-chat', this)"><div class="dot"></div><div class="option-text"><strong>Option B:</strong> NO — Conversation ends at journal creation (recommended for MVP)</div></div>
+    <div class="option option-other" onclick="select('continue-chat', this)"><div class="dot"></div><div class="option-text"><input type="text" placeholder="Other..."></div></div>
+  </div>
+</div>
+
+<!-- OTHER NOTES -->
+<div class="section">
+  <div class="section-title">Other Notes or Clarifications</div>
+  <textarea class="notes" id="other-notes" placeholder="Anything else..."></textarea>
+</div>
+
+<button class="done-btn" onclick="buildSummary()">Done — Generate Summary for Claude</button>
+<div class="copy-area" id="copy-area"></div>
+
+<script>
+function select(groupId, el) {
+  document.querySelectorAll('#' + groupId + ' .option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function buildSummary() {
+  let out = '=== PILLAR 5 CLARIFICATIONS & DECISIONS ===\n\n';
+
+  const items = [
+    ['timestamps', 'Edit Timestamps'],
+    ['moods', 'Mood Mutability'],
+    ['captions', 'Photo Captions'],
+    ['delete-flow', 'Archive/Delete Flow'],
+    ['formatting', 'Text Formatting'],
+    ['continue-chat', 'Continue Chat Post-Journal']
+  ];
+
+  items.forEach(([id, label]) => {
+    const sel = document.querySelector('#' + id + ' .selected');
+    if (sel) {
+      const input = sel.querySelector('input');
+      const val = input ? input.value || 'Other (blank)' : sel.textContent.trim();
+      out += `${label}:\n${val}\n\n`;
+    } else {
+      out += `${label}: — NOT SELECTED\n\n`;
+    }
+  });
+
+  const notes = document.getElementById('other-notes').value.trim();
+  if (notes) out += `OTHER NOTES:\n${notes}\n`;
+
+  const area = document.getElementById('copy-area');
+  area.style.display = 'block';
+  area.textContent = out;
+  navigator.clipboard.writeText(out).catch(() => {});
+}
+</script>
+
+</body>
+</html>

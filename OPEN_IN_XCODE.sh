@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# This script guides you through opening the project in Xcode
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Dwelly Native iOS — Quick Setup"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "The Swift source files are ready in:"
+echo "  Dwelly/Dwelly/Views/"
+echo "  Dwelly/Dwelly/Managers/"
+echo "  Dwelly/Dwelly/Models/"
+echo "  Dwelly/Dwelly/Utilities/"
+echo ""
+echo "Next step: Create Xcode project"
+echo ""
+echo "1. Open Xcode"
+echo "2. File → New → Project"
+echo "3. iOS → App"
+echo "4. Configure:"
+echo "   - Product Name: Dwelly"
+echo "   - Bundle ID: com.kellgolden.Dwell"
+echo "   - Interface: SwiftUI"
+echo "   - Language: Swift"
+echo "   - Save to: /Users/kell/Projects/Dwelly-Native"
+echo ""
+echo "Once created, I (Claude) will:"
+echo "  ✓ Add all source files to Xcode"
+echo "  ✓ Set up Supabase integration"
+echo "  ✓ Configure CocoaPods"
+echo "  ✓ Get it building and running"
+echo ""
+

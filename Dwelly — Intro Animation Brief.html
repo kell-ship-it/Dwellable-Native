@@ -1,0 +1,552 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dwelly — Intro Animation Brief</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap">
+
+<style>
+  /* Layout: single-column long-form brief, dark editorial */
+  :root {
+    --bg:         #0e0e12;
+    --surface:    #161619;
+    --border:     #2a2a35;
+    --fg:         #e8e8ed;
+    --fg-muted:   #a0a0ab;
+    --fg-faint:   #5e5e68;
+    --gold:       #c5a84e;
+    --gold-muted: #7a6530;
+    --gold-bg:    rgba(197,168,78,0.08);
+    --green:      #3a7a4e;
+    --green-bg:   rgba(58,122,78,0.1);
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg:         #f6f5f1;
+      --surface:    #ffffff;
+      --border:     #e0ddd5;
+      --fg:         #1a1a20;
+      --fg-muted:   #5a5a65;
+      --fg-faint:   #b0aaa0;
+      --gold:       #9a7c28;
+      --gold-muted: #c8a84e;
+      --gold-bg:    rgba(154,124,40,0.07);
+      --green:      #2a5c38;
+      --green-bg:   rgba(42,92,56,0.08);
+      color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg:         #f6f5f1;
+    --surface:    #ffffff;
+    --border:     #e0ddd5;
+    --fg:         #1a1a20;
+    --fg-muted:   #5a5a65;
+    --fg-faint:   #b0aaa0;
+    --gold:       #9a7c28;
+    --gold-muted: #c8a84e;
+    --gold-bg:    rgba(154,124,40,0.07);
+    --green:      #2a5c38;
+    --green-bg:   rgba(42,92,56,0.08);
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 720px;
+    margin: 0 auto;
+    padding-inline: 24px;
+    padding-block: 48px;
+  }
+
+  /* Header */
+  .doc-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .doc-title {
+    font-family: 'Lora', Georgia, serif;
+    font-size: clamp(26px, 5vw, 38px);
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--fg);
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+  .doc-subtitle {
+    font-size: 14px;
+    color: var(--fg-muted);
+    margin: 0 0 36px;
+  }
+  .doc-meta {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+  .meta-item { display: flex; flex-direction: column; gap: 3px; }
+  .meta-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-faint); }
+  .meta-value { font-size: 13px; font-weight: 500; color: var(--fg); }
+
+  /* Section headings */
+  h2 {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--fg);
+    margin: 44px 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg-muted);
+    margin: 28px 0 8px;
+  }
+  p { margin: 0 0 14px; color: var(--fg-muted); }
+  strong { color: var(--fg); font-weight: 600; }
+
+  /* Blockquote — script */
+  .script-block {
+    background: var(--surface);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    padding: 18px 20px;
+    margin: 20px 0;
+    font-family: 'Lora', Georgia, serif;
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--fg);
+  }
+
+  /* Scene cards */
+  .scenes { display: flex; flex-direction: column; gap: 14px; margin: 20px 0; }
+  .scene {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .scene-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.025);
+    border-bottom: 1px solid var(--border);
+  }
+  .scene-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold);
+    background: var(--gold-bg);
+    border: 1px solid var(--gold-muted);
+    border-radius: 5px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+  .scene-title { font-size: 14px; font-weight: 600; color: var(--fg); }
+  .scene-time { font-size: 12px; color: var(--fg-faint); margin-left: auto; font-variant-numeric: tabular-nums; }
+  .scene-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .scene-row { display: grid; grid-template-columns: 80px 1fr; gap: 12px; align-items: start; }
+  .scene-row-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--fg-faint); padding-top: 2px; }
+  .scene-row-content { font-size: 13px; color: var(--fg-muted); line-height: 1.5; }
+  .scene-row-content em { font-style: italic; color: var(--fg); }
+  .mood-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 20px;
+    background: var(--gold-bg);
+    color: var(--gold);
+    border: 1px solid var(--gold-muted);
+  }
+
+  /* Palette swatches */
+  .palette { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+  .swatch { display: flex; flex-direction: column; gap: 6px; }
+  .swatch-color { width: 56px; height: 40px; border-radius: 8px; border: 1px solid var(--border); }
+  .swatch-name { font-size: 10px; font-weight: 600; color: var(--fg-muted); }
+  .swatch-hex { font-size: 10px; color: var(--fg-faint); font-family: monospace; }
+
+  /* Spec table */
+  .spec-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  .spec-table tr { border-bottom: 1px solid var(--border); }
+  .spec-table tr:last-child { border-bottom: none; }
+  .spec-table td { padding: 10px 0; vertical-align: top; }
+  .spec-table td:first-child { color: var(--fg-faint); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; width: 160px; padding-right: 16px; }
+  .spec-table td:last-child { color: var(--fg); }
+  code { font-family: 'SF Mono', Menlo, monospace; font-size: 12px; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; color: var(--gold); }
+
+  /* Do/Don't list */
+  .dontdo { display: flex; flex-direction: column; gap: 7px; margin: 16px 0; }
+  .dontdo-item { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; }
+  .dontdo-item .badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+  .do .badge { background: var(--green-bg); color: #5abf7a; }
+  .dont .badge { background: rgba(180,60,60,0.12); color: #e07070; }
+  .dontdo-item span { color: var(--fg-muted); line-height: 1.4; }
+
+  /* Deliverables */
+  .deliverables { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+  .deliverable {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  .deliverable .num { color: var(--gold); font-weight: 700; min-width: 18px; }
+  .deliverable-title { font-weight: 600; color: var(--fg); margin-bottom: 2px; }
+  .deliverable-desc { color: var(--fg-muted); font-size: 12px; }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  @media (max-width: 480px) {
+    .scene-row { grid-template-columns: 1fr; gap: 4px; }
+    .doc-meta { gap: 16px; }
+  }
+</style>
+
+<div class="doc-eyebrow">Creative Brief · Lottie Animation</div>
+<h1 class="doc-title">Dwelly — 40-Second Intro Animation</h1>
+<p class="doc-subtitle">Screen 2 of the onboarding flow. Plays before account creation. Skippable.</p>
+
+<div class="doc-meta">
+  <div class="meta-item">
+    <span class="meta-label">Duration</span>
+    <span class="meta-value">40 seconds</span>
+  </div>
+  <div class="meta-item">
+    <span class="meta-label">Format</span>
+    <span class="meta-value">Lottie JSON (.json)</span>
+  </div>
+  <div class="meta-item">
+    <span class="meta-label">Canvas</span>
+    <span class="meta-value">390 × 844 pt (iPhone)</span>
+  </div>
+  <div class="meta-item">
+    <span class="meta-label">Frame rate</span>
+    <span class="meta-value">60 fps</span>
+  </div>
+  <div class="meta-item">
+    <span class="meta-label">File size target</span>
+    <span class="meta-value">Under 500 KB</span>
+  </div>
+  <div class="meta-item">
+    <span class="meta-label">Tool</span>
+    <span class="meta-value">After Effects + Bodymovin</span>
+  </div>
+</div>
+
+
+<h2>The Script</h2>
+
+<p>This is the narration that the animation should visualize. <strong>There is no text in the animation itself</strong> — these words are the emotional throughline, not on-screen copy. The designer should read this and ask: what does this <em>feel like</em> as moving images?</p>
+
+<div class="script-block">
+  <p>Every moment with God is precious. The way you determine it to be precious is based on how well you steward it.</p>
+  <p>Take, for example, this: imagine you're on a walk, and the Lord whispers to you, "You're my child, and I love you very much." Afterward, a wave of peace overwhelms you. What would you do after that? You might forget about it.</p>
+  <p>Dwelly helps to ensure that you never forget your God moments.</p>
+  <p>Whether it's an angel, a prayer answered, a dream you had that needs to be written down so you never forget it, or even a Bible verse that's very challenging — Dwelly will enable you to process every encounter you have with God, no matter how big or small. Afterward, it will create a journal that reflects everything that you felt, heard, and thought in that moment, so you never forget it.</p>
+  <p>After you do this for so long, you have an entire history of God moments that you can always recall whenever you are discouraged or even happy.</p>
+</div>
+
+<p>The animation does not need to illustrate every sentence literally. It needs to carry the <em>emotional arc</em>: stillness → intimacy → risk of loss → capture → abundance.</p>
+
+
+<h2>Scene Breakdown</h2>
+
+<div class="scenes">
+
+  <div class="scene">
+    <div class="scene-header">
+      <span class="scene-num">Scene 1</span>
+      <span class="scene-title">The Precious Moment — Awakening</span>
+      <span class="scene-time">0 – 8s</span>
+    </div>
+    <div class="scene-body">
+      <div class="scene-row">
+        <span class="scene-row-label">Script line</span>
+        <span class="scene-row-content"><em>"Every moment with God is precious."</em></span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Visual</span>
+        <span class="scene-row-content">Pure darkness. A single warm light source emerges from the very center of the frame — slowly, gently, like the first light of dawn or a single candle being lit. Small gold particles begin to drift upward from the light source.</span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Motion</span>
+        <span class="scene-row-content">Fade in from black. Light expands outward. Particles rise slowly — unhurried, weightless. No sharp movements.</span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Mood</span>
+        <span class="scene-row-content"><span class="mood-pill">Sacred</span> <span class="mood-pill">Still</span> <span class="mood-pill">Anticipatory</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header">
+      <span class="scene-num">Scene 2</span>
+      <span class="scene-title">The Walk — A Divine Whisper</span>
+      <span class="scene-time">8 – 18s</span>
+    </div>
+    <div class="scene-body">
+      <div class="scene-row">
+        <span class="scene-row-label">Script line</span>
+        <span class="scene-row-content"><em>"Imagine you're on a walk, and the Lord whispers to you, 'You're my child, and I love you very much.' A wave of peace overwhelms you."</em></span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Visual</span>
+        <span class="scene-row-content">A gentle implied movement — like drifting slowly through soft light and shadow. The light source breathes and expands. A golden warmth radiates outward like a whisper made visible — particles swirl gently around the center, then envelop the frame in a soft wash of warmth.</span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Motion</span>
+        <span class="scene-row-content">Slow lateral drift (no hard camera moves). At the "wave of peace" moment (~13s), the light blooms — a burst of warmth that fills the screen before softening back. Particles cluster and feel like an embrace.</span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Mood</span>
+        <span class="scene-row-content"><span class="mood-pill">Intimate</span> <span class="mood-pill">Warm</span> <span class="mood-pill">Peaceful</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header">
+      <span class="scene-num">Scene 3</span>
+      <span class="scene-title">The Risk — Forgetting</span>
+      <span class="scene-time">18 – 24s</span>
+    </div>
+    <div class="scene-body">
+      <div class="scene-row">
+        <span class="scene-row-label">Script line</span>
+        <span class="scene-row-content"><em>"What would you do after that? You might forget about it."</em></span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Visual</span>
+        <span class="scene-row-content">The warmth begins to drift. The particles that had gathered start to scatter outward and fade at the edges. The central light contracts slightly — not dark, not alarming, but quietly dimming. A gentle sense of loss without despair.</span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Motion</span>
+        <span class="scene-row-content">Particles drift away from center and fade. Light source contracts. A slow, graceful dissipation — not a sudden change. The transition should feel like a memory becoming hazy, not like something bad happening.</span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Mood</span>
+        <span class="scene-row-content"><span class="mood-pill">Quiet tension</span> <span class="mood-pill">Wistful</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header">
+      <span class="scene-num">Scene 4</span>
+      <span class="scene-title">The Capture — Dwelly</span>
+      <span class="scene-time">24 – 33s</span>
+    </div>
+    <div class="scene-body">
+      <div class="scene-row">
+        <span class="scene-row-label">Script line</span>
+        <span class="scene-row-content"><em>"Dwelly helps to ensure that you never forget your God moments."</em></span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Visual</span>
+        <span class="scene-row-content">The scattered particles reverse — they are drawn back toward the center, as if collected. The light stabilizes and deepens into a warmer, fuller glow. This is the moment of preservation: a sense that something precious is being held safely.</span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Motion</span>
+        <span class="scene-row-content">Particles flow back inward in a gathering motion — not frantic, but intentional. Light blooms back to full warmth. The central glow settles into a steady, confident pulse. Optional: a subtle circular "seal" or ring that forms around the light, suggesting a boundary of remembrance.</span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Mood</span>
+        <span class="scene-row-content"><span class="mood-pill">Reassurance</span> <span class="mood-pill">Safety</span> <span class="mood-pill">Warmth</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header">
+      <span class="scene-num">Scene 5</span>
+      <span class="scene-title">The History — A Constellation of Moments</span>
+      <span class="scene-time">33 – 40s</span>
+    </div>
+    <div class="scene-body">
+      <div class="scene-row">
+        <span class="scene-row-label">Script line</span>
+        <span class="scene-row-content"><em>"After you do this for so long, you have an entire history of God moments that you can always recall."</em></span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Visual</span>
+        <span class="scene-row-content">From the central light, secondary smaller lights appear — each one a captured moment. They settle into a loose constellation surrounding the center: 5–7 smaller glowing points, each pulsing gently out of sync with each other, like a sky full of stars that are alive.</span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Motion</span>
+        <span class="scene-row-content">Secondary lights drift in from outside the frame and settle into position, one by one. All points pulse softly together. The animation reaches its final resting state — full, warm, alive — and holds there. This is the last frame the user sees before "Continue" appears.</span>
+      </div>
+      <div class="scene-row">
+        <span class="scene-row-label">Mood</span>
+        <span class="scene-row-content"><span class="mood-pill">Abundant</span> <span class="mood-pill">Full</span> <span class="mood-pill">Hopeful</span></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<h2>Color Palette</h2>
+
+<p>Use only these colors. Do not introduce any additional hues. The animation should feel like it exists entirely in darkness and gold.</p>
+
+<div class="palette">
+  <div class="swatch">
+    <div class="swatch-color" style="background:#0e0e12"></div>
+    <div class="swatch-name">Background</div>
+    <div class="swatch-hex">#0E0E12</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-color" style="background:#c5a84e"></div>
+    <div class="swatch-name">Gold</div>
+    <div class="swatch-hex">#C5A84E</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-color" style="background:rgba(197,168,78,0.35);border-color:rgba(197,168,78,0.2)"></div>
+    <div class="swatch-name">Gold (glow)</div>
+    <div class="swatch-hex">35% opacity</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-color" style="background:rgba(255,248,230,0.85)"></div>
+    <div class="swatch-name">Warm white</div>
+    <div class="swatch-hex">#FFF8E6 85%</div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-color" style="background:#1e1a10"></div>
+    <div class="swatch-name">Dark warmth</div>
+    <div class="swatch-hex">#1E1A10</div>
+  </div>
+</div>
+
+<p>Particles and light sources should use the gold and warm white values with varying opacity (10%–100%) to create depth. The background should remain <code>#0E0E12</code> throughout — no color shifts in the background.</p>
+
+
+<h2>Style Direction</h2>
+
+<h3>What this animation is</h3>
+<div class="dontdo">
+  <div class="dontdo-item do"><span class="badge">DO</span><span>Abstract — particles, light, glow. Evocative of the sacred, not literal.</span></div>
+  <div class="dontdo-item do"><span class="badge">DO</span><span>Slow and contemplative. Every motion should feel intentional, unhurried.</span></div>
+  <div class="dontdo-item do"><span class="badge">DO</span><span>Vector-only. No raster images, no embedded photos.</span></div>
+  <div class="dontdo-item do"><span class="badge">DO</span><span>Smooth easing on all motions — ease-in-out, nothing linear or bouncy.</span></div>
+  <div class="dontdo-item do"><span class="badge">DO</span><span>End on a graceful resting state (Scene 5's constellation) that can hold indefinitely.</span></div>
+</div>
+
+<h3>What this animation is not</h3>
+<div class="dontdo">
+  <div class="dontdo-item dont"><span class="badge">DON'T</span><span>No text, no words, no on-screen labels of any kind.</span></div>
+  <div class="dontdo-item dont"><span class="badge">DON'T</span><span>No characters, people, animals, or illustrated figures.</span></div>
+  <div class="dontdo-item dont"><span class="badge">DON'T</span><span>No religious iconography (no cross, no dove, no explicit church imagery). The spiritual feeling comes from light, warmth, and stillness — not symbols.</span></div>
+  <div class="dontdo-item dont"><span class="badge">DON'T</span><span>No playback controls or progress bar baked into the animation itself.</span></div>
+  <div class="dontdo-item dont"><span class="badge">DON'T</span><span>No fast movements, no bounces, no energetic transitions.</span></div>
+  <div class="dontdo-item dont"><span class="badge">DON'T</span><span>No looping — this plays once start to finish, then holds at the final frame.</span></div>
+</div>
+
+<h3>Reference feel</h3>
+<p>Think of the opening of a candle in a dark room, filmed in slow motion. Or the Opal app's onboarding video (cave with a glowing orb). Or the visual language of a starfield that is alive and breathing. The tone is meditative, not dramatic.</p>
+
+
+<h2>Technical Specifications</h2>
+
+<table class="spec-table">
+  <tr><td>Format</td><td>Lottie JSON (<code>.json</code>). <strong>Not MP4, not GIF.</strong></td></tr>
+  <tr><td>Canvas size</td><td>390 × 844 pt. Standard iPhone canvas. Lottie scales, so this is the master size.</td></tr>
+  <tr><td>Frame rate</td><td>60 fps</td></tr>
+  <tr><td>Duration</td><td>Exactly 40 seconds (2400 frames at 60fps)</td></tr>
+  <tr><td>Background</td><td>Transparent or <code>#0E0E12</code>. Do not rely on the canvas background for color — the app sets it.</td></tr>
+  <tr><td>File size</td><td>Target under 500 KB. Avoid raster embeds, trim path complexity where possible.</td></tr>
+  <tr><td>Exports needed</td><td>1× Lottie JSON (production) + 1× MP4 preview at 1x for client review</td></tr>
+  <tr><td>Tool</td><td>After Effects with Bodymovin plugin (preferred), or Rive (Lottie-compatible export)</td></tr>
+  <tr><td>Gradients</td><td>Radial and linear gradients are fine. Avoid mesh gradients (not Lottie-compatible).</td></tr>
+  <tr><td>Blur effects</td><td>Permitted sparingly — they increase file size. Keep layers with blur minimal.</td></tr>
+  <tr><td>Pre-comps</td><td>Flatten nested pre-comps before Bodymovin export where possible for cleaner JSON.</td></tr>
+</table>
+
+
+<h2>Deliverables</h2>
+
+<div class="deliverables">
+  <div class="deliverable">
+    <span class="num">1</span>
+    <div>
+      <div class="deliverable-title">Lottie JSON file</div>
+      <div class="deliverable-desc">The production-ready <code>.json</code> export. Must play correctly in the LottieFiles web previewer at lottiefiles.com before delivery.</div>
+    </div>
+  </div>
+  <div class="deliverable">
+    <span class="num">2</span>
+    <div>
+      <div class="deliverable-title">MP4 preview (1x, H.264)</div>
+      <div class="deliverable-desc">For client review before Lottie integration. Same duration and content as the JSON.</div>
+    </div>
+  </div>
+  <div class="deliverable">
+    <span class="num">3</span>
+    <div>
+      <div class="deliverable-title">After Effects source file (.aep)</div>
+      <div class="deliverable-desc">For future edits or color adjustments by the development team.</div>
+    </div>
+  </div>
+</div>
+
+<h2>Reference Video</h2>
+
+<p>Visual reference for the tone and pacing this animation should carry.</p>
+
+<div style="display:flex;justify-content:center;margin:28px 0;">
+  <div style="position:relative;width:220px;background:#0A0A0E;border-radius:36px;padding:10px;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 0 0 8px #1a1a1e,0 0 0 9px rgba(255,255,255,.08),0 32px 80px rgba(0,0,0,.9);">
+    <!-- Side buttons -->
+    <div style="position:absolute;left:-3px;top:72px;width:3px;height:28px;background:#2a2a2e;border-radius:2px 0 0 2px;"></div>
+    <div style="position:absolute;left:-3px;top:108px;width:3px;height:44px;background:#2a2a2e;border-radius:2px 0 0 2px;"></div>
+    <div style="position:absolute;left:-3px;top:160px;width:3px;height:44px;background:#2a2a2e;border-radius:2px 0 0 2px;"></div>
+    <div style="position:absolute;right:-3px;top:108px;width:3px;height:60px;background:#2a2a2e;border-radius:0 2px 2px 0;"></div>
+    <!-- Screen -->
+    <div style="border-radius:28px;overflow:hidden;aspect-ratio:9/19.5;background:#000;position:relative;">
+      <!-- Dynamic island -->
+      <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);width:80px;height:22px;background:#0A0A0E;border-radius:12px;z-index:10;"></div>
+      <video controls playsinline
+        style="width:100%;height:100%;object-fit:cover;display:block;">
+        <source src="/_blob/b59b335ce84708848e592ada70548771" type="video/mp4">
+      </video>
+      <!-- Home bar -->
+      <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:60px;height:3px;background:rgba(255,255,255,.3);border-radius:2px;z-index:10;"></div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<p style="font-size:12px;color:var(--fg-faint);margin:0">Dwelly — iOS App · Screen 2 Onboarding · Animation Brief v1.0</p>
+
+</body></html>
