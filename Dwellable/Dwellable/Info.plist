@@ -45,9 +45,9 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Dwellable uses your microphone to capture voice moments. We only record when you tap the mic button.</string>
+	<string>Dwelly uses your microphone to capture voice moments. We only record when you tap the mic button.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Dwellable uses speech recognition to transcribe your voice moments into text.</string>
+	<string>Dwelly uses speech recognition to transcribe your voice moments into text.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

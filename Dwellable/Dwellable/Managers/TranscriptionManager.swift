@@ -231,7 +231,7 @@ class TranscriptionManager: NSObject, ObservableObject {
                         let reason = isBlankAudio ? "blank audio" : "too short (\(wordCount) word\(wordCount == 1 ? "" : "s"))"
                         hlog("WhisperKit: rejected — \(reason) after \(String(format: "%.1f", elapsed))s", "WARNING")
                         self.transcript = "" // Clear transcript so ReviewView knows it's invalid
-                        self.errorMessage = "Dwellable didn't catch that. Feel free to speak again."
+                        self.errorMessage = "Dwelly didn't catch that. Feel free to speak again."
                         self.deleteTemporaryAudioFile()
                         completion(nil)
                     } else {
@@ -299,7 +299,7 @@ class TranscriptionManager: NSObject, ObservableObject {
         } else if description.contains("memory") {
             errorMessage = "That recording was too large to process. Try a shorter recording."
         } else {
-            errorMessage = "Dwellable didn't catch your capture. Feel free to articulate again or speak it once more."
+            errorMessage = "Dwelly didn't catch your capture. Feel free to articulate again or speak it once more."
         }
 
         hlog("Error shown to user: \(errorMessage ?? "unknown")", "ERROR")
