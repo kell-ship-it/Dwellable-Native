@@ -4,13 +4,21 @@ struct AppView: View {
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.apiClient) private var apiClient
     let syncManager: SyncManager
+    @State private var hasSeenOnboarding = false
 
     var body: some View {
         // AppView is only shown when authenticated, so we can safely force-unwrap currentUser
         if let user = authManager.currentUser {
-            MainTabView(userId: user.id, userEmail: user.email, syncManager: syncManager)
+            Group {
+                if hasSeenOnboarding {
+                    MainTabView(userId: user.id, userEmail: user.email, syncManager: syncManager)
+                } else {
+                    OnboardingStubView(userId: user.id, onComplete: { hasSeenOnboarding = true })
+                }
+            }
             .environment(\.colorScheme, .dark)
             .onAppear {
+                hasSeenOnboarding = OnboardingStubView.hasSeenOnboarding(userId: user.id)
                 // Set real userId on SyncManager (replaces placeholder "app-sync")
                 syncManager.updateUserId(user.id)
                 syncManager.syncPendingMoments()

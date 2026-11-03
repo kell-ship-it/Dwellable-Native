@@ -2,10 +2,10 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
-## Next Session Objective (November 2, 2026 close, continued — T-255 trial gate wired in)
+## Next Session Objective (November 2, 2026 close, continued — T-259 onboarding stub built)
 
 **Confirmed Pending Items:**
-1. **Wire the first (onboarding-skippable) paywall.** The second-capture gate and trial-already-used paths are both live now (`MainTabView.attemptCapture()`), but the onboarding-time paywall has nothing to hang off of yet — there's no onboarding SwiftUI flow at all (T-110, Not Started). Either build enough of onboarding to reach it, or find a narrower way to demo it standalone.
+1. **Replace OnboardingStubView with the real T-110 onboarding flow when it's picked up.** The stub (one screen, Get Started → paywall → tab shell) exists only to give `PaywallContext.onboardingSkippable` somewhere real to live — it is not a step toward T-110, it gets deleted outright once T-110's real 7 screens exist. Don't build on top of it.
 2. **Create the 2 real IAP products in App Store Connect** (Monthly `com.kellgolden.Dwell.subscription.monthly` $7.99, Yearly `com.kellgolden.Dwell.subscription.yearly` $59.99, 14-day intro offer on both) — Kell's own action, outside tool access. Swap the placeholder product IDs in `PaymentManager.swift` for the real ones once created. Without this, the gate logic runs but `Product.products(for:)` returns nothing, so `isEligibleForIntroOffer` always takes the optimistic default path — fine for now, but means the gate can't be tested against real StoreKit data yet.
 3. **Build the real Today/Entries/Growth tab content.** `TodayPlaceholderView`/`GrowthPlaceholderView` are structural stand-ins only (T-135-139, T-140-143); Entries still shows the old Phase-1 `MomentsListView`, not the real P5 calendar+list redesign (T-078).
 

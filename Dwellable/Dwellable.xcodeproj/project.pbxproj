@@ -22,6 +22,7 @@
 		B10C /* GrowthPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B /* GrowthPlaceholderView.swift */; };
 		B10E /* AccountProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D /* AccountProfileView.swift */; };
 		B110 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10F /* MainTabView.swift */; };
+		B112 /* OnboardingStubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B111 /* OnboardingStubView.swift */; };
 		0114 /* Moment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0115 /* Moment.swift */; };
 		0116 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0117 /* Theme.swift */; };
 		0118 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0119 /* Config.swift */; };
@@ -75,6 +76,7 @@
 		B10B /* GrowthPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrowthPlaceholderView.swift; sourceTree = "<group>"; };
 		B10D /* AccountProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountProfileView.swift; sourceTree = "<group>"; };
 		B10F /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		B111 /* OnboardingStubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStubView.swift; sourceTree = "<group>"; };
 		0115 /* Moment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Moment.swift; sourceTree = "<group>"; };
 		0117 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		0119 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
@@ -167,6 +169,7 @@
 				B10B /* GrowthPlaceholderView.swift */,
 				B10D /* AccountProfileView.swift */,
 				B10F /* MainTabView.swift */,
+				B111 /* OnboardingStubView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -387,6 +390,7 @@
 				B10C /* GrowthPlaceholderView.swift in Sources */,
 				B10E /* AccountProfileView.swift in Sources */,
 				B110 /* MainTabView.swift in Sources */,
+				B112 /* OnboardingStubView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
