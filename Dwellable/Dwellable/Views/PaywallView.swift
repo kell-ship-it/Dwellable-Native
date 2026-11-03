@@ -146,12 +146,15 @@ struct PaywallView: View {
                         Text(milestones[index].body)
                             .font(.system(size: 11.5))
                             .foregroundColor(Theme.Payment.textSupporting)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             .padding(.leading, 14)
             .padding(.top, 4)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Error Toast (Purchase Failed scenario)

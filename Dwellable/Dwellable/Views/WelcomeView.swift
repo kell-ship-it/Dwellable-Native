@@ -1,64 +1,66 @@
 import SwiftUI
+import UIKit
 
 /// The real Welcome screen (Figma `dwelly-redesign` node `969:525`, "01 — Welcome")
-/// — faithfully rendered: full-bleed hero background art, "dwelly" wordmark, tagline,
-/// and CTA. Named `OnboardingStubView` because it's still a stand-in for the *flow*:
-/// T-110's other 6 screens + OnboardingCoordinator don't exist yet (needs T-109
-/// self-signup, T-111 ProfileManager schema, T-100-105's copy), so tapping Get Started
-/// here jumps straight to the first Payment paywall rather than through Account
-/// Creation → Intro Video → Name → Intent → Notifications first, like the real flow
-/// will. Shown once per user (tracked in UserDefaults), then never again.
-struct OnboardingStubView: View {
-    let userId: String
-    var onComplete: () -> Void
+/// — the actual first screen a logged-out user sees, not something shown after login.
+/// Faithfully rendered: full-bleed hero background art, "dwelly" wordmark, tagline, CTA.
+///
+/// Real flow per the design: Welcome → Account Creation → Intro Video → Paywall →
+/// Name → Intent → Notifications → Preparing Space (T-110, not built — needs T-109
+/// self-signup, T-111 ProfileManager schema, T-100-105's copy). Since Account Creation
+/// doesn't exist yet, "Get Started" here shows the onboarding paywall directly as a
+/// placeholder step, then falls back to the real LoginView — this is a known gap, not
+/// the intended final flow. "Log in" goes straight to the real LoginView, matching the
+/// actual design intent for returning users.
+private enum WelcomeDestination: Identifiable {
+    case paywall
+    case login
+    var id: Self { self }
+}
 
-    @State private var showPaywall = false
+struct WelcomeView: View {
+    @State private var destination: WelcomeDestination?
 
-    // Fractions below are lifted directly from the Figma frame (402×874, node 969:525)
-    // rather than guessed paddings/Spacers — the design places every element at a fixed
-    // y within that frame, so reproducing it as a fraction of the real screen height is
-    // what actually matches on-device, regardless of the phone's exact point dimensions.
+    // Fractions of the Figma frame (402×874, node 969:525), applied against the real
+    // screen's own height.
+    private var screenHeight: CGFloat { UIScreen.main.bounds.height }
     private let wordmarkTopFraction: CGFloat = 620.0 / 874.0
     private let footerTopFraction: CGFloat = 726.0 / 874.0
+    // Measured from the rendered text block (52pt serif wordmark + 8pt gap + 13pt tagline).
+    private let wordmarkBlockHeight: CGFloat = 88
 
     var body: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .top) {
-                Color(red: 0x0b / 255, green: 0x0a / 255, blue: 0x08 / 255).ignoresSafeArea()
+        VStack(spacing: 0) {
+            Spacer().frame(height: screenHeight * wordmarkTopFraction)
 
-                Image("WelcomeHeroBackground")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: geo.size.width, height: geo.size.height)
-                    .clipped()
-                    .ignoresSafeArea()
+            VStack(spacing: 8) {
+                Text("dwelly")
+                    .font(.system(size: 52, design: .serif))
+                    .foregroundColor(Theme.Payment.textHeading)
 
-                VStack(spacing: 8) {
-                    Text("dwelly")
-                        .font(.system(size: 52, design: .serif))
-                        .foregroundColor(Theme.Payment.textHeading)
+                Text("STEWARD EVERY MOMENT WITH GOD")
+                    .font(.system(size: 13, weight: .medium))
+                    .tracking(1.5)
+                    .foregroundColor(Theme.Payment.textSupporting)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
 
-                    Text("STEWARD EVERY MOMENT WITH GOD")
-                        .font(.system(size: 13, weight: .medium))
-                        .tracking(1.5)
-                        .foregroundColor(Theme.Payment.textSupporting)
-                        .multilineTextAlignment(.center)
+            Spacer().frame(height: max(0, screenHeight * (footerTopFraction - wordmarkTopFraction) - wordmarkBlockHeight))
+
+            VStack(spacing: 16) {
+                Button(action: { destination = .paywall }) {
+                    Text("Get Started")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
                 }
-                .frame(maxWidth: .infinity)
-                .offset(y: geo.size.height * wordmarkTopFraction)
+                .background(Theme.gold)
+                .clipShape(Capsule())
+                .padding(.horizontal, 28)
 
-                VStack(spacing: 16) {
-                    Button(action: { showPaywall = true }) {
-                        Text("Get Started")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.black)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 60)
-                    }
-                    .background(Theme.gold)
-                    .clipShape(Capsule())
-                    .padding(.horizontal, 28)
-
+                Button(action: { destination = .login }) {
                     HStack(spacing: 4) {
                         Text("Already have an account?")
                             .foregroundColor(Theme.Payment.textSupporting)
@@ -68,31 +70,29 @@ struct OnboardingStubView: View {
                     }
                     .font(.system(size: 14))
                 }
-                .frame(maxWidth: .infinity)
-                .offset(y: geo.size.height * footerTopFraction)
+            }
+            .frame(maxWidth: .infinity)
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            Image("WelcomeHeroBackground")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .clipped()
+        )
+        .background(Color(red: 0x0b / 255, green: 0x0a / 255, blue: 0x08 / 255))
+        .ignoresSafeArea()
+        .fullScreenCover(item: $destination) { destination in
+            switch destination {
+            case .paywall:
+                PaywallView(context: .onboardingSkippable, onDismiss: {
+                    self.destination = .login
+                })
+            case .login:
+                LoginView()
             }
         }
-        .ignoresSafeArea()
-        .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView(context: .onboardingSkippable, onDismiss: {
-                showPaywall = false
-                OnboardingStubView.markSeen(userId: userId)
-                onComplete()
-            })
-        }
-    }
-
-    // MARK: - Completion Tracking
-
-    private static func key(userId: String) -> String {
-        "hasSeenOnboarding_\(userId)"
-    }
-
-    static func hasSeenOnboarding(userId: String) -> Bool {
-        UserDefaults.standard.bool(forKey: key(userId: userId))
-    }
-
-    static func markSeen(userId: String) {
-        UserDefaults.standard.set(true, forKey: key(userId: userId))
     }
 }

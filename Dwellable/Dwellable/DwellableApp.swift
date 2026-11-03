@@ -254,9 +254,13 @@ struct DwellableApp: App {
         }
     }
 
+    @State private var showAppLoading = true
+
     var body: some Scene {
         WindowGroup {
-            if authManager.isAuthenticated {
+            if showAppLoading {
+                AppLoadingView(onComplete: { showAppLoading = false })
+            } else if authManager.isAuthenticated {
                 // Go straight to app — model download happens on first capture if needed
                 AppView(syncManager: syncManager)
                     .environmentObject(authManager)
@@ -268,7 +272,7 @@ struct DwellableApp: App {
                         }
                     }
             } else {
-                LoginView()
+                WelcomeView()
                     .environmentObject(authManager)
             }
         }
