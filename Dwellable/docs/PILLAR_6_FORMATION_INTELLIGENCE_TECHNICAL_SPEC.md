@@ -12,7 +12,7 @@ Formation Intelligence is shared infrastructure, not a screen — it's the one s
 
 **Two net-new data models defined here for the first time:** `DwellerProfile` (never had a concrete struct before this doc) and `CorrectionRecord` (weighted like a capture, but its own distinct type — never a capture, never a journal).
 
-**8 open items flagged, none silently assumed** — see Section 7. The biggest blockers: the qualifying paid tier for the reconciliation gate isn't defined anywhere yet, and "once a month" needs one precise definition (calendar month vs. rolling 30 days) before the rate limits are buildable.
+**7 open items flagged, none silently assumed** — see Section 7. The remaining blocker: "once a month" needs one precise definition (calendar month vs. rolling 30 days) before the rate limits are buildable. (The paid-tier gate question is now resolved — see below.)
 
 **Status:** Locked (this document), Sept 1, 2026 session
 **Supersedes for technical detail:** `PILLAR_7_FORMATION_INTELLIGENCE_STRATEGY.md`, `P7_FORMATION_INTELLIGENCE_STRATEGY.md`, `FORMATION_INTELLIGENCE_STRATEGY.md` — those docs predate the Dweller Profile Engine model below and should be treated as historical reference only, not current design.
@@ -136,7 +136,7 @@ struct CorrectionRecord: Codable {
 
 - **Define what each Intent option concretely means** — `statedIntent` is currently a single-select value with no documented enum or meaning-per-option. Needed before the engine can contextualize anything against it. (New ticket, Pillar 0.)
 - **Define the exact tier count basis** for "reflection-count tier" (T-161's 0-2/3-5/6+) — does it count moments, journals, or something else? Confirm against T-161's existing definition rather than assume here.
-- **Define the qualifying paid tier** for Row 7's gate — no premium tier structure is locked anywhere yet (T-099 covers a free-tier journal cap only). Blocking for Row 7's implementation.
+- ~~**Define the qualifying paid tier** for Row 7's gate~~ **Resolved (Nov 2, 2026): there is no tier structure.** Pricing is locked single-tier — one subscription ($7.99/mo or $59.99/yr, 14-day trial), no feature-gated tiers. Row 7's third gate condition is simply "user has an active paid subscription" (trial or paid), not a tier lookup.
 
 ---
 
@@ -208,7 +208,7 @@ Each row below states: the triggering event, the technical mechanism recommended
 - **Gate — all three conditions required, evaluated per user before running:**
   1. User is above the reflection-count tier that makes them Narrative-eligible (T-161's tiers).
   2. Their profile has been updated at least once since the last cycle, via a capture (Row 3), a Narrative Confirmation (Row 6), or an Intent change (Row 4) — **journal edits (Row 5) never count toward this condition.**
-  3. User is on a qualifying paid tier (tier definition: see Section 3.4, blocking open item).
+  3. User has an active subscription (trial or paid) — not just the one free pre-subscription capture. No tier lookup; single-tier pricing has only "subscribed" vs. "not subscribed."
 - **If any condition fails, skip this user for this cycle entirely** — no partial run.
 - **Mechanism (for gated-in users only):** reread all journals, all `DetectedTheme` records (confirmed/corrected state included), and Intent/Rhythm history from ground truth. Rebuild `DwellerProfile` fresh. Regenerate the Narrative.
 - **Write:** `DwellerProfile` fully rebuilt; `lastReconciledAt` updated; `narrativeConfirmationUsedThisMonth` and any Intent-change rate limit reset for the new cycle.
@@ -246,7 +246,7 @@ Per-consumer slice specs are not yet written for the Post-MVP rows — each need
 2. Whether `DwellerProfile` should retain prior Intent values (`priorStatedIntent`). Still open.
 3. ~~Whether Intent changes should be rate-limited~~ **Resolved (Oct 26, 2026): yes, once a month** — see Row 4.
 4. Exact definition of "once a month" for Narrative Confirmation's rate-limit reset (Row 6) — still open. (Intent's own once-a-month cooldown, Row 4, doesn't need this precision resolved first — it's a simpler UI-only cooldown.)
-5. Qualifying paid tier definition for Row 7's gate. Still open.
+5. ~~Qualifying paid tier definition for Row 7's gate~~ **Resolved (Nov 2, 2026): no tiers exist — gate condition is just "has an active subscription."**
 6. ~~Whether an edited journal should ever feed the profile~~ **Confirmed (Oct 26, 2026): no, not ever for MVP.** Remains a real Post-MVP question, not a closed door.
 7. Scheduling infrastructure for Row 7 (recommend `pg_cron` or equivalent, not yet confirmed). Still open.
 8. Per-consumer read-slice specs for the 5 Post-MVP consumers in Section 6. Still open.

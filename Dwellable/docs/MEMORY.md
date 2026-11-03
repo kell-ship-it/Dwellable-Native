@@ -2,6 +2,15 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (November 2, 2026 close)
+
+**Confirmed Pending Items:**
+1. **T-254 — Create Apple IAP Products + Wire StoreKit 2 Purchase Flow.** Pricing is locked ($7.99/mo, $59.99/yr, 14-day trial on both). Create the 2 real IAP products in App Store Connect, integrate StoreKit 2 (Transaction, Product.SubscriptionInfo), wire purchase to the real Figma screens (P12, frames 1003:246/1003:281), wire Restore Purchases. First engineering ticket to pick up — everything else in Payment and Formation Intelligence's Row 7 gate depends on real purchase state existing, not a mock.
+2. **T-255 — Implement Trial-Eligibility Gate Logic.** Depends on T-254. Second-capture gate (non-skippable, P12 frame 1003:384) vs. Trial-Already-Used gate (P12 frame 1004:292) — branch on StoreKit's `isEligibleForIntroOffer` per Apple ID. No custom abuse-prevention needed beyond this.
+3. **T-076/T-215/T-253 — Build the SwiftUI TabBar + header chrome and wire it onto all 4 tab-landing screens (Today/Entries/Growth/Profile).** Design is fully locked and already verified onto all 4 real Figma screens (Nov 2 session) — this is the actual SwiftUI build, not more design. T-253 specifically needs the modal-close-button removed from AccountProfileView's SwiftUI implementation so Profile behaves as a tab, not a sheet.
+
+**Rationale:** This is the first session of Phase 1 (Engineering Build-Out) per the new [Launch Roadmap](https://app.notion.com/p/40dcbe07e0c98141b050f7fcd57768bc) — all design/UX work across P0–P12 is locked, 233 tickets are filed and audited for completeness. Payment comes first because it's the dependency root (onboarding, the capture gate, and Formation Intelligence's reconciliation gate all need real subscription state); Navigation comes second because it's the shared skeleton every other pillar's screens sit inside.
+
 ## Next Session Objective (October 26, 2026 close)
 
 **Confirmed Pending Items:**
