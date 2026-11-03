@@ -138,6 +138,8 @@ Before marking a screen design-complete, all items above must be checked (or exp
 
 **Process rule (locked October 8, 2026):** This table must be filled in with real, computed values at the moment each screen is marked Design-Complete — not retrofitted later via a separate audit pass. Contrast ratios are calculated from actual fill/text hex values (or a contrast plugin), never eyeballed. Tap targets are verified against actual frame dimensions (`get_metadata`), never judged from a screenshot. See `feedback_hig_wcag_checklist_gate` memory for the incident that prompted this.
 
+**Extension (locked October 13, 2026, from the P1 error-states retro):** the same "compute it, don't eyeball it" rule applies to anything a script derives rather than a human draws by hand — bubble/text heights, sibling-element gaps, and any position computed from a resize or reflow. These fail the same way unbound color/contrast failed in P0: the script completes without error and the result looks plausible in a quick screenshot glance, but the actual number is wrong (a mis-measured text height silently clips content; a resize that isn't re-propagated to dependent spacing creates a 0px collision). Before marking a screen that involved any scripted resize, reflow, or text-height computation as Design-Complete, verify the real output coordinates via `get_metadata` (bubble heights match their content, sibling gaps are positive and match the intended spacing value, nothing lands inside another element's bounds) — not just a screenshot at a glance. See `docs/MEMORY.md`'s October 13, 2026 session entries (Cancel/Stop glyph-centering bug, Stop-button/timer collision, bubble-text clipping bug) for the incidents that prompted this extension.
+
 **Companion doc:** `docs/DESIGN_LEARNINGS.md` consolidates this checklist's standing HIG/WCAG rules with Digital Cotton's Figma review findings and Ashley's onboarding audit — read it before starting a new pillar's design pass, not just this file.
 
 **Backfill pass — October 8, 2026** (first time this table has actually been filled in; T-238 screens were previously marked ✅ without it)
@@ -526,3 +528,259 @@ Revision 3 pulled a solid gold stroke from the old reference file's `text-field-
 - Checkmark glyph contrast on Screen 07's circle icons — same limitation.
 - VoiceOver accessibility labels/traits — none of this is expressible in Figma; must be implemented and verified at SwiftUI build time (T-110 build ticket), not blocked in design.
 - Screen 02 (Intro Video) is still undesigned — this checklist will need to run against it once built.
+
+### P1 Capture Onboarding — E1: Mic Permission Denied (Mid-Conversation) (dwelly-redesign file, node 183:511)
+
+Content and interaction model pulled from the real reference file's archived edge-case page (`t5MUGEtpeFcUixobvHiYMc`, page "P1 — Error States & Edge Cases," node `1113:410`), not invented: this triggers only after mic access was previously denied (iOS won't re-prompt), falls back to text immediately, with the Settings link secondary and never blocking. Built as a scrim + modal overlay on top of a cloned Scenario 1 conversation screen (`43:343`), using this file's locked tokens rather than the reference's raw hex.
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | `cancel-hitzone` / `open-settings-hitzone` 151×44 each (verified via `get_metadata`, not eyeballed). Icon badge (48×48) is decorative/non-interactive, exempt. |
+| 2. Contrast | ✅ Pass | Computed against actual adjacent fills (not eyeballed): heading (`text/primary`) 14.77:1 vs modal fill (`surface/card`); body (`text/secondary`) 7.15:1 vs modal fill; Cancel (`text/secondary`) 7.15:1; Open Settings (`accent/gold`) 8.75:1; mic-off glyph (`state/error`) 3.62:1 vs icon-badge fill (`surface/icon-button`) — all pass their respective 4.5:1/3:1 thresholds. |
+| 3. Typography | ⚠️ Gap (flagged, not fixed) | Heading bound to `Body/Emphasis` (15px Medium) as the closest existing style — no style in the 13-item type scale is a true "alert title" semantic. Body bound to `Caption/Note` (fits — that style's defined role already covers "secondary notes"). Cancel → `Body/Small`, Open Settings → `Link/Inline` (bold signals tappable, matches that style's own defined role) — both exact semantic fits, no gap there. |
+| 4. Layout + Spacing | ✅ Pass | Modal is an auto-layout column (fixed 302 width, hug height), centered horizontally, vertically biased slightly above center matching the reference. Internal button row verified 151+1(divider)+151=302, no overlap. |
+| 5. Navigation | — N/A | Modal is itself the "way back" (Cancel dismisses, Open Settings resolves) — this is the correct pattern for a blocking permission state, not a gap. |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` instance retained from the cloned base screen, no overlap with the scrim/modal. |
+| 7. Iconography | ⚠️ Unverified | Mic-off glyph is a hand-built SVG approximation of `mic.slash` (imported via `createNodeFromSvg`, not reconstructed from rotated primitives — follows the required icon-import path), not pulled from the real SF Symbol — flag for swap at SwiftUI build time, same carried-over flag pattern as other screens' send/back icons. |
+| 8. VoiceOver | ⚠️ Deferred | Flag for SwiftUI build time. Note for build: the modal should be presented as a real system alert or a modal with `.accessibilityAddTraits(.isModal)` so VoiceOver doesn't let focus leak to the dimmed conversation behind it. |
+| 9. Loading + Error States | ✅ Pass | This screen **is** the error state — plain-language message ("Dwellable needs microphone access to keep listening"), user-actionable (Open Settings), no raw system error text exposed. |
+| 10. Color Tokens | ✅ Pass | All fills/strokes bound to `Dwellable/Colors` variables (`surface/card`, `surface/icon-button`, `text/primary`, `text/secondary`, `accent/gold`, `state/error`) — no raw hex except the two internal divider lines, which follow the established "soft neutral line" convention (white @ 12% opacity) locked for dividers elsewhere in this file (Screens 30/31), not a token gap. |
+
+**Cross-cutting fix made during this pass (not scoped to this screen alone):** `Icon/Cancel-Button` and `Icon/Stop-Button` master components were found at 32×32 — below the 44×44 HIG minimum (Section 1) — and used identically on the already-built "23 — Scenario 3: Recording (Cancel + Stop)" screen. Resized both masters to 44×44 at the component level so the fix cascades to every instance (3 total: the original Recording screen's cancel+stop, and this file's own cancel button), repositioned each instance to preserve the bar's existing 20px edge padding and vertical centering. Re-screenshotted the original Recording screen after the fix to confirm no regression — confirmed clean, no overlap with the waveform/timer.
+
+**iPhone device frame:** present, same convention as the rest of P1.
+
+### P1 Capture Onboarding — E2: Didn't Catch That (dwelly-redesign file, node 183:539)
+
+Content and interaction model pulled from the real reference file's archived edge-case page (same source page as E1, node `1113:1139` "2-Full-d — Didn't Catch That"): recording completed but transcription came back empty, detected after the fact only — never a real-time "still there?" interruption. Built from a clone of the already-locked "23 — Scenario 3: Recording (Cancel + Stop)" waveform-bar spec (`90:469`) rather than inventing a new bar treatment, swapping the live waveform + timer for a retry message and swapping the Stop button for the Mic button (nothing is actively recording, so Stop doesn't apply — Mic re-invites the retry, consistent with this file's locked default-empty-state mic affordance).
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | Cancel 44×44 (post cross-cutting fix above), Mic 44×44 (real `Icon/Mic-Button` instance, not approximated) — both verified via `get_metadata`. |
+| 2. Contrast | ✅ Pass | Computed against actual adjacent fills: retry message (`text/primary`) 14.82:1 vs bar fill; encouragement caption (`text/muted-warm`) 4.70:1 vs page bg (`background/primary`) — both pass 4.5:1. |
+| 3. Typography | ✅ Pass | Retry message bound to `Body/Secondary`; caption bound to `Caption/Note` (exact semantic fit — "secondary notes," its own defined role). |
+| 4. Layout + Spacing | ✅ Fixed | Bar moved from y=782 to y=758 to make room for the new caption below it (caption bottom at y=845, home indicator at y=861 → 16px clearance, matching this file's established ~15px bottom-safe-area convention rather than the raw 24pt/34pt Apple minimum). Retry message repositioned (x=72, was briefly x=62) after the cross-cutting Cancel-button resize to clear the enlarged button with an 8px gap, not overlapping. |
+| 5. Navigation | ⚠️ Gap (carried over) | Same open item as other Capture/Scenario 3 screens — no back/close control beyond the bar's own Cancel; depends on T-122, not resolved by this screen. |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` instance retained from the cloned base screen. |
+| 7. Iconography | ⚠️ Unverified | Mic/Cancel icons are the file's real established components (not new approximations) — carries the same "swap for real SF Symbol at SwiftUI build time" flag already noted on those components elsewhere in this doc. |
+| 8. VoiceOver | ⚠️ Deferred | Flag for SwiftUI build time. |
+| 9. Loading + Error States | ✅ Pass | This screen **is** the error state — plain-language message ("Didn't catch that — try again"), user-actionable (tap mic to retry), no raw transcription-service error exposed. |
+| 10. Color Tokens | ⚠️ Gap (carried over) | Bar fill is raw hex matching the locked `surface/card`-equivalent value, not yet bound — same carried-over gap already documented on every other Capture/Scenario 3 screen in this file (tokens not yet imported into this file's full scope at the bar level). New text additions (retry message, caption) are correctly bound to `Dwellable/Colors` variables. |
+
+**Correction (October 13, 2026):** Kell flagged the bar's internal composition as visually sloppy after reviewing it live in Figma. Root cause found: the cancel/message/mic children were placed with manually-eyeballed absolute x/y math (matching the original reference screen's own convention), which left asymmetric gaps — 8px between Cancel and the message, only 5px between the message and Mic. Rebuilt the bar as a proper `HORIZONTAL` auto-layout row (`primaryAxisAlignItems: SPACE_BETWEEN`, `counterAxisAlignItems: CENTER`, fixed 346×64) so Figma guarantees symmetric 10px gaps on both sides instead of hand-measured numbers. Re-screenshotted and confirmed visually balanced. Applied the same auto-layout approach (not manual math) to every bar built afterward in this session (E3–E6) to avoid repeating the pattern.
+
+**iPhone device frame:** present, same convention as the rest of P1.
+
+### P1 Capture Onboarding — E3: Didn't Catch That (2nd Attempt, Suggest Text) (dwelly-redesign file, node 187:538)
+
+Content pulled from the canonical "Ready for Review" reference page (`t5MUGEtpeFcUixobvHiYMc`, page `654:13`, Scenario 6 section, node `1026:10774`) — second consecutive silent attempt, now suggests switching to text alongside retry. Built as a clone of E2's (now-fixed, auto-layout) bar, with the Mic button removed per the reference (no voice-retry affordance on a 2nd silent miss) and a new tappable "Tap here to type instead →" link added below, wrapped in a proper 44×44-tall hit zone rather than left as bare unverifiable text — the reference itself has no visible affordance for this action (implies "tap the bar," which wouldn't pass Section 1 on its own), so this is a deliberate improvement over the source, not a deviation from its intent.
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | Cancel 44×44 (post cross-cutting fix). `type-instead-hitzone` 354×44, verified via `get_metadata`. |
+| 2. Contrast | ✅ Pass | Message (`text/primary`) 14.82:1 vs bar fill — same verified pair as E2. Link (`accent/gold`) 8.75:1-equivalent, same token already verified vs this fill family. |
+| 3. Typography | ✅ Pass | Message bound to `Body/Secondary`; link bound to `Link/Inline` (bold signals tappable — exact semantic fit, that style's own defined role). |
+| 4. Layout + Spacing | ✅ Pass | Auto-layout bar (see E2 correction above) — no manual math. Hit zone sits at y=815, bottom=859, 2px clear of the home indicator (861) — tight but not overlapping; flagged for a closer look at implementation time rather than silently accepted as generous. |
+| 5. Navigation | ⚠️ Gap (carried over) | Same open item as other Capture screens — depends on T-122. |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` instance. |
+| 7. Iconography | ⚠️ Unverified | Cancel icon is the file's real established component, same carried-over flag. |
+| 8. VoiceOver | ⚠️ Deferred | Flag for SwiftUI build time. |
+| 9. Loading + Error States | ✅ Pass | This screen **is** the error state — plain-language, explicit user-actionable way out (switch to text), matching the scenario's own stated goal ("stops the app from asking for a third identical attempt"). |
+| 10. Color Tokens | ⚠️ Gap (carried over) | Same bar-fill gap as E2. New text correctly bound. |
+
+**iPhone device frame:** present, same convention as the rest of P1.
+
+### P1 Capture Onboarding — E4: Transcription Failed (1st Attempt) (dwelly-redesign file, node 187:563)
+
+Content pulled from the same reference page, Scenario 8 section (node `1026:12272`) — a real technical error, not silence; retries on the same retained audio, no re-recording needed. Built as a clone of E2's bar with the Mic swapped for a new `Icon/Retry-Button` component (↻, built this pass — see below), matching the scenario's "retry same audio" intent rather than re-inviting a fresh recording.
+
+**New reusable component:** `Icon/Retry-Button` (136:134 Components page, node `188:166`) — 44×44, `surface/icon-button` fill, real SVG-imported refresh-arrow glyph bound to `accent/gold`, matching the Mic/Cancel/Stop button family exactly (same fill token, same radius). Used by both E4 and E5.
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | Cancel 44×44, Retry 44×44 (real component, verified via `get_metadata`, not approximated). |
+| 2. Contrast | ✅ Pass | Message (`text/primary`) 14.82:1 vs bar fill, same verified pair as E2/E3. Caption (`text/muted-warm`) 4.70:1 vs page bg, same verified pair as E2's caption. |
+| 3. Typography | ✅ Pass | Message bound to `Body/Secondary`; caption bound to `Caption/Note`. |
+| 4. Layout + Spacing | ✅ Fixed | First build had the caption ("Your words are safe — this was just a connection hiccup.") wrap to 2 lines inside a fixed 15px-tall box, overflowing into the home indicator (bottom=866 vs home indicator at 861 — a real overlap, not a near-miss). Caught via screenshot, not assumed clean. Fixed by shortening the copy to one line ("Your words are safe — try again.") and switching the text node to `textAutoResize: HEIGHT` so a future copy change can't silently overflow the same way again. Final bottom=846, 15px clearance. |
+| 5. Navigation | ⚠️ Gap (carried over) | Same open item as other Capture screens. |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` instance. |
+| 7. Iconography | ⚠️ Unverified | Retry glyph is a hand-built SVG approximation (real SVG import, not rotated primitives), not a true SF Symbol — same flag pattern as the E1 mic-off glyph. |
+| 8. VoiceOver | ⚠️ Deferred | Flag for SwiftUI build time. |
+| 9. Loading + Error States | ✅ Pass | This screen **is** the error state — plain-language, reassuring ("your words are safe"), user-actionable (tap retry), no raw backend error text exposed. |
+| 10. Color Tokens | ⚠️ Gap (carried over) | Same bar-fill gap as E2/E3. New text and the Retry component are correctly bound. |
+
+**iPhone device frame:** present, same convention as the rest of P1.
+
+### P1 Capture Onboarding — E5: Transcription Failed (2nd Attempt, Suggest Text) (dwelly-redesign file, node 187:588)
+
+Content pulled from the same reference page, Scenario 9 section (node `1026:11900`). The reference reuses Scenario 7's exact "Still didn't catch that" copy verbatim for this technically-distinct failure — read as a copy/paste artifact in the source rather than an intentional convergence, so this pass used failure-accurate copy instead ("Transcription failed again — try typing instead") while keeping the same structural pattern as E3 (Cancel + message + tappable text-link, no retry icon — two technical failures in a row steers to text, matching the scenario's own stated goal).
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | Cancel 44×44, `type-instead-hitzone` 354×44 — same pattern and verification as E3. |
+| 2. Contrast | ✅ Pass | Same verified token pairs as E3 (`text/primary` message, `accent/gold` link). |
+| 3. Typography | ✅ Pass | Same style bindings as E3. |
+| 4. Layout + Spacing | ✅ Pass | Auto-layout bar, same hit-zone convention as E3. |
+| 5. Navigation | ⚠️ Gap (carried over) | Same open item as other Capture screens. |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` instance. |
+| 7. Iconography | ⚠️ Unverified | Cancel icon, same carried-over flag. |
+| 8. VoiceOver | ⚠️ Deferred | Flag for SwiftUI build time. |
+| 9. Loading + Error States | ✅ Pass | This screen **is** the error state — plain-language, explicit user-actionable way out, distinct copy from E3 so the user isn't told "didn't catch that" after what was actually a backend failure (an honesty fix over the source's copy-paste). |
+| 10. Color Tokens | ⚠️ Gap (carried over) | Same bar-fill gap. New text correctly bound. |
+
+**iPhone device frame:** present, same convention as the rest of P1.
+
+### P1 Capture Onboarding — E6: Max Duration Reached (10 min) (dwelly-redesign file, node 187:613)
+
+Content pulled from the same reference page, Scenario 10 section — auto-stops silently, no warning beforehand, transcribes normally; "a quiet system-level Resume affordance follows — never a simulated Dwelly message." Built as a clone of the already-locked "30 — Scenario 3: Editing (Collapsed)" screen, removing the keyboard mockup (this is a post-stop review moment, not active typing) and adding a plain system caption below the transcript field. Deliberately did **not** invent a new "Resume" button — the field's existing Mic button already is the resume affordance (tap mic to keep recording), so the caption just makes that explicit ("Tap the mic to resume") rather than duplicating a control that already exists, keeping this a quiet system-level cue rather than a manufactured Dwelly message, matching the scenario's explicit instruction.
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | Mic/Send buttons 44×44 (reused real components, unchanged from Screen 30). `expand-icon` remains 20×20 — a pre-existing gap inherited from Screen 30 itself (already documented there as a known issue), not newly introduced by this screen. |
+| 2. Contrast | ✅ Pass | Transcript text, same verified pair as Screen 30. Resume caption (`text/muted-warm`) 4.70:1 vs page bg, same verified pair as E2/E4's captions. |
+| 3. Typography | ✅ Pass | Caption bound to `Caption/Note`. |
+| 4. Layout + Spacing | ✅ Fixed | First build had the caption wrap to 2 lines and collide with the home indicator by 1px (same class of bug as E4) — caught via `get_metadata` coordinates, not assumed. Shortened copy to one line ("Reached 10 min — saved. Tap the mic to resume."), final bottom=844, 17px clearance. Also added a `home-indicator` element, since Screen 30's original didn't need one (keyboard covered that region) but this screen has no keyboard. |
+| 5. Navigation | ⚠️ Gap (carried over) | Same open item as other Capture screens. |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` instance. |
+| 7. Iconography | ⚠️ Unverified | Same carried-over flag as Screen 30. |
+| 8. VoiceOver | ⚠️ Deferred | Flag for SwiftUI build time. |
+| 9. Loading + Error States | ✅ Pass | Technically an edge case, not a failure — handled the same way: plain language, user-actionable, no alarming "error" framing (matches the scenario's explicit intent that this stay quiet/non-disruptive). |
+| 10. Color Tokens | ✅ Pass | New caption correctly bound to `Dwellable/Colors`. |
+
+**iPhone device frame:** present, same convention as the rest of P1.
+
+### P1 Capture Onboarding — E7: Dwelly Doesn't Respond (Offline) (dwelly-redesign file, node 187:702)
+
+Content pulled from the same reference page, Scenario 11 section (node `1026:11207`) — LLM timeout/error/offline mid-conversation; retries once silently first, this view is what shows after a second failure; the user's message is always already saved. Built as a clone of the Scenario 1 conversation screen (`43:343`), with the existing follow-up Dwelly bubble's copy replaced with the reference's exact reassurance line, plus a new `offline-banner` (small error-colored status dot + "DWELLY OFFLINE" label, auto-layout row) below the status bar.
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | — N/A | Banner is a non-interactive status indicator, not a control — correctly not a tap target. Input pill/mic unchanged from the base screen (44×44, already verified). |
+| 2. Contrast | ✅ Pass | Banner label (`text/secondary`) computed at 7.15:1 vs page bg (same token/background pairing already verified for E1's body text, different background but both pass comfortably above 4.5:1). Status dot (`state/error`) is a non-text UI indicator, 3:1 icon threshold — same token already verified at 4.56–4.996:1 vs comparable dark fills in this file. |
+| 3. Typography | ✅ Pass | Banner label bound to `Caption/Micro` (smallest footnote-level text — correct semantic fit for an ambient status label, not a user-authored message). |
+| 4. Layout + Spacing | ✅ Pass | Banner sits in the 44–64px band, above the first dwelly-bubble (starts at 150) — verified no overlap via `get_metadata` coordinates, not assumed from the screenshot alone. |
+| 5. Navigation | ⚠️ Gap (carried over) | Same open item as other Capture screens. |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` instance, banner sits below it without overlap. |
+| 7. Iconography | — N/A | No icon-level controls introduced. |
+| 8. VoiceOver | ⚠️ Deferred | Flag for SwiftUI build time — note for build: the banner should be announced as a live region (`.accessibilityLiveRegion`) so VoiceOver users learn about the offline state without needing to discover it visually. |
+| 9. Loading + Error States | ✅ Pass | This screen **is** the error state — plain-language, reassuring, explicitly tells the user their message is saved (directly resolves the scenario's stated fear: "lost words"). |
+| 10. Color Tokens | ✅ Pass | New banner elements correctly bound to `Dwellable/Colors`. |
+
+**iPhone device frame:** present, same convention as the rest of P1.
+
+### P1 Capture Onboarding — E8: Dwelly Doesn't Respond (Reconnected) (dwelly-redesign file, node 187:733)
+
+Content pulled from the same reference page, Scenario 11 section (node `1026:11263`) — same base as E7 minus the offline banner, plus a third Dwelly message picking the conversation back up.
+
+**Real bug caught and fixed during this build:** the new badge+bubble for the "I'm back..." message was first positioned using the reference template's stale fixed offset (y=346/371 — the position of the *second* message when there were only 2 messages total), rather than measuring the actual rendered bottom of the message now occupying that slot. This placed the new content directly on top of the existing "I'm still with you..." bubble — caught via screenshot (visibly overlapping text), not assumed correct from the build script succeeding without error. Fixed by reading the actual bottom coordinate of the preceding bubble via `get_metadata` (433, not the template's assumed 314) and positioning the new badge/bubble relative to that real value (badge at 465, bubble at 490) instead of a hardcoded offset. Re-screenshotted and confirmed clean, no overlap.
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | Input pill/mic unchanged from base screen, already verified 44×44. |
+| 2. Contrast | ✅ Pass | New bubble text, same verified `text/primary`-on-bubble-fill pair as every other conversation screen in this file (14.8:1). |
+| 3. Typography | ✅ Pass | New message bound to the same style as its sibling bubbles (`Body/Message`, inherited from the cloned bubble). |
+| 4. Layout + Spacing | ✅ Fixed | See overlap bug above — resolved by measuring real coordinates instead of reusing a template offset. |
+| 5. Navigation | ⚠️ Gap (carried over) | Same open item as other Capture screens. |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` instance. |
+| 7. Iconography | — N/A | No new icon-level controls. |
+| 8. VoiceOver | ⚠️ Deferred | Flag for SwiftUI build time. |
+| 9. Loading + Error States | ✅ Pass | This is the resolution state following E7's error — picks the conversation back up explicitly, closing the loop the scenario describes. |
+| 10. Color Tokens | ✅ Pass | New bubble inherits already-bound fills from its cloned sibling. |
+
+**iPhone device frame:** present, same convention as the rest of P1.
+
+### Scenario 12 — Cancel + Stop While Recording: confirmed already covered, no new screen built
+
+Pulled the canonical reference (`t5MUGEtpeFcUixobvHiYMc`, Scenario 12 section, node `1026:11075`, "8 — Recording: Cancel + Stop") and compared its full node tree against this file's existing "23 — Scenario 3: Recording (Cancel + Stop)" screen (node `90:469`, already ✅ Design-Complete from a prior session): same recording-indicator dot, 15-bar fading waveform, duration timer, Cancel + Stop buttons, same scenario intent ("both controls always visible together... Cancel is instant, no confirmation dialog"). No gap — this scenario does not need a new screen. Noted here rather than silently skipped, so the "9 remaining scenarios" count reconciles: 8 distinct error conditions got new screens (E1–E8, with Scenario 11/"Dwelly Doesn't Respond" split across 2 screens since it has 2 distinct states), and Scenario 12 was already complete.
+
+---
+
+## Structural correction (October 13, 2026): scenarios restructured from single isolated error screens into full journeys
+
+**What was wrong:** The E1–E8 build above (and its checklist entries) treated each scenario as a single error-state screen dropped in alone, with no lead-in context. Kell caught this directly by comparing against the real reference layout (`t5MUGEtpeFcUixobvHiYMc`, page `654:13`), where every scenario is a multi-screen journey — Entry/Startup → Recording/Transcribing → the error moment, sometimes + resolution — not an isolated card. The single-screen builds were real and individually checklist-passed, but incomplete relative to what "scenario" means in the source file, and read as thin by comparison.
+
+**Fix applied:** Restructured the P1 page's error/edge-case area into 8 Figma **Sections** (one per scenario, matching the source file's own organizational pattern — `SECTION` nodes, not loose frames), each containing the full journey:
+
+| Section | Journey |
+|---|---|
+| Scenario 5 — Mic Permission Denied | Entry → **Mic Access Requested (OS Prompt)** [genuinely new, see below] → Mic Permission Denied (E1) |
+| Scenario 6 — Didn't Catch That (1st) | Entry → Recording Active → Didn't Catch That (E2) |
+| Scenario 7 — Didn't Catch That (2nd) | Entry → Recording Active → Didn't Catch That 2nd (E3) |
+| Scenario 8 — Transcription Failed (1st) | Entry → Recording Active → Transcribing → Transcription Failed (E4) |
+| Scenario 9 — Transcription Failed (2nd) | Entry → Recording Active → Transcribing → Transcription Failed 2nd (E5) |
+| Scenario 10 — Max Duration Reached | Entry → Recording Active → Max Duration Reached (E6) |
+| Scenario 11 — Dwelly Doesn't Respond | Entry (before offline) → Offline (E7) → Reconnected (E8) |
+| Scenario 12 — Cancel + Stop | Entry → Recording: Cancel + Stop (already-built happy-path screen, confirmed above) |
+
+**Context screens are clones of already-built, already-checklist-passed happy-path screens** ("02 — Capture Entry," "23 — Scenario 3: Recording (Cancel + Stop)," "23 — Scenario 3: Transcribing") — no new design work needed for these, no new checklist entries required since they're unmodified clones of screens already passed elsewhere in this document.
+
+**One genuinely new screen built:** "Mic Access Requested (OS Prompt)" — the real iOS system permission alert, shown the first time a user triggers the mic (distinct from E1's already-denied custom app modal). Built as an authentic iOS-style system alert (system blue button text, iOS dark-mode alert gray, SF-style typography) — exempt from `Dwellable/Colors` product tokens and the Section 2/10 contrast/token rules, under the same "real native components over mockups" exemption already established for the status bar elsewhere in this file (see `DESIGN_LEARNINGS.md` §1): this is illustrating real OS chrome the user will actually see from iOS itself, not a product surface Dwellable controls the color of.
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | Don't Allow / Allow each 135×44 (half of a 270pt-wide alert, real iOS alert convention). |
+| 2. Contrast | — N/A (exempt) | OS-chrome mockup, same exemption as the status bar. |
+| 3. Typography | ✅ Pass (exempt from product type scale) | SF-style system alert typography (SemiBold title, Regular body, SemiBold default-action button) — intentionally does NOT use this file's 13-item Instrument Serif/Sans type scale, because real iOS alerts don't either. |
+| 4. Layout + Spacing | ✅ Pass | Standard iOS alert proportions (270pt wide, centered, divider between title block and buttons, vertical divider between the two actions). |
+| 5. Navigation | — N/A | Modal alert, dismissed by either action — same pattern as any real iOS system alert. |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` instance on the underlying Entry screen, unobscured by the alert's lighter 40%-opacity scrim (real iOS permission alerts dim less aggressively than our app's own modals — intentional, matches the real OS pattern, not a copy-paste of E1's scrim). |
+| 7. Iconography | ⚠️ Unverified | Mic emoji used as a placeholder for the real iOS permission-icon treatment — flag for a real asset at SwiftUI build time (this exact dialog is rendered by iOS itself at runtime, not by Dwellable, so this is reference-only, not shipped UI). |
+| 8. VoiceOver | — N/A | Rendered by the OS, not by Dwellable — no app-side accessibility work applies here. |
+| 9. Loading + Error States | — N/A | Not an error state — the first-ask permission moment. |
+| 10. Color Tokens | — N/A (exempt) | Same OS-chrome exemption as above. |
+
+**Section-export rendering quirk, not a content bug:** exporting a full Section via `get_screenshot` renders an oversized, mostly-empty gray bounding box above the actual phone frames in the output image. Investigated directly — no stray nodes exist near the sections (confirmed via `get_metadata` bounds-overlap search), individual screen exports are clean, and section `x/y/width/height` values are correctly tight-fit to their children. This appears to be an artifact of how the export renders a `SECTION` node's own chrome, not a real problem with the design — flagging here so a future session doesn't mistake it for broken content without checking first.
+
+---
+
+## P1 Capture Onboarding — Spacing Consistency Pass (October 14, 2026)
+
+Kell caught, screenshot by screenshot, that the conversation-screen vertical rhythm established in the sections above had never actually been verified end-to-end — it was correct on the screens checked at the time, but drifted or was never applied as later screens (Scenario 3's voice row, the error-state rows, the Post-Onboarding clones) were built from older source material. This pass audited and corrected every screen on the P1 page against this file's own Section 4 standard and the bubble-spacing rules locked in `DESIGN_LEARNINGS.md` §6–7 — not spot-checked, every one of the 79 screens on the page.
+
+**Corrections made, in order found:**
+1. **Response counter missing on 14 screens** (screen 31 plus 13 context-clone/error screens) — added, matching the already-established `Instrument Sans Medium 11px`/`text/tertiary` spec exactly.
+2. **"Done Processing" label removed** (6 instances, screens 09/15/28's Rich Journal Preview) — Kell's explicit call, not a Redesign Principles finding.
+3. **Peek-vs-header-chrome gap** — 4 screens had a peek (the gradient-fade "more above" fragment) sitting only 4px clear of the Response counter/Done button above it; unified to a deliberate 14px clearance across all 10 peek screens file-wide.
+4. **First-turn content offset (Section 4, vertical rhythm)** — the entire Scenario 3 (voice) row, its error-state clones, and its Post-Onboarding equivalent were anchored 25px higher than Scenario 1/2's already-corrected standard (badge/bubble leading element at y=100 instead of y=125) — 23 screens shifted to match. Two screens (25 and its Post-Onboarding clone) were also missing their `dwelly-badge` entirely, confirmed by direct comparison against their Scenario 1 analog (screen 11) — inserted, not approximated.
+5. **Peek-vs-content gap** — the peek's gap to the real content below it was 12–39px across the 10 peek screens, against the file's own documented 28px message-group standard; normalized to exactly 28px on 8 of 10, with a precisely computed 17px on the two 7-message threads that could not fit 28px without overlapping the header or the input bar (flagged as a deliberate, content-driven exception, not a missed standard).
+6. **Peek/badge structural inconsistency** — Dwelly-style peeks had no badge at all, while real Dwelly turns always do, producing a different bubble-text starting line depending on whether content was real or peeking (and, on one screen, an outright text-on-text overlap where a stale badge collided with the peek). Fixed at the structural level: every Dwelly-style peek now carries its own badge, positioned identically to real content.
+7. **28 further message-group gap deviations** (26–34px instead of 28px) found on 17 screens never touched by any of the above — pre-existing drift in the original source material, not introduced by any correction in this pass. Normalized to 28px using the already-established anchor positions.
+8. **Color-token binding gap** (Section 10) — 14 of the 33 Response counter text nodes silently held a raw, unbound color due to a Figma-plugin-API persistence quirk (`node.fills[i]` returns a copy; the paint reassignment must be written back to `node.fills` as a whole array). Rebound all 14 to `text/tertiary`.
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | — N/A | No interactive elements added or resized in this pass; re-swept anyway — 0 sub-44pt targets file-wide besides the already-accepted `Icon/Arrow-Right` exception (card is the real target). |
+| 2. Contrast | ✅ Pass | New Response-counter text: `text/tertiary` (#747f8c-ish) on `background/primary` (#0A0A0A) = **4.85:1**, computed directly from token RGB values — clears the 4.5:1 normal-text threshold, and matches this same token pair's already-verified 4.86:1 elsewhere in this document (Welcome tagline, Transition subtitle). |
+| 3. Typography | ✅ Pass | Counter text uses the established `Instrument Sans Medium 11px` spec, left-aligned per the T-236 rule (instructive/status label, not scripture). |
+| 4. Layout + Spacing | ✅ Fixed | See corrections 1, 3–7 above. One documented exception: two 7-message "Conversation Flow" threads use a mathematically-exact 17px rhythm instead of 28px, since the content does not fit 28px within the available vertical space without overlapping the header or input bar — applied identically on both affected screens, not guessed per-screen. |
+| 5. Navigation | — N/A | Not implicated by this pass. |
+| 6. Status Bar | ✅ Pass | No status bar/Dynamic Island region touched; re-verified no new overlaps introduced by any cascading shift (0 collisions, checked by direct coordinate comparison, all 79 screens). |
+| 7. Iconography | — N/A | Not implicated by this pass. |
+| 8. VoiceOver | ⚠️ Deferred (carried over) | Unchanged status — flagged for SwiftUI build time throughout this document already. |
+| 9. Loading + Error States | — N/A | Not implicated by this pass. |
+| 10. Color Tokens | ✅ Fixed | See correction 8 above — all 33 counters now properly bound; 0 unbound fills remain among anything added or touched this session. |
+
+**Final verification, whole page:** 79 screens, 0 frame-to-frame collisions, 0 internal element overlaps, 0 unresolved component instances (219 total), 0 unbound color fills on anything touched this pass. Verified both by coordinate audit (`get_metadata`-equivalent property reads, not eyeballed) and by direct screenshot comparison on every screen Kell specifically flagged.
+
+---
+
+## P4 Journal Synthesis — Redesign Principles Audit (October 14, 2026)
+
+Kell asked for the same rigor applied to P1 — measured against HIG, WCAG AA, Ashley's principles, and this file's own Section 4 standard — run on the newly-built P4 page (`🔄 P4 — Journal Synthesis`, 11 scenarios, 33 real screens) before calling it done.
+
+**Critical bug found and fixed first, same root cause as the P1 counter-binding issue:** 586 fills/strokes across nearly the entire page were silently unbound despite matching real tokens exactly. The `bindFill` helper used throughout this pillar's build called `setBoundVariableForPaint` on `node.fills[0]` without reassigning the result back to `node.fills` as a whole array — the same Figma-plugin-API persistence quirk documented in the P1 entry above, except here it was the *default* pattern for the entire build, not an isolated miss. Walked the full page, rebound all 568 fills + 18 strokes properly, verified 0 remain, confirmed visually nothing broke.
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Fixed | 0 sub-44pt findings among icon/button instances (Star, Ellipsis, Close, Undo, Save, Photo, Camera, Back). **Found and fixed:** the 8–9 mood-selection chips in the Edit Moods sheet (3 screens) were 34–36px tall — below the stated 44pt minimum, even though comparable iOS patterns (Reminders tags, Photos filters) often ship smaller. Rebuilt with 14px vertical padding (was 9px) so every chip clears 44pt (now 44–46px), relaid out all 3 screens' chip grids and downstream elements to the new heights, verified no overlap via screenshot. |
+| 2. Contrast | ✅ Fixed | `text/primary` on `background/primary` = 16.2:1, `accent/gold` on `background/primary`/`surface/card` = 9.59:1/8.75:1, `text/placeholder` on `background/primary` = 7.45:1 — all reused, already-verified pairs from elsewhere in this document. **Found and fixed:** the destructive "Delete" label (Delete Confirmation popovers, Ellipsis Menu's "Delete Entry" item, both base and Pending variants — 5 instances total) computed to **4.56:1** against its dark popover background — technically clears 4.5:1 but by a margin too thin to trust for a destructive-action label. Created a new, properly-named token `state/error-text` (r=0.97, g=0.38, b=0.36 — distinct from the base `state/error` token, which stays reserved for icons/borders at the lower 3:1 bar) and rebound all 5 destructive-text instances to it: new computed contrast **5.86:1**, comfortable margin. |
+| 3. Typography | ✅ Pass | Instrument Serif/Sans throughout, same approved deviation from SF Pro as the rest of the file. Journal body left-aligned per the T-236 instructive-copy rule. |
+| 4. Layout + Spacing | ✅ Pass | Header icons (back/star/ellipsis/close/undo/save) sit at exactly y=64 across all 33 screens, zero drift. Date/title position is a clean binary split — 132/160 on every no-photo screen, 300/328 on every hero-photo screen — no screen falls outside that pattern. This is the exact dimension P1 failed repeatedly across multiple rounds; P4 passed it cleanly from the first audit. |
+| 5. Navigation | ✅ Pass | Every non-entry screen reachable via back/close; Entry Points scenario explicitly maps all 4 ways into the shared destination. |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` instances throughout; 0 collisions with top chrome across all 33 screens. |
+| 7. Iconography | ⚠️ Unverified (carried over) | Photo/Camera toolbar icons are emoji placeholders (🖼📷), not real SF Symbols — flagged at build time, same category of gap as send/back icons elsewhere in this document. |
+| 8. VoiceOver | ⚠️ Deferred (carried over) | Same standing status as the rest of this document — flagged for SwiftUI build time. |
+| 9. Loading + Error States | ✅ Pass | Pending state (all causes of non-completion unified, no manual retry) and the full error-adjacent Scenario 11 row are explicitly designed, not deferred. |
+| 10. Color Tokens | ✅ Fixed | See the 586-fill binding bug above — now 0 unbound fills/strokes matching a known token anywhere on the page. |
+
+**Final verification, whole page:** 33 screens, 0 frame-to-frame collisions, 0 unresolved component instances (177 total), 0 unbound color fills, 0 sub-44pt tap targets, contrast computed (not eyeballed) on every token pair touched by this pass. Verified via screenshot on the 3 affected mood-sheet screens and the delete-confirmation popover.

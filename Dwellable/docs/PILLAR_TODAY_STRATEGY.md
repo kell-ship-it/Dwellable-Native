@@ -1,6 +1,10 @@
 # PILLAR: Today (Daily Reflection Dashboard)
 
-**Pillar:** Today | **Updated:** May 14, 2026 | **Status:** Strategy Locked
+**Pillar:** Today | **Updated:** May 14, 2026 (see Aug 28, 2026 supersession below) | **Status:** Strategy Locked
+
+---
+
+> ⚠️ **SUPERSEDED IN PART — Aug 28, 2026.** Everything below this notice reflects the original May 14, 2026 strategy and is now stale in several ways: it was written before Prayer (P3) was deferred to Post-MVP (locked Aug 3, 2026) and before the menu was restructured to 3 tabs + persistent Capture button (T-076, locked Aug 20, 2026). Do not build against "unprayed moment" or the 4-tab menu described below. **See the "Session Update — Aug 28, 2026" section at the bottom of this file for the current locked design**, or the Notion page "P10 User Scenarios & Acceptance Criteria" (fully rewritten same day) for the authoritative current state. The original content is kept below for historical context on the underlying product principles (Scripture-as-dwelling-companion, invitation-not-obligation), which still hold — only the mechanics changed.
 
 ---
 
@@ -322,3 +326,39 @@
 **Status:** Ready for ticket creation. All design decisions locked.
 
 **Next:** Create implementation tickets (T-XXX–T-XXX) and assign to engineer.
+
+---
+
+## Session Update — Aug 28, 2026 (Current Locked Design)
+
+Full redesign session, confirmed through Claude Artifact iterations and built in Figma. This section is the authoritative current state — everything above is historical.
+
+### Structure
+
+**Hero card:** "A Word for Today" — a verse presented ambiently (Bible-App-inspired: eyebrow, reference, verse text, no competing card chrome), with a "Sit with this" tap pill that launches Capture pre-seeded with the verse woven into one question.
+
+**Two compact tiles below:**
+1. **"Continue your journey"** (gold) — most recent captured moment, echoed back as a direct question about what was actually said. Launches Capture, not a read-only Journal Detail.
+2. **Rotating third slot** (plum) — On This Day / Random Past Entry / Photo Callback, whichever applies. Same rule: ends in Capture.
+
+Every card invites a new capture. Nothing on Today opens something to just read.
+
+### Key decisions
+
+- **No Prayer anywhere** — all hand-offs go to Capture (Prayer is Post-MVP, doesn't exist yet).
+- **No streaks/badges** — loss-aversion mechanics conflict with the Authority Guardrails ("invitational, never disciplinary"). Explicitly researched and rejected.
+- **Intent/Rhythm "evidence" concept → moved to Growth tab**, not Today (T-181). Prototyped this session as a sage "Worth noticing" card, then relocated.
+- **Pending handling:** first-ever capture with nothing else to fall back to → show Pending (P4's flame treatment, first-time copy). Returning user with history → skip Pending, show last completed moment.
+- **Deleted entries:** journals can be soft-deleted, captures never are — always something to draw from.
+- **Timezone:** "today" follows the user's own local device timezone (T-184).
+- **LOCKED SCOPE — zero LLM calls for MVP (T-185).** All Today content is local-data-only (fixed templates + local selection rules: recency, randomness, has-photo — not relevance, which needs an LLM and is deferred to Formation Intelligence as T-186). Contextual verse-matching is Post-MVP. LLM budget reserved for Capture → Dwelly → Journal only.
+- **Capture entry-point pattern:** Dwelly's opening message IS the question, no origin chip or quoted callout on top — one plain conversation regardless of which card was tapped, so Journal synthesis only ever sees one thing downstream.
+
+### Open / not yet designed
+
+- Question templates for On This Day / Random Past Entry / Photo Callback (only the main callback template exists)
+- Initial Question Bank content list + rotation logic (T-182)
+- On-device model feasibility for offline verse generation (T-183, research only)
+- Formation Intelligence's relevance-based (not just recency-based) resurfacing (T-186)
+
+Full rationale and chat context: `docs/MEMORY.md` (Aug 28, 2026 entries), `TICKETS.csv` (T-180–T-186), Notion page "P10 User Scenarios & Acceptance Criteria" (rewritten same day).

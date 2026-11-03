@@ -1,5 +1,29 @@
 # Dwellable Native — Key Learnings
 
+## November 2, 2026 — Buttons Unresponsive Behind Any Full-Bleed Background on a Freshly-Downloaded iOS 27.2 Beta Simulator Runtime
+
+### The Issue
+
+While verifying `WelcomeView`'s layout on a newly-created simulator, every `Button` on the screen (Get Started, Log in) failed to respond to taps — the tap was received (confirmed via a debug `.onTapGesture` counter on the background), but the Button's own `action` closure never fired. No crash, no console error.
+
+### What Was Ruled Out
+
+Extensive bisection (ZStack sibling vs `.background()` modifier, `GeometryReader` vs `UIScreen.main.bounds`, explicit pixel frame vs `.frame(maxWidth: .infinity, maxHeight: .infinity)`, single vs double `.fullScreenCover`, `.allowsHitTesting(false)`, explicit `.zIndex()`) — **every single variant that included any full-bleed background sibling (the real `Image`, or even a plain `Rectangle().fill(.orange)`) broke the button**, while the exact same button with only a plain `.background(Color.black)` (a bare `Color`, no explicit large frame) worked every time, confirmed repeatedly.
+
+### Why This Matters, and Why It Wasn't Chased Further
+
+This simulator was running a runtime downloaded fresh in this same session — `iOS 27.2`, installed via `xcodebuild -downloadPlatform iOS` only because no simulator runtime existed on this machine at all beforehand. That's about as close to "untested beta" as a runtime gets. The pattern (any real content-bearing full-screen sibling breaking sibling button hit-testing, regardless of how it's composed) doesn't match any known, sane SwiftUI behavior — it has the signature of a genuine runtime/renderer bug in that specific OS build, not an app code issue.
+
+**This was not reproduced on, or even tested against, Kell's actual physical iPhone**, which runs a real (non-beta-simulator) iOS version. The investigation stayed confined to the simulator because that's where it was first noticed; it was not escalated further once the pattern pointed at the runtime itself rather than the code.
+
+### What To Do If This Resurfaces
+
+1. **First, test on a real device**, not this (or any freshly-downloaded) simulator runtime. If buttons work fine on-device, this was simulator-only and can be ignored.
+2. If it reproduces on-device too, re-open this investigation — that would mean it's a real code/SDK issue, not a simulator fluke, and the bisection notes above are the starting point (the common factor was always "any sibling view with a full-bleed frame", regardless of composition method).
+3. Don't burn more time chasing it blind in the simulator alone — the physical-device test is cheap and decisive.
+
+---
+
 ## November 2, 2026 — New Swift Files Silently Excluded from the Build (project.pbxproj Isn't Synchronized)
 
 ### The Issue

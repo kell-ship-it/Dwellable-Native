@@ -190,9 +190,10 @@
 - "Not quite" is rate-limited to once a month and, when used, immediately regenerates the Narrative — an exception to the normal monthly cadence.
 
 **Intent editing (Row 4) — lives here, not Account Profile, as of Aug 31 2026 (T-195):**
-- When a user edits Intent from Growth, it overwrites `DwellerProfile.statedIntent` directly — synchronous write, no LLM call. The change must propagate live (not cached) back into this same screen's Narrative display.
+- **Update, Oct 20 2026:** Intent's write to `DwellerProfile.statedIntent` — Intent playing any role in Formation Intelligence / the spiritual profile — is now Post-MVP. For MVP, Intent editing works exactly like Rhythm: self-reported, editable in Growth, zero effect on the Narrative or `DwellerProfile`. The locked mechanism below is preserved for when this is picked back up, not discarded.
+- (Post-MVP) When a user edits Intent from Growth, it overwrites `DwellerProfile.statedIntent` directly — synchronous write, no LLM call. The change must propagate live (not cached) back into this same screen's Narrative display.
 - Open items not yet locked: whether Intent changes should be rate-limited, and whether the prior value should be retained.
-- Rhythm editing (also moved here per T-195) does **not** touch Formation Intelligence at all in MVP — self-reported data only, this pillar's own concern, not part of the `DwellerProfile` model.
+- Rhythm editing (also moved here per T-195) does **not** touch Formation Intelligence at all in MVP — self-reported data only, this pillar's own concern, not part of the `DwellerProfile` model. Intent now matches this for MVP as well.
 
 Full mechanism: see `docs/PILLAR_6_FORMATION_INTELLIGENCE_TECHNICAL_SPEC.md`, Row 4, Row 6, and Row 7.
 

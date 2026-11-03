@@ -1,6 +1,26 @@
 import SwiftUI
 import UIKit
 
+/// Decorative full-bleed background images must go through this UIKit wrapper, not a
+/// plain SwiftUI `Image`. A SwiftUI `Image` used as a full-bleed background/ZStack
+/// sibling reproducibly made Button taps on this screen flaky/unresponsive, confirmed
+/// repeatedly on the simulator; this plain `UIImageView` wrapper did not reproduce it
+/// in the same repeated testing. Root cause not fully understood — treat as the
+/// standard pattern for any future full-bleed background image in this app.
+private struct FullBleedImage: UIViewRepresentable {
+    let imageName: String
+
+    func makeUIView(context: Context) -> UIImageView {
+        let imageView = UIImageView(image: UIImage(named: imageName))
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.isUserInteractionEnabled = false
+        return imageView
+    }
+
+    func updateUIView(_ uiView: UIImageView, context: Context) {}
+}
+
 /// The real Welcome screen (Figma `dwelly-redesign` node `969:525`, "01 — Welcome")
 /// — the actual first screen a logged-out user sees, not something shown after login.
 /// Faithfully rendered: full-bleed hero background art, "dwelly" wordmark, tagline, CTA.
@@ -76,12 +96,7 @@ struct WelcomeView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            Image("WelcomeHeroBackground")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .clipped()
-        )
+        .background(FullBleedImage(imageName: "WelcomeHeroBackground"))
         .background(Color(red: 0x0b / 255, green: 0x0a / 255, blue: 0x08 / 255))
         .ignoresSafeArea()
         .fullScreenCover(item: $destination) { destination in
