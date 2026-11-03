@@ -13,6 +13,17 @@ struct MomentsListView: View {
     @Environment(\.apiClient) private var apiClient
     let userId: String
     @ObservedObject var syncManager: SyncManager
+    /// When set (by MainTabView), capture taps route through the trial-eligibility gate
+    /// (T-255) instead of launching CaptureView directly. Nil in the standalone preview.
+    var onAttemptCapture: (() -> Void)?
+
+    private func startCapture() {
+        if let onAttemptCapture {
+            onAttemptCapture()
+        } else {
+            showCapture = true
+        }
+    }
 
     private func fetchMoments() async {
         isLoading = true
@@ -163,7 +174,7 @@ struct MomentsListView: View {
                                 .frame(maxWidth: 220)
                         }
 
-                        Button(action: { showCapture = true }) {
+                        Button(action: { startCapture() }) {
                             Text("Capture your first moment")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Theme.goldDark)
@@ -241,7 +252,7 @@ struct MomentsListView: View {
 
                     // Bottom "Capture moment" button
                     VStack {
-                        Button(action: { showCapture = true }) {
+                        Button(action: { startCapture() }) {
                             Text("Capture moment")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Theme.goldDark)

@@ -14,27 +14,29 @@ struct MainTabView: View {
     let userEmail: String?
     let syncManager: SyncManager
 
+    @StateObject private var paymentManager = PaymentManager.shared
     @State private var showCapture = false
+    @State private var paywallContext: PaywallContext?
 
     var body: some View {
         TabView {
             NavigationStack {
-                TodayPlaceholderView(onSearch: {}, onCapture: { showCapture = true })
+                TodayPlaceholderView(onSearch: {}, onCapture: attemptCapture)
             }
             .tabItem { Label("Today", systemImage: "sun.max") }
 
             NavigationStack {
-                MomentsListView(userId: userId, syncManager: syncManager)
+                MomentsListView(userId: userId, syncManager: syncManager, onAttemptCapture: attemptCapture)
             }
             .tabItem { Label("Entries", systemImage: "book") }
 
             NavigationStack {
-                GrowthPlaceholderView(onSearch: {}, onCapture: { showCapture = true })
+                GrowthPlaceholderView(onSearch: {}, onCapture: attemptCapture)
             }
             .tabItem { Label("Growth", systemImage: "leaf") }
 
             NavigationStack {
-                AccountProfileView(onSearch: {}, onCapture: { showCapture = true })
+                AccountProfileView(onSearch: {}, onCapture: attemptCapture)
             }
             .tabItem { Label("Profile", systemImage: "person.crop.circle") }
         }
@@ -43,6 +45,38 @@ struct MainTabView: View {
             CaptureView(userId: userId, userEmail: userEmail, syncManager: syncManager, onMomentSaved: {
                 showCapture = false
             })
+        }
+        .fullScreenCover(item: $paywallContext) { context in
+            PaywallView(context: context, onDismiss: {
+                paywallContext = nil
+                if context != .onboardingSkippable {
+                    // A successful purchase on a gate screen should let the capture through.
+                    showCapture = true
+                }
+            })
+        }
+    }
+
+    /// T-255 — the trial-eligibility gate. First capture is always free, no card needed.
+    /// From the 2nd capture attempt on, an active subscription is required: if this
+    /// Apple ID has never used its intro offer, show the real trial-start gate;
+    /// otherwise (trial already consumed on this Apple ID, any device) go straight
+    /// to a non-trial subscribe screen.
+    private func attemptCapture() {
+        guard !paymentManager.hasActiveEntitlement else {
+            showCapture = true
+            return
+        }
+
+        let hasCapturedBefore = !LocalStorageManager.shared.getAllLocalMoments(userId: userId).isEmpty
+        guard hasCapturedBefore else {
+            showCapture = true
+            return
+        }
+
+        Task {
+            let eligible = await paymentManager.isEligibleForIntroOffer(.yearly)
+            paywallContext = eligible ? .secondCaptureGate : .trialAlreadyUsed
         }
     }
 }

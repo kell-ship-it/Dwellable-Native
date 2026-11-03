@@ -3,7 +3,9 @@ import Foundation
 /// Which of the 3 locked P12 Payment scenarios is being shown. Drives copy, skippability,
 /// and whether the trial pitch or an immediate-charge pitch is shown.
 /// See Figma `dwelly-redesign` (jBOzv1vO2C2DSMePqRl4c4), page "P12 — Payment (7 Scenarios)".
-enum PaywallContext {
+enum PaywallContext: Identifiable {
+    var id: Self { self }
+
     /// First paywall, shown right after onboarding's Intro Video. Skippable —
     /// users can decline and still get one free capture with no card on file.
     case onboardingSkippable
