@@ -19,14 +19,19 @@ struct OnboardingStubView: View {
             VStack(spacing: 20) {
                 Spacer()
 
-                VStack(spacing: 8) {
-                    Text("DWELLABLE")
-                        .font(.system(size: 26, weight: .light))
-                        .tracking(5)
+                VStack(spacing: 16) {
+                    Image("DwellyRockIcon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 80, height: 80)
+
+                    Text("dwelly")
+                        .font(.system(size: 52, design: .serif))
                         .foregroundColor(Theme.text)
 
-                    Text("A place to hold what matters.")
-                        .font(.system(size: 13, weight: .regular))
+                    Text("STEWARD EVERY MOMENT WITH GOD")
+                        .font(.system(size: 13, weight: .medium))
+                        .tracking(1.5)
                         .foregroundColor(Theme.tertiaryText)
                         .multilineTextAlignment(.center)
                 }

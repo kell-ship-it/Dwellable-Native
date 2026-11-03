@@ -14,14 +14,19 @@ struct LoginView: View {
                 Spacer()
 
                 VStack(spacing: 20) {
-                    VStack(spacing: 8) {
-                        Text("DWELLABLE")
-                            .font(.system(size: 26, weight: .light))
-                            .tracking(5)
+                    VStack(spacing: 12) {
+                        Image("DwellyRockIcon")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 60, height: 60)
+
+                        Text("dwelly")
+                            .font(.system(size: 32, design: .serif))
                             .foregroundColor(Theme.text)
 
-                        Text("A place to hold what matters.")
-                            .font(.system(size: 13, weight: .regular))
+                        Text("STEWARD EVERY MOMENT WITH GOD")
+                            .font(.system(size: 11, weight: .medium))
+                            .tracking(1.2)
                             .foregroundColor(Theme.tertiaryText)
                             .multilineTextAlignment(.center)
                     }
