@@ -48,6 +48,8 @@
 	<string>Dwelly uses your microphone to capture voice moments. We only record when you tap the mic button.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Dwelly uses speech recognition to transcribe your voice moments into text.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Dwelly uses Face ID to log you in quickly and securely.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

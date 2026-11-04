@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import LocalAuthentication
 
 // MARK: - Login Attempt Tracker
 
@@ -62,6 +63,50 @@ class AuthManager: ObservableObject {
     private let keychain = KeychainManager.shared
     private let loginAttemptTracker = LoginAttemptTracker()
 
+    private let faceIDEmailKey = "faceIDEmail"
+    private let faceIDPasswordKey = "faceIDPassword"
+
+    /// Whether "Log in with Face ID" should be offered on LoginView — the device actually
+    /// supports Face ID/Touch ID AND a credential was saved for it by a prior successful
+    /// sign-in/sign-up on this device. Checking both means we never show the row only to have
+    /// it immediately fail (no saved credential) or simply not work (no biometric hardware).
+    var isFaceIDLoginAvailable: Bool {
+        var error: NSError?
+        let supportsBiometrics = LAContext().canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+        // Email is stored in plain Keychain (not secret, not biometric-gated) purely so this
+        // check can run without prompting for Face ID itself; only the password is behind the
+        // biometric gate, so the real sign-in below still needs one real Face ID check.
+        return supportsBiometrics && keychain.retrieve(forKey: faceIDEmailKey) != nil
+    }
+
+    /// Called after every successful sign-in/sign-up (not just opt-in) so "Log in with Face ID"
+    /// starts working the next time the user lands on LoginView, without a separate settings
+    /// toggle that doesn't exist in the locked design yet. Silently does nothing on a device
+    /// with no biometric hardware enrolled.
+    private func saveFaceIDCredentialIfPossible(email: String, password: String) {
+        var error: NSError?
+        guard LAContext().canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else { return }
+        _ = keychain.save(email, forKey: faceIDEmailKey)
+        _ = keychain.saveBiometricProtected(password, forKey: faceIDPasswordKey)
+    }
+
+    /// Triggers the system Face ID/Touch ID prompt (via Keychain's own biometric gate, see
+    /// `KeychainManager.retrieveBiometricProtected`) and signs in with the credential saved by
+    /// a prior successful sign-in/sign-up on this device. Returns false on cancel, failure, or
+    /// no saved credential — `errorMessage` is left untouched on a plain user cancel so the
+    /// screen doesn't show a scary error for someone who just changed their mind.
+    func signInWithFaceID() async -> Bool {
+        guard let email = keychain.retrieve(forKey: faceIDEmailKey),
+              let password = keychain.retrieveBiometricProtected(
+                forKey: faceIDPasswordKey,
+                prompt: "Log in to Dwelly"
+              ) else {
+            return false
+        }
+        await signIn(email: email, password: password)
+        return isAuthenticated
+    }
+
     init(apiClient: APIClient) {
         self.apiClient = apiClient
 
@@ -102,6 +147,7 @@ class AuthManager: ObservableObject {
                 _ = keychain.save(authToken.token, forKey: "authToken")
                 _ = keychain.save(authToken.userId, forKey: "userId")
                 _ = keychain.save(email, forKey: "userEmail")
+                saveFaceIDCredentialIfPossible(email: email, password: password)
 
                 let user = AuthUser(id: authToken.userId, email: email, token: authToken.token)
 
@@ -185,6 +231,7 @@ class AuthManager: ObservableObject {
             _ = keychain.save(authToken.userId, forKey: "userId")
             _ = keychain.save(email, forKey: "userEmail")
             // Note: refreshToken is also saved by APIClient.setTokens() to keychain
+            saveFaceIDCredentialIfPossible(email: email, password: password)
 
             let user = AuthUser(id: authToken.userId, email: email, token: authToken.token)
 

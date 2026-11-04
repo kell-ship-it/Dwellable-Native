@@ -165,11 +165,18 @@ struct LoginView: View {
             .disabled(authManager.isLoading || email.isEmpty || password.isEmpty)
             .accessibilityIdentifier("Login")
 
-            // Label only — no real Face ID wiring yet (Figma node 974:3771), tracked
-            // separately from this pass; not part of what Kell asked to fix today.
-            Text("Log in with Face ID")
-                .font(.system(size: 14))
-                .foregroundColor(Theme.Payment.textSupporting)
+            // Figma node 974:3771. Only shown once a credential actually exists to use —
+            // see AuthManager.isFaceIDLoginAvailable — so this is never a dead tap.
+            if authManager.isFaceIDLoginAvailable {
+                Button(action: {
+                    Task { await authManager.signInWithFaceID() }
+                }) {
+                    Text("Log in with Face ID")
+                        .font(.system(size: 14))
+                        .foregroundColor(Theme.Payment.textSupporting)
+                }
+                .disabled(authManager.isLoading)
+            }
 
             HStack(spacing: 4) {
                 Text("Don't have an account?")
