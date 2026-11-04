@@ -167,6 +167,10 @@ class MockAPIClient: APIClient {
     func setJWTToken(_ token: String) {
         // Mock implementation - token not used in mock client
     }
+
+    func setTokens(_ jwt: String, refresh: String) {
+        // Mock implementation - tokens not used in mock client
+    }
 }
 
 enum APIError: LocalizedError {

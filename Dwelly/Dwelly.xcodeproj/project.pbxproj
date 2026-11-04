@@ -54,6 +54,8 @@
 		D011 /* AccountCreationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D010 /* AccountCreationView.swift */; };
 		D013 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D012 /* ForgotPasswordView.swift */; };
 		D015 /* NewPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D014 /* NewPasswordView.swift */; };
+		D017 /* EmailConfirmedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D016 /* EmailConfirmedView.swift */; };
+		D019 /* EmailAlreadyExistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D018 /* EmailAlreadyExistsView.swift */; };
 		A001 /* ModelSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000 /* ModelSetupView.swift */; };
 		E001 /* APIClientEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = E002 /* APIClientEnvironment.swift */; };
 /* End PBXBuildFile section */
@@ -121,6 +123,8 @@
 		D010 /* AccountCreationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreationView.swift; sourceTree = "<group>"; };
 		D012 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
 		D014 /* NewPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPasswordView.swift; sourceTree = "<group>"; };
+		D016 /* EmailConfirmedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailConfirmedView.swift; sourceTree = "<group>"; };
+		D018 /* EmailAlreadyExistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailAlreadyExistsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -210,6 +214,8 @@
 				D010 /* AccountCreationView.swift */,
 				D012 /* ForgotPasswordView.swift */,
 				D014 /* NewPasswordView.swift */,
+				D016 /* EmailConfirmedView.swift */,
+				D018 /* EmailAlreadyExistsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -402,6 +408,8 @@
 				D011 /* AccountCreationView.swift in Sources */,
 				D013 /* ForgotPasswordView.swift in Sources */,
 				D015 /* NewPasswordView.swift in Sources */,
+				D017 /* EmailConfirmedView.swift in Sources */,
+				D019 /* EmailAlreadyExistsView.swift in Sources */,
 				0100 /* DwellyApp.swift in Sources */,
 				0102 /* LoginView.swift in Sources */,
 				0104 /* CaptureView.swift in Sources */,

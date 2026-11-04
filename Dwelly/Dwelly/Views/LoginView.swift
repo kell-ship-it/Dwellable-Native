@@ -40,6 +40,7 @@ struct LoginView: View {
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
                         .accessibilityIdentifier("Email")
+                        .accessibilityLabel("Email")
 
                     Spacer().frame(height: 18)
 
@@ -55,10 +56,13 @@ struct LoginView: View {
 
                     Spacer().frame(height: 16)
 
-                    Text("Forgot password?")
-                        .font(.system(size: 14))
-                        .foregroundColor(Theme.gold)
-                        .onTapGesture { showForgotPassword = true }
+                    Button(action: { showForgotPassword = true }) {
+                        Text("Forgot password?")
+                            .font(.system(size: 14))
+                            .foregroundColor(Theme.gold)
+                            .frame(minHeight: 44, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
 
                     Spacer(minLength: 24)
                 }
@@ -76,6 +80,7 @@ struct LoginView: View {
                     .foregroundColor(Theme.Payment.textHeading)
                     .frame(width: 44, height: 44)
             }
+            .accessibilityLabel("Back")
             .padding(.leading, 20)
             .padding(.top, 52)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -123,7 +128,9 @@ struct LoginView: View {
             .font(.system(size: 20))
             .foregroundColor(Theme.Payment.textHeading)
             .tint(Theme.gold)
+            .textContentType(.password)
             .accessibilityIdentifier("Password")
+            .accessibilityLabel("Password")
 
             Button(action: { showPassword.toggle() }) {
                 Image(systemName: showPassword ? "eye.slash" : "eye")
@@ -131,6 +138,7 @@ struct LoginView: View {
                     .foregroundColor(Theme.Payment.textSupporting)
                     .frame(width: 44, height: 44)
             }
+            .accessibilityLabel(showPassword ? "Hide password" : "Show password")
         }
         .padding(.leading, 20)
         .padding(.trailing, 8)
@@ -178,15 +186,18 @@ struct LoginView: View {
                 .disabled(authManager.isLoading)
             }
 
-            HStack(spacing: 4) {
-                Text("Don't have an account?")
-                    .foregroundColor(Theme.Payment.textSupporting)
-                Text("Get Started")
-                    .fontWeight(.semibold)
-                    .foregroundColor(Theme.Payment.textHeading)
+            Button(action: { dismiss() }) {
+                HStack(spacing: 4) {
+                    Text("Don't have an account?")
+                        .foregroundColor(Theme.Payment.textSupporting)
+                    Text("Get Started")
+                        .fontWeight(.semibold)
+                        .foregroundColor(Theme.Payment.textHeading)
+                }
+                .font(.system(size: 14))
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             }
-            .font(.system(size: 14))
-            .onTapGesture { dismiss() }
         }
         .padding(.horizontal, 28)
         .padding(.top, 16)

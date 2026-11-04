@@ -16,6 +16,11 @@ struct PaywallView: View {
         ZStack(alignment: .top) {
             Theme.Payment.background.ignoresSafeArea()
 
+            // Pins the whole layout to the real device width. Without this, the timeline's
+            // milestone body text has no true width to wrap against — a vertical ScrollView
+            // never clips horizontal overflow, so an unconstrained Text balloons the ZStack's
+            // reported width, which in turn shoves every leading/infinity-width sibling
+            // (the close button, the timeline's icon column) off past the left edge.
             ScrollView {
                 VStack(spacing: 0) {
                     heroImage
@@ -44,6 +49,7 @@ struct PaywallView: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 37)
                 }
+                .frame(maxWidth: UIScreen.main.bounds.width)
             }
 
             VStack {

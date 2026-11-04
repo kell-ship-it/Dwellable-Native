@@ -84,7 +84,7 @@ struct DevScreenPicker: View {
         case .forgotPassword:
             ForgotPasswordView()
         case .newPassword:
-            NewPasswordView(onDone: {})
+            NewPasswordView(accessToken: "", refreshToken: "", onDone: {})
         }
     }
 }

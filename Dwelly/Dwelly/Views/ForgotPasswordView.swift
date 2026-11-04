@@ -10,6 +10,14 @@ struct ForgotPasswordView: View {
     @State private var email = ""
     @State private var didSend = false
 
+    /// Same `something@something.something` rule locked for Account Creation (Nov 4,
+    /// 2026) — applied here too so "Send Reset Link" gates the same way "Create Account"
+    /// does, instead of only checking the field isn't empty.
+    private var isEmailValid: Bool {
+        let pattern = #"^[^\s@]+@[^\s@]+\.[^\s@]+$"#
+        return email.range(of: pattern, options: .regularExpression) != nil
+    }
+
     var body: some View {
         ZStack(alignment: .top) {
             Theme.Payment.backgroundPrimary.ignoresSafeArea()
@@ -53,6 +61,7 @@ struct ForgotPasswordView: View {
                         .frame(height: 60)
                         .background(Theme.Payment.surfaceCard)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .accessibilityLabel("Email")
 
                     if let error = authManager.errorMessage {
                         Spacer().frame(height: 10)
@@ -76,6 +85,7 @@ struct ForgotPasswordView: View {
                     .foregroundColor(Theme.Payment.textHeading)
                     .frame(width: 44, height: 44)
             }
+            .accessibilityLabel("Back")
             .padding(.leading, 20)
             .padding(.top, 52)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -113,7 +123,8 @@ struct ForgotPasswordView: View {
                 }
                 .background(Theme.gold)
                 .clipShape(Capsule())
-                .disabled(authManager.isLoading || email.isEmpty)
+                .disabled(authManager.isLoading || !isEmailValid)
+                .opacity(isEmailValid ? 1 : 0.5)
             }
         }
         .padding(.horizontal, 28)

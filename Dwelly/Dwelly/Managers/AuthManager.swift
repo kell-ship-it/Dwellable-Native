@@ -58,6 +58,15 @@ class AuthManager: ObservableObject {
     @Published var currentUser: AuthUser?
     @Published var isLoading = false
     @Published var errorMessage: String?
+    /// Bumped whenever a deep link needs every presented auth screen to collapse back to
+    /// the root before the deep link's own destination can show. Needed because
+    /// Welcome -> Login -> ForgotPassword is a chain of nested `fullScreenCover`s, and
+    /// DwellyApp's own root-level `fullScreenCover(passwordResetPending)` for
+    /// NewPasswordView can't cleanly present itself over an already-active nested one —
+    /// SwiftUI just queues it until the user manually backs out (Kell caught this Nov 4
+    /// 2026: tapping the reset link while "Check your email" was showing landed on
+    /// NewPasswordView only after backing all the way out to Welcome by hand).
+    @Published var authSheetDismissTrigger = UUID()
 
     private let apiClient: APIClient
     private let keychain = KeychainManager.shared
@@ -164,6 +173,10 @@ class AuthManager: ObservableObject {
                 // token to authenticate with yet.
                 DispatchQueue.main.async { self.isLoading = false }
                 return .pendingEmailConfirmation
+
+            case .emailAlreadyExists:
+                DispatchQueue.main.async { self.isLoading = false }
+                return .emailAlreadyExists
             }
         } catch {
             DispatchQueue.main.async {
@@ -172,6 +185,59 @@ class AuthManager: ObservableObject {
             }
             return .failure
         }
+    }
+
+    /// Finishes the sign-up flow after the `dwelly://auth/confirm` deep link hands back a
+    /// real session (GoTrue's fragment carries access_token/refresh_token/type=signup, same
+    /// wire shape as the recovery link) — mirrors the tail of signIn()'s success path, minus
+    /// saveFaceIDCredentialIfPossible since there's no password available here.
+    @discardableResult
+    func completeEmailConfirmation(accessToken: String, refreshToken: String) async -> Bool {
+        guard let claims = Self.decodeJWTPayload(accessToken), let userId = claims["sub"] as? String else {
+            return false
+        }
+        let email = claims["email"] as? String ?? keychain.retrieve(forKey: "userEmail") ?? ""
+
+        apiClient.setTokens(accessToken, refresh: refreshToken)
+
+        // This call is also the real validity check for the token — it's an authenticated
+        // request, so an expired/stale confirmation link gets a 401 here. Previously this
+        // failure was swallowed (just printed) and the user got marked authenticated
+        // anyway — a stale link could claim success locally while no real session existed
+        // server-side. Found auditing Sign In edge cases, Nov 4 2026.
+        do {
+            try await apiClient.ensureUserExists(userId: userId, email: email)
+        } catch {
+            DispatchQueue.main.async {
+                self.errorMessage = "That confirmation link has expired. Please request a new one."
+            }
+            return false
+        }
+
+        _ = keychain.save(accessToken, forKey: "authToken")
+        _ = keychain.save(userId, forKey: "userId")
+        _ = keychain.save(email, forKey: "userEmail")
+
+        let user = AuthUser(id: userId, email: email, token: accessToken)
+        DispatchQueue.main.async {
+            self.currentUser = user
+            self.isAuthenticated = true
+        }
+        return true
+    }
+
+    private static func decodeJWTPayload(_ jwt: String) -> [String: Any]? {
+        let parts = jwt.split(separator: ".")
+        guard parts.count == 3 else { return nil }
+        var base64 = String(parts[1])
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        while base64.count % 4 != 0 { base64 += "=" }
+        guard let data = Data(base64Encoded: base64),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+        return json
     }
 
     /// Used only during the password-reset deep-link flow, where `apiClient` already holds
@@ -185,6 +251,47 @@ class AuthManager: ObservableObject {
         do {
             try await apiClient.updatePassword(newPassword: newPassword)
             DispatchQueue.main.async { self.isLoading = false }
+            return true
+        } catch {
+            DispatchQueue.main.async {
+                self.errorMessage = error.localizedDescription
+                self.isLoading = false
+            }
+            return false
+        }
+    }
+
+    /// Updates the password AND signs the user straight into the app on success, instead
+    /// of making them retype their email/new password on LoginView right after they just
+    /// typed it here — Kell's explicit call (Nov 4, 2026): the recovery link's session is
+    /// a real one (GoTrue issues access_token + refresh_token for `type=recovery` same as
+    /// a normal sign-in), so there's no reason to throw it away and force a fresh login.
+    @discardableResult
+    func completePasswordReset(newPassword: String, accessToken: String, refreshToken: String) async -> Bool {
+        DispatchQueue.main.async {
+            self.isLoading = true
+            self.errorMessage = nil
+        }
+        do {
+            try await apiClient.updatePassword(newPassword: newPassword)
+
+            guard let claims = Self.decodeJWTPayload(accessToken), let userId = claims["sub"] as? String else {
+                DispatchQueue.main.async { self.isLoading = false }
+                return false
+            }
+            let email = claims["email"] as? String ?? keychain.retrieve(forKey: "userEmail") ?? ""
+
+            apiClient.setTokens(accessToken, refresh: refreshToken)
+            _ = keychain.save(accessToken, forKey: "authToken")
+            _ = keychain.save(userId, forKey: "userId")
+            _ = keychain.save(email, forKey: "userEmail")
+
+            let user = AuthUser(id: userId, email: email, token: accessToken)
+            DispatchQueue.main.async {
+                self.currentUser = user
+                self.isAuthenticated = true
+                self.isLoading = false
+            }
             return true
         } catch {
             DispatchQueue.main.async {
@@ -298,10 +405,18 @@ class AuthManager: ObservableObject {
             print("Logout error: \(error.localizedDescription)")
         }
 
-        // Clear keychain and local state
+        // Clear keychain and local state. Was leaving refreshToken and the Face ID
+        // credential (faceIDEmail/faceIDPassword) behind — on a shared device, that meant
+        // "Log in with Face ID" stayed available for the account that just signed out,
+        // since isFaceIDLoginAvailable only checks whether a credential exists, not
+        // whether anyone is currently authenticated. Found auditing Sign In edge cases,
+        // Nov 4 2026.
         keychain.delete(forKey: "authToken")
+        keychain.delete(forKey: "refreshToken")
         keychain.delete(forKey: "userId")
         keychain.delete(forKey: "userEmail")
+        keychain.delete(forKey: faceIDEmailKey)
+        keychain.delete(forKey: faceIDPasswordKey)
 
         DispatchQueue.main.async {
             self.currentUser = nil
@@ -320,5 +435,6 @@ struct AuthUser: Identifiable {
 enum SignUpResult {
     case signedIn
     case pendingEmailConfirmation
+    case emailAlreadyExists
     case failure
 }

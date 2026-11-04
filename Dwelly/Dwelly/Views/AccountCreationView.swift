@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Password rules from docs/PILLAR_AUTHENTICATION_STRATEGY.md §6: 8+ chars, upper + lower
-/// case, a number, a symbol. Shared by Account Creation and the password-reset flow so both
-/// enforce the same rule.
+/// Password rules per T-248 (locked Oct 8, 2026): 8+ chars, at least 1 uppercase letter, at
+/// least 1 number. No symbol requirement — superseded the older
+/// docs/PILLAR_AUTHENTICATION_STRATEGY.md §6 draft, which still described a symbol rule.
+/// Shared by Account Creation and the password-reset flow so both enforce the same rule.
 struct PasswordStrength {
     let password: String
 
@@ -11,10 +12,9 @@ struct PasswordStrength {
         password.contains(where: { $0.isUppercase }) && password.contains(where: { $0.isLowercase })
     }
     var hasNumber: Bool { password.contains(where: { $0.isNumber }) }
-    var hasSymbol: Bool { password.contains(where: { !$0.isLetter && !$0.isNumber }) }
 
-    var isValid: Bool { hasMinLength && hasUpperAndLower && hasNumber && hasSymbol }
-    var satisfiedCount: Int { [hasMinLength, hasUpperAndLower, hasNumber, hasSymbol].filter { $0 }.count }
+    var isValid: Bool { hasMinLength && hasUpperAndLower && hasNumber }
+    var satisfiedCount: Int { [hasMinLength, hasUpperAndLower, hasNumber].filter { $0 }.count }
 }
 
 /// Onboarding "Account Creation" screen (Figma `dwelly-redesign` node `13:115`,
@@ -36,14 +36,29 @@ struct AccountCreationView: View {
     @State private var emailError: String?
     @State private var showTermsPlaceholder = false
     @State private var showCheckEmail = false
+    @State private var showEmailAlreadyExists = false
 
     private var strength: PasswordStrength { PasswordStrength(password: password) }
     private var passwordsMatch: Bool { !confirmPassword.isEmpty && password == confirmPassword }
-    private var isEmailValid: Bool { email.contains("@") && email.contains(".") }
+
+    /// Traditional `something@something.something` shape only — one "@", a domain with at
+    /// least one "." after it, no spaces. Not a real deliverability check (no provider/DNS
+    /// lookup, no confirmation email sent before signup) — per Kell's explicit direction
+    /// (Nov 4, 2026), format is all the Create Account button should gate on.
+    private var isEmailValid: Bool {
+        let pattern = #"^[^\s@]+@[^\s@]+\.[^\s@]+$"#
+        return email.range(of: pattern, options: .regularExpression) != nil
+    }
 
     private var isValid: Bool {
         isEmailValid && strength.isValid && passwordsMatch && agreedToTerms
     }
+
+    // Same proportional-offset technique WelcomeView already uses — a fixed pixel value
+    // (what shipped first, Nov 4 2026) matches the 874pt Figma mockup but drifts on a real
+    // device's actual height, which is exactly what Kell caught comparing screenshots.
+    private var screenHeight: CGFloat { UIScreen.main.bounds.height }
+    private let successIconTopFraction: CGFloat = 330.0 / 874.0
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -76,7 +91,7 @@ struct AccountCreationView: View {
                     Spacer().frame(height: 40)
 
                     fieldLabel("Email")
-                    textField(placeholder: "you@example.com", text: $email, error: emailError)
+                    textField(placeholder: "you@example.com", text: $email, error: emailError, accessibilityLabel: "Email")
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
@@ -92,7 +107,7 @@ struct AccountCreationView: View {
                     Spacer().frame(height: 18)
 
                     fieldLabel("Password")
-                    passwordField($password, show: $showPassword, placeholder: "••••••••")
+                    passwordField($password, show: $showPassword, placeholder: "••••••••", accessibilityLabel: "Password")
 
                     if !password.isEmpty {
                         Spacer().frame(height: 12)
@@ -102,7 +117,7 @@ struct AccountCreationView: View {
                     Spacer().frame(height: 18)
 
                     fieldLabel("Confirm Password")
-                    passwordField($confirmPassword, show: $showPassword, placeholder: "••••••••")
+                    passwordField($confirmPassword, show: $showPassword, placeholder: "••••••••", accessibilityLabel: "Confirm Password")
                     if !confirmPassword.isEmpty && !passwordsMatch {
                         Spacer().frame(height: 10)
                         Text("Passwords don't match.")
@@ -150,6 +165,7 @@ struct AccountCreationView: View {
                     .foregroundColor(Theme.Payment.textHeading)
                     .frame(width: 44, height: 44)
             }
+            .accessibilityLabel("Back")
             .padding(.leading, 20)
             .padding(.top, 52)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -160,6 +176,19 @@ struct AccountCreationView: View {
         }
         .fullScreenCover(isPresented: $showCheckEmail) {
             checkEmailScreen
+        }
+        .fullScreenCover(isPresented: $showEmailAlreadyExists) {
+            EmailAlreadyExistsView(
+                email: email,
+                onLogIn: {
+                    showEmailAlreadyExists = false
+                    onSignIn()
+                },
+                onUseDifferentEmail: {
+                    showEmailAlreadyExists = false
+                    email = ""
+                }
+            )
         }
     }
 
@@ -173,7 +202,7 @@ struct AccountCreationView: View {
             .padding(.bottom, 8)
     }
 
-    private func textField(placeholder: String, text: Binding<String>, error: String?) -> some View {
+    private func textField(placeholder: String, text: Binding<String>, error: String?, accessibilityLabel: String) -> some View {
         TextField("", text: text, prompt: Text(placeholder).foregroundColor(Theme.Payment.textPlaceholder))
             .font(.system(size: 16))
             .foregroundColor(Theme.Payment.textHeading)
@@ -186,9 +215,12 @@ struct AccountCreationView: View {
                 RoundedRectangle(cornerRadius: 14)
                     .stroke(error != nil ? Theme.Payment.errorRed : .clear, lineWidth: 1.5)
             )
+            // A placeholder alone disappears once the user types, leaving VoiceOver with
+            // nothing — this is the field's real, persistent label.
+            .accessibilityLabel(accessibilityLabel)
     }
 
-    private func passwordField(_ text: Binding<String>, show: Binding<Bool>, placeholder: String) -> some View {
+    private func passwordField(_ text: Binding<String>, show: Binding<Bool>, placeholder: String, accessibilityLabel: String) -> some View {
         HStack(spacing: 0) {
             Group {
                 if show.wrappedValue {
@@ -200,6 +232,8 @@ struct AccountCreationView: View {
             .font(.system(size: 20))
             .foregroundColor(Theme.Payment.textHeading)
             .tint(Theme.gold)
+            .textContentType(.newPassword)
+            .accessibilityLabel(accessibilityLabel)
 
             Button(action: { show.wrappedValue.toggle() }) {
                 Image(systemName: show.wrappedValue ? "eye.slash" : "eye")
@@ -207,6 +241,7 @@ struct AccountCreationView: View {
                     .foregroundColor(Theme.Payment.textSupporting)
                     .frame(width: 44, height: 44)
             }
+            .accessibilityLabel(show.wrappedValue ? "Hide password" : "Show password")
         }
         .padding(.leading, 20)
         .padding(.trailing, 8)
@@ -220,7 +255,6 @@ struct AccountCreationView: View {
             checklistRow("8+ characters", strength.hasMinLength)
             checklistRow("Upper & lower case", strength.hasUpperAndLower)
             checklistRow("A number", strength.hasNumber)
-            checklistRow("A symbol", strength.hasSymbol)
         }
     }
 
@@ -242,6 +276,12 @@ struct AccountCreationView: View {
                     .font(.system(size: 18))
                     .foregroundColor(agreedToTerms ? Theme.gold : Theme.Payment.textSupporting)
             }
+            // Not resized to the usual 44×44 hit area — that would shift this HStack's
+            // locked layout (checkbox glyph + inline text). Flagged separately in the
+            // Redesign Principles checklist's Tap Targets section, not fixed here.
+            .accessibilityLabel("Agree to Terms & Privacy Policy")
+            .accessibilityValue(agreedToTerms ? "Checked" : "Not checked")
+            .accessibilityAddTraits(.isButton)
 
             // Text/Privacy Policy aren't hosted anywhere yet (confirmed with Kell,
             // Nov 3 2026) — this opens a clearly-labeled placeholder, not a dead link.
@@ -275,20 +315,60 @@ struct AccountCreationView: View {
     }
 
     /// Real success state (account exists in auth.users) for the "email confirmation
-    /// required" outcome — not an error screen. No Figma design exists for this yet
-    /// (this whole code path didn't exist until the Nov 4 2026 decode-error diagnosis);
-    /// matches the established auth-screen tokens in the meantime.
+    /// required" outcome — not an error screen. Matches the Figma design built Nov 4,
+    /// 2026 (dwelly-redesign node 1086:378, "03a — Account Creation (Check Your Email)").
+    /// Icon/title/subtitle sit in the upper-middle area per Figma's absolute layout, and
+    /// the CTA is pinned to the bottom via the same `.safeAreaInset` footer convention
+    /// every other screen uses — NOT vertically centered as one clustered group. Kell
+    /// caught this Nov 4 2026 on NewPasswordView's matching success screen: the first
+    /// version centered the whole VStack, putting the CTA in the screen's middle instead
+    /// of its usual fixed bottom position (same real bug here, fixed together).
     private var checkEmailScreen: some View {
-        VStack(spacing: 16) {
-            Text("Check your email")
-                .font(.system(size: 28, design: .serif))
-                .foregroundColor(Theme.Payment.textHeading)
-            Text("We sent a confirmation link to \(email). Tap it to finish creating your account, then come back and log in.")
+        ZStack(alignment: .top) {
+            Theme.Payment.backgroundPrimary.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                Spacer().frame(height: screenHeight * successIconTopFraction)
+
+                ZStack {
+                    Circle()
+                        .fill(Theme.gold)
+                        .frame(width: 80, height: 80)
+                    Image(systemName: "envelope.fill")
+                        .font(.system(size: 22))
+                        .foregroundColor(Theme.Payment.backgroundPrimary)
+                }
+                .frame(maxWidth: .infinity)
+
+                Spacer().frame(height: 34)
+
+                Text("Check your email")
+                    .font(.system(size: 28, design: .serif))
+                    .foregroundColor(Theme.Payment.textHeading)
+                    .frame(maxWidth: .infinity)
+
+                Spacer().frame(height: 12)
+
+                // The email's own line, separate from the surrounding sentences —
+                // otherwise a long address wraps unpredictably inline with the prose,
+                // landing on 3 lines for a short email and 4 for a long one (Kell caught
+                // this inconsistency, Nov 4 2026). Isolating it means the two fixed
+                // sentences always wrap the same way regardless of address length.
+                VStack(spacing: 2) {
+                    Text("We sent a confirmation link to")
+                    Text(email)
+                        .foregroundColor(Theme.Payment.textHeading)
+                    Text("Tap it to finish creating your account, then come back and log in.")
+                }
                 .font(.system(size: 15))
                 .foregroundColor(Theme.Payment.textSupporting)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
 
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 28)
+        }
+        .safeAreaInset(edge: .bottom) {
             Button(action: {
                 showCheckEmail = false
                 onSignIn()
@@ -302,10 +382,11 @@ struct AccountCreationView: View {
             .background(Theme.gold)
             .clipShape(Capsule())
             .padding(.horizontal, 28)
-            .padding(.top, 8)
+            .padding(.top, 16)
+            .padding(.bottom, 24)
+            .frame(maxWidth: .infinity)
+            .background(Theme.Payment.backgroundPrimary)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.Payment.backgroundPrimary)
     }
 
     // MARK: - Footer
@@ -370,6 +451,8 @@ struct AccountCreationView: View {
                 // confirmation, confirmed Nov 4 2026). No session means onContinue()
                 // would be wrong here; there's nothing authenticated to continue into.
                 showCheckEmail = true
+            case .emailAlreadyExists:
+                showEmailAlreadyExists = true
             case .failure:
                 break // authManager.errorMessage is already set and rendered below
             }

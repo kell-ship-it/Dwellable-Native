@@ -160,6 +160,13 @@ class SupabaseAPIClient: APIClient {
                 throw APIError.unauthorized
             case 404:
                 throw APIError.notFound
+            case 429:
+                // Was falling into the generic 400...499 branch below as "Invalid
+                // request" — genuinely confusing when it's really Supabase's per-IP rate
+                // limit (e.g. the 30-per-5-min signup/signin or recover limit) kicking in
+                // from repeated rapid attempts, not a malformed request. Caught via
+                // edge_logs Nov 4 2026 while debugging a reset-link report.
+                throw APIError.message("Too many attempts — please wait a few minutes and try again.")
             case 400...499:
                 throw APIError.invalidRequest
             case 500...:
@@ -256,6 +263,10 @@ class SupabaseAPIClient: APIClient {
 
         var urlComponents = URLComponents(string: baseURL)
         urlComponents?.path = "/auth/v1/signup"
+        // Without this, GoTrue redirects the confirmation link to the project's Site URL
+        // (Supabase's default is http://localhost:3000), which is why Safari showed
+        // "couldn't connect to the server" when tapping the email link (Nov 4 2026).
+        urlComponents?.queryItems = [URLQueryItem(name: "redirect_to", value: "dwelly://auth/confirm")]
         guard let url = urlComponents?.url else { throw APIError.invalidRequest }
 
         var request = URLRequest(url: url)
@@ -277,10 +288,24 @@ class SupabaseAPIClient: APIClient {
             // "Password should be at least 8 characters", etc.) — the generic
             // makeRequest() path throws a bare status-code error and loses this, so
             // signUp decodes it directly to surface the message the spec calls for.
-            if let gotrueError = try? JSONDecoder().decode(GoTrueError.self, from: data) {
-                throw APIError.message(gotrueError.msg ?? gotrueError.error_description ?? "Sign up failed.")
+            let gotrueMessage = (try? JSONDecoder().decode(GoTrueError.self, from: data))
+                .flatMap { $0.msg ?? $0.error_description }
+
+            // Explicit duplicate-email detection (reverted from the Nov 4 2026
+            // anti-enumeration masking per Kell's direction the same day — he wants a real
+            // "this email already exists" screen over the generic check-email flow; T-115
+            // tracks the resulting enumeration exposure as an accepted tradeoff, not a bug).
+            let isDuplicateEmail = httpResponse.statusCode == 422
+                && (gotrueMessage?.localizedCaseInsensitiveContains("already registered") == true
+                    || gotrueMessage?.localizedCaseInsensitiveContains("already exists") == true)
+            if isDuplicateEmail {
+                return .emailAlreadyExists
             }
-            throw httpResponse.statusCode == 422 ? APIError.message("That email is already in use.") : APIError.invalidRequest
+
+            if let gotrueMessage {
+                throw APIError.message(gotrueMessage)
+            }
+            throw httpResponse.statusCode == 422 ? APIError.message("Sign up failed.") : APIError.invalidRequest
         }
 
         // Try the "here's your session" shape first (email confirmation off, or this
@@ -297,7 +322,14 @@ class SupabaseAPIClient: APIClient {
             ))
         }
 
-        if (try? decoder.decode(UserResponse.self, from: data)) != nil {
+        if let userResponse = try? decoder.decode(UserResponse.self, from: data) {
+            // Empty `identities` = GoTrue's 200-status duplicate signal (see UserResponse).
+            // The 422 branch above is dead code for this project in practice — logged
+            // Nov 4 2026 showing every signup call returns 200 regardless — but left in
+            // place in case "Confirm email" or GoTrue's behavior ever changes.
+            if let identities = userResponse.identities, identities.isEmpty {
+                return .emailAlreadyExists
+            }
             return .pendingEmailConfirmation(email: email)
         }
 
@@ -349,7 +381,11 @@ class SupabaseAPIClient: APIClient {
         try checkRateLimit()
 
         let payload = PasswordResetPayload(email: email)
-        let endpoint = "/auth/v1/recover"
+        // Without an explicit redirect_to, GoTrue falls back to the project's Site URL —
+        // which is pointed at dwelly://auth/confirm (the signup flow), not .../reset. A
+        // recovery link landing on /confirm fails that handler's `type == "signup"` guard
+        // and goes nowhere, which is why the reset link opened a dead page (Nov 4 2026).
+        let endpoint = "/auth/v1/recover?redirect_to=dwelly://auth/reset"
 
         // GoTrue's /recover always returns an empty 200 body, success or not — it never
         // reveals whether the email exists, so there is nothing to branch on besides a
@@ -600,6 +636,17 @@ struct AuthResponse: Decodable {
 struct UserResponse: Decodable {
     let id: String
     let email: String
+    /// GoTrue's documented anti-enumeration signal: when "Confirm email" is on (this
+    /// project's setting) and the address is already registered, /signup still returns
+    /// 200 with this exact "pending confirmation" shape rather than a 422 — confirmed via
+    /// Supabase's own edge logs Nov 4 2026, every signup call for this project comes back
+    /// 200, duplicate or not. The one real difference: a genuinely new user's `identities`
+    /// has one entry (the email provider); an existing user's is an empty array.
+    let identities: [Identity]?
+}
+
+struct Identity: Decodable {
+    let id: String
 }
 
 struct UsageEventPayload: Decodable {

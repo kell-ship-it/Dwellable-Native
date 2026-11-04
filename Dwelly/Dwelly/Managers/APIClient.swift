@@ -24,6 +24,7 @@ protocol APIClient {
 
     // JWT token management
     func setJWTToken(_ token: String)
+    func setTokens(_ jwt: String, refresh: String)
 }
 
 struct AuthToken: Codable {
@@ -42,6 +43,11 @@ struct AuthToken: Codable {
 enum SignUpOutcome {
     case session(AuthToken)
     case pendingEmailConfirmation(email: String)
+    /// GoTrue's 422 "User already registered" — surfaced explicitly per Kell's direction
+    /// (Nov 4, 2026): a dedicated "this email already exists" screen, not masked behind the
+    /// generic check-email flow. Trades the anti-enumeration protection away deliberately —
+    /// see T-115 for that tradeoff — in favor of clearer UX for a real returning user.
+    case emailAlreadyExists
 }
 
 struct UsageEventData: Codable {

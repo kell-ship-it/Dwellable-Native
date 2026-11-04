@@ -129,11 +129,11 @@ struct SettingsView: View {
                     .padding(.vertical, Theme.Spacing.lg)
                 }
 
-                // Sign out button
+                // Sign out button — the spec (docs/PILLAR_AUTHENTICATION_STRATEGY.md §6
+                // "Sign Out") calls for a confirmation modal, but Kell's explicit call
+                // (Nov 4, 2026) is immediate sign-out with no "are you sure" step.
                 Button(action: {
-                    Task {
-                        await authManager.signOut()
-                    }
+                    Task { await authManager.signOut() }
                 }) {
                     Text("Sign Out")
                         .font(.system(size: 15, weight: .semibold))

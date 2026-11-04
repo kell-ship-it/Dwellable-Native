@@ -106,8 +106,13 @@ struct Theme {
     struct Payment {
         static let background = Color(red: 0x12 / 255, green: 0x10 / 255, blue: 0x0e / 255)   // #12100e
         static let pillBackground = Color(red: 0x26 / 255, green: 0x24 / 255, blue: 0x1f / 255) // #26241f
-        static let textHeading = Color(red: 0xea / 255, green: 0xe6 / 255, blue: 0xda / 255)   // #eae6da
-        static let textSupporting = Color(red: 0x85 / 255, green: 0x7d / 255, blue: 0x69 / 255) // #857d69
+        // Corrected Nov 3, 2026 — was #eae6da, pulled directly from text/heading via Figma MCP
+        // (node 13:115, Account Creation) and confirmed against node 969:525 (Welcome): #f6f2e8.
+        static let textHeading = Color(red: 0xf6 / 255, green: 0xf2 / 255, blue: 0xe8 / 255)   // #f6f2e8 — text/heading
+        static let textSupporting = Color(red: 0x85 / 255, green: 0x7d / 255, blue: 0x69 / 255) // #857d69 — text/supporting
+        static let textPlaceholder = Color(red: 0xa3 / 255, green: 0x9e / 255, blue: 0x98 / 255) // #a39e98 — text/placeholder
+        static let surfaceCard = Color(red: 0x17 / 255, green: 0x16 / 255, blue: 0x13 / 255)    // #171613 — surface/card (input fields)
+        static let backgroundPrimary = Color(red: 0x0b / 255, green: 0x0a / 255, blue: 0x08 / 255) // #0b0a08 — background/primary (also CTA text color)
         static let timelineRail = Color(red: 0x59 / 255, green: 0x52 / 255, blue: 0x42 / 255)  // #595242
         static let errorRed = Color(red: 0xe0 / 255, green: 0x7a / 255, blue: 0x5f / 255)      // state/error (warm coral)
     }

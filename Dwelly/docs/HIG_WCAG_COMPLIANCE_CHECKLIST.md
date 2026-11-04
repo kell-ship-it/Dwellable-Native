@@ -381,6 +381,97 @@ Structurally differentiated from Screen 2 per the locked T-213 requirement (self
 | 9. Loading + Error States | ✅ Pass | 03a (email error) and 03b (loading) sub-states exist |
 | 10. Color Tokens | ✅ Fixed | Was raw hex on placeholders/privacy-note; now all bound, including new `surface/card` token on input fills |
 
+### 03a — Account Creation (Check Your Email) (node 1086:378)
+
+**Built Nov 4, 2026:** No Figma design existed for this state until now — the "pendingEmailConfirmation" outcome (this project requires email confirmation, confirmed Nov 4 2026) was built straight into SwiftUI with placeholder copy, with no design-complete sign-off. Built by cloning the existing "03c — Account Creation (Email Confirmed)" screen's device-frame/status-bar/icon-circle/CTA structure (same Button/CTA component, same `text/heading`/`text/supporting`-bound text) and swapping its checkmark glyph for an envelope icon + its copy for the check-email moment. No back button, matching that screen's precedent — this is a terminal/transitional state, not a decision screen.
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | Button/CTA 346×60; no other interactive controls on this screen |
+| 2. Contrast | ✅ Pass | Reuses the already-verified `text/heading` (on page bg) / `text/supporting` (on page bg) / dark-on-gold Button/CTA token combinations from the Email Confirmed screen — no new raw contrast pairs introduced |
+| 3. Typography | ✅ Pass (approved deviation) | Instrument Serif heading / Instrument Sans subtitle + button, same type-system note as 01 |
+| 4. Layout + Spacing | ✅ Pass | Subtitle at 28px margins (346pt width within 402pt frame); real status bar + home indicator, no safe-area overlap |
+| 5. Navigation | — N/A | Terminal/transitional state (same as Email Confirmed) — no back control by design |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` component instance |
+| 7. Iconography | ⚠️ Unverified | Envelope icon is a hand-built SVG, not a real SF Symbol (`envelope.fill`) — flag for swap at SwiftUI build time, same flag pattern as other screens' send/mic icons |
+| 8. VoiceOver | ⚠️ Deferred | Same as 01 |
+| 9. Loading + Error States | — N/A | This screen IS a static end-state, not a fetch |
+| 10. Color Tokens | ✅ Pass | Reuses the Email Confirmed screen's already-token-bound Button/CTA instance and text styles — no raw hex introduced |
+
+### 03c — Account Creation (Email Confirmed) (node 1066:355, previously "02c — Account Creation (Success)")
+
+Built Nov 3, 2026 as the immediate post-signup success state, before the project's "Confirm email" setting was discovered to be on (confirmed Nov 4, 2026 — see 03a above). Re-purposed, unchanged, as the screen shown when the user taps the confirmation link (`dwelly://auth/confirm`) rather than immediately after signup — its copy ("You're in." / "Your account has been created...") still reads correctly for that trigger. No Figma changes needed; already passes this checklist (see the original Nov 3 sign-off this file never separately recorded — backfilled here for completeness): Tap Targets ✅ (CTA 346×60), Contrast ✅ (same token set as 03a above), Typography ✅ (approved deviation), Layout ✅, Navigation N/A (terminal state), Status Bar ✅, Iconography ⚠️ Unverified (checkmark is a hand-built SVG, not SF Symbol `checkmark.circle.fill`), VoiceOver ⚠️ Deferred, Loading/Error N/A, Color Tokens ✅.
+
+### 03d — Account Creation (Email Already Exists) (node 1090:391)
+
+**Built Nov 4, 2026:** Reverses the same-day anti-enumeration fix (see T-115 and `SupabaseAPIClient.signUp()`) at Kell's explicit direction — a duplicate-email signup now shows a real "this email already exists" screen instead of being masked behind the generic check-email flow. Cloned from 03a's structure (same device-frame/status-bar/icon-circle/CTA), person-icon glyph swapped in, plus a secondary "Use a different email" text link added below the CTA inside `action-footer` (not present on 03a/03c, since those have only one real next action).
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ⚠️ Gap | Button/CTA 346×60 ✅. The new "Use a different email" text link is 17pt tall with no 44×44 hit zone — same carried-over gap already flagged elsewhere in this doc (e.g. P1 Scenario 1's journal footer); needs the hitzone-wrap treatment before SwiftUI build |
+| 2. Contrast | ✅ Pass | Reuses the already-verified `text/heading`/`text/supporting`/dark-on-gold Button/CTA combinations from 03a/03c; new secondary link uses the same accent-gold fill already verified for links elsewhere (e.g. "Sign In" link on 03) |
+| 3. Typography | ✅ Pass (approved deviation) | Instrument Serif heading / Instrument Sans subtitle + button + link, same type-system note as 01 |
+| 4. Layout + Spacing | ✅ Pass | Subtitle at 28px margins; secondary link centered 16px below CTA, within the existing 148pt-tall `action-footer` |
+| 5. Navigation | — N/A | Terminal/decision state — CTA and secondary link are this screen's two exits, not a back-navigable step |
+| 6. Status Bar | ✅ Pass | Real `ios-status-bar` component instance |
+| 7. Iconography | ⚠️ Unverified | Person icon is a hand-built SVG, not a real SF Symbol (`person.crop.circle`) — flag for swap at SwiftUI build time |
+| 8. VoiceOver | ⚠️ Deferred | Same as 01 |
+| 9. Loading + Error States | — N/A | This screen IS the error state for the duplicate-email case |
+| 10. Color Tokens | ✅ Pass | Reuses already-token-bound Button/CTA instance and text styles; new link fill matches the existing accent-gold value, not a new raw hex |
+
+### Returning User Login (node 974:3709)
+
+**Backfilled Nov 4, 2026** — T-256 (Nov 4) verified this screen's visual parity against Figma but never ran this checklist against the actual SwiftUI code; doing that now surfaced real gaps, fixed same day: password field had no `textContentType(.password)` (Keychain's saved-password AutoFill suggestion wasn't wired up, same root-cause bug already fixed on Account Creation's password fields), the back button and eye-toggle had no accessibility labels, and "Forgot password?" / "Don't have an account? Get Started" were bare `Text + onTapGesture` — not real buttons, no VoiceOver trait, no 44×44 hit area. All fixed in `LoginView.swift`.
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Fixed | Back button, eye-toggle, Login/Face ID buttons already 44×44+. "Forgot password?" and "Don't have an account?" were plain tappable text with no real hit area — wrapped in real `Button`s with `.frame(minHeight: 44)` |
+| 2. Contrast | ✅ Pass | Reuses the same token-bound text/CTA colors already verified on Account Creation (shared styling) |
+| 3. Typography | ✅ Pass (approved deviation) | Same type-system note as 01 |
+| 4. Layout + Spacing | ✅ Pass | 28px horizontal padding consistent |
+| 5. Navigation | ✅ Pass | Back button present, 44×44 |
+| 6. Status Bar | ✅ Pass | Real component instance |
+| 7. Iconography | ⚠️ Unverified | Back chevron and eye-toggle are SF Symbols (`chevron.left`, `eye`/`eye.slash`) — real symbols, not image assets, so this is lower-risk than Account Creation's equivalent flag, but glyph-level contrast still not independently verified |
+| 8. VoiceOver | ✅ Fixed | Was: zero accessibility labels on any icon-only control. Fixed: Back, Password field, Show/Hide password toggle, and both tappable text rows now carry explicit `accessibilityLabel`s |
+| 9. Loading + Error States | ✅ Pass | Loading spinner on Login button; inline error text for wrong credentials (`authManager.errorMessage`) |
+| 10. Color Tokens | ✅ Pass | Reuses already-bound tokens, no raw hex introduced |
+
+### Forgot Password (node 1062:247, now on the dedicated 🔑 Sign In (Pillar) Figma page)
+
+**Backfilled Nov 4, 2026.** No Figma design existed for this screen until T-263 built it from the spec (`docs/PILLAR_AUTHENTICATION_STRATEGY.md` §6); running this checklist against it now surfaced real gaps, fixed same day: the "Send Reset Link" button only checked the email field wasn't empty — no format validation at all, inconsistent with the `something@something.something` rule locked for Account Creation the same day — and the back button / email field had no accessibility labels. All fixed in `ForgotPasswordView.swift`. Already correct before this pass: the success copy ("If an account exists for X, we've sent a link...") is the anti-enumeration pattern done right — deliberately kept generic regardless of whether the email has an account, unlike Account Creation's duplicate-email case which Kell explicitly chose to make explicit instead. Moved (reparented, same node IDs) from the Account Creation Figma page to the new dedicated 🔑 Sign In (Pillar) page Nov 4, 2026 — Login, Forgot Password, and the net-new Create New Password / Password Reset screens below are now a real, self-contained Figma pillar (T-265).
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | Back button 44×44, Send/Back-to-Log-In CTA 346×60 |
+| 2. Contrast | ✅ Pass | Reuses the same token-bound text/CTA colors already verified elsewhere |
+| 3. Typography | ✅ Pass (approved deviation) | Same type-system note as 01 |
+| 4. Layout + Spacing | ✅ Pass | 28px horizontal padding consistent |
+| 5. Navigation | ✅ Pass | Back button present, 44×44 |
+| 6. Status Bar | — N/A | This screen has no status-bar component built into its SwiftUI layout (relies on the real device status bar, same as every screen) |
+| 7. Iconography | ✅ Pass | Back chevron is a real SF Symbol (`chevron.left`) |
+| 8. VoiceOver | ✅ Fixed | Was: zero accessibility labels. Fixed: Back and Email now carry explicit `accessibilityLabel`s |
+| 9. Loading + Error States | ✅ Pass | Loading spinner on Send button; inline error text; success state swaps copy + CTA in place |
+| 10. Color Tokens | ✅ Pass | Reuses already-bound tokens |
+
+### New Password Entry — Create New Password (node 1101:256) + Password Reset Success (node 1101:300), 🔑 Sign In (Pillar) Figma page
+
+**Backfilled Nov 4, 2026.** Built by T-263 from `docs/PILLAR_AUTHENTICATION_STRATEGY.md` §6 ("New Password Entry"), with no Figma frame at all until this pass — not even a placeholder. Running this checklist surfaced one real code gap: the password/confirm-password fields and the eye-toggle button had no accessibility labels (only a visible field-label `Text` above each, not linked to the actual input for VoiceOver). Fixed in `NewPasswordView.swift`. Password rule already correctly matched T-248 in code (8+ chars, upper+lower, number — no symbol) via the shared `PasswordStrength` type — but building the matching Figma design surfaced that the **Figma source** strength-checklist component still showed a 4th "A symbol" row, stale since before T-248 locked the 3-requirement rule. Fixed at the source (all 4 instances across the file, including Account Creation's own keyboard-state frames, which had the same stale row).
+
+Design built by cloning Forgot Password's bezel/status-bar/title structure (back button and email field removed, two password fields + the corrected strength-checklist added) for the resting state, and cloning Account Creation's existing success screen (icon circle + title + subtitle + CTA, copy swapped to "Password reset" / "Your password has been changed. You're signed in.") for the success state — same componentized pattern as 03a/03c/03d on the Account Creation page.
+
+| Section | Pass / Fail / N/A | Notes |
+|---------|--------------------------|-------|
+| 1. Tap Targets | ✅ Pass | Eye-toggle 44×44, Reset/Back-to-Log-In CTA 346×60, "Cancel" is a real `Button` |
+| 2. Contrast | ✅ Pass | Reuses already-verified token combinations |
+| 3. Typography | ✅ Pass (approved deviation) | Same type-system note as 01 |
+| 4. Layout + Spacing | ✅ Pass | 28px horizontal padding consistent |
+| 5. Navigation | — N/A | No back button by design — "Cancel" is this screen's exit, since it's reached via deep link, not forward navigation |
+| 6. Status Bar | — N/A | Same as Forgot Password — relies on the real device status bar |
+| 7. Iconography | ✅ Pass | Eye-toggle is a real SF Symbol (`eye`/`eye.slash`) |
+| 8. VoiceOver | ✅ Fixed | Was: password fields and eye-toggle had no accessibility labels. Fixed: New Password, Confirm Password, and Show/Hide password toggle now all carry explicit labels |
+| 9. Loading + Error States | ✅ Pass | Loading spinner on submit; inline "Passwords don't match." and server-error text; success state swaps copy + CTA in place |
+| 10. Color Tokens | ✅ Pass | Reuses already-bound tokens |
+
 ### 04 — Name Entry (node 2203:92)
 
 | Section | Pass / Fail / N/A | Notes |

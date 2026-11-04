@@ -25,20 +25,24 @@ private struct FullBleedImage: UIViewRepresentable {
 /// — the actual first screen a logged-out user sees, not something shown after login.
 /// Faithfully rendered: full-bleed hero background art, "dwelly" wordmark, tagline, CTA.
 ///
-/// Real flow per the design: Welcome → Account Creation → Intro Video → Paywall →
-/// Name → Intent → Notifications → Preparing Space (T-110, not built — needs T-109
-/// self-signup, T-111 ProfileManager schema, T-100-105's copy). Since Account Creation
-/// doesn't exist yet, "Get Started" here shows the onboarding paywall directly as a
-/// placeholder step, then falls back to the real LoginView — this is a known gap, not
-/// the intended final flow. "Log in" goes straight to the real LoginView, matching the
-/// actual design intent for returning users.
+/// Real flow per the design: Welcome → Account Creation → Name → Intent → Notifications →
+/// Preparing Space (T-110, not built — needs T-109 self-signup, T-111 ProfileManager
+/// schema, T-100-105's copy). Per Kell's explicit direction (Nov 3, 2026), "Get Started"
+/// goes straight to Account Creation — NOT through the Intro Video, which the Figma flow
+/// otherwise places at Screen 3. Account Creation falls through to the onboarding paywall
+/// as a placeholder for the still-unbuilt Name/Intent/Notifications/Preparing-Space steps,
+/// then to LoginView — a known gap, not the intended final flow. "Log in" goes straight to
+/// the real LoginView. The Intro Video itself is still built and reachable via the dev
+/// screen picker; it's just not wired into this button anymore.
 private enum WelcomeDestination: Identifiable {
+    case accountCreation
     case paywall
     case login
     var id: Self { self }
 }
 
 struct WelcomeView: View {
+    @EnvironmentObject var authManager: AuthManager
     @State private var destination: WelcomeDestination?
 
     // Fractions of the Figma frame (402×874, node 969:525), applied against the real
@@ -69,10 +73,10 @@ struct WelcomeView: View {
             Spacer().frame(height: max(0, screenHeight * (footerTopFraction - wordmarkTopFraction) - wordmarkBlockHeight))
 
             VStack(spacing: 16) {
-                Button(action: { destination = .paywall }) {
+                Button(action: { destination = .accountCreation }) {
                     Text("Get Started")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.black)
+                        .foregroundColor(Theme.Payment.backgroundPrimary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
                 }
@@ -101,13 +105,33 @@ struct WelcomeView: View {
         .ignoresSafeArea()
         .fullScreenCover(item: $destination) { destination in
             switch destination {
+            case .accountCreation:
+                AccountCreationView(
+                    onContinue: { self.destination = .paywall },
+                    onSignIn: { self.destination = .login }
+                )
+                #if DEBUG
+                .devPickerOverlay()
+                #endif
             case .paywall:
                 PaywallView(context: .onboardingSkippable, onDismiss: {
                     self.destination = .login
                 })
+                #if DEBUG
+                .devPickerOverlay()
+                #endif
             case .login:
                 LoginView()
+                    #if DEBUG
+                    .devPickerOverlay()
+                    #endif
             }
+        }
+        // Collapses the whole Welcome -> Login -> ForgotPassword (or -> AccountCreation
+        // -> CheckEmail) nested-cover chain in one shot when a deep link needs to present
+        // its own destination from the root — see AuthManager.authSheetDismissTrigger.
+        .onChange(of: authManager.authSheetDismissTrigger) { _ in
+            destination = nil
         }
     }
 }

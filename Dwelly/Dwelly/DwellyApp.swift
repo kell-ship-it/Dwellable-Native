@@ -256,6 +256,10 @@ struct DwellyApp: App {
 
     @State private var showAppLoading = true
     @State private var passwordResetPending = false
+    @State private var recoveryAccessToken = ""
+    @State private var recoveryRefreshToken = ""
+    @State private var showEmailConfirmed = false
+    @State private var showConfirmFailedAlert = false
     #if DEBUG
     @ObservedObject private var devNavigator = DevNavigator.shared
     #endif
@@ -267,7 +271,7 @@ struct DwellyApp: App {
     /// unlike the simplified `?token=` shown in docs/PILLAR_AUTHENTICATION_STRATEGY.md
     /// §6, which describes the concept, not GoTrue's actual wire format.
     private func handleIncomingURL(_ url: URL) {
-        guard url.scheme == "dwelly", url.host == "auth", url.path == "/reset" else { return }
+        guard url.scheme == "dwelly", url.host == "auth" else { return }
 
         let fragment = url.fragment ?? ""
         let params = fragment
@@ -278,13 +282,52 @@ struct DwellyApp: App {
                 dict[String(parts[0])] = String(parts[1]).removingPercentEncoding
             }
 
-        guard let accessToken = params["access_token"], params["type"] == "recovery" else {
-            hlogDeepLink("Ignoring dwelly://auth/reset — missing access_token or wrong type", "WARNING")
-            return
-        }
+        switch url.path {
+        case "/reset":
+            guard let accessToken = params["access_token"], let refreshToken = params["refresh_token"],
+                  params["type"] == "recovery" else {
+                hlogDeepLink("Ignoring dwelly://auth/reset — missing tokens or wrong type", "WARNING")
+                return
+            }
+            apiClient.setTokens(accessToken, refresh: refreshToken)
+            recoveryAccessToken = accessToken
+            recoveryRefreshToken = refreshToken
+            authManager.authSheetDismissTrigger = UUID()
+            // Setting both in the same instant races the nested covers' dismiss
+            // animation against the new one's presentation — Kell caught this Nov 4
+            // 2026 on video: it visibly flashed through Login, then bare Welcome,
+            // before landing on NewPasswordView, instead of cutting straight there.
+            // A beat for the dismiss to actually finish first fixes the race (still
+            // ends up on NewPasswordView either way, just without the flicker).
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                passwordResetPending = true
+            }
 
-        apiClient.setJWTToken(accessToken)
-        passwordResetPending = true
+        case "/confirm":
+            guard let accessToken = params["access_token"], let refreshToken = params["refresh_token"],
+                  params["type"] == "signup" else {
+                hlogDeepLink("Ignoring dwelly://auth/confirm — missing tokens or wrong type", "WARNING")
+                return
+            }
+            Task {
+                let success = await authManager.completeEmailConfirmation(accessToken: accessToken, refreshToken: refreshToken)
+                if !success {
+                    // Previously this failed silently — the user just stayed on whatever
+                    // screen they were on with zero explanation. Found auditing Sign In
+                    // edge cases, Nov 4 2026.
+                    showConfirmFailedAlert = true
+                }
+                if success {
+                    authManager.authSheetDismissTrigger = UUID()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        showEmailConfirmed = true
+                    }
+                }
+            }
+
+        default:
+            break
+        }
     }
 
     private func hlogDeepLink(_ msg: String, _ level: String) {
@@ -335,8 +378,20 @@ struct DwellyApp: App {
             }
             .onOpenURL { handleIncomingURL($0) }
             .fullScreenCover(isPresented: $passwordResetPending) {
-                NewPasswordView(onDone: { passwordResetPending = false })
+                NewPasswordView(
+                    accessToken: recoveryAccessToken,
+                    refreshToken: recoveryRefreshToken,
+                    onDone: { passwordResetPending = false }
+                )
                     .environmentObject(authManager)
+            }
+            .fullScreenCover(isPresented: $showEmailConfirmed) {
+                EmailConfirmedView(onContinue: { showEmailConfirmed = false })
+            }
+            .alert("Link Expired", isPresented: $showConfirmFailedAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(authManager.errorMessage ?? "That confirmation link has expired. Please request a new one.")
             }
         }
     }

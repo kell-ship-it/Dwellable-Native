@@ -2,6 +2,15 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (November 4, 2026 close, continued — Sign In pillar built, Account Creation hardened — onboarding is next)
+
+**Confirmed Pending Items:**
+1. **T-110: Build the 7 real onboarding SwiftUI views + `OnboardingCoordinator`.** This is Kell's explicit ask for next session. Real order per the locked T-238 architecture: Welcome → Account Creation → Intro Video → Paywall → Name Entry → Intent Selection → Notification Permission → Preparing Space. Account Creation and Sign In (both now fully hardened, real bugs fixed, real Figma designs — see this session's entry above) are done; what's missing is everything from Name Entry onward. Currently falls through to the onboarding paywall as a placeholder after Account Creation — replace that shortcut outright, don't build on top of it.
+2. **T-111: Build `ProfileManager` + the onboarding data schema migration.** Name Entry and Intent Selection need somewhere real to persist to — this is the dependency T-110's views will need as soon as they're wired to save anything, not a separate later task.
+3. **T-112: Build the real Navigation Gate (`AppView.swift`) — three nested checks, not a flat branch.** `Authenticated? → Already have an account? (sign-in recovery) → Onboarding complete? (includes mandatory first capture) → resume or unlock`. Currently the app's post-auth routing is still the T-262 placeholder shortcut; this is what actually makes T-110's screens reachable in the real flow instead of only via the dev picker.
+
+**Rationale:** Account Creation and Sign In are both genuinely done now — not just visually, but validated, accessible, and bug-checked end to end on a real device. The next real gap in the product is everything after Account Creation: there's no Name/Intent/Notifications flow, no real data model for what it collects, and no real post-auth routing gate deciding where a user lands. These three tickets are exactly that gap, in build order (views need the data model to save to; the gate needs the views to route to).
+
 ## Next Session Objective (November 4, 2026 close, continued — T-256 closed: Figma parity + real Face ID login)
 
 **Confirmed Pending Items:**
