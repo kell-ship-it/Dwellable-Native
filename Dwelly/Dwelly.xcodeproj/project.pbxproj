@@ -47,6 +47,13 @@
 		12c0 /* UsageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12c1 /* UsageTracker.swift */; };
 		2317A7B72F734EEE00B7F8F0 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA000002 /* WhisperKit */; };
 		23A6B1202F60D59E006F12BD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23A6B11F2F60D59E006F12BD /* Assets.xcassets */; };
+		D001 /* AppLoadingAnimation.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D000 /* AppLoadingAnimation.mp4 */; };
+		D003 /* IntroExplainer.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D002 /* IntroExplainer.mp4 */; };
+		D007 /* IntroVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D006 /* IntroVideoView.swift */; };
+		D009 /* DevScreenPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D008 /* DevScreenPicker.swift */; };
+		D011 /* AccountCreationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D010 /* AccountCreationView.swift */; };
+		D013 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D012 /* ForgotPasswordView.swift */; };
+		D015 /* NewPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D014 /* NewPasswordView.swift */; };
 		A001 /* ModelSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000 /* ModelSetupView.swift */; };
 		E001 /* APIClientEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = E002 /* APIClientEnvironment.swift */; };
 /* End PBXBuildFile section */
@@ -107,6 +114,13 @@
 		23FB529B2F5F7935001E0468 /* Dwelly.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Dwelly.xctestplan; sourceTree = "<group>"; };
 		A000 /* ModelSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSetupView.swift; sourceTree = "<group>"; };
 		E002 /* APIClientEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClientEnvironment.swift; sourceTree = "<group>"; };
+		D000 /* AppLoadingAnimation.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = AppLoadingAnimation.mp4; sourceTree = "<group>"; };
+		D002 /* IntroExplainer.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = IntroExplainer.mp4; sourceTree = "<group>"; };
+		D006 /* IntroVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroVideoView.swift; sourceTree = "<group>"; };
+		D008 /* DevScreenPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevScreenPicker.swift; sourceTree = "<group>"; };
+		D010 /* AccountCreationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreationView.swift; sourceTree = "<group>"; };
+		D012 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
+		D014 /* NewPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPasswordView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -144,11 +158,29 @@
 				0152 /* Models */,
 				0153 /* Utilities */,
 				E003 /* Environment */,
+				D004 /* Resources */,
 				0119 /* Config.swift */,
 				0121 /* Info.plist */,
 				23A6B11F2F60D59E006F12BD /* Assets.xcassets */,
 			);
 			path = Dwelly;
+			sourceTree = "<group>";
+		};
+		D004 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				D005 /* Videos */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		D005 /* Videos */ = {
+			isa = PBXGroup;
+			children = (
+				D000 /* AppLoadingAnimation.mp4 */,
+				D002 /* IntroExplainer.mp4 */,
+			);
+			path = Videos;
 			sourceTree = "<group>";
 		};
 		0150 /* Views */ = {
@@ -173,6 +205,11 @@
 				B10F /* MainTabView.swift */,
 				B111 /* WelcomeView.swift */,
 				B113 /* AppLoadingView.swift */,
+				D006 /* IntroVideoView.swift */,
+				D008 /* DevScreenPicker.swift */,
+				D010 /* AccountCreationView.swift */,
+				D012 /* ForgotPasswordView.swift */,
+				D014 /* NewPasswordView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -341,6 +378,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				23A6B1202F60D59E006F12BD /* Assets.xcassets in Resources */,
+				D001 /* AppLoadingAnimation.mp4 in Resources */,
+				D003 /* IntroExplainer.mp4 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -358,6 +397,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D007 /* IntroVideoView.swift in Sources */,
+				D009 /* DevScreenPicker.swift in Sources */,
+				D011 /* AccountCreationView.swift in Sources */,
+				D013 /* ForgotPasswordView.swift in Sources */,
+				D015 /* NewPasswordView.swift in Sources */,
 				0100 /* DwellyApp.swift in Sources */,
 				0102 /* LoginView.swift in Sources */,
 				0104 /* CaptureView.swift in Sources */,
@@ -430,6 +474,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.kellgolden.Dwell;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = 1;
 			};

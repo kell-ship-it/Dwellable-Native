@@ -54,5 +54,16 @@
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.kellgolden.Dwell.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>dwelly</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

@@ -251,6 +251,70 @@ class SupabaseAPIClient: APIClient {
 
     // MARK: - Auth API
 
+    func signUp(email: String, password: String) async throws -> SignUpOutcome {
+        try checkRateLimit()
+
+        var urlComponents = URLComponents(string: baseURL)
+        urlComponents?.path = "/auth/v1/signup"
+        guard let url = urlComponents?.url else { throw APIError.invalidRequest }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(LoginPayload(email: email, password: password))
+
+        hlog("API POST → /auth/v1/signup")
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else { throw APIError.networkError }
+
+        let responseSnippet = String(data: data, encoding: .utf8).map { String($0.prefix(300)) } ?? ""
+        let isSuccess = (200...299).contains(httpResponse.statusCode)
+        hlog("API response \(httpResponse.statusCode): \(responseSnippet)", isSuccess ? "SUCCESS" : "ERROR")
+
+        guard isSuccess else {
+            // GoTrue's error body carries the real reason ("User already registered",
+            // "Password should be at least 8 characters", etc.) — the generic
+            // makeRequest() path throws a bare status-code error and loses this, so
+            // signUp decodes it directly to surface the message the spec calls for.
+            if let gotrueError = try? JSONDecoder().decode(GoTrueError.self, from: data) {
+                throw APIError.message(gotrueError.msg ?? gotrueError.error_description ?? "Sign up failed.")
+            }
+            throw httpResponse.statusCode == 422 ? APIError.message("That email is already in use.") : APIError.invalidRequest
+        }
+
+        // Try the "here's your session" shape first (email confirmation off, or this
+        // project auto-confirms). Fall back to the "user created, confirmation pending"
+        // shape — same 2xx status, just missing access_token/refresh_token — rather than
+        // letting that decode failure surface as a confusing error on a real success.
+        let decoder = JSONDecoder()
+        if let authResponse = try? decoder.decode(AuthResponse.self, from: data) {
+            setTokens(authResponse.access_token, refresh: authResponse.refresh_token)
+            return .session(AuthToken(
+                token: authResponse.access_token,
+                userId: authResponse.user.id,
+                expiresAt: Date(timeIntervalSinceNow: TimeInterval(authResponse.expires_in))
+            ))
+        }
+
+        if (try? decoder.decode(UserResponse.self, from: data)) != nil {
+            return .pendingEmailConfirmation(email: email)
+        }
+
+        throw APIError.message("Account creation returned an unexpected response.")
+    }
+
+    func updatePassword(newPassword: String) async throws {
+        try checkRateLimit()
+        struct UpdatePasswordPayload: Encodable { let password: String }
+        _ = try await makeRequest(
+            method: "PUT",
+            endpoint: "/auth/v1/user",
+            body: UpdatePasswordPayload(password: newPassword),
+            responseType: EmptyResponse.self
+        )
+    }
+
     func login(email: String, password: String) async throws -> AuthToken {
         // Check rate limit
         try checkRateLimit()
@@ -279,6 +343,24 @@ class SupabaseAPIClient: APIClient {
     func logout() async throws {
         // Supabase logout is typically handled client-side (token removal)
         // Could call /auth/v1/logout if needed
+    }
+
+    func requestPasswordReset(email: String) async throws {
+        try checkRateLimit()
+
+        let payload = PasswordResetPayload(email: email)
+        let endpoint = "/auth/v1/recover"
+
+        // GoTrue's /recover always returns an empty 200 body, success or not — it never
+        // reveals whether the email exists, so there is nothing to branch on besides a
+        // thrown network/HTTP error.
+        _ = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: EmptyResponse.self,
+            requiresAuth: false
+        )
     }
 
     func logLoginAttempt(email: String, success: Bool) async {
@@ -490,6 +572,16 @@ struct MomentPayload: Codable {
 struct LoginPayload: Encodable {
     let email: String
     let password: String
+}
+
+struct PasswordResetPayload: Encodable {
+    let email: String
+}
+
+/// GoTrue's error body shape, e.g. {"code":400,"error_code":"user_already_exists","msg":"User already registered"}.
+struct GoTrueError: Decodable {
+    let msg: String?
+    let error_description: String?
 }
 
 struct UserPayload: Encodable {

@@ -255,24 +255,87 @@ struct DwellyApp: App {
     }
 
     @State private var showAppLoading = true
+    @State private var passwordResetPending = false
+    #if DEBUG
+    @ObservedObject private var devNavigator = DevNavigator.shared
+    #endif
+
+    // MARK: - Deep Link (dwelly://auth/reset)
+
+    /// Supabase's real recovery redirect carries the session as a URL *fragment*
+    /// (`#access_token=...&refresh_token=...&type=recovery`), not a query string —
+    /// unlike the simplified `?token=` shown in docs/PILLAR_AUTHENTICATION_STRATEGY.md
+    /// §6, which describes the concept, not GoTrue's actual wire format.
+    private func handleIncomingURL(_ url: URL) {
+        guard url.scheme == "dwelly", url.host == "auth", url.path == "/reset" else { return }
+
+        let fragment = url.fragment ?? ""
+        let params = fragment
+            .split(separator: "&")
+            .reduce(into: [String: String]()) { dict, pair in
+                let parts = pair.split(separator: "=", maxSplits: 1)
+                guard parts.count == 2 else { return }
+                dict[String(parts[0])] = String(parts[1]).removingPercentEncoding
+            }
+
+        guard let accessToken = params["access_token"], params["type"] == "recovery" else {
+            hlogDeepLink("Ignoring dwelly://auth/reset — missing access_token or wrong type", "WARNING")
+            return
+        }
+
+        apiClient.setJWTToken(accessToken)
+        passwordResetPending = true
+    }
+
+    private func hlogDeepLink(_ msg: String, _ level: String) {
+        HTMLLogManager.shared.log(msg, level: level)
+    }
 
     var body: some Scene {
         WindowGroup {
-            if showAppLoading {
-                AppLoadingView(onComplete: { showAppLoading = false })
-            } else if authManager.isAuthenticated {
-                // Go straight to app — model download happens on first capture if needed
-                AppView(syncManager: syncManager)
-                    .environmentObject(authManager)
-                    .environment(\.apiClient, apiClient)
-                    .task {
-                        // Pre-load model silently if already downloaded
-                        if UserDefaults.standard.bool(forKey: "whisperModelReady") {
-                            await TranscriptionManager.shared.setupWhisperKit()
+            ZStack {
+                #if DEBUG
+                if let devScreen = devNavigator.screen {
+                    DevScreenPicker.render(devScreen)
+                        .environmentObject(authManager)
+                } else if showAppLoading {
+                    AppLoadingView(onComplete: { showAppLoading = false })
+                } else if authManager.isAuthenticated {
+                    AppView(syncManager: syncManager)
+                        .environmentObject(authManager)
+                        .environment(\.apiClient, apiClient)
+                        .task {
+                            if UserDefaults.standard.bool(forKey: "whisperModelReady") {
+                                await TranscriptionManager.shared.setupWhisperKit()
+                            }
                         }
-                    }
-            } else {
-                WelcomeView()
+                } else {
+                    WelcomeView()
+                        .environmentObject(authManager)
+                }
+
+                DevScreenPicker()
+                #else
+                if showAppLoading {
+                    AppLoadingView(onComplete: { showAppLoading = false })
+                } else if authManager.isAuthenticated {
+                    AppView(syncManager: syncManager)
+                        .environmentObject(authManager)
+                        .environment(\.apiClient, apiClient)
+                        .task {
+                            if UserDefaults.standard.bool(forKey: "whisperModelReady") {
+                                await TranscriptionManager.shared.setupWhisperKit()
+                            }
+                        }
+                } else {
+                    WelcomeView()
+                        .environmentObject(authManager)
+                }
+                #endif
+            }
+            .onOpenURL { handleIncomingURL($0) }
+            .fullScreenCover(isPresented: $passwordResetPending) {
+                NewPasswordView(onDone: { passwordResetPending = false })
                     .environmentObject(authManager)
             }
         }

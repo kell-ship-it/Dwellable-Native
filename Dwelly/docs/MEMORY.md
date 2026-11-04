@@ -2,6 +2,15 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (November 4, 2026 close — T-109/T-263/T-264 resolved, T-256 advanced)
+
+**Confirmed Pending Items:**
+1. **Finish the real auth flow per Kell's explicit ask ("finish up account creation, sign-up, and log-in"):** add `dwelly://auth/reset` to Supabase's Auth → URL Configuration → Redirect URLs allow-list so the real password-reset email link works end-to-end (tested so far only via the dev picker's direct `NewPasswordView` entry point, never the actual email), and do a side-by-side visual check of `LoginView`/`AccountCreationView` against T-240's locked Figma design (T-256 is still 🔄 In Progress, not closed).
+2. **Build real Face ID login.** Currently just a label with no `LocalAuthentication` wiring — discussed this session, explicitly deferred to pick up fresh rather than half-start it.
+3. **Decide on the long-term sender domain.** Resend/SMTP is live and verified on `fullyknownbooks.com` (T-264) as a working stand-in; Kell's stated intent was to move to a dedicated Dwelly domain (`dwelly.one` or `dwelly.app`) once fully set up — not urgent, but shouldn't be forgotten as a loose end.
+
+**Rationale:** The core signup/login/reset backend is now real and verified (an actual account created via `auth.users` SQL check, a real confirmation email delivered via Resend) — the remaining gaps are the deep-link allow-list entry (small, unblocks real-world testing) and polish items (Face ID, final design parity) that don't block using the flow today.
+
 ## Next Session Objective (November 2, 2026 close, continued — T-262: Welcome moved pre-auth, App Loading built)
 
 **Confirmed Pending Items:**

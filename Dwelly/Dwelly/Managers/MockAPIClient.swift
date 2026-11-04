@@ -98,6 +98,30 @@ class MockAPIClient: APIClient {
         )
     }
 
+    func requestPasswordReset(email: String) async throws {
+        try await Task.sleep(nanoseconds: 500_000_000) // 0.5 second
+        guard !email.isEmpty else { throw APIError.invalidRequest }
+        // Mirrors real GoTrue behavior: always succeeds, never reveals whether the email exists.
+    }
+
+    func signUp(email: String, password: String) async throws -> SignUpOutcome {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        guard !email.isEmpty, !password.isEmpty else { throw APIError.invalidRequest }
+        if validCredentials[email] != nil {
+            throw APIError.message("That email is already in use.")
+        }
+        return .session(AuthToken(
+            token: "mock-token-\(UUID().uuidString)",
+            userId: "user-\(UUID().uuidString.prefix(8))",
+            expiresAt: Date(timeIntervalSinceNow: 86400 * 30)
+        ))
+    }
+
+    func updatePassword(newPassword: String) async throws {
+        try await Task.sleep(nanoseconds: 400_000_000)
+        guard !newPassword.isEmpty else { throw APIError.invalidRequest }
+    }
+
     func logout() async throws {
         // Simulate network delay
         try await Task.sleep(nanoseconds: 200_000_000) // 0.2 second
@@ -153,6 +177,7 @@ enum APIError: LocalizedError {
     case serverError
     case unauthorized   // 401 — JWT expired
     case unknown
+    case message(String) // server-provided reason, shown verbatim (e.g. GoTrue's signup errors)
 
     var errorDescription: String? {
         switch self {
@@ -170,6 +195,8 @@ enum APIError: LocalizedError {
             return "Session expired — please log in again"
         case .unknown:
             return "Unknown error"
+        case .message(let text):
+            return text
         }
     }
 }
