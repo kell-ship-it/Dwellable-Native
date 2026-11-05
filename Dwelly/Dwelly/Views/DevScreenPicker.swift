@@ -12,7 +12,14 @@ import SwiftUI
 final class DevNavigator: ObservableObject {
     static let shared = DevNavigator()
     @Published var screen: DevScreenPicker.Screen?
-    private init() {}
+    private init() {
+        // Lets a launch script jump straight to a screen (SIMCTL_CHILD_DWELLY_DEV_SCREEN=...)
+        // for scripted/manual verification without needing a working tap on whatever
+        // screen is first in the normal flow.
+        if let raw = ProcessInfo.processInfo.environment["DWELLY_DEV_SCREEN"] {
+            screen = DevScreenPicker.Screen(rawValue: raw)
+        }
+    }
 }
 
 struct DevScreenPicker: View {
@@ -21,6 +28,10 @@ struct DevScreenPicker: View {
         case welcome = "Welcome"
         case introVideo = "Intro Video"
         case accountCreation = "Account Creation"
+        case nameEntry = "Onboarding — Name Entry"
+        case intentSelection = "Onboarding — Intent Selection"
+        case notificationPermission = "Onboarding — Notification Permission"
+        case preparingSpace = "Onboarding — Preparing Space"
         case paywallOnboarding = "Paywall — Onboarding"
         case paywallSecondCapture = "Paywall — Second Capture Gate"
         case paywallTrialUsed = "Paywall — Trial Already Used"
@@ -73,6 +84,14 @@ struct DevScreenPicker: View {
             IntroVideoView(onContinue: {})
         case .accountCreation:
             AccountCreationView(onContinue: {}, onSignIn: {})
+        case .nameEntry:
+            NameEntryView(userId: "dev-preview-user", onContinue: {}, onBack: {})
+        case .intentSelection:
+            IntentSelectionView(userId: "dev-preview-user", onContinue: {}, onBack: {})
+        case .notificationPermission:
+            NotificationPermissionView(userId: "dev-preview-user", onContinue: {}, onBack: {})
+        case .preparingSpace:
+            PreparingSpaceView(name: "Kell", onComplete: {})
         case .paywallOnboarding:
             PaywallView(context: .onboardingSkippable)
         case .paywallSecondCapture:

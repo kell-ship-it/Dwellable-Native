@@ -141,6 +141,28 @@ class MockAPIClient: APIClient {
         print("Mock: Login attempt logged — email: \(email), success: \(success)")
     }
 
+    private var mockOnboardingProfiles: [String: OnboardingProfileRow] = [:]
+
+    func fetchOnboardingProfile(userId: String) async throws -> OnboardingProfileRow {
+        mockOnboardingProfiles[userId] ?? OnboardingProfileRow(
+            id: userId, name: nil, spiritual_intent: nil, notification_opt_in: nil,
+            onboarding_completed_at: nil, current_onboarding_screen: nil
+        )
+    }
+
+    func updateOnboardingProfile(userId: String, update: OnboardingProfileUpdate) async throws {
+        var existing = try await fetchOnboardingProfile(userId: userId)
+        existing = OnboardingProfileRow(
+            id: userId,
+            name: update.name ?? existing.name,
+            spiritual_intent: update.spiritualIntent ?? existing.spiritual_intent,
+            notification_opt_in: update.notificationOptIn ?? existing.notification_opt_in,
+            onboarding_completed_at: update.onboardingCompletedAt ?? existing.onboarding_completed_at,
+            current_onboarding_screen: update.currentOnboardingScreen ?? existing.current_onboarding_screen
+        )
+        mockOnboardingProfiles[userId] = existing
+    }
+
     // MARK: - Storage API
 
     func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String {

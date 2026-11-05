@@ -25,18 +25,16 @@ private struct FullBleedImage: UIViewRepresentable {
 /// — the actual first screen a logged-out user sees, not something shown after login.
 /// Faithfully rendered: full-bleed hero background art, "dwelly" wordmark, tagline, CTA.
 ///
-/// Real flow per the design: Welcome → Account Creation → Name → Intent → Notifications →
-/// Preparing Space (T-110, not built — needs T-109 self-signup, T-111 ProfileManager
-/// schema, T-100-105's copy). Per Kell's explicit direction (Nov 3, 2026), "Get Started"
-/// goes straight to Account Creation — NOT through the Intro Video, which the Figma flow
-/// otherwise places at Screen 3. Account Creation falls through to the onboarding paywall
-/// as a placeholder for the still-unbuilt Name/Intent/Notifications/Preparing-Space steps,
-/// then to LoginView — a known gap, not the intended final flow. "Log in" goes straight to
-/// the real LoginView. The Intro Video itself is still built and reachable via the dev
-/// screen picker; it's just not wired into this button anymore.
+/// Real flow per the design: Welcome → Account Creation → Intro Video → Paywall → Name →
+/// Intent → Notifications → Preparing Space (T-110/T-111/T-112, built — see
+/// `AppView`'s navigation gate for the Intro Video/Paywall/OnboardingCoordinator chain,
+/// which now owns everything after a successful sign-up). Per Kell's explicit direction
+/// (Nov 3, 2026), "Get Started" goes straight to Account Creation here — the Intro Video
+/// is reached from `AppView` right after sign-up succeeds, not from this screen. "Log in"
+/// goes straight to the real LoginView; a returning, already-onboarded user's sign-in
+/// lands directly on `MainTabView` via the same gate (sign-in recovery check).
 private enum WelcomeDestination: Identifiable {
     case accountCreation
-    case paywall
     case login
     var id: Self { self }
 }
@@ -107,16 +105,13 @@ struct WelcomeView: View {
             switch destination {
             case .accountCreation:
                 AccountCreationView(
-                    onContinue: { self.destination = .paywall },
+                    // On success, AuthManager.isAuthenticated flips true and DwellyApp's
+                    // root swaps this whole WelcomeView (and its cover stack) out for
+                    // AppView — there's genuinely nowhere else for this screen itself to
+                    // navigate to, so this just dismisses its own cover.
+                    onContinue: { self.destination = nil },
                     onSignIn: { self.destination = .login }
                 )
-                #if DEBUG
-                .devPickerOverlay()
-                #endif
-            case .paywall:
-                PaywallView(context: .onboardingSkippable, onDismiss: {
-                    self.destination = .login
-                })
                 #if DEBUG
                 .devPickerOverlay()
                 #endif

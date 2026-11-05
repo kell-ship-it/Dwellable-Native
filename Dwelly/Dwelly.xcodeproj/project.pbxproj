@@ -58,6 +58,12 @@
 		D019 /* EmailAlreadyExistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D018 /* EmailAlreadyExistsView.swift */; };
 		A001 /* ModelSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000 /* ModelSetupView.swift */; };
 		E001 /* APIClientEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = E002 /* APIClientEnvironment.swift */; };
+		F001 /* NameEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F002 /* NameEntryView.swift */; };
+		F003 /* IntentSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F004 /* IntentSelectionView.swift */; };
+		F005 /* NotificationPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F006 /* NotificationPermissionView.swift */; };
+		F007 /* PreparingSpaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F008 /* PreparingSpaceView.swift */; };
+		F009 /* OnboardingCoordinatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00A /* OnboardingCoordinatorView.swift */; };
+		F00B /* ProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00C /* ProfileManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -125,6 +131,12 @@
 		D014 /* NewPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPasswordView.swift; sourceTree = "<group>"; };
 		D016 /* EmailConfirmedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailConfirmedView.swift; sourceTree = "<group>"; };
 		D018 /* EmailAlreadyExistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailAlreadyExistsView.swift; sourceTree = "<group>"; };
+		F002 /* NameEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameEntryView.swift; sourceTree = "<group>"; };
+		F004 /* IntentSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntentSelectionView.swift; sourceTree = "<group>"; };
+		F006 /* NotificationPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPermissionView.swift; sourceTree = "<group>"; };
+		F008 /* PreparingSpaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreparingSpaceView.swift; sourceTree = "<group>"; };
+		F00A /* OnboardingCoordinatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCoordinatorView.swift; sourceTree = "<group>"; };
+		F00C /* ProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -216,6 +228,11 @@
 				D014 /* NewPasswordView.swift */,
 				D016 /* EmailConfirmedView.swift */,
 				D018 /* EmailAlreadyExistsView.swift */,
+				F002 /* NameEntryView.swift */,
+				F004 /* IntentSelectionView.swift */,
+				F006 /* NotificationPermissionView.swift */,
+				F008 /* PreparingSpaceView.swift */,
+				F00A /* OnboardingCoordinatorView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -234,6 +251,7 @@
 				013b /* LocalStorageManager.swift */,
 				013d /* SyncManager.swift */,
 				B101 /* PaymentManager.swift */,
+				F00C /* ProfileManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -447,6 +465,12 @@
 				B110 /* MainTabView.swift in Sources */,
 				B112 /* WelcomeView.swift in Sources */,
 				B114 /* AppLoadingView.swift in Sources */,
+				F001 /* NameEntryView.swift in Sources */,
+				F003 /* IntentSelectionView.swift in Sources */,
+				F005 /* NotificationPermissionView.swift in Sources */,
+				F007 /* PreparingSpaceView.swift in Sources */,
+				F009 /* OnboardingCoordinatorView.swift in Sources */,
+				F00B /* ProfileManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

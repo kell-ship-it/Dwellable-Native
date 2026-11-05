@@ -2,6 +2,15 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (November 4, 2026, continued again — T-110/T-111/T-112 built)
+
+**Confirmed Pending Items:**
+1. **Exercise the full onboarding chain end-to-end through a real signup**, not just each screen individually via the `DWELLY_DEV_SCREEN` dev override. This session's own verification confirmed Name Entry/Intent Selection/Notification Permission are each interactively correct, but never drove `WelcomeView → Account Creation → AppView's gate → Intro Video → Paywall → OnboardingCoordinatorView → mandatory first capture → MainTabView` as one real path — `WelcomeView`'s "Get Started" button is currently untappable by script on this simulator (the already-documented Nov 2 full-bleed-background bug, not new), so this needs either a real device or a scripted workaround.
+2. **Verify the `onboarding_completed_at`/`current_onboarding_screen` PATCH calls actually land in Supabase** — `ProfileManager.syncInBackground` is fire-and-forget by design (same offline-first pattern as `SyncManager`), and was never checked against live `public.users` rows this session.
+3. **Decide whether `NameEntryView`'s `name` and `IntentSelectionView`'s `spiritualIntent` should feed the `DwellerProfile` / Formation Intelligence** the way `docs/PILLAR_ONBOARDING_STRATEGY.md` originally described (Row 1, first-ever `DwellerProfile` write on Intent submission) — this session wired both into `public.users` only; whether/how that connects to the separate Formation Intelligence `DwellerProfile` table was out of scope and not checked.
+
+**Rationale:** Kell caught a real, live bug this session — any authenticated user could reach the full 4-tab app (Today/Entries/Growth/Profile) without ever completing onboarding, because `AppView` had no gate at all. That's fixed (migration applied, `ProfileManager` + 4 screens + `OnboardingCoordinatorView` built, `AppView`'s 3-check gate rebuilt, all 6 new files registered in `project.pbxproj` and confirmed in the real `.SwiftFileList`), but the fix's weakest point is that the full chain was never driven as one real run — individual-screen verification is good evidence, not proof of the whole path.
+
 ## Next Session Objective (November 4, 2026 close, continued — Sign In pillar built, Account Creation hardened — onboarding is next)
 
 **Confirmed Pending Items:**

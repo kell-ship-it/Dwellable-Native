@@ -16,6 +16,10 @@ protocol APIClient {
     func ensureUserExists(userId: String, email: String) async throws
     func logLoginAttempt(email: String, success: Bool) async
 
+    // Onboarding profile endpoints (T-111)
+    func fetchOnboardingProfile(userId: String) async throws -> OnboardingProfileRow
+    func updateOnboardingProfile(userId: String, update: OnboardingProfileUpdate) async throws
+
     // Storage endpoints
     func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String
 

@@ -447,6 +447,20 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    // MARK: - Onboarding Profile API (T-111)
+
+    func fetchOnboardingProfile(userId: String) async throws -> OnboardingProfileRow {
+        let endpoint = "/rest/v1/users?id=eq.\(userId)&select=id,name,spiritual_intent,notification_opt_in,onboarding_completed_at,current_onboarding_screen"
+        let rows = try await makeRequest(method: "GET", endpoint: endpoint, responseType: [OnboardingProfileRow].self)
+        guard let row = rows.first else { throw APIError.notFound }
+        return row
+    }
+
+    func updateOnboardingProfile(userId: String, update: OnboardingProfileUpdate) async throws {
+        let endpoint = "/rest/v1/users?id=eq.\(userId)"
+        _ = try await makeRequest(method: "PATCH", endpoint: endpoint, body: update, responseType: [OnboardingProfileRow].self)
+    }
+
     // MARK: - Storage API
 
     func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String {

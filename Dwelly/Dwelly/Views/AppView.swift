@@ -1,15 +1,49 @@
 import SwiftUI
 
+/// T-112's Navigation Gate — three nested checks, not a flat branch:
+/// Authenticated? → Already have an account? (sign-in recovery) → Onboarding complete?
+/// (includes mandatory first capture) → resume or unlock.
+///
+/// The one-time Intro Video + Paywall steps (already built — `IntroVideoView`,
+/// `PaywallView(context: .onboardingSkippable)`) sit between Account Creation and the 4
+/// real T-110 screens per the locked real order (`docs/MEMORY.md`, Nov 4 2026 close):
+/// Welcome → Account Creation → Intro Video → Paywall → Name → Intent → Notifications →
+/// Preparing Space. They aren't part of `OnboardingProfile`'s resume pointer (nothing to
+/// persist — no data is collected on either screen), so a lightweight local-only flag
+/// tracks whether this device has already shown them for this user.
+private enum OnboardingLeadIn {
+    case introVideo
+    case paywall
+    case coordinator
+}
+
 struct AppView: View {
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.apiClient) private var apiClient
     let syncManager: SyncManager
 
+    @State private var isOnboardingComplete = false
+    @State private var hasCheckedOnboarding = false
+    @State private var leadIn: OnboardingLeadIn = .introVideo
+
+    private func leadInKey(userId: String) -> String { "onboarding_leadin_shown_\(userId)" }
+
     var body: some View {
         // AppView is only shown when authenticated, so we can safely force-unwrap currentUser
         if let user = authManager.currentUser {
-            MainTabView(userId: user.id, userEmail: user.email, syncManager: syncManager)
+            Group {
+                if !hasCheckedOnboarding {
+                    ProgressView("Loading...")
+                } else if isOnboardingComplete {
+                    MainTabView(userId: user.id, userEmail: user.email, syncManager: syncManager)
+                } else {
+                    onboardingLeadIn(user: user)
+                }
+            }
             .environment(\.colorScheme, .dark)
+            .task {
+                await evaluateOnboardingGate(userId: user.id)
+            }
             .onAppear {
                 // Set real userId on SyncManager (replaces placeholder "app-sync")
                 syncManager.updateUserId(user.id)
@@ -32,6 +66,41 @@ struct AppView: View {
             // Fallback if currentUser is nil (shouldn't happen in normal flow)
             ProgressView("Loading...")
                 .environment(\.colorScheme, .dark)
+        }
+    }
+
+    /// Checks 2 and 3 of the gate. Local-first (never blocks on network): "sign-in
+    /// recovery" (an existing user with moments predating this onboarding flow) and an
+    /// already-`onboarding_completed_at` profile both short-circuit straight to
+    /// `MainTabView`. Only a genuinely fresh account (no local completion flag, no
+    /// moments) falls through to the lead-in + coordinator.
+    private func evaluateOnboardingGate(userId: String) async {
+        if !ProfileManager.shared.isOnboardingComplete(userId: userId) {
+            await ProfileManager.shared.refreshFromServer(userId: userId)
+        }
+        let complete = ProfileManager.shared.isOnboardingComplete(userId: userId)
+        leadIn = UserDefaults.standard.bool(forKey: leadInKey(userId: userId)) ? .coordinator : .introVideo
+        isOnboardingComplete = complete
+        hasCheckedOnboarding = true
+    }
+
+    @ViewBuilder
+    private func onboardingLeadIn(user: AuthUser) -> some View {
+        switch leadIn {
+        case .introVideo:
+            IntroVideoView(onContinue: { leadIn = .paywall })
+        case .paywall:
+            PaywallView(context: .onboardingSkippable, onDismiss: {
+                UserDefaults.standard.set(true, forKey: leadInKey(userId: user.id))
+                leadIn = .coordinator
+            })
+        case .coordinator:
+            OnboardingCoordinatorView(
+                userId: user.id,
+                userEmail: user.email,
+                syncManager: syncManager,
+                onOnboardingComplete: { isOnboardingComplete = true }
+            )
         }
     }
 }
