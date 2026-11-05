@@ -56,22 +56,27 @@ struct FullBleedVideoPlayer: UIViewRepresentable {
     }
 
     final class PlayerContainerView: UIView {
-        let playerLayer = AVPlayerLayer()
+        // Making the view's own backing layer the AVPlayerLayer (instead of adding it as a
+        // sublayer and hand-syncing `playerLayer.frame = bounds` in layoutSubviews) is the
+        // fix for a real bug Kell caught: a sliver of black on one edge with the opposite
+        // edge of the video cropped off, during the IntroVideo screen's fullScreenCover
+        // presentation. Root cause — layoutSubviews only runs on UIKit's own schedule, so
+        // the manually-synced sublayer frame could still be lagging a transitional size from
+        // mid-presentation-animation when the first frames rendered. A layer-backed view's
+        // `layer` *is* `bounds` as far as UIKit's resize machinery is concerned, so every
+        // resize (including ones mid-transition) updates it for free, with no custom code
+        // that can desync.
+        override class var layerClass: AnyClass { AVPlayerLayer.self }
+        var playerLayer: AVPlayerLayer { layer as! AVPlayerLayer }
 
         override init(frame: CGRect) {
             super.init(frame: frame)
-            layer.addSublayer(playerLayer)
             // Matches the documented FullBleedImage lesson (WelcomeView.swift): a full-bleed
             // UIKit view left interactive swallows taps meant for anything stacked on top of it.
             isUserInteractionEnabled = false
         }
 
         required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-
-        override func layoutSubviews() {
-            super.layoutSubviews()
-            playerLayer.frame = bounds
-        }
     }
 }
 
