@@ -61,7 +61,7 @@ struct NotificationPermissionView: View {
     /// (node 2213:95) — not a generic bell icon.
     private var notificationPreview: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image("DwellyRockIcon")
+            Image("DwellyAppIconArt")
                 .resizable()
                 .scaledToFill()
                 .frame(width: 30, height: 30)

@@ -14,7 +14,8 @@ struct PreparingSpaceView: View {
     private enum ItemState { case complete, active, pending }
 
     @State private var itemStates: [ItemState] = [.active, .pending, .pending, .pending]
-    @State private var isSpinning = false
+    @State private var isPulsing = false
+    @State private var poppedIndices: Set<Int> = []
 
     private let items = [
         "Waking up Dwelly...",
@@ -49,7 +50,7 @@ struct PreparingSpaceView: View {
 
                 VStack(alignment: .leading, spacing: 18) {
                     ForEach(items.indices, id: \.self) { index in
-                        checklistRow(items[index], state: itemStates[index])
+                        checklistRow(items[index], state: itemStates[index], hasPopped: poppedIndices.contains(index))
                     }
                 }
             }
@@ -73,13 +74,13 @@ struct PreparingSpaceView: View {
         }
         .onAppear {
             animateChecklist()
-            withAnimation(.linear(duration: 0.9).repeatForever(autoreverses: false)) {
-                isSpinning = true
+            withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) {
+                isPulsing = true
             }
         }
     }
 
-    private func checklistRow(_ label: String, state: ItemState) -> some View {
+    private func checklistRow(_ label: String, state: ItemState, hasPopped: Bool) -> some View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
@@ -94,13 +95,15 @@ struct PreparingSpaceView: View {
                     Image(systemName: "checkmark")
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(Theme.gold)
+                        .scaleEffect(hasPopped ? 1 : 0.3)
                 case .active:
-                    // Real loading spinner — a rotating partial ring, not a static dot.
+                    // "Loading" indicator: a filled dot that pops in with a bouncy spring,
+                    // then pulses (scales up/down in a loop) for as long as this item is
+                    // the active one — not a static dot, not a spinning ring.
                     Circle()
-                        .trim(from: 0, to: 0.7)
-                        .stroke(Theme.gold, style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
-                        .frame(width: 22, height: 22)
-                        .rotationEffect(.degrees(isSpinning ? 360 : 0))
+                        .fill(Theme.gold)
+                        .frame(width: 8, height: 8)
+                        .scaleEffect((hasPopped ? 1 : 0.3) * (isPulsing ? 1.35 : 1))
                 case .pending:
                     EmptyView()
                 }
@@ -113,13 +116,25 @@ struct PreparingSpaceView: View {
     }
 
     private func animateChecklist() {
-        let delays: [Double] = [0.6, 1.2, 1.8]
+        // Item 0 pops in immediately as "active"; each subsequent item pops in (completing
+        // the one before it) on its own delay, giving the "circle pop, pop, pop" loading
+        // feel Kell asked for rather than a flat instant-appear checklist.
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.55)) {
+            poppedIndices.insert(0)
+        }
+
+        let delays: [Double] = [1.1, 2.2, 3.3]
         for (stepIndex, delay) in delays.enumerated() {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 withAnimation(.easeOut(duration: 0.2)) {
                     itemStates[stepIndex] = .complete
                     if stepIndex + 1 < itemStates.count {
                         itemStates[stepIndex + 1] = .active
+                    }
+                }
+                if stepIndex + 1 < itemStates.count {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.55)) {
+                        poppedIndices.insert(stepIndex + 1)
                     }
                 }
             }
