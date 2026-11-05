@@ -26,6 +26,14 @@ struct AccountCreationView: View {
     var onContinue: () -> Void
     var onSignIn: () -> Void
 
+    /// GoTrue's signup-confirmation `{{ .Token }}` is 8 characters for this project — a
+    /// different mechanism from (and longer than) the 6-digit code used for magic-link
+    /// sign-in, confirmed directly from a real email Nov 5, 2026 ("12920705"). Not
+    /// independently configurable from this project's dashboard. The field was hardcoded
+    /// to 6 and silently truncating every real code, so every verification attempt failed
+    /// — if GoTrue's length ever changes, this is the one place to update.
+    private static let otpCodeLength = 8
+
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) private var dismiss
     @State private var email = ""
@@ -317,7 +325,7 @@ struct AccountCreationView: View {
     /// Real success state (account exists in auth.users) for the "email confirmation
     /// required" outcome — not an error screen.
     ///
-    /// Rebuilt Nov 5, 2026 as a 6-digit code entry, replacing the old "tap the link in
+    /// Rebuilt Nov 5, 2026 as a code entry (see `otpCodeLength`), replacing the old "tap the link in
     /// your email" magic-link flow entirely. Root cause, confirmed directly in Supabase's
     /// own auth logs: the magic link's one-time token was being hit twice in the same
     /// second — Gmail's link-scanner silently prefetching it before Kell ever tapped,
@@ -352,7 +360,7 @@ struct AccountCreationView: View {
                 Spacer().frame(height: 12)
 
                 VStack(spacing: 2) {
-                    Text("We sent a 6-digit code to")
+                    Text("We sent a code to")
                     Text(email)
                         .foregroundColor(Theme.Payment.textHeading)
                     Text("Enter it below to finish creating your account.")
@@ -363,7 +371,7 @@ struct AccountCreationView: View {
 
                 Spacer().frame(height: 32)
 
-                TextField("", text: $otpCode, prompt: Text("000000").foregroundColor(Theme.Payment.textPlaceholder))
+                TextField("", text: $otpCode, prompt: Text(String(repeating: "0", count: Self.otpCodeLength)).foregroundColor(Theme.Payment.textPlaceholder))
                     .font(.system(size: 28, weight: .semibold, design: .monospaced))
                     .foregroundColor(Theme.Payment.textHeading)
                     .tint(Theme.gold)
@@ -371,12 +379,12 @@ struct AccountCreationView: View {
                     .keyboardType(.numberPad)
                     .textContentType(.oneTimeCode)
                     .frame(height: 60)
-                    .frame(maxWidth: 220)
+                    .frame(maxWidth: 260)
                     .background(Theme.Payment.surfaceCard)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
                     .onChange(of: otpCode) { newValue in
                         let digitsOnly = newValue.filter(\.isNumber)
-                        otpCode = String(digitsOnly.prefix(6))
+                        otpCode = String(digitsOnly.prefix(Self.otpCodeLength))
                     }
 
                 if let error = authManager.errorMessage {
@@ -418,8 +426,8 @@ struct AccountCreationView: View {
                 }
                 .background(Theme.gold)
                 .clipShape(Capsule())
-                .disabled(otpCode.count != 6 || authManager.isLoading)
-                .opacity(otpCode.count != 6 ? 0.5 : 1)
+                .disabled(otpCode.count != Self.otpCodeLength || authManager.isLoading)
+                .opacity(otpCode.count != Self.otpCodeLength ? 0.5 : 1)
 
                 Button(action: {
                     showCheckEmail = false
