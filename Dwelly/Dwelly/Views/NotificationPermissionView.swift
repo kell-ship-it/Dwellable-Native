@@ -61,14 +61,11 @@ struct NotificationPermissionView: View {
     /// (node 2213:95) — not a generic bell icon.
     private var notificationPreview: some View {
         HStack(alignment: .top, spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(Theme.Payment.backgroundPrimary)
-                Image(systemName: "flame.fill")
-                    .font(.system(size: 14))
-                    .foregroundColor(Theme.gold)
-            }
-            .frame(width: 30, height: 30)
+            Image("DwellyRockIcon")
+                .resizable()
+                .scaledToFill()
+                .frame(width: 30, height: 30)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack {

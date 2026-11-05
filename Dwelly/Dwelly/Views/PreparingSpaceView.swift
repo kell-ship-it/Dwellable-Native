@@ -14,6 +14,7 @@ struct PreparingSpaceView: View {
     private enum ItemState { case complete, active, pending }
 
     @State private var itemStates: [ItemState] = [.active, .pending, .pending, .pending]
+    @State private var isSpinning = false
 
     private let items = [
         "Waking up Dwelly...",
@@ -34,8 +35,6 @@ struct PreparingSpaceView: View {
             Theme.Onboarding.backgroundPrimary.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
-                Spacer().frame(height: 280)
-
                 Text(greeting)
                     .font(.system(size: 38, design: .serif))
                     .foregroundColor(Theme.Onboarding.textPrimary)
@@ -53,10 +52,9 @@ struct PreparingSpaceView: View {
                         checklistRow(items[index], state: itemStates[index])
                     }
                 }
-
-                Spacer()
             }
             .padding(.horizontal, 28)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
 
             VStack {
                 Spacer()
@@ -73,7 +71,12 @@ struct PreparingSpaceView: View {
                 .padding(.bottom, 24)
             }
         }
-        .onAppear { animateChecklist() }
+        .onAppear {
+            animateChecklist()
+            withAnimation(.linear(duration: 0.9).repeatForever(autoreverses: false)) {
+                isSpinning = true
+            }
+        }
     }
 
     private func checklistRow(_ label: String, state: ItemState) -> some View {
@@ -92,9 +95,12 @@ struct PreparingSpaceView: View {
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(Theme.gold)
                 case .active:
+                    // Real loading spinner — a rotating partial ring, not a static dot.
                     Circle()
-                        .fill(Theme.gold)
-                        .frame(width: 6, height: 6)
+                        .trim(from: 0, to: 0.7)
+                        .stroke(Theme.gold, style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
+                        .frame(width: 22, height: 22)
+                        .rotationEffect(.degrees(isSpinning ? 360 : 0))
                 case .pending:
                     EmptyView()
                 }

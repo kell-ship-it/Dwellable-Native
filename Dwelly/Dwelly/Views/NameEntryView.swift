@@ -29,7 +29,7 @@ struct NameEntryView: View {
 
                 Spacer().frame(height: 16)
 
-                Text("So Dwelly can speak to you personally, not generically.")
+                Text("So Dwelly can speak to you personally.")
                     .font(.system(size: 15))
                     .foregroundColor(Theme.Payment.textSupporting)
                     .fixedSize(horizontal: false, vertical: true)

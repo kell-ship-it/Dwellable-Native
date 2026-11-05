@@ -126,10 +126,17 @@ struct Theme {
     struct Onboarding {
         static let backgroundPrimary = Color(red: 0x0a / 255, green: 0x0a / 255, blue: 0x0a / 255) // #0a0a0a
         static let textPrimary = Color(red: 0xe8 / 255, green: 0xe8 / 255, blue: 0xed / 255)       // #e8e8ed — text/primary
-        static let textTertiary = Color(red: 0x74 / 255, green: 0x7f / 255, blue: 0x8c / 255)      // #747f8c — text/tertiary
+        // Corrected Nov 5, 2026 — the Figma MCP's get_variable_defs reports text/tertiary as
+        // #747f8c (blue-gray), but Kell's own screenshot of the live Intent Selection canvas
+        // pixel-samples to #78725f (warm olive-gray) — a real mismatch, likely the same
+        // variable-name-collision bug already documented elsewhere in this file (duplicate
+        // collections sharing a token name). Trusting the rendered pixels over the tool here.
+        static let textTertiary = Color(red: 0x78 / 255, green: 0x72 / 255, blue: 0x5f / 255)      // #78725f — text/tertiary (pixel-verified)
         static let textMutedWarm = Color(red: 0x80 / 255, green: 0x7b / 255, blue: 0x71 / 255)     // #807b71 — text/muted-warm
-        static let surfaceCard = Color(red: 0x16 / 255, green: 0x16 / 255, blue: 0x1b / 255)       // #16161b — surface/card
-        static let borderInput = Color(red: 0x67 / 255, green: 0x67 / 255, blue: 0x7b / 255)       // #67677b — border/input
+        static let surfaceCard = Color(red: 0x16 / 255, green: 0x16 / 255, blue: 0x14 / 255)       // #161614 — surface/card (pixel-verified)
+        // Corrected Nov 5, 2026 — same mismatch as textTertiary above: tool reports #67677b,
+        // Kell's screenshot pixel-samples the card border to a neutral #2d2d2d, no blue tint.
+        static let borderInput = Color(red: 0x2d / 255, green: 0x2d / 255, blue: 0x2d / 255)       // #2d2d2d — border/input (pixel-verified)
         static let previewCardBackground = Color(red: 0x24 / 255, green: 0x24 / 255, blue: 0x29 / 255) // #242429
         static let previewCardBorder = Color(red: 0x33 / 255, green: 0x33 / 255, blue: 0x3d / 255)     // #33333d
         static let previewTimestamp = Color(red: 0x9e / 255, green: 0x9e / 255, blue: 0xa3 / 255)      // #9e9ea3
