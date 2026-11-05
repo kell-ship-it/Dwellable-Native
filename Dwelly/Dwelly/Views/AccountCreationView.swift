@@ -37,6 +37,8 @@ struct AccountCreationView: View {
     @State private var showTermsPlaceholder = false
     @State private var showCheckEmail = false
     @State private var showEmailAlreadyExists = false
+    @State private var otpCode = ""
+    @State private var resendSent = false
 
     private var strength: PasswordStrength { PasswordStrength(password: password) }
     private var passwordsMatch: Bool { !confirmPassword.isEmpty && password == confirmPassword }
@@ -313,22 +315,16 @@ struct AccountCreationView: View {
     }
 
     /// Real success state (account exists in auth.users) for the "email confirmation
-    /// required" outcome — not an error screen. Matches the Figma design built Nov 4,
-    /// 2026 (dwelly-redesign node 1086:378, "03a — Account Creation (Check Your Email)").
-    /// Icon/title/subtitle sit in the upper-middle area per Figma's absolute layout, and
-    /// the CTA is pinned to the bottom via the same `.safeAreaInset` footer convention
-    /// every other screen uses — NOT vertically centered as one clustered group. Kell
-    /// caught this Nov 4 2026 on NewPasswordView's matching success screen: the first
-    /// version centered the whole VStack, putting the CTA in the screen's middle instead
-    /// of its usual fixed bottom position (same real bug here, fixed together).
+    /// required" outcome — not an error screen.
     ///
-    /// Corrected Nov 5, 2026 — the fixed Figma-fraction offset above (330/874, matching
-    /// node 1086:378 exactly) still left this block sitting noticeably low/off-center on
-    /// a real device; Kell asked for the icon/title/subtitle block itself to be true
-    /// vertically centered in the space above the footer, not pinned to a literal
-    /// absolute Figma y-coordinate. The footer button's own fixed-bottom position (the
-    /// thing the comment above was originally protecting) is unaffected — only this
-    /// block's own centering changed.
+    /// Rebuilt Nov 5, 2026 as a 6-digit code entry, replacing the old "tap the link in
+    /// your email" magic-link flow entirely. Root cause, confirmed directly in Supabase's
+    /// own auth logs: the magic link's one-time token was being hit twice in the same
+    /// second — Gmail's link-scanner silently prefetching it before Kell ever tapped,
+    /// consuming it, so his real tap always landed on "link expired." A code the user
+    /// types by hand can't be pre-fetched by a mail client. Requires the Supabase "Confirm
+    /// signup" email template to send `{{ .Token }}` (the code) rather than
+    /// `{{ .ConfirmationURL }}` — a dashboard change, not something this app controls.
     private var checkEmailScreen: some View {
         ZStack(alignment: .top) {
             Theme.Payment.backgroundPrimary.ignoresSafeArea()
@@ -355,43 +351,107 @@ struct AccountCreationView: View {
 
                 Spacer().frame(height: 12)
 
-                // The email's own line, separate from the surrounding sentences —
-                // otherwise a long address wraps unpredictably inline with the prose,
-                // landing on 3 lines for a short email and 4 for a long one (Kell caught
-                // this inconsistency, Nov 4 2026). Isolating it means the two fixed
-                // sentences always wrap the same way regardless of address length.
                 VStack(spacing: 2) {
-                    Text("We sent a confirmation link to")
+                    Text("We sent a 6-digit code to")
                     Text(email)
                         .foregroundColor(Theme.Payment.textHeading)
-                    Text("Tap it to finish creating your account, then come back and log in.")
+                    Text("Enter it below to finish creating your account.")
                 }
                 .font(.system(size: 15))
                 .foregroundColor(Theme.Payment.textSupporting)
                 .multilineTextAlignment(.center)
+
+                Spacer().frame(height: 32)
+
+                TextField("", text: $otpCode, prompt: Text("000000").foregroundColor(Theme.Payment.textPlaceholder))
+                    .font(.system(size: 28, weight: .semibold, design: .monospaced))
+                    .foregroundColor(Theme.Payment.textHeading)
+                    .tint(Theme.gold)
+                    .multilineTextAlignment(.center)
+                    .keyboardType(.numberPad)
+                    .textContentType(.oneTimeCode)
+                    .frame(height: 60)
+                    .frame(maxWidth: 220)
+                    .background(Theme.Payment.surfaceCard)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .onChange(of: otpCode) { newValue in
+                        let digitsOnly = newValue.filter(\.isNumber)
+                        otpCode = String(digitsOnly.prefix(6))
+                    }
+
+                if let error = authManager.errorMessage {
+                    Spacer().frame(height: 12)
+                    Text(error)
+                        .font(.system(size: 13))
+                        .foregroundColor(Theme.Payment.errorRed)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+                }
+
+                Spacer().frame(height: 16)
+
+                Button(action: resendCode) {
+                    Text(resendSent ? "Code sent" : "Didn't get a code? Resend")
+                        .font(.system(size: 14))
+                        .foregroundColor(resendSent ? Theme.Payment.textSupporting : Theme.gold)
+                }
+                .disabled(resendSent)
 
                 Spacer()
             }
             .padding(.horizontal, 28)
         }
         .safeAreaInset(edge: .bottom) {
-            Button(action: {
-                showCheckEmail = false
-                onSignIn()
-            }) {
-                Text("Back to Log In")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Theme.Payment.backgroundPrimary)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 60)
+            VStack(spacing: 16) {
+                Button(action: verifyCode) {
+                    if authManager.isLoading {
+                        ProgressView().tint(Theme.Payment.backgroundPrimary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 60)
+                    } else {
+                        Text("Verify & Continue")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Theme.Payment.backgroundPrimary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 60)
+                    }
+                }
+                .background(Theme.gold)
+                .clipShape(Capsule())
+                .disabled(otpCode.count != 6 || authManager.isLoading)
+                .opacity(otpCode.count != 6 ? 0.5 : 1)
+
+                Button(action: {
+                    showCheckEmail = false
+                    onSignIn()
+                }) {
+                    Text("Back to Log In")
+                        .font(.system(size: 14))
+                        .foregroundColor(Theme.Payment.textSupporting)
+                }
             }
-            .background(Theme.gold)
-            .clipShape(Capsule())
             .padding(.horizontal, 28)
             .padding(.top, 16)
             .padding(.bottom, 24)
             .frame(maxWidth: .infinity)
             .background(Theme.Payment.backgroundPrimary)
+        }
+    }
+
+    private func verifyCode() {
+        Task {
+            if await authManager.verifySignupOTP(email: email, token: otpCode) {
+                showCheckEmail = false
+                onContinue()
+            }
+        }
+    }
+
+    private func resendCode() {
+        Task {
+            if await authManager.resendSignupConfirmation(email: email) {
+                resendSent = true
+            }
         }
     }
 

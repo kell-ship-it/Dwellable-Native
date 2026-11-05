@@ -226,6 +226,70 @@ class AuthManager: ObservableObject {
         return true
     }
 
+    /// The real signup-confirmation path as of Nov 5, 2026, replacing the magic-link deep
+    /// link above — a user-typed 6-digit code instead of a tappable link, so a mail
+    /// client's link-prefetch/safety-scan can't consume it before the user acts (confirmed
+    /// via Supabase's own auth logs: the magic-link token was being hit twice, same
+    /// second, first succeeding and the second always "expired" — Gmail's link scanner).
+    /// Mirrors signIn()'s success path.
+    @discardableResult
+    func verifySignupOTP(email: String, token: String) async -> Bool {
+        DispatchQueue.main.async {
+            self.isLoading = true
+            self.errorMessage = nil
+        }
+
+        do {
+            let authToken = try await apiClient.verifySignupOTP(email: email, token: token)
+            apiClient.setJWTToken(authToken.token)
+
+            do {
+                try await apiClient.ensureUserExists(userId: authToken.userId, email: email)
+            } catch {
+                print("Warning: Could not create user record: \(error.localizedDescription)")
+            }
+
+            _ = keychain.save(authToken.token, forKey: "authToken")
+            _ = keychain.save(authToken.userId, forKey: "userId")
+            _ = keychain.save(email, forKey: "userEmail")
+
+            let user = AuthUser(id: authToken.userId, email: email, token: authToken.token)
+            DispatchQueue.main.async {
+                self.currentUser = user
+                self.isAuthenticated = true
+                self.isLoading = false
+            }
+            return true
+        } catch {
+            DispatchQueue.main.async {
+                self.errorMessage = "That code is incorrect or has expired. Try again, or request a new one."
+                self.isLoading = false
+            }
+            return false
+        }
+    }
+
+    /// The user's own recovery path once a signup code has been consumed by a mail-client
+    /// prefetch or simply expired (GoTrue's default OTP expiry) — requests a fresh one.
+    @discardableResult
+    func resendSignupConfirmation(email: String) async -> Bool {
+        DispatchQueue.main.async {
+            self.isLoading = true
+            self.errorMessage = nil
+        }
+        do {
+            try await apiClient.resendSignupConfirmation(email: email)
+            DispatchQueue.main.async { self.isLoading = false }
+            return true
+        } catch {
+            DispatchQueue.main.async {
+                self.errorMessage = "Couldn't send a new code: \(error.localizedDescription)"
+                self.isLoading = false
+            }
+            return false
+        }
+    }
+
     private static func decodeJWTPayload(_ jwt: String) -> [String: Any]? {
         let parts = jwt.split(separator: ".")
         guard parts.count == 3 else { return nil }

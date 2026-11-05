@@ -9,6 +9,8 @@ protocol APIClient {
 
     // Auth endpoints
     func signUp(email: String, password: String) async throws -> SignUpOutcome
+    func verifySignupOTP(email: String, token: String) async throws -> AuthToken
+    func resendSignupConfirmation(email: String) async throws
     func login(email: String, password: String) async throws -> AuthToken
     func logout() async throws
     func requestPasswordReset(email: String) async throws

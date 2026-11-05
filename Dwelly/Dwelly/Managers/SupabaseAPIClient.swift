@@ -336,6 +336,49 @@ class SupabaseAPIClient: APIClient {
         throw APIError.message("Account creation returned an unexpected response.")
     }
 
+    /// Verifies the 6-digit code from the "Confirm signup" email (GoTrue's email-OTP
+    /// flow) and returns a real session on success — same shape as login. Replaces the
+    /// magic-link confirmation flow Nov 5, 2026: confirmed via Supabase's own auth logs
+    /// that the one-time magic-link token was being consumed by Gmail's link-scanner
+    /// before the user ever tapped it (two /verify hits, same token, same second — the
+    /// first succeeds, the second always "expired"). A code the user types by hand can't
+    /// be pre-fetched by a mail client, so it isn't vulnerable to that failure mode.
+    func verifySignupOTP(email: String, token: String) async throws -> AuthToken {
+        try checkRateLimit()
+
+        let endpoint = "/auth/v1/verify"
+        let payload = VerifyOTPPayload(type: "signup", email: email, token: token)
+        let authResponse = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: AuthResponse.self,
+            requiresAuth: false
+        )
+        setTokens(authResponse.access_token, refresh: authResponse.refresh_token)
+        return AuthToken(
+            token: authResponse.access_token,
+            userId: authResponse.user.id,
+            expiresAt: Date(timeIntervalSinceNow: TimeInterval(authResponse.expires_in))
+        )
+    }
+
+    /// Requests a fresh signup confirmation code — the user's own recovery path once a
+    /// code has already been consumed (by a mail-client prefetch) or has expired.
+    func resendSignupConfirmation(email: String) async throws {
+        try checkRateLimit()
+
+        let endpoint = "/auth/v1/resend"
+        let payload = ResendPayload(type: "signup", email: email)
+        _ = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: EmptyResponse.self,
+            requiresAuth: false
+        )
+    }
+
     func updatePassword(newPassword: String) async throws {
         try checkRateLimit()
         struct UpdatePasswordPayload: Encodable { let password: String }
@@ -625,6 +668,17 @@ struct LoginPayload: Encodable {
 }
 
 struct PasswordResetPayload: Encodable {
+    let email: String
+}
+
+struct VerifyOTPPayload: Encodable {
+    let type: String
+    let email: String
+    let token: String
+}
+
+struct ResendPayload: Encodable {
+    let type: String
     let email: String
 }
 
