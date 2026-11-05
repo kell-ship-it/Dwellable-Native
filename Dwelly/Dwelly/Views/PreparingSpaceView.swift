@@ -14,7 +14,7 @@ struct PreparingSpaceView: View {
     private enum ItemState { case complete, active, pending }
 
     @State private var itemStates: [ItemState] = [.active, .pending, .pending, .pending]
-    @State private var isPulsing = false
+    @State private var isRotating = false
     @State private var poppedIndices: Set<Int> = []
 
     private let items = [
@@ -74,8 +74,8 @@ struct PreparingSpaceView: View {
         }
         .onAppear {
             animateChecklist()
-            withAnimation(.easeInOut(duration: 0.55).repeatForever(autoreverses: true)) {
-                isPulsing = true
+            withAnimation(.linear(duration: 0.8).repeatForever(autoreverses: false)) {
+                isRotating = true
             }
         }
     }
@@ -84,9 +84,9 @@ struct PreparingSpaceView: View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .stroke(state == .pending ? Theme.Onboarding.borderInput : Theme.gold, lineWidth: 1.5)
+                    .stroke(state == .complete ? Theme.gold : Theme.Onboarding.borderInput, lineWidth: 1.5)
                     .background(
-                        Circle().fill(state == .pending ? Color.clear : Theme.gold.opacity(0.15))
+                        Circle().fill(state == .complete ? Theme.gold.opacity(0.15) : Color.clear)
                     )
                     .frame(width: 22, height: 22)
 
@@ -97,13 +97,15 @@ struct PreparingSpaceView: View {
                         .foregroundColor(Theme.gold)
                         .scaleEffect(hasPopped ? 1 : 0.3)
                 case .active:
-                    // "Loading" indicator: a filled dot that pops in with a bouncy spring,
-                    // then pulses (scales up/down in a loop) for as long as this item is
-                    // the active one — not a static dot, not a spinning ring.
+                    // Real circular-motion loading indicator — a short gold dash that
+                    // continuously orbits the ring (like a standard activity spinner), not
+                    // a near-full arc that visually reads as a static circle at a glance.
                     Circle()
-                        .fill(Theme.gold)
-                        .frame(width: 8, height: 8)
-                        .scaleEffect((hasPopped ? 1 : 0.3) * (isPulsing ? 1.35 : 1))
+                        .trim(from: 0, to: 0.22)
+                        .stroke(Theme.gold, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                        .frame(width: 22, height: 22)
+                        .rotationEffect(.degrees(isRotating ? 360 : 0))
+                        .scaleEffect(hasPopped ? 1 : 0.3)
                 case .pending:
                     EmptyView()
                 }
