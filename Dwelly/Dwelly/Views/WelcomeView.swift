@@ -112,14 +112,8 @@ struct WelcomeView: View {
                     onContinue: { self.destination = nil },
                     onSignIn: { self.destination = .login }
                 )
-                #if DEBUG
-                .devPickerOverlay()
-                #endif
             case .login:
                 LoginView()
-                    #if DEBUG
-                    .devPickerOverlay()
-                    #endif
             }
         }
         // Collapses the whole Welcome -> Login -> ForgotPassword (or -> AccountCreation

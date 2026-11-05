@@ -50,7 +50,6 @@
 		D001 /* AppLoadingAnimation.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D000 /* AppLoadingAnimation.mp4 */; };
 		D003 /* IntroExplainer.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D002 /* IntroExplainer.mp4 */; };
 		D007 /* IntroVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D006 /* IntroVideoView.swift */; };
-		D009 /* DevScreenPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D008 /* DevScreenPicker.swift */; };
 		D011 /* AccountCreationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D010 /* AccountCreationView.swift */; };
 		D013 /* ForgotPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D012 /* ForgotPasswordView.swift */; };
 		D015 /* NewPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D014 /* NewPasswordView.swift */; };
@@ -125,7 +124,6 @@
 		D000 /* AppLoadingAnimation.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = AppLoadingAnimation.mp4; sourceTree = "<group>"; };
 		D002 /* IntroExplainer.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = IntroExplainer.mp4; sourceTree = "<group>"; };
 		D006 /* IntroVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroVideoView.swift; sourceTree = "<group>"; };
-		D008 /* DevScreenPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevScreenPicker.swift; sourceTree = "<group>"; };
 		D010 /* AccountCreationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCreationView.swift; sourceTree = "<group>"; };
 		D012 /* ForgotPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordView.swift; sourceTree = "<group>"; };
 		D014 /* NewPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewPasswordView.swift; sourceTree = "<group>"; };
@@ -222,7 +220,6 @@
 				B111 /* WelcomeView.swift */,
 				B113 /* AppLoadingView.swift */,
 				D006 /* IntroVideoView.swift */,
-				D008 /* DevScreenPicker.swift */,
 				D010 /* AccountCreationView.swift */,
 				D012 /* ForgotPasswordView.swift */,
 				D014 /* NewPasswordView.swift */,
@@ -422,7 +419,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D007 /* IntroVideoView.swift in Sources */,
-				D009 /* DevScreenPicker.swift in Sources */,
 				D011 /* AccountCreationView.swift in Sources */,
 				D013 /* ForgotPasswordView.swift in Sources */,
 				D015 /* NewPasswordView.swift in Sources */,

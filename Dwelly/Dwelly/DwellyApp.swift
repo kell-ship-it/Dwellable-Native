@@ -260,9 +260,6 @@ struct DwellyApp: App {
     @State private var recoveryRefreshToken = ""
     @State private var showEmailConfirmed = false
     @State private var showConfirmFailedAlert = false
-    #if DEBUG
-    @ObservedObject private var devNavigator = DevNavigator.shared
-    #endif
 
     // MARK: - Deep Link (dwelly://auth/reset)
 
@@ -337,28 +334,6 @@ struct DwellyApp: App {
     var body: some Scene {
         WindowGroup {
             ZStack {
-                #if DEBUG
-                if let devScreen = devNavigator.screen {
-                    DevScreenPicker.render(devScreen)
-                        .environmentObject(authManager)
-                } else if showAppLoading {
-                    AppLoadingView(onComplete: { showAppLoading = false })
-                } else if authManager.isAuthenticated {
-                    AppView(syncManager: syncManager)
-                        .environmentObject(authManager)
-                        .environment(\.apiClient, apiClient)
-                        .task {
-                            if UserDefaults.standard.bool(forKey: "whisperModelReady") {
-                                await TranscriptionManager.shared.setupWhisperKit()
-                            }
-                        }
-                } else {
-                    WelcomeView()
-                        .environmentObject(authManager)
-                }
-
-                DevScreenPicker()
-                #else
                 if showAppLoading {
                     AppLoadingView(onComplete: { showAppLoading = false })
                 } else if authManager.isAuthenticated {
@@ -374,7 +349,6 @@ struct DwellyApp: App {
                     WelcomeView()
                         .environmentObject(authManager)
                 }
-                #endif
             }
             .onOpenURL { handleIncomingURL($0) }
             .fullScreenCover(isPresented: $passwordResetPending) {

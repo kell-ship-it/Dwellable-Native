@@ -89,9 +89,6 @@ struct LoginView: View {
         .fullScreenCover(isPresented: $showForgotPassword) {
             ForgotPasswordView()
                 .environmentObject(authManager)
-                #if DEBUG
-                .devPickerOverlay()
-                #endif
         }
     }
 
