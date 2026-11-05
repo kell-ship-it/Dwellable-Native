@@ -13,8 +13,14 @@ struct PreparingSpaceView: View {
 
     private enum ItemState { case complete, active, pending }
 
+    /// Each active item must visibly complete at least this many full spins before moving
+    /// on — Kell flagged that a shared/continuous rotation left some items "halfway" through
+    /// a spin when they activated, since the animation's phase wasn't reset per item.
+    private let rotationsPerItem = 2
+    private let secondsPerRotation = 0.7
+
     @State private var itemStates: [ItemState] = [.active, .pending, .pending, .pending]
-    @State private var isRotating = false
+    @State private var rotationAngles: [Double] = [0, 0, 0, 0]
     @State private var poppedIndices: Set<Int> = []
 
     private let items = [
@@ -50,7 +56,12 @@ struct PreparingSpaceView: View {
 
                 VStack(alignment: .leading, spacing: 18) {
                     ForEach(items.indices, id: \.self) { index in
-                        checklistRow(items[index], state: itemStates[index], hasPopped: poppedIndices.contains(index))
+                        checklistRow(
+                            items[index],
+                            state: itemStates[index],
+                            hasPopped: poppedIndices.contains(index),
+                            rotationAngle: rotationAngles[index]
+                        )
                     }
                 }
             }
@@ -72,15 +83,10 @@ struct PreparingSpaceView: View {
                 .padding(.bottom, 24)
             }
         }
-        .onAppear {
-            animateChecklist()
-            withAnimation(.linear(duration: 0.8).repeatForever(autoreverses: false)) {
-                isRotating = true
-            }
-        }
+        .onAppear { activate(0) }
     }
 
-    private func checklistRow(_ label: String, state: ItemState, hasPopped: Bool) -> some View {
+    private func checklistRow(_ label: String, state: ItemState, hasPopped: Bool, rotationAngle: Double) -> some View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
@@ -98,13 +104,14 @@ struct PreparingSpaceView: View {
                         .scaleEffect(hasPopped ? 1 : 0.3)
                 case .active:
                     // Real circular-motion loading indicator — a short gold dash that
-                    // continuously orbits the ring (like a standard activity spinner), not
-                    // a near-full arc that visually reads as a static circle at a glance.
+                    // orbits the ring at least `rotationsPerItem` full times, reset to 0°
+                    // the moment this item becomes active (not a shared/continuous spin
+                    // that could be mid-rotation when a later item activates).
                     Circle()
                         .trim(from: 0, to: 0.22)
                         .stroke(Theme.gold, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
                         .frame(width: 22, height: 22)
-                        .rotationEffect(.degrees(isRotating ? 360 : 0))
+                        .rotationEffect(.degrees(rotationAngle))
                         .scaleEffect(hasPopped ? 1 : 0.3)
                 case .pending:
                     EmptyView()
@@ -117,29 +124,32 @@ struct PreparingSpaceView: View {
         }
     }
 
-    private func animateChecklist() {
-        // Item 0 pops in immediately as "active"; each subsequent item pops in (completing
-        // the one before it) on its own delay, giving the "circle pop, pop, pop" loading
-        // feel Kell asked for rather than a flat instant-appear checklist.
+    /// Activates item `index`: pops it in, resets its rotation to 0° (instantly, no
+    /// animation), spins it a fixed number of full rotations, then — exactly when that spin
+    /// finishes — marks it complete and activates the next item. The last item just keeps
+    /// spinning (no next item to hand off to) until the user taps the CTA.
+    private func activate(_ index: Int) {
+        guard index < itemStates.count else { return }
+
         withAnimation(.spring(response: 0.35, dampingFraction: 0.55)) {
-            poppedIndices.insert(0)
+            poppedIndices.insert(index)
         }
 
-        let delays: [Double] = [1.1, 2.2, 3.3]
-        for (stepIndex, delay) in delays.enumerated() {
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                withAnimation(.easeOut(duration: 0.2)) {
-                    itemStates[stepIndex] = .complete
-                    if stepIndex + 1 < itemStates.count {
-                        itemStates[stepIndex + 1] = .active
-                    }
-                }
-                if stepIndex + 1 < itemStates.count {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.55)) {
-                        poppedIndices.insert(stepIndex + 1)
-                    }
-                }
+        rotationAngles[index] = 0
+        let activeDuration = secondsPerRotation * Double(rotationsPerItem)
+        withAnimation(.linear(duration: activeDuration)) {
+            rotationAngles[index] = 360 * Double(rotationsPerItem)
+        }
+
+        let nextIndex = index + 1
+        guard nextIndex < itemStates.count else { return }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + activeDuration) {
+            withAnimation(.easeOut(duration: 0.2)) {
+                itemStates[index] = .complete
+                itemStates[nextIndex] = .active
             }
+            activate(nextIndex)
         }
     }
 }
