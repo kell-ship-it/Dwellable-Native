@@ -57,8 +57,6 @@ struct AccountCreationView: View {
     // Same proportional-offset technique WelcomeView already uses — a fixed pixel value
     // (what shipped first, Nov 4 2026) matches the 874pt Figma mockup but drifts on a real
     // device's actual height, which is exactly what Kell caught comparing screenshots.
-    private var screenHeight: CGFloat { UIScreen.main.bounds.height }
-    private let successIconTopFraction: CGFloat = 330.0 / 874.0
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -323,12 +321,20 @@ struct AccountCreationView: View {
     /// caught this Nov 4 2026 on NewPasswordView's matching success screen: the first
     /// version centered the whole VStack, putting the CTA in the screen's middle instead
     /// of its usual fixed bottom position (same real bug here, fixed together).
+    ///
+    /// Corrected Nov 5, 2026 — the fixed Figma-fraction offset above (330/874, matching
+    /// node 1086:378 exactly) still left this block sitting noticeably low/off-center on
+    /// a real device; Kell asked for the icon/title/subtitle block itself to be true
+    /// vertically centered in the space above the footer, not pinned to a literal
+    /// absolute Figma y-coordinate. The footer button's own fixed-bottom position (the
+    /// thing the comment above was originally protecting) is unaffected — only this
+    /// block's own centering changed.
     private var checkEmailScreen: some View {
         ZStack(alignment: .top) {
             Theme.Payment.backgroundPrimary.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                Spacer().frame(height: screenHeight * successIconTopFraction)
+                Spacer()
 
                 ZStack {
                     Circle()
@@ -364,7 +370,7 @@ struct AccountCreationView: View {
                 .foregroundColor(Theme.Payment.textSupporting)
                 .multilineTextAlignment(.center)
 
-                Spacer(minLength: 0)
+                Spacer()
             }
             .padding(.horizontal, 28)
         }

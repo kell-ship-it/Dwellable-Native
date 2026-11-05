@@ -42,7 +42,7 @@ struct AppView: View {
             }
             .environment(\.colorScheme, .dark)
             .task {
-                await evaluateOnboardingGate(userId: user.id)
+                await evaluateOnboardingGate(userId: user.id, email: user.email)
             }
             .onAppear {
                 // Set real userId on SyncManager (replaces placeholder "app-sync")
@@ -82,9 +82,22 @@ struct AppView: View {
     /// silently keep going with whatever was in the local profile cache (same userId, so
     /// it "resumed" onboarding exactly where a previous test run left off, forever). Now a
     /// confirmed-gone account forces a real sign-out back to Welcome instead.
-    private func evaluateOnboardingGate(userId: String) async {
+    ///
+    /// Corrected Nov 5, 2026, same session: a `public.users` row missing for a real reason
+    /// other than "account deleted" — `AuthManager.signIn`'s own `ensureUserExists` call
+    /// failing silently (it only logs, per its own comment) on a brand-new or just-confirmed
+    /// account — looks identical to a deleted account from here: both are a 404 on
+    /// `fetchOnboardingProfile`. Kell hit exactly this logging in right after an email
+    /// confirmation, and got bounced straight back to Welcome. So a 404 now retries
+    /// `ensureUserExists` once (self-heals the missing row for a real account) before ever
+    /// concluding the account is actually gone.
+    private func evaluateOnboardingGate(userId: String, email: String) async {
         if !ProfileManager.shared.isOnboardingComplete(userId: userId) {
-            let userStillExists = await ProfileManager.shared.refreshFromServer(userId: userId)
+            var userStillExists = await ProfileManager.shared.refreshFromServer(userId: userId)
+            if !userStillExists {
+                try? await apiClient.ensureUserExists(userId: userId, email: email)
+                userStillExists = await ProfileManager.shared.refreshFromServer(userId: userId)
+            }
             if !userStillExists {
                 await authManager.signOut()
                 return
