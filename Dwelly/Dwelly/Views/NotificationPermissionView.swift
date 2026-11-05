@@ -1,10 +1,15 @@
 import SwiftUI
 import UserNotifications
 
-/// Onboarding "Notification Permission" screen (T-110, T-238 Screen 6.5). Copy and the
-/// opt-out-by-default framing are locked in `docs/PILLAR_ONBOARDING_STRATEGY.md` Screen
-/// 6.5: "Enable notifications" is the encouraged/primary action, "Not now" is a real,
-/// equally-reachable skip — never a disguised/de-emphasized dismiss.
+/// Onboarding "Notification Permission" screen (T-110, T-238 Screen 6.5). Layout, copy, and
+/// the notification-preview mock match the real locked Figma design (node 2213:92, file
+/// `t5MUGEtpeFcUixobvHiYMc`) as of Nov 5, 2026 — pulled directly after Kell flagged the
+/// original build as a shortcut that didn't match it. Note: the Figma copy ("Never miss a
+/// moment" / "Allow Notifications") differs from `docs/PILLAR_ONBOARDING_STRATEGY.md`'s
+/// Screen 6.5 copy ("Stay gently invited" / "Enable notifications") — Figma wins here since
+/// it's the newer, explicitly-locked design-complete source, but this doc/design mismatch
+/// should be reconciled, not left silently diverged. The opt-out-by-default framing still
+/// holds: "Not now" is a real, equally-reachable skip, never a disguised dismiss.
 struct NotificationPermissionView: View {
     let userId: String
     var onContinue: () -> Void
@@ -14,36 +19,25 @@ struct NotificationPermissionView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            Theme.Payment.backgroundPrimary.ignoresSafeArea()
+            Theme.Onboarding.backgroundPrimary.ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                Spacer().frame(height: 220)
+            VStack(alignment: .leading, spacing: 0) {
+                Spacer().frame(height: 120)
 
-                ZStack {
-                    Circle()
-                        .fill(Theme.Payment.surfaceCard)
-                        .frame(width: 80, height: 80)
-                    Image(systemName: "bell.fill")
-                        .font(.system(size: 26))
-                        .foregroundColor(Theme.gold)
-                }
-                .frame(maxWidth: .infinity)
+                notificationPreview
 
-                Spacer().frame(height: 34)
+                Spacer().frame(height: 24)
 
-                Text("Stay gently invited")
+                Text("Never miss a moment")
                     .font(.system(size: 28, design: .serif))
-                    .foregroundColor(Theme.Payment.textHeading)
-                    .frame(maxWidth: .infinity)
+                    .foregroundColor(Theme.Onboarding.textPrimary)
 
                 Spacer().frame(height: 12)
 
-                Text("We'll only send sparse, gentle invitations when there's something worth coming back to.")
+                Text("Gentle reminders to capture your thoughts before the moment passes.")
                     .font(.system(size: 15))
-                    .foregroundColor(Theme.Payment.textSupporting)
-                    .multilineTextAlignment(.center)
+                    .foregroundColor(Theme.Onboarding.textTertiary)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 12)
 
                 Spacer(minLength: 0)
             }
@@ -52,7 +46,7 @@ struct NotificationPermissionView: View {
             Button(action: onBack) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(Theme.Payment.textHeading)
+                    .foregroundColor(Theme.Onboarding.textPrimary)
                     .frame(width: 44, height: 44)
             }
             .accessibilityLabel("Back")
@@ -63,17 +57,56 @@ struct NotificationPermissionView: View {
         .safeAreaInset(edge: .bottom) { footer }
     }
 
+    /// Mock lock-screen notification preview, matching the real T-238 Figma design
+    /// (node 2213:95) — not a generic bell icon.
+    private var notificationPreview: some View {
+        HStack(alignment: .top, spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(Theme.Payment.backgroundPrimary)
+                Image(systemName: "flame.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(Theme.gold)
+            }
+            .frame(width: 30, height: 30)
+
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("Dwelly")
+                        .font(.system(size: 11))
+                        .foregroundColor(Theme.Onboarding.textPrimary)
+                    Spacer()
+                    Text("now")
+                        .font(.system(size: 11))
+                        .foregroundColor(Theme.Onboarding.previewTimestamp)
+                }
+                Text("Take a moment. What's on your heart right now?")
+                    .font(.system(size: 13))
+                    .foregroundColor(Theme.Onboarding.previewBody)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
+        .background(Theme.Onboarding.previewCardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Theme.Onboarding.previewCardBorder, lineWidth: 1)
+        )
+    }
+
     private var footer: some View {
         VStack(spacing: 16) {
             Button(action: enableTapped) {
                 if isRequesting {
-                    ProgressView().tint(Theme.Payment.backgroundPrimary)
+                    ProgressView().tint(Theme.Onboarding.backgroundPrimary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
                 } else {
-                    Text("Enable notifications")
+                    Text("Allow Notifications")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Theme.Payment.backgroundPrimary)
+                        .foregroundColor(Theme.Onboarding.backgroundPrimary)
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
                 }
@@ -84,15 +117,15 @@ struct NotificationPermissionView: View {
 
             Button(action: notNowTapped) {
                 Text("Not now")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Theme.Payment.textSupporting)
+                    .font(.system(size: 15))
+                    .foregroundColor(Theme.Onboarding.textTertiary)
             }
         }
         .padding(.horizontal, 28)
         .padding(.top, 16)
         .padding(.bottom, 24)
         .frame(maxWidth: .infinity)
-        .background(Theme.Payment.backgroundPrimary)
+        .background(Theme.Onboarding.backgroundPrimary)
     }
 
     private func enableTapped() {

@@ -116,4 +116,23 @@ struct Theme {
         static let timelineRail = Color(red: 0x59 / 255, green: 0x52 / 255, blue: 0x42 / 255)  // #595242
         static let errorRed = Color(red: 0xe0 / 255, green: 0x7a / 255, blue: 0x5f / 255)      // state/error (warm coral)
     }
+
+    // MARK: - Onboarding (T-238 7-Screen Redesign)
+    // Matches the locked T-238 tokens in file `t5MUGEtpeFcUixobvHiYMc`, page
+    // "T-238 — Onboarding Redesign (7-Screen)". Distinct from `Payment` above — that
+    // palette belongs to the separate `dwelly-redesign` file's P12 Payment pillar and was
+    // wrongly reused on Screens 04/05/06 (Nov 4, 2026 build); pulled directly via Figma MCP
+    // (nodes 2209:92, 2213:92, 2240:92) on Nov 5, 2026 after Kell flagged the drift.
+    struct Onboarding {
+        static let backgroundPrimary = Color(red: 0x0a / 255, green: 0x0a / 255, blue: 0x0a / 255) // #0a0a0a
+        static let textPrimary = Color(red: 0xe8 / 255, green: 0xe8 / 255, blue: 0xed / 255)       // #e8e8ed — text/primary
+        static let textTertiary = Color(red: 0x74 / 255, green: 0x7f / 255, blue: 0x8c / 255)      // #747f8c — text/tertiary
+        static let textMutedWarm = Color(red: 0x80 / 255, green: 0x7b / 255, blue: 0x71 / 255)     // #807b71 — text/muted-warm
+        static let surfaceCard = Color(red: 0x16 / 255, green: 0x16 / 255, blue: 0x1b / 255)       // #16161b — surface/card
+        static let borderInput = Color(red: 0x67 / 255, green: 0x67 / 255, blue: 0x7b / 255)       // #67677b — border/input
+        static let previewCardBackground = Color(red: 0x24 / 255, green: 0x24 / 255, blue: 0x29 / 255) // #242429
+        static let previewCardBorder = Color(red: 0x33 / 255, green: 0x33 / 255, blue: 0x3d / 255)     // #33333d
+        static let previewTimestamp = Color(red: 0x9e / 255, green: 0x9e / 255, blue: 0xa3 / 255)      // #9e9ea3
+        static let previewBody = Color(red: 0xd1 / 255, green: 0xd1 / 255, blue: 0xd6 / 255)           // #d1d1d6
+    }
 }

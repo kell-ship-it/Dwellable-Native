@@ -11,35 +11,34 @@ struct IntentSelectionView: View {
     var onBack: () -> Void
 
     private let options = [
-        "I want to notice God more in my daily life",
-        "I'm wrestling with doubts and need to remember God's faithfulness",
-        "I want to see patterns in my spiritual journey",
-        "I'm in a season of spiritual growth and want to mark it",
-        "A friend recommended it"
+        "Grow closer to God",
+        "Process my thoughts and feelings",
+        "Journal my faith journey",
+        "I'm not sure yet"
     ]
 
     @State private var selected: String?
 
     var body: some View {
         ZStack(alignment: .top) {
-            Theme.Payment.backgroundPrimary.ignoresSafeArea()
+            Theme.Onboarding.backgroundPrimary.ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Spacer().frame(height: 130)
+                    Spacer().frame(height: 120)
 
-                    Text("What brought you to Dwelly?")
+                    Text("How can dwelly help you?")
                         .font(.system(size: 28, design: .serif))
-                        .foregroundColor(Theme.Payment.textHeading)
+                        .foregroundColor(Theme.Onboarding.textPrimary)
 
                     Spacer().frame(height: 16)
 
-                    Text("There's no right answer — this just helps Dwelly meet you where you are.")
+                    Text("Choose what feels most true right now.\nYou can always change this later.")
                         .font(.system(size: 15))
-                        .foregroundColor(Theme.Payment.textSupporting)
+                        .foregroundColor(Theme.Onboarding.textTertiary)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Spacer().frame(height: 32)
+                    Spacer().frame(height: 24)
 
                     VStack(spacing: 12) {
                         ForEach(options, id: \.self) { option in
@@ -56,7 +55,7 @@ struct IntentSelectionView: View {
             Button(action: onBack) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(Theme.Payment.textHeading)
+                    .foregroundColor(Theme.Onboarding.textPrimary)
                     .frame(width: 44, height: 44)
             }
             .accessibilityLabel("Back")
@@ -71,8 +70,8 @@ struct IntentSelectionView: View {
         return Button(action: { selected = option }) {
             HStack(spacing: 12) {
                 Text(option)
-                    .font(.system(size: 15))
-                    .foregroundColor(Theme.Payment.textHeading)
+                    .font(.system(size: 16))
+                    .foregroundColor(Theme.Onboarding.textPrimary)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
 
@@ -80,14 +79,14 @@ struct IntentSelectionView: View {
 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 18))
-                    .foregroundColor(isSelected ? Theme.gold : Theme.Payment.textSupporting)
+                    .foregroundColor(isSelected ? Theme.gold : Theme.Onboarding.borderInput)
             }
             .padding(16)
-            .background(Theme.Payment.surfaceCard)
+            .background(Theme.Onboarding.surfaceCard)
             .clipShape(RoundedRectangle(cornerRadius: 14))
             .overlay(
                 RoundedRectangle(cornerRadius: 14)
-                    .stroke(isSelected ? Theme.gold : .clear, lineWidth: 1.5)
+                    .stroke(isSelected ? Theme.gold : Theme.Onboarding.borderInput, lineWidth: isSelected ? 1.5 : 1)
             )
         }
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
@@ -97,7 +96,7 @@ struct IntentSelectionView: View {
         Button(action: continueTapped) {
             Text("Continue")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(Theme.Payment.backgroundPrimary)
+                .foregroundColor(Theme.Onboarding.backgroundPrimary)
                 .frame(maxWidth: .infinity)
                 .frame(height: 60)
         }
@@ -109,7 +108,7 @@ struct IntentSelectionView: View {
         .padding(.top, 16)
         .padding(.bottom, 24)
         .frame(maxWidth: .infinity)
-        .background(Theme.Payment.backgroundPrimary)
+        .background(Theme.Onboarding.backgroundPrimary)
     }
 
     private func continueTapped() {
