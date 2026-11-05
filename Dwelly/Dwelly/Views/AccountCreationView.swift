@@ -47,6 +47,7 @@ struct AccountCreationView: View {
     @State private var showEmailAlreadyExists = false
     @State private var otpCode = ""
     @State private var resendSent = false
+    @State private var verificationSucceeded = false
 
     private var strength: PasswordStrength { PasswordStrength(password: password) }
     private var passwordsMatch: Bool { !confirmPassword.isEmpty && password == confirmPassword }
@@ -183,7 +184,11 @@ struct AccountCreationView: View {
             placeholderLegalSheet
         }
         .fullScreenCover(isPresented: $showCheckEmail) {
-            checkEmailScreen
+            if verificationSucceeded {
+                successScreen
+            } else {
+                checkEmailScreen
+            }
         }
         .fullScreenCover(isPresented: $showEmailAlreadyExists) {
             EmailAlreadyExistsView(
@@ -446,11 +451,76 @@ struct AccountCreationView: View {
         }
     }
 
+    /// Real, visible confirmation that the OTP verified and the account is real — added
+    /// Nov 5, 2026 per Kell's catch: the old flow just dismissed this cover and relied on
+    /// `isAuthenticated` flipping to silently swap the whole root view underneath, giving
+    /// no on-screen acknowledgment that anything happened. "Continue" here is the one and
+    /// only thing that calls `onContinue()`, carrying the user into Intro Video next.
+    private var successScreen: some View {
+        ZStack(alignment: .top) {
+            Theme.Payment.backgroundPrimary.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                Spacer()
+
+                ZStack {
+                    Circle()
+                        .fill(Theme.gold)
+                        .frame(width: 80, height: 80)
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 28, weight: .semibold))
+                        .foregroundColor(Theme.Payment.backgroundPrimary)
+                }
+                .frame(maxWidth: .infinity)
+
+                Spacer().frame(height: 34)
+
+                Text("You're in.")
+                    .font(.system(size: 28, design: .serif))
+                    .foregroundColor(Theme.Payment.textHeading)
+                    .frame(maxWidth: .infinity)
+
+                Spacer().frame(height: 12)
+
+                Text("Your account is ready. Let's get you set up.")
+                    .font(.system(size: 15))
+                    .foregroundColor(Theme.Payment.textSupporting)
+                    .multilineTextAlignment(.center)
+
+                Spacer()
+            }
+            .padding(.horizontal, 28)
+        }
+        .safeAreaInset(edge: .bottom) {
+            Button(action: {
+                showCheckEmail = false
+                onContinue()
+            }) {
+                Text("Continue")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Theme.Payment.backgroundPrimary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+            }
+            .background(Theme.gold)
+            .clipShape(Capsule())
+            .padding(.horizontal, 28)
+            .padding(.top, 16)
+            .padding(.bottom, 24)
+            .frame(maxWidth: .infinity)
+            .background(Theme.Payment.backgroundPrimary)
+        }
+    }
+
     private func verifyCode() {
         Task {
             if await authManager.verifySignupOTP(email: email, token: otpCode) {
-                showCheckEmail = false
-                onContinue()
+                // A real success state (see successScreen below), not an invisible
+                // auto-transition into AppView/Intro Video — Kell caught Nov 5, 2026 that
+                // the old "just dismiss and let isAuthenticated flip the root view" approach
+                // gave no visible confirmation that anything happened. withAnimation since
+                // this is a same-cover content swap, not a new cover presentation.
+                withAnimation { verificationSucceeded = true }
             }
         }
     }
