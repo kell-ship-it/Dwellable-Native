@@ -74,9 +74,21 @@ struct AppView: View {
     /// already-`onboarding_completed_at` profile both short-circuit straight to
     /// `MainTabView`. Only a genuinely fresh account (no local completion flag, no
     /// moments) falls through to the lead-in + coordinator.
+    ///
+    /// Also the real fix for a bug Kell hit repeatedly: deleting the app (or even the
+    /// Supabase row) does NOT clear Keychain — that's standard iOS behavior, not a bug in
+    /// this app — so `AuthManager.init` restores `isAuthenticated = true` from a stale
+    /// token for a user that no longer exists server-side, and the gate used to just
+    /// silently keep going with whatever was in the local profile cache (same userId, so
+    /// it "resumed" onboarding exactly where a previous test run left off, forever). Now a
+    /// confirmed-gone account forces a real sign-out back to Welcome instead.
     private func evaluateOnboardingGate(userId: String) async {
         if !ProfileManager.shared.isOnboardingComplete(userId: userId) {
-            await ProfileManager.shared.refreshFromServer(userId: userId)
+            let userStillExists = await ProfileManager.shared.refreshFromServer(userId: userId)
+            if !userStillExists {
+                await authManager.signOut()
+                return
+            }
         }
         let complete = ProfileManager.shared.isOnboardingComplete(userId: userId)
         leadIn = UserDefaults.standard.bool(forKey: leadInKey(userId: userId)) ? .coordinator : .introVideo

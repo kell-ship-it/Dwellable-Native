@@ -113,8 +113,26 @@ final class ProfileManager {
     /// where the local cache is empty but Supabase already has this user's progress) and
     /// merges it into the local cache. Best-effort — failures leave the local cache as-is;
     /// onboarding must work fully offline.
-    func refreshFromServer(userId: String) async {
-        guard let row = try? await apiClient.fetchOnboardingProfile(userId: userId) else { return }
+    /// Returns `false` specifically when the server says this userId no longer exists
+    /// (`APIError.notFound`) — a deleted account whose Keychain session survived an app
+    /// delete/reinstall (standard iOS behavior: Keychain items aren't tied to app install).
+    /// Every other failure (network error, timeout) returns `true` and leaves the local
+    /// cache untouched, same as before — only a *confirmed* "this user is gone" should ever
+    /// force a sign-out; a flaky network shouldn't kick someone out of their own session.
+    @discardableResult
+    func refreshFromServer(userId: String) async -> Bool {
+        do {
+            let row = try await apiClient.fetchOnboardingProfile(userId: userId)
+            applyServerRow(row, userId: userId)
+            return true
+        } catch APIError.notFound {
+            return false
+        } catch {
+            return true
+        }
+    }
+
+    private func applyServerRow(_ row: OnboardingProfileRow, userId: String) {
         var profile = localProfile(userId: userId)
         profile.name = row.name ?? profile.name
         profile.spiritualIntent = row.spiritual_intent ?? profile.spiritualIntent
