@@ -477,8 +477,15 @@ class SupabaseAPIClient: APIClient {
     }
 
     func ensureUserExists(userId: String, email: String) async throws {
-        // Create user record in public.users if it doesn't exist
-        // Using upsert (insert...on conflict do nothing)
+        // Create user record in public.users if it doesn't exist. PostgREST only honors
+        // `on_conflict=id` as real upsert (insert...on conflict do nothing) when the
+        // request also carries `Prefer: resolution=ignore-duplicates` — without it,
+        // `on_conflict` is silently ineffective and a true duplicate throws a raw, unhandled
+        // "duplicate key value violates unique constraint" instead of no-op'ing. Missing
+        // here until Nov 6, 2026 — found via Supabase's own Postgres logs after this
+        // function being called a second time for an already-existing row (a legitimate,
+        // expected case: both AuthManager's post-verification call and AppView's gate
+        // self-heal call this) threw instead of silently succeeding.
         let payload = UserPayload(id: userId, email: email)
         let endpoint = "/rest/v1/users?on_conflict=id"
 
@@ -486,7 +493,8 @@ class SupabaseAPIClient: APIClient {
             method: "POST",
             endpoint: endpoint,
             body: payload,
-            responseType: UserResponse.self
+            responseType: UserResponse.self,
+            preferHeader: "resolution=ignore-duplicates,return=representation"
         )
     }
 

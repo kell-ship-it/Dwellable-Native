@@ -91,14 +91,26 @@ struct AppView: View {
     /// confirmation, and got bounced straight back to Welcome. So a 404 now retries
     /// `ensureUserExists` once (self-heals the missing row for a real account) before ever
     /// concluding the account is actually gone.
+    ///
+    /// Corrected again Nov 6, 2026: that retry still wasn't enough during a real slow
+    /// network spell right after signup (confirmed in Supabase's own Postgres/PostgREST
+    /// logs: a request got killed by PostgREST's own timeout manager seconds after the
+    /// real OTP verification succeeded). The deeper fix is that *escalating a failed
+    /// existence check all the way to a forced sign-out* is only meaningful for a session
+    /// *restored* from Keychain at launch — for a session this app instance just
+    /// authenticated itself (sign up, sign in, OTP verify), there is nothing to doubt, no
+    /// matter how slow or flaky the next network call is. `isFreshlyAuthenticated` (false
+    /// only on a Keychain-restored session) gates just that escalation; the actual
+    /// `refreshFromServer` call still always runs so real synced profile data (onboarding
+    /// progress from another device, for example) is still pulled down either way.
     private func evaluateOnboardingGate(userId: String, email: String) async {
         if !ProfileManager.shared.isOnboardingComplete(userId: userId) {
             var userStillExists = await ProfileManager.shared.refreshFromServer(userId: userId)
-            if !userStillExists {
+            if !userStillExists && !authManager.isFreshlyAuthenticated {
                 try? await apiClient.ensureUserExists(userId: userId, email: email)
                 userStillExists = await ProfileManager.shared.refreshFromServer(userId: userId)
             }
-            if !userStillExists {
+            if !userStillExists && !authManager.isFreshlyAuthenticated {
                 await authManager.signOut()
                 return
             }

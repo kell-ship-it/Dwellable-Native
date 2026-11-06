@@ -68,6 +68,18 @@ class AuthManager: ObservableObject {
     /// NewPasswordView only after backing all the way out to Welcome by hand).
     @Published var authSheetDismissTrigger = UUID()
 
+    /// True only when `isAuthenticated` was just set by a real auth action *in this app
+    /// launch* (sign up, sign in, OTP verify, email confirm) — false when it was restored
+    /// from a Keychain token at `init` (the app was relaunched with an existing session).
+    /// AppView's onboarding gate uses this to skip its "does this account still exist"
+    /// self-heal check for a freshly-authenticated session: that check exists for a
+    /// Keychain-restored session where the account might have been deleted since last
+    /// launch (see Nov 5, 2026 fix), and makes no sense moments after this same session
+    /// just verified the account itself — Kell hit exactly this Nov 6, 2026, where a real
+    /// signup/verify got bounced back to Welcome by that check during a slow network spell
+    /// right after creating the account.
+    @Published var isFreshlyAuthenticated = false
+
     private let apiClient: APIClient
     private let keychain = KeychainManager.shared
     private let loginAttemptTracker = LoginAttemptTracker()
@@ -163,6 +175,7 @@ class AuthManager: ObservableObject {
                 DispatchQueue.main.async {
                     self.currentUser = user
                     self.isAuthenticated = true
+                    self.isFreshlyAuthenticated = true
                     self.isLoading = false
                 }
                 return .signedIn
@@ -222,6 +235,7 @@ class AuthManager: ObservableObject {
         DispatchQueue.main.async {
             self.currentUser = user
             self.isAuthenticated = true
+            self.isFreshlyAuthenticated = true
         }
         return true
     }
@@ -257,6 +271,7 @@ class AuthManager: ObservableObject {
             DispatchQueue.main.async {
                 self.currentUser = user
                 self.isAuthenticated = true
+                self.isFreshlyAuthenticated = true
                 self.isLoading = false
             }
             return true
@@ -354,6 +369,7 @@ class AuthManager: ObservableObject {
             DispatchQueue.main.async {
                 self.currentUser = user
                 self.isAuthenticated = true
+                self.isFreshlyAuthenticated = true
                 self.isLoading = false
             }
             return true
@@ -415,6 +431,7 @@ class AuthManager: ObservableObject {
             DispatchQueue.main.async {
                 self.currentUser = user
                 self.isAuthenticated = true
+                self.isFreshlyAuthenticated = true
                 self.isLoading = false
             }
         } catch {
@@ -485,6 +502,7 @@ class AuthManager: ObservableObject {
         DispatchQueue.main.async {
             self.currentUser = nil
             self.isAuthenticated = false
+            self.isFreshlyAuthenticated = false
             self.errorMessage = nil
         }
     }
