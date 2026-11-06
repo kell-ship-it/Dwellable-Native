@@ -24,7 +24,16 @@ struct FullBleedVideoPlayer: UIViewRepresentable {
 
         let player = AVPlayer(url: url)
         view.playerLayer.player = player
-        view.playerLayer.videoGravity = .resizeAspectFill
+        // .resizeAspectFill (the original setting) zooms the video to fill the screen on
+        // any device whose aspect ratio is taller/narrower than the video's own — which an
+        // iPhone 18 Pro's screen is relative to this asset — cropping the top and bottom of
+        // frame. That's what was cutting off the "I love you, my daughter" caption and the
+        // top row of the four "dream" clouds on the Intro Video screen (Kell caught this
+        // Nov 5, 2026 from a screen recording). .resizeAspect letterboxes instead of
+        // cropping, so nothing baked into the video is ever cut off, at the cost of thin
+        // bars on a mismatched device — acceptable since the surrounding background is
+        // already the same near-black as the video's own.
+        view.playerLayer.videoGravity = .resizeAspect
 
         context.coordinator.observeEnd(of: player, onFinished: onFinished)
         player.play()
