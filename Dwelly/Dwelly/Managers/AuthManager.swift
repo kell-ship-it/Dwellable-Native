@@ -267,11 +267,18 @@ class AuthManager: ObservableObject {
             _ = keychain.save(authToken.userId, forKey: "userId")
             _ = keychain.save(email, forKey: "userEmail")
 
+            // Deliberately NOT flipping `isAuthenticated` here. DwellyApp's root view
+            // switches the instant `isAuthenticated` is true (`if isAuthenticated { AppView() }
+            // else { WelcomeView() }`), which tears down WelcomeView — and whatever
+            // fullScreenCover AccountCreationView has on top of it — immediately. That
+            // silently skipped the real "You're in." success screen entirely (Kell caught
+            // this Nov 5, 2026: verification succeeded and it jumped straight to the Intro
+            // Video with no success screen ever shown). `currentUser` is set so the rest of
+            // this is ready; `finalizeSignup()` below flips `isAuthenticated` only once the
+            // user taps "Continue" on that screen.
             let user = AuthUser(id: authToken.userId, email: email, token: authToken.token)
             DispatchQueue.main.async {
                 self.currentUser = user
-                self.isAuthenticated = true
-                self.isFreshlyAuthenticated = true
                 self.isLoading = false
             }
             return true
@@ -282,6 +289,14 @@ class AuthManager: ObservableObject {
             }
             return false
         }
+    }
+
+    /// Flips the root-view-switching state — deliberately separate from
+    /// `verifySignupOTP` itself; see the comment there. Called only when the user taps
+    /// "Continue" on AccountCreationView's "You're in." success screen.
+    func finalizeSignup() {
+        isAuthenticated = true
+        isFreshlyAuthenticated = true
     }
 
     /// The user's own recovery path once a signup code has been consumed by a mail-client

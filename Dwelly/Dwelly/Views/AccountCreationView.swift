@@ -494,6 +494,7 @@ struct AccountCreationView: View {
         .safeAreaInset(edge: .bottom) {
             Button(action: {
                 showCheckEmail = false
+                authManager.finalizeSignup()
                 onContinue()
             }) {
                 Text("Continue")
