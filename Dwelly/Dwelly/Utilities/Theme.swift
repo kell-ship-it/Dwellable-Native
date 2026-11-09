@@ -52,6 +52,10 @@ struct Theme {
         static let textPrimary = Color(red: 0xf5 / 255, green: 0xf5 / 255, blue: 0xf7 / 255)     // #f5f5f7
         static let textMuted = Color(red: 0xa3 / 255, green: 0x9e / 255, blue: 0x98 / 255)       // #a39e98
         static let trackBackground = Color(red: 0x33 / 255, green: 0x2e / 255, blue: 0x24 / 255) // #332e24
+        // Added for the Dwelly-Responds conversation (node 38:246, "Scenario 2: Dwelly Responds")
+        static let userBubble = Color(red: 0xaa / 255, green: 0x92 / 255, blue: 0x5c / 255)       // #aa925c — surface/user-bubble
+        static let textBody = Color(red: 0xb4 / 255, green: 0xac / 255, blue: 0x9b / 255)         // #b4ac9b — text/body (Dwelly's bubble text)
+        static let badgeBackground = Color(red: 0x26 / 255, green: 0x24 / 255, blue: 0x1f / 255)  // #26241f — surface/pill (the "dwelly" badge)
     }
 
     // MARK: - Font Sizes

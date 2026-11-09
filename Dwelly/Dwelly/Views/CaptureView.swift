@@ -16,7 +16,7 @@ struct CaptureView: View {
     @Environment(\.scenePhase) var scenePhase
     @StateObject private var audioManager = AudioRecordingManager()
     @State private var showVoiceReview = false
-    @State private var showTypeFlow = false
+    @State private var showConversation = false
     @State private var inputText = ""
     @FocusState private var inputFocused: Bool
 
@@ -189,8 +189,12 @@ struct CaptureView: View {
                 onMomentSaved?()
             })
         }
-        .navigationDestination(isPresented: $showTypeFlow) {
-            TypeFlowView(userId: userId, userEmail: userEmail, syncManager: syncManager, initialText: inputText, onMomentSaved: {
+        .navigationDestination(isPresented: $showConversation) {
+            // T-168 wired in Nov 2026 — typed text now opens the real "Dwelly Responds"
+            // conversation (node 38:246) instead of the old single-shot TypeFlowView save
+            // screen. Voice capture still goes through ReviewView, unchanged — folding
+            // voice into this same conversational flow is separate scope.
+            CaptureConversationView(userId: userId, userEmail: userEmail, syncManager: syncManager, initialMessage: inputText, onMomentSaved: {
                 onMomentSaved?()
             })
         }
@@ -214,7 +218,7 @@ struct CaptureView: View {
     private func submitTypedText() {
         guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         inputFocused = false
-        showTypeFlow = true
+        showConversation = true
     }
 
     // MARK: - Record Tap Handler
