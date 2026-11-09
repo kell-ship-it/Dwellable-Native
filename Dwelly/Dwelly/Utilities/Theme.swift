@@ -110,6 +110,12 @@ struct Theme {
         // (node 13:115, Account Creation) and confirmed against node 969:525 (Welcome): #f6f2e8.
         static let textHeading = Color(red: 0xf6 / 255, green: 0xf2 / 255, blue: 0xe8 / 255)   // #f6f2e8 — text/heading
         static let textSupporting = Color(red: 0x85 / 255, green: 0x7d / 255, blue: 0x69 / 255) // #857d69 — text/supporting
+        // T-205: against `backgroundPrimary` (#0b0a08), `textSupporting` computes to a real
+        // 4.84:1 WCAG contrast ratio (confirmed via the actual relative-luminance formula,
+        // not eyeballed) — technically clears the 4.5:1 AA minimum for normal text, but by
+        // a thin enough margin that Digital Cotton's review flagged it on sight, and it's
+        // worth a real safety margin rather than defending a bare pass. 7.43:1 here.
+        static let textSupportingAA = Color(red: 0xa8 / 255, green: 0x9e / 255, blue: 0x84 / 255) // #a89e84
         static let textPlaceholder = Color(red: 0xa3 / 255, green: 0x9e / 255, blue: 0x98 / 255) // #a39e98 — text/placeholder
         static let surfaceCard = Color(red: 0x17 / 255, green: 0x16 / 255, blue: 0x13 / 255)    // #171613 — surface/card (input fields)
         static let backgroundPrimary = Color(red: 0x0b / 255, green: 0x0a / 255, blue: 0x08 / 255) // #0b0a08 — background/primary (also CTA text color)

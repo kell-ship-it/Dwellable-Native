@@ -85,7 +85,7 @@ struct WelcomeView: View {
                 Button(action: { destination = .login }) {
                     HStack(spacing: 4) {
                         Text("Already have an account?")
-                            .foregroundColor(Theme.Payment.textSupporting)
+                            .foregroundColor(Theme.Payment.textSupportingAA)
                         Text("Log in")
                             .fontWeight(.semibold)
                             .foregroundColor(Theme.Payment.textHeading)
