@@ -203,6 +203,13 @@ struct AccountCreationView: View {
                 }
             )
         }
+        // Mirrors the identical fix on LoginView: `errorMessage` is one shared
+        // @Published property on AuthManager, reused by every auth screen. Arriving
+        // here from a failed Login attempt otherwise shows that screen's stale error
+        // ("Sign in failed: ... N attempts remaining") on a fresh Create Account screen
+        // that hasn't been submitted yet — Kell caught this Nov 2026, same bug as the
+        // OTP-error-leaking-onto-Login one, just the reverse direction.
+        .onAppear { authManager.errorMessage = nil }
     }
 
     // MARK: - Fields
