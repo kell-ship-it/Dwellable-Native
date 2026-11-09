@@ -2,7 +2,7 @@ import SwiftUI
 
 struct TypeFlowView: View {
     @Environment(\.dismiss) var dismiss
-    @State private var momentBody: String = ""
+    @State private var momentBody: String
     @State private var senseOfLord: String = ""
     @State private var isSaving = false
     @State private var saveError: String?
@@ -13,6 +13,16 @@ struct TypeFlowView: View {
     let userEmail: String?
     let syncManager: SyncManager
     var onMomentSaved: (() -> Void)?
+
+    /// `initialText` carries over what the user already typed in CaptureView's own
+    /// inline input bar (P1 redesign, Nov 2026) — they shouldn't have to retype it here.
+    init(userId: String, userEmail: String?, syncManager: SyncManager, initialText: String = "", onMomentSaved: (() -> Void)? = nil) {
+        self.userId = userId
+        self.userEmail = userEmail
+        self.syncManager = syncManager
+        self.onMomentSaved = onMomentSaved
+        _momentBody = State(initialValue: initialText)
+    }
 
     var body: some View {
         ZStack {

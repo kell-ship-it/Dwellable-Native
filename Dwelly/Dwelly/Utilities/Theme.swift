@@ -41,6 +41,19 @@ struct Theme {
     static let waveformFill = Color(red: 0.6, green: 0.64, blue: 0.71, opacity: 0.12)
     static let subtleOverlay = Color(red: 1, green: 1, blue: 1, opacity: 0.04)
 
+    // MARK: - Capture (P1 Redesign, Figma `t5MUGEtpeFcUixobvHiYMc`, node 2277:99)
+    // Pulled directly via Figma MCP Nov 2026 rebuilding CaptureView.swift to match the
+    // real locked design — existing root tokens above (tertiaryText etc.) are a cooler
+    // blue-gray, not this design's warm tan-gray, so these are scoped separately rather
+    // than redefining tokens other screens already depend on.
+    struct Capture {
+        static let cardBackground = Color(red: 0x16 / 255, green: 0x16 / 255, blue: 0x18 / 255) // #161618
+        static let cardBorder = Color(red: 0x2c / 255, green: 0x2c / 255, blue: 0x2e / 255)      // #2c2c2e
+        static let textPrimary = Color(red: 0xf5 / 255, green: 0xf5 / 255, blue: 0xf7 / 255)     // #f5f5f7
+        static let textMuted = Color(red: 0xa3 / 255, green: 0x9e / 255, blue: 0x98 / 255)       // #a39e98
+        static let trackBackground = Color(red: 0x33 / 255, green: 0x2e / 255, blue: 0x24 / 255) // #332e24
+    }
+
     // MARK: - Font Sizes
     static let titleSize: CGFloat = 28
     static let subtitleSize: CGFloat = 16

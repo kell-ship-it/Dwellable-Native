@@ -1,12 +1,26 @@
 import SwiftUI
 import Combine
 
+/// Matches the locked P1 Capture redesign (Figma `t5MUGEtpeFcUixobvHiYMc`, node 2277:99,
+/// "01 — Entry (Rotating Prompt) — reflecting") — rebuilt Nov 2026 after Kell caught that
+/// the previous version (a generic centered "Tap to capture" mic button, no personalization,
+/// a stray "‹ Moments" back row that doesn't belong in this locked flow) didn't match the
+/// real design at all; it had apparently never been built against it in the first place.
+/// Topic cards are the 3 fixed ones the design specifies verbatim — not yet wired to each
+/// user's actual onboarding Intent selection (the subtext's "pulled from what you shared
+/// during onboarding" is the locked copy/intent, but the real per-user personalization
+/// logic is new scope beyond this visual rebuild, not done here). The top bar-flame-row is
+/// rendered as a static/cosmetic element deliberately — T-210 flags its real meaning
+/// (onboarding progress vs. a streak) as still unresolved, awaiting reviewer reply, so
+/// nothing here should guess at real behavior for it yet.
 struct CaptureView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.scenePhase) var scenePhase
     @StateObject private var audioManager = AudioRecordingManager()
     @State private var showVoiceReview = false
     @State private var showTypeFlow = false
+    @State private var inputText = ""
+    @FocusState private var inputFocused: Bool
 
     // Model download state
     @State private var isDownloadingModel = false
@@ -21,129 +35,153 @@ struct CaptureView: View {
     let syncManager: SyncManager
     var onMomentSaved: (() -> Void)?
 
+    private let topicCards: [(title: String, subtitle: String)] = [
+        ("Relationships", "Did God show up in a connection today?"),
+        ("Quiet moments", "Any stillness stand out to you?"),
+        ("Doubt or struggle", "Anything weighing on you today?"),
+    ]
+
     var body: some View {
         ZStack {
             Theme.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Back button
-                HStack {
-                    Button(action: { dismiss() }) {
-                        HStack(spacing: 3) {
-                            Text("‹")
-                                .font(.system(size: 22))
-                            Text("Moments")
-                                .font(.system(size: 15, weight: .regular))
+                // bar-flame-row — see the type doc comment on T-210's unresolved meaning.
+                HStack(spacing: 10) {
+                    Capsule()
+                        .fill(Theme.Capture.trackBackground)
+                        .frame(height: 6)
+                        .overlay(alignment: .leading) {
+                            Capsule().fill(Theme.gold).frame(width: 328)
                         }
-                        .foregroundColor(Theme.tertiaryText)
-                    }
-                    Spacer()
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(Theme.gold)
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
+                .padding(.horizontal, 24)
+                .padding(.top, 10)
+
+                Spacer().frame(height: 60)
+
+                Text("What's stirring in you today?")
+                    .font(.system(size: 26, design: .serif))
+                    .foregroundColor(Theme.Capture.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 28)
+
+                Spacer().frame(height: 28)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(topicCards, id: \.title) { card in
+                            Button(action: { inputText = card.subtitle + " " }) {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text(card.title)
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundColor(Theme.Capture.textPrimary)
+                                    Text(card.subtitle)
+                                        .font(.system(size: 11))
+                                        .foregroundColor(Theme.Capture.textMuted)
+                                        .multilineTextAlignment(.leading)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .padding(16)
+                                .frame(width: 145, height: 100, alignment: .topLeading)
+                                .background(Theme.Capture.cardBackground)
+                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.Capture.cardBorder, lineWidth: 1))
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 28)
+                }
+
+                Spacer().frame(height: 28)
+
+                Text("Pulled from what you shared during onboarding — tap one, or share what's actually on your mind.")
+                    .font(.system(size: 12))
+                    .foregroundColor(Theme.Capture.textMuted)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 28)
+
+                // Recording duration / warning / error — unchanged behavior, just restyled
+                // to sit under the new layout instead of under the old mic button.
+                if audioManager.isRecording {
+                    Text(audioManager.formattedDuration(audioManager.recordingDuration))
+                        .font(.system(size: 18, weight: .semibold, design: .monospaced))
+                        .foregroundColor(Theme.gold)
+                        .padding(.top, 20)
+                        .transition(.opacity)
+                }
+                if let warningMessage = audioManager.warningMessage {
+                    Text(warningMessage)
+                        .font(.system(size: 12))
+                        .foregroundColor(Theme.gold)
+                        .padding(.top, Theme.Spacing.md)
+                        .padding(.horizontal, Theme.Spacing.sm)
+                        .multilineTextAlignment(.center)
+                        .transition(.opacity)
+                }
+                if let errorMessage = audioManager.errorMessage {
+                    Text(errorMessage)
+                        .font(.system(size: 12))
+                        .foregroundColor(Theme.error)
+                        .padding(.top, Theme.Spacing.md)
+                        .padding(.horizontal, Theme.Spacing.sm)
+                        .multilineTextAlignment(.center)
+                }
 
                 Spacer()
 
-                // Mic button with rings
-                ZStack {
-                    ForEach(Array(0..<3).enumerated(), id: \.offset) { _, index in
-                        Circle()
-                            .stroke(
-                                [Theme.goldRingLight, Theme.goldRingMedium, Theme.goldRing][index],
-                                lineWidth: 1
-                            )
-                            .frame(width: CGFloat(160 - index * 40), height: CGFloat(160 - index * 40))
-                    }
+                // input-bar — text-first, matching the locked design: typing swaps the
+                // trailing mic for a send arrow; the field empty keeps mic as the primary
+                // affordance into the existing (unchanged) voice-capture path.
+                HStack(spacing: 10) {
+                    TextField("", text: $inputText, prompt: Text("I've been thinking about").foregroundColor(Theme.Capture.textMuted), axis: .vertical)
+                        .font(.system(size: 14))
+                        .foregroundColor(Theme.Capture.textPrimary)
+                        .tint(Theme.gold)
+                        .focused($inputFocused)
+                        .submitLabel(.done)
+                        .onSubmit { submitTypedText() }
+                        .disabled(audioManager.isRecording || isDownloadingModel)
 
                     Button(action: {
-                        handleRecordTap()
+                        if inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            handleRecordTap()
+                        } else {
+                            submitTypedText()
+                        }
                     }) {
-                        Image(systemName: audioManager.isRecording ? "mic.fill" : "mic.fill")
-                            .font(.system(size: 26))
+                        Image(systemName: inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                              ? (audioManager.isRecording ? "stop.fill" : "mic.fill")
+                              : "arrow.up")
+                            .font(.system(size: 16))
                             .foregroundColor(Theme.goldDark)
-                            .frame(width: 80, height: 80)
-                            .background(audioManager.isRecording ? Theme.error : Theme.gold)
+                            .frame(width: 40, height: 40)
+                            .background(Theme.gold)
                             .clipShape(Circle())
                     }
                     .disabled(isDownloadingModel)
                     .opacity(isDownloadingModel ? 0.4 : 1.0)
                 }
-                .frame(width: 160, height: 160)
+                .padding(.horizontal, 20)
+                .frame(minHeight: 60)
+                .background(Theme.Capture.cardBackground)
+                .overlay(RoundedRectangle(cornerRadius: 28).stroke(Theme.gold, lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: 28))
+                .padding(.horizontal, 28)
 
-                Spacer()
-                    .frame(height: 32)
-
-                // Text
-                Text("Tap to capture")
-                    .font(.system(size: 22, weight: .medium))
-                    .foregroundColor(Theme.text)
-
-                Text("speak freely — we'll handle the rest")
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundColor(Theme.tertiaryText)
-
-                // Recording duration
-                if audioManager.isRecording {
-                    Text(audioManager.formattedDuration(audioManager.recordingDuration))
-                        .font(.system(size: 18, weight: .semibold, design: .monospaced))
-                        .foregroundColor(Theme.gold)
-                        .padding(.top, 16)
-                        .transition(.opacity)
-                }
-
-                // Warning message (9-minute alert)
-                if let warningMessage = audioManager.warningMessage {
-                    Text(warningMessage)
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(Theme.gold)
-                        .padding(.top, Theme.Spacing.md)
-                        .padding(.horizontal, Theme.Spacing.sm)
-                        .lineLimit(nil)
-                        .transition(.opacity)
-                }
-
-                // Error message (if any)
-                if let errorMessage = audioManager.errorMessage {
-                    Text(errorMessage)
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(Theme.error)
-                        .padding(.top, Theme.Spacing.md)
-                        .padding(.horizontal, Theme.Spacing.sm)
-                        .lineLimit(nil)
-                }
-
-                Spacer()
-
-                // Waveform
-                HStack(alignment: .center, spacing: 4) {
-                    ForEach(Array([5, 13, 20, 9, 24, 15, 7, 19, 22, 11, 5].enumerated()), id: \.offset) { offset, height in
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(Theme.waveformFill)
-                            .frame(width: 3, height: CGFloat(height))
-                    }
-                }
-                .frame(height: 28)
-                .padding(.bottom, Theme.Spacing.xxl)
-
-                // Type instead button
-                Button(action: {
-                    showTypeFlow = true
-                }) {
-                    Text("type instead →")
-                        .font(.system(size: 13, weight: .regular))
-                        .foregroundColor(Theme.tertiaryText)
-                        .padding(.vertical, Theme.Spacing.sm)
-                        .padding(.horizontal, Theme.Spacing.lg)
-                        .background(Theme.subtleOverlay)
-                        .border(Theme.borderLight, width: 1)
-                        .cornerRadius(Theme.Button.pillCornerRadius)
-                }
-                .accessibilityIdentifier("Type instead")
+                Text(audioManager.isRecording ? "Tap to finish recording" : "Tap return when you are finished writing")
+                    .font(.system(size: 11))
+                    .foregroundColor(Theme.gold)
+                    .padding(.top, 10)
 
                 Spacer()
                     .frame(height: Theme.Spacing.xxl)
             }
-            .padding(.horizontal, 28)
 
             // MARK: - Model Download Overlay
             if isDownloadingModel {
@@ -157,7 +195,7 @@ struct CaptureView: View {
             })
         }
         .navigationDestination(isPresented: $showTypeFlow) {
-            TypeFlowView(userId: userId, userEmail: userEmail, syncManager: syncManager, onMomentSaved: {
+            TypeFlowView(userId: userId, userEmail: userEmail, syncManager: syncManager, initialText: inputText, onMomentSaved: {
                 onMomentSaved?()
             })
         }
@@ -174,6 +212,14 @@ struct CaptureView: View {
                 }
             }
         )
+    }
+
+    // MARK: - Typed Text Handler
+
+    private func submitTypedText() {
+        guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        inputFocused = false
+        showTypeFlow = true
     }
 
     // MARK: - Record Tap Handler
