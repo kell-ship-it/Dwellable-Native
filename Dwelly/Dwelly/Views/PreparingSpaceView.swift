@@ -126,8 +126,15 @@ struct PreparingSpaceView: View {
 
     /// Activates item `index`: pops it in, resets its rotation to 0° (instantly, no
     /// animation), spins it a fixed number of full rotations, then — exactly when that spin
-    /// finishes — marks it complete and activates the next item. The last item just keeps
-    /// spinning (no next item to hand off to) until the user taps the CTA.
+    /// finishes — marks it complete and activates the next item, if any.
+    ///
+    /// Bug fixed Nov 2026 (Kell caught it live: the last item's checkmark never appeared,
+    /// just spun forever): the old code had `guard nextIndex < itemStates.count else {
+    /// return }` BEFORE scheduling the completion block at all — so for the last item,
+    /// where there's no next index, the entire `asyncAfter` that sets `itemStates[index] =
+    /// .complete` was skipped, not just the hand-off to a next item. The completion write
+    /// and the "is there a next item" check now happen independently, so the last item
+    /// still completes on schedule; it just has nothing to activate afterward.
     private func activate(_ index: Int) {
         guard index < itemStates.count else { return }
 
@@ -142,14 +149,17 @@ struct PreparingSpaceView: View {
         }
 
         let nextIndex = index + 1
-        guard nextIndex < itemStates.count else { return }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + activeDuration) {
             withAnimation(.easeOut(duration: 0.2)) {
                 itemStates[index] = .complete
-                itemStates[nextIndex] = .active
+                if nextIndex < itemStates.count {
+                    itemStates[nextIndex] = .active
+                }
             }
-            activate(nextIndex)
+            if nextIndex < itemStates.count {
+                activate(nextIndex)
+            }
         }
     }
 }
