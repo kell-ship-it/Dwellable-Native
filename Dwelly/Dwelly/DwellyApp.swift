@@ -337,14 +337,13 @@ struct DwellyApp: App {
                 if showAppLoading {
                     AppLoadingView(onComplete: { showAppLoading = false })
                 } else if authManager.isAuthenticated {
+                    // T-097: WhisperKit setup now starts during AppLoadingView itself (see
+                    // that file), on every launch — this gated-on-a-dead-flag call here was
+                    // redundant (and `setupWhisperKit()` only ever no-ops if already loaded
+                    // anyway, so removing it changes no behavior, just dead weight).
                     AppView(syncManager: syncManager)
                         .environmentObject(authManager)
                         .environment(\.apiClient, apiClient)
-                        .task {
-                            if UserDefaults.standard.bool(forKey: "whisperModelReady") {
-                                await TranscriptionManager.shared.setupWhisperKit()
-                            }
-                        }
                 } else {
                     WelcomeView()
                         .environmentObject(authManager)

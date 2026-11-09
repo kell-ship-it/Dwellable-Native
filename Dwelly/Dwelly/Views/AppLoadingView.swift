@@ -102,6 +102,23 @@ struct AppLoadingView: View {
         ZStack {
             Color(red: 0x0b / 255, green: 0x0a / 255, blue: 0x08 / 255).ignoresSafeArea()
 
+            // T-097: start the ~74MB WhisperKit model download/load as early as possible —
+            // right here, during the launch screen, on every launch regardless of which
+            // branch below renders — rather than waiting until it's actually needed
+            // mid-capture. Previously this was only triggered post-auth, gated behind a
+            // `whisperModelReady` UserDefaults flag that's never actually set anywhere
+            // live (ModelSetupView, the one place that set it, isn't presented anywhere in
+            // the current T-238 7-screen onboarding — dead code from the old flow), so in
+            // practice the model was never preloaded at all; it only ever loaded on-demand
+            // the first time CaptureView needed it, meaning the user's very first capture
+            // (onboarding's own mandatory first capture, for a fresh signup) was the one
+            // eating the full download/load delay. Fire-and-forget: does not block
+            // `onComplete` — the loading screen's own timing is unaffected, this just gets
+            // a head start running in the background. `setupWhisperKit()` is idempotent
+            // (no-ops if already loaded), so unconditionally calling it here is safe.
+            Color.clear
+                .task { Task { await TranscriptionManager.shared.setupWhisperKit() } }
+
             if Bundle.main.url(forResource: "AppLoadingAnimation", withExtension: "mp4") != nil {
                 FullBleedVideoPlayer(
                     resourceName: "AppLoadingAnimation",
