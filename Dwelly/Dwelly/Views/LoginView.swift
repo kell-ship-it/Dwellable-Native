@@ -12,6 +12,19 @@ struct LoginView: View {
     @State private var showPassword = false
     @State private var showForgotPassword = false
 
+    /// Same format-only check as AccountCreationView's `isEmailValid` (no deliverability
+    /// lookup) — kept consistent between the two screens per Kell's direction (Nov 2026):
+    /// the Log In button should gate/fade exactly like Create Account's does, not just
+    /// disable on empty fields with no visual cue.
+    private var isEmailValid: Bool {
+        let pattern = #"^[^\s@]+@[^\s@]+\.[^\s@]+$"#
+        return email.range(of: pattern, options: .regularExpression) != nil
+    }
+
+    /// Login's password just has to be present — unlike signup, there's no strength rule
+    /// to check here, the server is the one source of truth on whether it's correct.
+    private var isValid: Bool { isEmailValid && !password.isEmpty }
+
     var body: some View {
         ZStack(alignment: .top) {
             Theme.Payment.backgroundPrimary.ignoresSafeArea()
@@ -174,7 +187,8 @@ struct LoginView: View {
             }
             .background(Theme.gold)
             .clipShape(Capsule())
-            .disabled(authManager.isLoading || email.isEmpty || password.isEmpty)
+            .disabled(!isValid || authManager.isLoading)
+            .opacity(isValid ? 1 : 0.5)
             .accessibilityIdentifier("Login")
 
             // Figma node 974:3771. Only shown once a credential actually exists to use —
