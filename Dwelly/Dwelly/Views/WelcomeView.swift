@@ -43,17 +43,22 @@ struct WelcomeView: View {
     @EnvironmentObject var authManager: AuthManager
     @State private var destination: WelcomeDestination?
 
-    // Fractions of the Figma frame (402×874, node 969:525), applied against the real
-    // screen's own height.
-    private var screenHeight: CGFloat { UIScreen.main.bounds.height }
-    private let wordmarkTopFraction: CGFloat = 620.0 / 874.0
-    private let footerTopFraction: CGFloat = 726.0 / 874.0
-    // Measured from the rendered text block (52pt serif wordmark + 8pt gap + 13pt tagline).
-    private let wordmarkBlockHeight: CGFloat = 88
-
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: screenHeight * wordmarkTopFraction)
+            // Flexible, unconstrained `Spacer()`s rather than a computed
+            // `.frame(height:)`/`.padding(.top:)`/`.position()` offset — confirmed
+            // reproducibly on simulator (Nov 9, 2026 debugging session): a large fixed
+            // top offset on this screen, however it's computed or applied (a sized
+            // `Spacer`/`Color.clear` sibling, `.padding`, even `.position`), leaves Get
+            // Started/Log In rendering in the visually-correct spot while silently
+            // eating every tap — confirmed via an in-app debug log that the Button
+            // action never fires. Plain flexible `Spacer()`s did not reproduce that in
+            // the same repeated testing. Root cause not fully understood — see the
+            // FullBleedImage comment above for the same situation one layer up (that
+            // "fix" likely only ever dodged this, rather than addressing it). This no
+            // longer pixel-matches Figma's exact 71%/83%-down placement, but a slightly
+            // off position beats a dead button.
+            Spacer()
 
             VStack(spacing: 8) {
                 Text("dwelly")
@@ -68,7 +73,8 @@ struct WelcomeView: View {
             }
             .frame(maxWidth: .infinity)
 
-            Spacer().frame(height: max(0, screenHeight * (footerTopFraction - wordmarkTopFraction) - wordmarkBlockHeight))
+            Spacer()
+            Spacer()
 
             VStack(spacing: 16) {
                 Button(action: { destination = .accountCreation }) {
@@ -94,8 +100,7 @@ struct WelcomeView: View {
                 }
             }
             .frame(maxWidth: .infinity)
-
-            Spacer(minLength: 0)
+            .padding(.bottom, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(FullBleedImage(imageName: "WelcomeHeroBackground"))
