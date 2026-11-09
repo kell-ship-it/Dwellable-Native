@@ -3,7 +3,7 @@
 // The one place in this entire app that calls an LLM. Every feature that needs one
 // (P1 Capture's "Dwelly Responds" conversation, P3 Prayer generation, P4 Journal
 // synthesis, eventually P6 Formation Intelligence) calls THIS endpoint instead of
-// talking to a provider directly — so the API keys live in exactly one place, the
+// talking to a provider directly -- so the API keys live in exactly one place, the
 // provider/fallback logic is written exactly once, and swapping or adding a provider
 // later touches one file, not every feature that uses an LLM.
 //
@@ -11,12 +11,21 @@
 // is primary (free tier, superior for the poetic/narrative tone this product wants),
 // OpenAI GPT-4o mini is the fallback if Groq errors or times out. This supersedes the
 // older docs/LLM_RESEARCH.md Gemini recommendation (May 2026, written under the old
-// client-side-E2E architecture that's since been superseded — see
+// client-side-E2E architecture that's since been superseded -- see
 // docs/PILLAR_2_SECURITY_STRATEGY.md's "Model Change" section).
 //
-// `feature` is required and logged, not just decoration — it's what lets later usage
+// `feature` is required and logged, not just decoration -- it's what lets later usage
 // analysis answer "how much is Capture's conversation costing us vs. Prayer generation"
 // without having to reverse-engineer it from raw request bodies.
+//
+// Cost control (added Nov 2026, Kell's explicit ask before real testing): every call is
+// logged to public.llm_usage (user_id, feature, provider, model, created_at) -- both so
+// a per-user daily cap can actually be enforced, and so Kell can see the real
+// Groq-vs-OpenAI split to empirically verify the free-tier loop estimate in
+// docs/LLM_COST_CAPACITY_EXPLAINER.html rather than just trust it. DAILY_CALL_LIMIT is a
+// call-count cap (not a "loop" in that doc's sense -- one Capture conversation turn here
+// is one call), set generously (60/day/user) so it bounds runaway/bug cost without
+// getting in the way of Kell's own multi-day manual testing.
 
 import { createClient } from "jsr:@supabase/supabase-js"
 
@@ -46,6 +55,7 @@ const OPENAI_MODEL = "gpt-4o-mini"
 const DEFAULT_MAX_TOKENS = 500
 const DEFAULT_TEMPERATURE = 0.8
 const GROQ_TIMEOUT_MS = 10_000
+const DAILY_CALL_LIMIT = 60
 
 async function callGroq(messages: ChatMessage[], maxTokens: number, temperature: number): Promise<string> {
   const apiKey = Deno.env.get("GROQ_API_KEY")
@@ -128,7 +138,7 @@ Deno.serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!
 
-    // Every call must come from an authenticated Dwelly user — this proxy is not a
+    // Every call must come from an authenticated Dwelly user -- this proxy is not a
     // general-purpose open LLM endpoint, it's scoped to this app's own features.
     const authHeader = req.headers.get("Authorization")
     if (!authHeader) {
@@ -147,6 +157,27 @@ Deno.serve(async (req: Request) => {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
+    }
+    const userId = userData.user.id
+
+    // Cost control: hard daily cap per user, checked before spending anything.
+    const todayStart = new Date()
+    todayStart.setUTCHours(0, 0, 0, 0)
+    const { count: todaysCallCount, error: countError } = await authClient
+      .from("llm_usage")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .gte("created_at", todayStart.toISOString())
+
+    if (countError) {
+      console.error("llm-proxy: usage count check failed:", countError)
+      // Fail open on a usage-table read error, not closed -- a logging problem
+      // shouldn't take down the whole feature.
+    } else if ((todaysCallCount ?? 0) >= DAILY_CALL_LIMIT) {
+      return new Response(
+        JSON.stringify({ error: `Daily limit reached (${DAILY_CALL_LIMIT} calls/day). Try again tomorrow.` }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      )
     }
 
     const payload = (await req.json()) as LLMProxyRequest
@@ -171,12 +202,12 @@ Deno.serve(async (req: Request) => {
       const content = await callGroq(payload.messages, maxTokens, temperature)
       result = { content, model: GROQ_MODEL, provider: "groq" }
     } catch (groqError) {
-      console.error(`llm-proxy [${payload.feature}]: Groq failed, falling back to OpenAI —`, groqError)
+      console.error(`llm-proxy [${payload.feature}]: Groq failed, falling back to OpenAI --`, groqError)
       try {
         const content = await callOpenAI(payload.messages, maxTokens, temperature)
         result = { content, model: OPENAI_MODEL, provider: "openai" }
       } catch (openaiError) {
-        console.error(`llm-proxy [${payload.feature}]: OpenAI fallback also failed —`, openaiError)
+        console.error(`llm-proxy [${payload.feature}]: OpenAI fallback also failed --`, openaiError)
         return new Response(
           JSON.stringify({ error: "Both LLM providers failed", groq: String(groqError), openai: String(openaiError) }),
           { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -185,6 +216,18 @@ Deno.serve(async (req: Request) => {
     }
 
     console.log(`llm-proxy [${payload.feature}]: served by ${result.provider}/${result.model}`)
+
+    // Log after a successful call, not before -- a failed call never happened and
+    // shouldn't count against the daily cap or show up in Kell's provider-split check.
+    const { error: logError } = await authClient.from("llm_usage").insert({
+      user_id: userId,
+      feature: payload.feature,
+      provider: result.provider,
+      model: result.model,
+    })
+    if (logError) {
+      console.error("llm-proxy: failed to log usage (non-fatal):", logError)
+    }
 
     return new Response(JSON.stringify(result), {
       status: 200,
