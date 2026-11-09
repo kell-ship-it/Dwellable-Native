@@ -130,11 +130,11 @@ struct CaptureView: View {
 
                 Spacer()
 
-                // Component/Compose-Text-Pill (node 647:221) — the real shared component
-                // used across every P1 Capture idle-state screen: plain pill, no border,
-                // always a mic button (per its own Figma description: "consistent across
-                // all 16 instances") — typed text submits via the keyboard's own Return
-                // key (.onSubmit below), not by tapping this button.
+                // Component/Compose-Text-Pill (node 647:221) — plain pill, no border. Kell
+                // caught two real mismatches against his own reference: the mic button is a
+                // muted dark circle with a gold icon, not a solid gold fill — gold fill is
+                // reserved for the send button, which only appears (highlighted) once
+                // there's text to send. Mic stays available alongside it for voice.
                 HStack(spacing: 8) {
                     TextField("", text: $inputText, prompt: Text("Share what's on your mind...").foregroundColor(Theme.Capture.textMuted), axis: .vertical)
                         .font(.system(size: 16))
@@ -145,17 +145,30 @@ struct CaptureView: View {
                         .onSubmit { submitTypedText() }
                         .disabled(audioManager.isRecording || isDownloadingModel)
 
+                    if !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Button(action: submitTypedText) {
+                            Image(systemName: "arrow.up")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Theme.goldDark)
+                                .frame(width: 44, height: 44)
+                                .background(Theme.gold)
+                                .clipShape(Circle())
+                        }
+                        .transition(.scale.combined(with: .opacity))
+                    }
+
                     Button(action: handleRecordTap) {
                         Image(systemName: audioManager.isRecording ? "stop.fill" : "mic.fill")
                             .font(.system(size: 16))
-                            .foregroundColor(Theme.goldDark)
+                            .foregroundColor(Theme.gold)
                             .frame(width: 44, height: 44)
-                            .background(Theme.gold)
+                            .background(Theme.Capture.cardBorder)
                             .clipShape(Circle())
                     }
                     .disabled(isDownloadingModel)
                     .opacity(isDownloadingModel ? 0.4 : 1.0)
                 }
+                .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
                 .padding(.leading, 20)
                 .padding(.trailing, 8)
                 .frame(height: 60)
