@@ -50,6 +50,12 @@ interface LLMProxyResponse {
   provider: "groq" | "openai"
 }
 
+interface TokenUsage {
+  promptTokens: number | null
+  completionTokens: number | null
+  totalTokens: number | null
+}
+
 const GROQ_MODEL = "llama3-70b-8192"
 const OPENAI_MODEL = "gpt-4o-mini"
 const DEFAULT_MAX_TOKENS = 500
@@ -57,7 +63,15 @@ const DEFAULT_TEMPERATURE = 0.8
 const GROQ_TIMEOUT_MS = 10_000
 const DAILY_CALL_LIMIT = 60
 
-async function callGroq(messages: ChatMessage[], maxTokens: number, temperature: number): Promise<string> {
+function extractUsage(data: { usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } }): TokenUsage {
+  return {
+    promptTokens: data.usage?.prompt_tokens ?? null,
+    completionTokens: data.usage?.completion_tokens ?? null,
+    totalTokens: data.usage?.total_tokens ?? null,
+  }
+}
+
+async function callGroq(messages: ChatMessage[], maxTokens: number, temperature: number): Promise<{ content: string; usage: TokenUsage }> {
   const apiKey = Deno.env.get("GROQ_API_KEY")
   if (!apiKey) throw new Error("GROQ_API_KEY not set")
 
@@ -88,13 +102,13 @@ async function callGroq(messages: ChatMessage[], maxTokens: number, temperature:
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content
     if (!content) throw new Error("Groq response missing choices[0].message.content")
-    return content
+    return { content, usage: extractUsage(data) }
   } finally {
     clearTimeout(timeout)
   }
 }
 
-async function callOpenAI(messages: ChatMessage[], maxTokens: number, temperature: number): Promise<string> {
+async function callOpenAI(messages: ChatMessage[], maxTokens: number, temperature: number): Promise<{ content: string; usage: TokenUsage }> {
   const apiKey = Deno.env.get("OPENAI_API_KEY")
   if (!apiKey) throw new Error("OPENAI_API_KEY not set")
 
@@ -120,7 +134,7 @@ async function callOpenAI(messages: ChatMessage[], maxTokens: number, temperatur
   const data = await response.json()
   const content = data.choices?.[0]?.message?.content
   if (!content) throw new Error("OpenAI response missing choices[0].message.content")
-  return content
+  return { content, usage: extractUsage(data) }
 }
 
 Deno.serve(async (req: Request) => {
@@ -198,14 +212,17 @@ Deno.serve(async (req: Request) => {
     const temperature = payload.temperature ?? DEFAULT_TEMPERATURE
 
     let result: LLMProxyResponse
+    let usage: TokenUsage
     try {
-      const content = await callGroq(payload.messages, maxTokens, temperature)
-      result = { content, model: GROQ_MODEL, provider: "groq" }
+      const groqResult = await callGroq(payload.messages, maxTokens, temperature)
+      result = { content: groqResult.content, model: GROQ_MODEL, provider: "groq" }
+      usage = groqResult.usage
     } catch (groqError) {
       console.error(`llm-proxy [${payload.feature}]: Groq failed, falling back to OpenAI --`, groqError)
       try {
-        const content = await callOpenAI(payload.messages, maxTokens, temperature)
-        result = { content, model: OPENAI_MODEL, provider: "openai" }
+        const openaiResult = await callOpenAI(payload.messages, maxTokens, temperature)
+        result = { content: openaiResult.content, model: OPENAI_MODEL, provider: "openai" }
+        usage = openaiResult.usage
       } catch (openaiError) {
         console.error(`llm-proxy [${payload.feature}]: OpenAI fallback also failed --`, openaiError)
         return new Response(
@@ -215,15 +232,21 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    console.log(`llm-proxy [${payload.feature}]: served by ${result.provider}/${result.model}`)
+    console.log(`llm-proxy [${payload.feature}]: served by ${result.provider}/${result.model}, ${usage.totalTokens ?? "?"} tokens`)
 
     // Log after a successful call, not before -- a failed call never happened and
     // shouldn't count against the daily cap or show up in Kell's provider-split check.
+    // Token counts (added Nov 2026, Kell's explicit ask to watch spend live) come
+    // straight off each provider's own `usage` block -- not estimated -- so the running
+    // total in `get-usage-summary` is exact, not a guess.
     const { error: logError } = await authClient.from("llm_usage").insert({
       user_id: userId,
       feature: payload.feature,
       provider: result.provider,
       model: result.model,
+      prompt_tokens: usage.promptTokens,
+      completion_tokens: usage.completionTokens,
+      total_tokens: usage.totalTokens,
     })
     if (logError) {
       console.error("llm-proxy: failed to log usage (non-fatal):", logError)

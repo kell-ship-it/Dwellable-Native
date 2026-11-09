@@ -17,6 +17,7 @@ struct CaptureConversationView: View {
     var onMomentSaved: (() -> Void)?
 
     @Environment(\.apiClient) private var apiClient
+    @Environment(\.dismiss) private var dismiss
     @FocusState private var inputFocused: Bool
 
     private struct Turn: Identifiable {
@@ -31,72 +32,135 @@ struct CaptureConversationView: View {
     @State private var isSaving = false
     @State private var isSyncPending = false
     @State private var errorMessage: String?
+    @State private var savedMoment: Moment?
+    @State private var journalMeta: JournalMeta?
+    @State private var showMomentDetail = false
 
     private let maxResponses = 3
     private var dwellyResponseCount: Int { turns.filter { $0.role == .assistant }.count }
     private var isConversationComplete: Bool { dwellyResponseCount >= maxResponses }
 
+    /// Generated once, right after the conversation closes — a title/excerpt/scripture
+    /// pairing for the journal-entry card (Figma's closing screen, which Kell confirmed
+    /// Nov 9 2026 shows a real titled entry with a scripture pairing, not a plain dump of
+    /// what was typed). Ephemeral: `Moment` has no title/scripture columns of its own yet
+    /// (that's real P4/Journal schema scope), so this is generated fresh for display here
+    /// and not persisted — reopening a saved moment later just shows its plain body.
+    private struct JournalMeta: Decodable {
+        let title: String
+        let excerpt: String
+        let scriptureQuote: String?
+        let scriptureReference: String?
+
+        enum CodingKeys: String, CodingKey {
+            case title, excerpt
+            case scriptureQuote = "scripture_quote"
+            case scriptureReference = "scripture_reference"
+        }
+    }
+
     /// Kept short and narrow on purpose — this is a first real wiring of T-168 into a
     /// feature, not a tuned persona. Revisit once there's an actual conversation to judge
     /// tone against.
+    ///
+    /// Two variants, not one: the original single prompt told the model it "has at most
+    /// 3 responses" but never actually told it when it was ON the 3rd — so it kept asking
+    /// follow-up questions right through the close, and the UI's "Save Your Moment" button
+    /// just cut it off mid-conversation instead of the model ever actually wrapping up.
+    /// Kell caught this live testing T-168 (Nov 9, 2026). `closingSystemPrompt` is used
+    /// only for the request that produces the final (3rd) response.
     private let systemPrompt = """
     You are Dwelly, a warm, compassionate companion helping someone reflect honestly on \
     a moment with God today. Respond in 1-2 short sentences. Ask one gentle, Socratic \
     follow-up question that helps them go deeper — don't lecture, don't quote scripture \
-    unless it truly fits, don't be clinical. You have at most 3 responses in this \
-    conversation before it naturally closes.
+    unless it truly fits, don't be clinical.
     """
 
+    private let closingSystemPrompt = """
+    You are Dwelly, a warm, compassionate companion helping someone reflect honestly on \
+    a moment with God today. This is your final response in this conversation — do NOT \
+    ask another question. Instead, in 1-2 short sentences, gently affirm what they shared \
+    and bring the reflection to a close, the way a trusted friend would end a meaningful \
+    conversation, not cut it off.
+    """
+
+    // Plain top-to-bottom `VStack` — header, scrolling transcript, then the input/save
+    // footer as a normal trailing sibling — rather than the original `ZStack(alignment:
+    // .bottom)` that overlaid a separate footer VStack on top of the ScrollView. That
+    // overlay structure reproduced the same dead-hit-target bug chased down elsewhere
+    // this session (WelcomeView, IntentSelectionView, CaptureView): the compose
+    // TextField rendered correctly, in the correct place, but never once took focus on
+    // tap — confirmed across many retries and coordinates, both for the TextField and
+    // (separately) the Send button when there was already text to send. A ScrollView
+    // z-stacked under another interactive view, instead of laid out as a sibling above
+    // it, is the common thread in this whole family of bugs. Root cause not fully
+    // understood — see WelcomeView's comment for the fuller account.
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Theme.background.ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                HStack {
-                    Spacer()
-                    Image("DwellyRockIcon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 24, height: 24)
+        VStack(spacing: 0) {
+            HStack {
+                // Only once the entry is saved — mid-conversation, leaving loses it with
+                // nothing to come back to, so there's nothing to navigate back TO yet.
+                if isConversationComplete {
+                    Button(action: { onMomentSaved?(); dismiss() }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(Theme.Capture.textPrimary)
+                            .frame(width: 44, height: 44)
+                    }
                 }
-                .padding(.horizontal, 28)
-                .padding(.top, 14)
+                Spacer()
+                Image("DwellyRockIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 24, height: 24)
+            }
+            .padding(.horizontal, isConversationComplete ? 16 : 28)
+            .padding(.top, 14)
 
-                if dwellyResponseCount > 0 {
-                    HStack {
-                        Text("Response \(dwellyResponseCount) of \(maxResponses)")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(Theme.Payment.textSupporting)
-                        Spacer()
+            if dwellyResponseCount > 0 {
+                HStack {
+                    Text("Response \(dwellyResponseCount) of \(maxResponses)")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(Theme.Payment.textSupporting)
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 20)
+            }
+
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        ForEach(turns) { turn in
+                            turnBubble(turn, isFinal: turn.id == turns.last(where: { $0.role == .assistant })?.id && isConversationComplete)
+                                .id(turn.id)
+                        }
+                        if isWaitingForDwelly {
+                            dwellyBadge
+                            ProgressView()
+                                .tint(Theme.gold)
+                                .padding(.leading, 24)
+                                .id("spinner")
+                        }
+                        if isConversationComplete {
+                            journalPreview
+                                .id("journalPreview")
+                        }
                     }
                     .padding(.horizontal, 24)
                     .padding(.top, 20)
+                    .padding(.bottom, 24)
                 }
-
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 20) {
-                            ForEach(turns) { turn in
-                                turnBubble(turn)
-                                    .id(turn.id)
-                            }
-                            if isWaitingForDwelly {
-                                dwellyBadge
-                                ProgressView()
-                                    .tint(Theme.gold)
-                                    .padding(.leading, 24)
-                                    .id("spinner")
-                            }
-                        }
-                        .padding(.horizontal, 24)
-                        .padding(.top, 20)
-                        .padding(.bottom, 24)
-                    }
-                    .onChange(of: turns.count) { _ in
-                        withAnimation { proxy.scrollTo(turns.last?.id, anchor: .bottom) }
-                    }
-                    .onChange(of: isWaitingForDwelly) { waiting in
-                        if waiting { withAnimation { proxy.scrollTo("spinner", anchor: .bottom) } }
+                .onChange(of: turns.count) { _ in
+                    withAnimation { proxy.scrollTo(turns.last?.id, anchor: .bottom) }
+                }
+                .onChange(of: isWaitingForDwelly) { waiting in
+                    if waiting { withAnimation { proxy.scrollTo("spinner", anchor: .bottom) } }
+                }
+                .onChange(of: isConversationComplete) { complete in
+                    if complete {
+                        withAnimation { proxy.scrollTo("journalPreview", anchor: .bottom) }
+                        Task { await finishAndSave() }
                     }
                 }
             }
@@ -111,24 +175,7 @@ struct CaptureConversationView: View {
                 }
 
                 if isConversationComplete {
-                    Button(action: { Task { await finishAndSave() } }) {
-                        if isSaving {
-                            ProgressView().tint(Theme.Payment.backgroundPrimary)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 60)
-                        } else {
-                            Text("Save Your Moment")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Theme.Payment.backgroundPrimary)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 60)
-                        }
-                    }
-                    .background(Theme.gold)
-                    .clipShape(Capsule())
-                    .disabled(isSaving)
-                    .padding(.horizontal, 28)
-                    .padding(.bottom, Theme.Spacing.xxl)
+                    EmptyView()
                 } else {
                     HStack(spacing: 8) {
                         TextField("", text: $inputText, prompt: Text("Share what's on your mind...").foregroundColor(Theme.Capture.textMuted), axis: .vertical)
@@ -160,13 +207,8 @@ struct CaptureConversationView: View {
                     .padding(.bottom, Theme.Spacing.xxl)
                 }
             }
-            .background(
-                LinearGradient(colors: [Theme.background.opacity(0), Theme.background], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 180)
-                    .allowsHitTesting(false),
-                alignment: .top
-            )
         }
+        .background(Theme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
         .onAppear {
             turns = [Turn(role: .user, text: initialMessage)]
@@ -174,8 +216,14 @@ struct CaptureConversationView: View {
         }
     }
 
+    /// `isFinal` — the closing (3rd) Dwelly response renders as plain text with no
+    /// card/border at all, matching the Figma close screen Kell confirmed Nov 9 2026:
+    /// it hands off straight into the journal card below it, not another chat bubble.
+    /// Earlier turns keep the card fill but never a stroke — Kell's original ask
+    /// ("there's this weird border... it should be faded") was for every bubble, this
+    /// is just the final one going further, to flat text, per the real design.
     @ViewBuilder
-    private func turnBubble(_ turn: Turn) -> some View {
+    private func turnBubble(_ turn: Turn, isFinal: Bool) -> some View {
         switch turn.role {
         case .user:
             HStack {
@@ -191,19 +239,104 @@ struct CaptureConversationView: View {
         case .assistant:
             VStack(alignment: .leading, spacing: 6) {
                 dwellyBadge
-                Text(turn.text)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Theme.Capture.textBody)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .frame(maxWidth: 280, alignment: .leading)
-                    .background(Theme.Capture.cardBackground)
-                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.Capture.cardBorder, lineWidth: 1))
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                if isFinal {
+                    Text(turn.text)
+                        .font(.system(size: 16, weight: .regular))
+                        .foregroundColor(Theme.Capture.textPrimary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    Text(turn.text)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Theme.Capture.textBody)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .frame(maxWidth: 280, alignment: .leading)
+                        .background(Theme.Capture.cardBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                }
             }
         case .system:
             EmptyView()
         }
+    }
+
+    /// The journal-entry card shown once the conversation closes (Figma close screen,
+    /// confirmed against Kell's own screenshot Nov 9 2026) — a titled entry with a
+    /// scripture pairing and an "Open" link into the saved moment, not a flat dump of
+    /// what was typed with a manual Save button. `journalMeta` is generated once, right
+    /// after close, by a dedicated LLM call (`generateJournalMeta`); `savedMoment` comes
+    /// from the auto-save that fires in parallel — "Open" is disabled until both land.
+    private var journalPreview: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top) {
+                Text(Date().formatted(date: .abbreviated, time: .omitted).uppercased())
+                    .font(.system(size: 12, weight: .medium))
+                    .tracking(0.3)
+                    .foregroundColor(Theme.Payment.textSupporting)
+                Spacer()
+                if let savedMoment {
+                    Button(action: { showMomentDetail = true }) {
+                        Text("Open")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(Theme.gold)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                    }
+                    .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
+                    .navigationDestination(isPresented: $showMomentDetail) {
+                        MomentDetailView(moment: savedMoment)
+                    }
+                } else {
+                    ProgressView().tint(Theme.gold)
+                }
+            }
+
+            if let journalMeta {
+                Text(journalMeta.title)
+                    .font(.system(size: 22, design: .serif))
+                    .foregroundColor(Theme.Capture.textPrimary)
+                    .padding(.top, 20)
+
+                Text(journalMeta.excerpt)
+                    .font(.system(size: 14))
+                    .foregroundColor(Theme.Payment.textSupporting)
+                    .padding(.top, 12)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if let quote = journalMeta.scriptureQuote, let reference = journalMeta.scriptureReference {
+                    Rectangle()
+                        .fill(Theme.gold)
+                        .frame(height: 1)
+                        .padding(.top, 20)
+
+                    Text("\u{201C}\(quote)\u{201D} — \(reference)")
+                        .font(.system(size: 13, design: .serif))
+                        .italic()
+                        .foregroundColor(Theme.gold)
+                        .padding(.top, 16)
+                }
+            } else {
+                HStack(spacing: 8) {
+                    ProgressView().tint(Theme.Payment.textSupporting)
+                    Text("Preparing your entry...")
+                        .font(.system(size: 13))
+                        .foregroundColor(Theme.Payment.textSupporting)
+                }
+                .padding(.top, 20)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(20)
+        .background(Theme.Capture.cardBackground)
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.Capture.cardBorder.opacity(0.5), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+
+    private var combinedBody: String {
+        turns
+            .filter { $0.role == .user }
+            .map(\.text)
+            .joined(separator: "\n\n")
     }
 
     private var dwellyBadge: some View {
@@ -233,7 +366,8 @@ struct CaptureConversationView: View {
         isWaitingForDwelly = true
         errorMessage = nil
 
-        var messages = [LLMMessage(role: .system, content: systemPrompt)]
+        let isFinalResponse = dwellyResponseCount == maxResponses - 1
+        var messages = [LLMMessage(role: .system, content: isFinalResponse ? closingSystemPrompt : systemPrompt)]
         messages.append(contentsOf: turns.map { LLMMessage(role: $0.role, content: $0.text) })
 
         do {
@@ -251,14 +385,18 @@ struct CaptureConversationView: View {
         }
     }
 
+    /// Fires automatically once the conversation closes — the Figma close screen has no
+    /// manual "Save Your Moment" button, it's already saved by the time the journal card
+    /// appears. Deliberately does NOT call `onMomentSaved?()` here: every call site
+    /// (MainTabView, OnboardingCoordinatorView, MomentsListView) uses that callback to
+    /// dismiss this whole screen, which would hide the journal card the instant it
+    /// appeared. That callback now fires from the back chevron instead, once the user
+    /// has actually seen the card and is ready to leave.
     private func finishAndSave() async {
         isSaving = true
         errorMessage = nil
 
-        let combinedBody = turns
-            .filter { $0.role == .user }
-            .map(\.text)
-            .joined(separator: "\n\n")
+        async let metaTask: Void = generateJournalMeta()
 
         let moment = Moment(userId: userId, body: combinedBody, createdAt: Date())
 
@@ -268,7 +406,7 @@ struct CaptureConversationView: View {
             Task { try? await UsageTracker.shared.syncEventsToBackend(userId: userId, apiClient: apiClient) }
             await MainActor.run {
                 isSaving = false
-                onMomentSaved?()
+                savedMoment = moment
             }
         } catch {
             syncManager.markMomentAsPending(moment)
@@ -277,7 +415,49 @@ struct CaptureConversationView: View {
             await MainActor.run {
                 isSyncPending = true
                 isSaving = false
-                onMomentSaved?()
+                savedMoment = moment
+            }
+        }
+
+        await metaTask
+    }
+
+    /// One extra LLM call, fired in parallel with the save itself — asks for strict JSON
+    /// so a title/excerpt/scripture pairing can show up on the journal card right away
+    /// instead of a plain dump of the typed turns. Best-effort: if the model doesn't
+    /// return parseable JSON, the card falls back to a plain title/excerpt built locally
+    /// and just skips the scripture line, rather than blocking or erroring the save.
+    private func generateJournalMeta() async {
+        let prompt = """
+        Based on this reflection, return ONLY a single JSON object (no markdown, no \
+        commentary) with these exact keys: "title" (a short, warm, 2-5 word title for this \
+        journal entry), "excerpt" (a 1-2 sentence third-person summary of what they shared, \
+        under 160 characters), "scripture_quote" (a short, real Bible verse quote that \
+        genuinely fits the moment, or null if none truly fits), "scripture_reference" (e.g. \
+        "Psalm 46:10", or null if scripture_quote is null).
+
+        Reflection:
+        \(combinedBody)
+        """
+        let messages = [LLMMessage(role: .system, content: "You return only valid JSON, nothing else."), LLMMessage(role: .user, content: prompt)]
+
+        do {
+            let response = try await apiClient.callLLM(messages: messages, feature: "journal_preview_generation")
+            guard let start = response.content.firstIndex(of: "{"), let end = response.content.lastIndex(of: "}") else {
+                throw NSError(domain: "CaptureConversationView", code: 0)
+            }
+            let jsonSubstring = response.content[start...end]
+            let meta = try JSONDecoder().decode(JournalMeta.self, from: Data(jsonSubstring.utf8))
+            await MainActor.run { journalMeta = meta }
+        } catch {
+            HTMLLogManager.shared.log("journal meta generation failed, using fallback: \(error.localizedDescription)", level: "WARNING")
+            await MainActor.run {
+                journalMeta = JournalMeta(
+                    title: "A Moment With God",
+                    excerpt: String(combinedBody.prefix(140)),
+                    scriptureQuote: nil,
+                    scriptureReference: nil
+                )
             }
         }
     }
