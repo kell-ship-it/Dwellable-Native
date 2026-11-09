@@ -1,18 +1,16 @@
 import SwiftUI
 import Combine
 
-/// Matches the locked P1 Capture redesign (Figma `t5MUGEtpeFcUixobvHiYMc`, node 2277:99,
-/// "01 — Entry (Rotating Prompt) — reflecting") — rebuilt Nov 2026 after Kell caught that
-/// the previous version (a generic centered "Tap to capture" mic button, no personalization,
-/// a stray "‹ Moments" back row that doesn't belong in this locked flow) didn't match the
-/// real design at all; it had apparently never been built against it in the first place.
-/// Topic cards are the 3 fixed ones the design specifies verbatim — not yet wired to each
-/// user's actual onboarding Intent selection (the subtext's "pulled from what you shared
-/// during onboarding" is the locked copy/intent, but the real per-user personalization
-/// logic is new scope beyond this visual rebuild, not done here). The top bar-flame-row is
-/// rendered as a static/cosmetic element deliberately — T-210 flags its real meaning
-/// (onboarding progress vs. a streak) as still unresolved, awaiting reviewer reply, so
-/// nothing here should guess at real behavior for it yet.
+/// Matches the real, current "02 — Capture Entry (Guided Prompts + Direct Text)" screen
+/// (Figma `jBOzv1vO2C2DSMePqRl4c4` — the canonical "dwelly-redesign-file-important" file,
+/// node 127:552 — NOT `t5MUGEtpeFcUixobvHiYMc`, the older baseline file this view was
+/// wrongly rebuilt against earlier the same night). Entry is the one piece of P1 Capture's
+/// real flow (12 scenarios, a conversational "Dwelly Responds" exchange, 8 error states)
+/// that has no infrastructure dependency — everything past this screen needs T-168
+/// (Shared LLM Proxy Service), which doesn't exist yet, so this view still only wires
+/// Entry into the existing voice/type → save path, not the real conversational flow.
+/// Topic cards are the 3 fixed ones the design specifies verbatim, not yet personalized
+/// per-user from onboarding Intent — that's separate scope.
 struct CaptureView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.scenePhase) var scenePhase
@@ -35,77 +33,72 @@ struct CaptureView: View {
     let syncManager: SyncManager
     var onMomentSaved: (() -> Void)?
 
-    private let topicCards: [(title: String, subtitle: String)] = [
-        ("Relationships", "Did God show up in a connection today?"),
-        ("Quiet moments", "Any stillness stand out to you?"),
-        ("Doubt or struggle", "Anything weighing on you today?"),
+    private let topicCards: [(title: String, category: String)] = [
+        ("Did God show up in a connection today?", "Relationships"),
+        ("Any stillness stand out to you?", "Quiet moments"),
+        ("Anything you're wrestling with?", "Doubts"),
     ]
 
     var body: some View {
         ZStack {
             Theme.background.ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                // bar-flame-row — see the type doc comment on T-210's unresolved meaning.
-                HStack(spacing: 10) {
-                    Capsule()
-                        .fill(Theme.Capture.trackBackground)
-                        .frame(height: 6)
-                        .overlay(alignment: .leading) {
-                            Capsule().fill(Theme.gold).frame(width: 328)
-                        }
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(Theme.gold)
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Spacer()
+                    Image("DwellyRockIcon")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 10)
+                .padding(.horizontal, 28)
+                .padding(.top, 14)
 
-                Spacer().frame(height: 60)
+                Spacer().frame(height: 42)
 
                 Text("What's stirring in you today?")
-                    .font(.system(size: 26, design: .serif))
+                    .font(.system(size: 38, design: .serif))
                     .foregroundColor(Theme.Capture.textPrimary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
                     .padding(.horizontal, 28)
 
-                Spacer().frame(height: 28)
+                Spacer().frame(height: 10)
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
+                Text("Tap one, or just start talking.")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Theme.Capture.textMuted)
+                    .padding(.horizontal, 28)
+
+                Spacer().frame(height: 36)
+
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 12) {
                         ForEach(topicCards, id: \.title) { card in
-                            Button(action: { inputText = card.subtitle + " " }) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Text(card.title)
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundColor(Theme.Capture.textPrimary)
-                                    Text(card.subtitle)
-                                        .font(.system(size: 11))
+                            Button(action: { inputText = card.title + " " }) {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(card.title)
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundColor(Theme.Capture.textPrimary)
+                                        Text(card.category)
+                                            .font(.system(size: 13))
+                                            .foregroundColor(Theme.Capture.textMuted)
+                                    }
+                                    .multilineTextAlignment(.leading)
+                                    Spacer()
+                                    Image(systemName: "arrow.right")
+                                        .font(.system(size: 13))
                                         .foregroundColor(Theme.Capture.textMuted)
-                                        .multilineTextAlignment(.leading)
-                                        .fixedSize(horizontal: false, vertical: true)
                                 }
-                                .padding(16)
-                                .frame(width: 145, height: 100, alignment: .topLeading)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
                                 .background(Theme.Capture.cardBackground)
-                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.Capture.cardBorder, lineWidth: 1))
-                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.Capture.cardBorder, lineWidth: 1))
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
                             }
                         }
                     }
                     .padding(.horizontal, 28)
                 }
-
-                Spacer().frame(height: 28)
-
-                Text("Pulled from what you shared during onboarding — tap one, or share what's actually on your mind.")
-                    .font(.system(size: 12))
-                    .foregroundColor(Theme.Capture.textMuted)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 28)
-
                 // Recording duration / warning / error — unchanged behavior, just restyled
                 // to sit under the new layout instead of under the old mic button.
                 if audioManager.isRecording {
@@ -135,12 +128,14 @@ struct CaptureView: View {
 
                 Spacer()
 
-                // input-bar — text-first, matching the locked design: typing swaps the
-                // trailing mic for a send arrow; the field empty keeps mic as the primary
-                // affordance into the existing (unchanged) voice-capture path.
-                HStack(spacing: 10) {
-                    TextField("", text: $inputText, prompt: Text("I've been thinking about").foregroundColor(Theme.Capture.textMuted), axis: .vertical)
-                        .font(.system(size: 14))
+                // Component/Compose-Text-Pill (node 647:221) — the real shared component
+                // used across every P1 Capture idle-state screen: plain pill, no border,
+                // always a mic button (per its own Figma description: "consistent across
+                // all 16 instances") — typed text submits via the keyboard's own Return
+                // key (.onSubmit below), not by tapping this button.
+                HStack(spacing: 8) {
+                    TextField("", text: $inputText, prompt: Text("Share what's on your mind...").foregroundColor(Theme.Capture.textMuted), axis: .vertical)
+                        .font(.system(size: 16))
                         .foregroundColor(Theme.Capture.textPrimary)
                         .tint(Theme.gold)
                         .focused($inputFocused)
@@ -148,39 +143,24 @@ struct CaptureView: View {
                         .onSubmit { submitTypedText() }
                         .disabled(audioManager.isRecording || isDownloadingModel)
 
-                    Button(action: {
-                        if inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            handleRecordTap()
-                        } else {
-                            submitTypedText()
-                        }
-                    }) {
-                        Image(systemName: inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                              ? (audioManager.isRecording ? "stop.fill" : "mic.fill")
-                              : "arrow.up")
+                    Button(action: handleRecordTap) {
+                        Image(systemName: audioManager.isRecording ? "stop.fill" : "mic.fill")
                             .font(.system(size: 16))
                             .foregroundColor(Theme.goldDark)
-                            .frame(width: 40, height: 40)
+                            .frame(width: 44, height: 44)
                             .background(Theme.gold)
                             .clipShape(Circle())
                     }
                     .disabled(isDownloadingModel)
                     .opacity(isDownloadingModel ? 0.4 : 1.0)
                 }
-                .padding(.horizontal, 20)
-                .frame(minHeight: 60)
+                .padding(.leading, 20)
+                .padding(.trailing, 8)
+                .frame(height: 60)
                 .background(Theme.Capture.cardBackground)
-                .overlay(RoundedRectangle(cornerRadius: 28).stroke(Theme.gold, lineWidth: 1))
-                .clipShape(RoundedRectangle(cornerRadius: 28))
+                .clipShape(Capsule())
                 .padding(.horizontal, 28)
-
-                Text(audioManager.isRecording ? "Tap to finish recording" : "Tap return when you are finished writing")
-                    .font(.system(size: 11))
-                    .foregroundColor(Theme.gold)
-                    .padding(.top, 10)
-
-                Spacer()
-                    .frame(height: Theme.Spacing.xxl)
+                .padding(.bottom, Theme.Spacing.xxl)
             }
 
             // MARK: - Model Download Overlay
