@@ -65,7 +65,7 @@ struct CaptureView: View {
 
                 Text("Tap one, or just start talking.")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Theme.Capture.textMuted)
+                    .foregroundColor(Theme.Payment.textSupporting) // #857d69 — this text is "text/supporting" in the spec, not "text/placeholder" (Theme.Capture.textMuted, #a39e98) — caught by Kell comparing the running app to the real screenshot
                     .padding(.horizontal, 28)
 
                 Spacer().frame(height: 36)
@@ -83,13 +83,13 @@ struct CaptureView: View {
                                             .minimumScaleFactor(0.85)
                                         Text(card.category)
                                             .font(.system(size: 13))
-                                            .foregroundColor(Theme.Capture.textMuted)
+                                            .foregroundColor(Theme.Payment.textSupporting) // #857d69 — same "text/supporting" correction as the subtext above
                                     }
                                     .multilineTextAlignment(.leading)
                                     Spacer()
                                     Image(systemName: "arrow.right")
                                         .font(.system(size: 13))
-                                        .foregroundColor(Theme.Capture.textMuted)
+                                        .foregroundColor(Theme.gold) // Kell's reference shows this arrow gold, not muted gray
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 14)
