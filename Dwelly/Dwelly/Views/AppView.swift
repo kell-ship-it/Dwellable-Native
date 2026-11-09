@@ -51,7 +51,7 @@ struct AppView: View {
 
                 // Log app session
                 print("🔍 AppView: Logging app_opened — userId: \(user.id.prefix(8)), email: \(user.email)")
-                UsageTracker.shared.logAppOpened(userId: user.id, userEmail: user.email)
+                UsageTracker.shared.logAppOpened(userId: user.id, userEmail: user.email, isNewSignup: authManager.isFreshlyAuthenticated)
 
                 // Sync analytics to backend
                 Task {
@@ -115,17 +115,34 @@ struct AppView: View {
                 return
             }
         }
+        // T-116: distinguish the real sign-in-recovery path (grandfathered pre-onboarding
+        // users with existing moments) from a genuinely completed onboarding — both
+        // collapse into the same `isOnboardingComplete` bool, but the locked P0 success
+        // metrics track sign-in recovery as its own event.
+        let profile = ProfileManager.shared.localProfile(userId: userId)
+        let isSignInRecovery = profile.onboardingCompletedAt == nil && ProfileManager.shared.hasExistingMoments(userId: userId)
+        if isSignInRecovery {
+            UsageTracker.shared.logSignInRecoveryUsed(userId: userId, userEmail: email)
+        }
+
         let complete = ProfileManager.shared.isOnboardingComplete(userId: userId)
         leadIn = UserDefaults.standard.bool(forKey: leadInKey(userId: userId)) ? .coordinator : .introVideo
         isOnboardingComplete = complete
         hasCheckedOnboarding = true
+
+        if !complete {
+            UsageTracker.shared.logOnboardingScreenReached(userId: userId, userEmail: email, screen: leadIn == .coordinator ? "coordinator_resume" : "intro_video")
+        }
     }
 
     @ViewBuilder
     private func onboardingLeadIn(user: AuthUser) -> some View {
         switch leadIn {
         case .introVideo:
-            IntroVideoView(onContinue: { leadIn = .paywall })
+            IntroVideoView(onContinue: {
+                UsageTracker.shared.logOnboardingScreenReached(userId: user.id, userEmail: user.email, screen: "paywall")
+                leadIn = .paywall
+            })
         case .paywall:
             PaywallView(context: .onboardingSkippable, onDismiss: {
                 UserDefaults.standard.set(true, forKey: leadInKey(userId: user.id))
@@ -136,7 +153,10 @@ struct AppView: View {
                 userId: user.id,
                 userEmail: user.email,
                 syncManager: syncManager,
-                onOnboardingComplete: { isOnboardingComplete = true }
+                onOnboardingComplete: {
+                    UsageTracker.shared.logOnboardingCompleted(userId: user.id, userEmail: user.email)
+                    isOnboardingComplete = true
+                }
             )
         }
     }

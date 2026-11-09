@@ -23,7 +23,11 @@ struct OnboardingCoordinatorView: View {
         self.userEmail = userEmail
         self.syncManager = syncManager
         self.onOnboardingComplete = onOnboardingComplete
-        _screen = State(initialValue: ProfileManager.shared.localProfile(userId: userId).currentScreen)
+        let initialScreen = ProfileManager.shared.localProfile(userId: userId).currentScreen
+        _screen = State(initialValue: initialScreen)
+        // `OnboardingScreen`'s own rawValue ("name", "intent", "notifications",
+        // "preparing_space") already matches the event-naming scheme used elsewhere here.
+        UsageTracker.shared.logOnboardingScreenReached(userId: userId, userEmail: userEmail, screen: initialScreen.rawValue)
     }
 
     var body: some View {
@@ -43,6 +47,11 @@ struct OnboardingCoordinatorView: View {
             }
         }
         .environment(\.colorScheme, .dark)
+        .onChange(of: showFirstCapture) { shown in
+            if shown {
+                UsageTracker.shared.logOnboardingScreenReached(userId: userId, userEmail: userEmail, screen: "first_capture")
+            }
+        }
         .fullScreenCover(isPresented: $showFirstCapture) {
             CaptureView(userId: userId, userEmail: userEmail, syncManager: syncManager, onMomentSaved: {
                 ProfileManager.shared.completeOnboarding(userId: userId)
@@ -59,6 +68,7 @@ struct OnboardingCoordinatorView: View {
     private func advance(to next: OnboardingScreen) {
         ProfileManager.shared.setCurrentScreen(next, userId: userId)
         screen = next
+        UsageTracker.shared.logOnboardingScreenReached(userId: userId, userEmail: userEmail, screen: next.rawValue)
     }
 
     /// Back navigation does NOT re-persist `current_onboarding_screen` — the resume

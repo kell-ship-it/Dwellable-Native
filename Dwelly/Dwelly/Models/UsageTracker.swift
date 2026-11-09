@@ -28,18 +28,70 @@ class UsageTracker {
         saveEvent(event, userId: userId)
     }
 
-    func logAppOpened(userId: String, userEmail: String?) {
+    /// T-116: `isNewSignup` tags this open as the new-vs-returning split the locked P0
+    /// success metrics call for — pass `AuthManager.isFreshlyAuthenticated` from the call
+    /// site right after a real sign-up in this launch, `false` otherwise (including every
+    /// existing call site, via the default, which is why this stays source-compatible).
+    func logAppOpened(userId: String, userEmail: String?, isNewSignup: Bool = false) {
         print("📊 UsageTracker.logAppOpened — userId: \(userId.prefix(8)), userEmail: \(userEmail ?? "NIL")")
         let event = UsageEvent(
             id: UUID().uuidString,
             userId: userId,
             userEmail: userEmail,
             eventType: "app_opened",
-            momentType: nil,
+            momentType: isNewSignup ? "new_signup" : "returning_user",
             timestamp: Date()
         )
         saveEvent(event, userId: userId)
         print("✅ Event saved locally with email: \(userEmail ?? "NIL")")
+    }
+
+    /// T-116: one event per onboarding screen actually reached, keyed by `screen` (e.g.
+    /// "intro_video", "account_creation", "name_entry", "intent_selection",
+    /// "notification_permission", "preparing_space", "first_capture") — this is the raw
+    /// material the locked P0 success metrics (>90% reach Screen 7, drop-off analysis)
+    /// need and had no instrumentation for at all before this.
+    func logOnboardingScreenReached(userId: String, userEmail: String?, screen: String) {
+        let event = UsageEvent(
+            id: UUID().uuidString,
+            userId: userId,
+            userEmail: userEmail,
+            eventType: "onboarding_screen_reached",
+            momentType: screen,
+            timestamp: Date()
+        )
+        saveEvent(event, userId: userId)
+    }
+
+    /// T-116: fires once, when `onboarding_completed_at` is actually set (the real
+    /// Screen-7/mandatory-first-capture completion) — the other half of the >80%
+    /// first-capture metric alongside `logOnboardingScreenReached(..., screen: "first_capture")`.
+    func logOnboardingCompleted(userId: String, userEmail: String?) {
+        let event = UsageEvent(
+            id: UUID().uuidString,
+            userId: userId,
+            userEmail: userEmail,
+            eventType: "onboarding_completed",
+            momentType: nil,
+            timestamp: Date()
+        )
+        saveEvent(event, userId: userId)
+    }
+
+    /// T-116: fires when `AppView`'s gate takes the sign-in-recovery branch — an
+    /// authenticated user with existing moments but no `onboarding_completed_at`,
+    /// grandfathered straight into `MainTabView` instead of the onboarding flow. Locked
+    /// P0 success metrics call this out by name as its own tracked path.
+    func logSignInRecoveryUsed(userId: String, userEmail: String?) {
+        let event = UsageEvent(
+            id: UUID().uuidString,
+            userId: userId,
+            userEmail: userEmail,
+            eventType: "sign_in_recovery_used",
+            momentType: nil,
+            timestamp: Date()
+        )
+        saveEvent(event, userId: userId)
     }
 
     func logAppClosed(userId: String, userEmail: String?) {
