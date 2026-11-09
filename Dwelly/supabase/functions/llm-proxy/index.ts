@@ -56,7 +56,10 @@ interface TokenUsage {
   totalTokens: number | null
 }
 
-const GROQ_MODEL = "llama3-70b-8192"
+// llama3-70b-8192 was retired by Groq -- every call was silently falling back to
+// OpenAI (Kell caught this Nov 9 2026 from the usage dashboard showing 100% OpenAI,
+// 0% Groq). llama-3.3-70b-versatile is Groq's current production 70B model.
+const GROQ_MODEL = "llama-3.3-70b-versatile"
 const OPENAI_MODEL = "gpt-4o-mini"
 const DEFAULT_MAX_TOKENS = 500
 const DEFAULT_TEMPERATURE = 0.8
