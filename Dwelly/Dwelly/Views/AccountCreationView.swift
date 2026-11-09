@@ -398,6 +398,7 @@ struct AccountCreationView: View {
                         .font(.system(size: 13))
                         .foregroundColor(Theme.Payment.errorRed)
                         .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 20)
                 }
 

@@ -10,25 +10,20 @@ struct EmailAlreadyExistsView: View {
     var onLogIn: () -> Void
     var onUseDifferentEmail: () -> Void
 
-    // Same proportional-offset technique WelcomeView already uses — a fixed pixel value
-    // (what shipped first, Nov 4 2026) matches the 874pt Figma mockup but drifts on a real
-    // device's actual height, which is exactly what Kell caught comparing screenshots.
-    private var screenHeight: CGFloat { UIScreen.main.bounds.height }
-    private let iconTopFraction: CGFloat = 330.0 / 874.0
-
-    /// Icon/title/subtitle sit in the upper-middle area per Figma's absolute layout, and
-    /// the CTA + secondary link are pinned to the bottom via the same `.safeAreaInset`
-    /// footer convention every other screen uses — NOT vertically centered as one
-    /// clustered group. Kell caught this Nov 4 2026 on NewPasswordView's matching success
-    /// screen: the first version centered the whole VStack, putting the CTA in the
-    /// screen's middle instead of its usual fixed bottom position (same real bug here,
-    /// fixed together).
+    /// Content block is vertically centered via `Spacer()` on both sides — matching
+    /// AccountCreationView's "Check your email" and "You're in." screens, the two other
+    /// screens in this same post-account-creation sequence. The CTA + secondary link are
+    /// still pinned to the bottom via the same `.safeAreaInset` footer convention every
+    /// other screen uses, NOT part of the centered group. This replaces an earlier fixed
+    /// top-offset (a proportional fraction of screen height) that put the icon/title
+    /// noticeably lower than its two sibling screens — Kell caught Nov 2026 that all
+    /// three needed to sit at the same height, not just each look centered in isolation.
     var body: some View {
         ZStack(alignment: .top) {
             Theme.Payment.backgroundPrimary.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                Spacer().frame(height: screenHeight * iconTopFraction)
+                Spacer()
 
                 ZStack {
                     Circle()
@@ -54,8 +49,9 @@ struct EmailAlreadyExistsView: View {
                     .font(.system(size: 15))
                     .foregroundColor(Theme.Payment.textSupporting)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
 
-                Spacer(minLength: 0)
+                Spacer()
             }
             .padding(.horizontal, 28)
         }

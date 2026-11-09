@@ -90,6 +90,13 @@ struct LoginView: View {
             ForgotPasswordView()
                 .environmentObject(authManager)
         }
+        // `errorMessage` is one shared @Published property on AuthManager, reused by
+        // every auth screen (sign up, OTP verify, sign in, password reset). Landing here
+        // from any of them — e.g. "Back to Log In" from a failed OTP attempt — otherwise
+        // shows that screen's stale error on a Login screen the user hasn't even
+        // submitted yet, which Kell caught Nov 2026. Clearing it on arrival is the one
+        // place that covers every path in, rather than patching each screen's exit.
+        .onAppear { authManager.errorMessage = nil }
     }
 
     // MARK: - Fields
