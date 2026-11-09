@@ -235,6 +235,39 @@ No encryption key derivation happens here — encryption key is server-managed, 
 
 ---
 
+## Dormant Account Data Retention Policy (T-096)
+
+**⚠️ Status: Product-level draft, NOT legal review.** Written at Kell's request (Nov 2026) as a real starting point, not a placeholder — but it is the product's own policy statement, drafted by an AI assistant, not a reviewed legal document. Before this is quoted in a public-facing Privacy Policy, a Terms of Service, or relied on for a compliance claim, it needs an actual attorney's sign-off, same as the rest of this doc's "Security Exclusions" table already treats several items as open decisions, not locked ones.
+
+### Locked decision
+
+**Indefinite retention. No automatic deletion of dormant accounts, ever, on any timer.** A "dormant" account (no `app_opened` event — see `UsageTracker` — in 30+ days, informally; this threshold has no deletion consequence attached and is descriptive only) is retained exactly like an active one, forever, until the user themselves requests deletion.
+
+### Why this is defensible, not just convenient
+
+No major privacy regulation Dwelly is realistically exposed to (GDPR, CCPA/CPRA) *requires* an automatic dormancy-based deletion timer:
+- **GDPR's storage-limitation principle** (Art. 5(1)(e)) requires data be kept "no longer than necessary for the purposes for which [it is] processed" — but the *purpose* here (a personal spiritual journal a user may return to after months or years of inactivity) is itself long-lived and user-defined, not a fixed-duration purpose like a marketing campaign. There's no EU case law or guidance treating "the user stopped opening the app" as proof the purpose has ended.
+- **GDPR's actual individual-rights mechanism is the Right to Erasure** (Art. 17) — a user-initiated request, not something the controller must preempt on a timer. This is already the model this policy follows.
+- **CCPA/CPRA** similarly centers a consumer-initiated deletion *request*, not a mandatory retention ceiling.
+
+So the real compliance obligation isn't "auto-delete dormant accounts" — it's **"honor a deletion request when a user makes one, within the statutory response window"** (GDPR: without undue delay, generally interpreted as ≤30 days; CCPA: 45 days, extendable once). That's the piece this policy actually commits Dwelly to.
+
+### What's retained indefinitely for a dormant account
+
+- Encrypted moment content (Pillar 2's own encryption pipeline, unchanged by dormancy)
+- `public.users` onboarding profile fields (name, spiritual intent, onboarding completion state)
+- `usage_events` analytics history
+
+### User-initiated deletion — current real status, not aspirational
+
+**This is the part of the policy the product doesn't fully back up yet, and that gap should be closed before this policy is published anywhere user-facing.** `AccountProfileView.swift`'s "Delete Account" row exists in the UI but its action is an empty, unwired placeholder (`Button("Delete Account") {}`) — there is currently no real self-service deletion path. The only way an account is deleted today is admin-side, directly in the Supabase dashboard (the same manual path used during this project's own testing sessions). A real deletion flow — soft-delete plus a grace window, or hard delete, either is defensible — is a prerequisite for this policy to be more than a statement of intent, and for Dwelly to actually be able to honor a GDPR/CCPA deletion request within the statutory window without manual engineering intervention every time. Tracked as follow-up scope, not invented here.
+
+### Screen 6 (Notification Permission) / Settings privacy copy implication
+
+The "User Communication" promise below should not claim automatic retention limits or auto-deletion it doesn't do — "we keep your moments as long as your account exists, and you can ask us to delete everything, any time" is accurate to this policy; "we automatically delete inactive data" would not be.
+
+---
+
 ## User Communication (Plain-Language Promise)
 
 Replaces the old "we never see your moments / not us, not servers, not anyone" language.
