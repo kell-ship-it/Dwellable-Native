@@ -40,6 +40,19 @@ struct CaptureView: View {
     ]
 
     var body: some View {
+        // Every call site presents `CaptureView` via a plain `.fullScreenCover`, with no
+        // `NavigationStack` ancestor of its own — so the `.navigationDestination(isPresented:)`
+        // calls below need their own `NavigationStack` right here, or they're silent no-ops.
+        // Found Nov 9, 2026 testing T-168 live: tapping Send correctly flipped
+        // `showConversation` to true (confirmed via debug log) but nothing happened — no
+        // crash, no error, just stuck on this screen, because there was no navigation
+        // context to push into.
+        NavigationStack {
+            captureContent
+        }
+    }
+
+    private var captureContent: some View {
         ZStack {
             Theme.background.ignoresSafeArea()
 

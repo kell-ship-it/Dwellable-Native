@@ -23,34 +23,43 @@ struct IntentSelectionView: View {
         ZStack(alignment: .top) {
             Theme.Onboarding.backgroundPrimary.ignoresSafeArea()
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    Spacer().frame(height: 120)
+            // Plain flexible `Spacer()`s and the footer as a normal trailing sibling,
+            // not pinned via `.safeAreaInset` below a `ScrollView` with a fixed-height
+            // `Spacer().frame(height: 120)` leading it. That combination reproduced the
+            // same dead-CTA bug chased down in WelcomeView.swift (Nov 9, 2026): the
+            // Continue button rendered correctly — including flipping enabled/disabled
+            // as `selected` changed — but never once responded to a tap, confirmed
+            // across many retries and coordinates. This structure did not reproduce it
+            // in the same testing. Root cause not fully understood — see WelcomeView's
+            // comment for the fuller account.
+            VStack(alignment: .leading, spacing: 0) {
+                Spacer()
 
-                    Text("How can dwelly help you?")
-                        .font(.system(size: 28, design: .serif))
-                        .foregroundColor(Theme.Onboarding.textPrimary)
+                Text("How can dwelly help you?")
+                    .font(.system(size: 28, design: .serif))
+                    .foregroundColor(Theme.Onboarding.textPrimary)
 
-                    Spacer().frame(height: 16)
+                Spacer().frame(height: 16)
 
-                    Text("Choose what feels most true right now.\nYou can always change this later.")
-                        .font(.system(size: 15))
-                        .foregroundColor(Theme.Onboarding.textTertiary)
-                        .fixedSize(horizontal: false, vertical: true)
+                Text("Choose what feels most true right now.\nYou can always change this later.")
+                    .font(.system(size: 15))
+                    .foregroundColor(Theme.Onboarding.textTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
 
-                    Spacer().frame(height: 24)
+                Spacer().frame(height: 24)
 
-                    VStack(spacing: 12) {
-                        ForEach(options, id: \.self) { option in
-                            optionRow(option)
-                        }
+                VStack(spacing: 12) {
+                    ForEach(options, id: \.self) { option in
+                        optionRow(option)
                     }
-
-                    Spacer(minLength: 24)
                 }
-                .padding(.horizontal, 28)
+
+                Spacer()
+                Spacer()
+
+                footer
             }
-            .safeAreaInset(edge: .bottom) { footer }
+            .padding(.horizontal, 28)
 
             Button(action: onBack) {
                 Image(systemName: "chevron.left")
@@ -104,11 +113,7 @@ struct IntentSelectionView: View {
         .clipShape(Capsule())
         .disabled(selected == nil)
         .opacity(selected == nil ? 0.5 : 1)
-        .padding(.horizontal, 28)
-        .padding(.top, 16)
         .padding(.bottom, 24)
-        .frame(maxWidth: .infinity)
-        .background(Theme.Onboarding.backgroundPrimary)
     }
 
     private func continueTapped() {
