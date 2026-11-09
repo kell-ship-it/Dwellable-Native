@@ -115,9 +115,14 @@ final class ProfileManager {
     /// onboarding must work fully offline.
     /// Returns `false` specifically when the server says this userId no longer exists
     /// (`APIError.notFound`) — a deleted account whose Keychain session survived an app
-    /// delete/reinstall (standard iOS behavior: Keychain items aren't tied to app install).
-    /// Every other failure (network error, timeout) returns `true` and leaves the local
-    /// cache untouched, same as before — only a *confirmed* "this user is gone" should ever
+    /// delete/reinstall (standard iOS behavior: Keychain items aren't tied to app install)
+    /// — or when `.unauthorized` comes back, which `SupabaseAPIClient` now only throws
+    /// here after a real attempt to renew the session's refresh token was itself rejected
+    /// (T-113: previously any such failure fell into the generic `catch` below and was
+    /// treated as transient, so a genuinely dead refresh token left the user stuck
+    /// "signed in" to a session that could never make another successful request).
+    /// Every other failure (network error, timeout) still returns `true` and leaves the
+    /// local cache untouched — only a *confirmed* "this session is gone" should ever
     /// force a sign-out; a flaky network shouldn't kick someone out of their own session.
     @discardableResult
     func refreshFromServer(userId: String) async -> Bool {
@@ -125,7 +130,7 @@ final class ProfileManager {
             let row = try await apiClient.fetchOnboardingProfile(userId: userId)
             applyServerRow(row, userId: userId)
             return true
-        } catch APIError.notFound {
+        } catch APIError.notFound, APIError.unauthorized {
             return false
         } catch {
             return true

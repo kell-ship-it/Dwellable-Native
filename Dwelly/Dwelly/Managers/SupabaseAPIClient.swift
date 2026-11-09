@@ -151,7 +151,24 @@ class SupabaseAPIClient: APIClient {
                 // JWT expired — auto-refresh once and retry
                 if !isRetry, refreshToken != nil {
                     hlog("JWT expired (401) — refreshing token and retrying...", "WARNING")
-                    try await refreshJWTToken()
+                    do {
+                        try await refreshJWTToken()
+                    } catch {
+                        // T-113: the refresh token itself was rejected (dead/revoked —
+                        // not the same as a transient network blip during the refresh
+                        // call, but there's no cheap way to tell those apart here, and
+                        // treating a rejected refresh as "unauthorized" is the safe
+                        // default either way). Normalizing to .unauthorized gives
+                        // ProfileManager.refreshFromServer a distinct, confirmed signal
+                        // to act on — previously whatever error refreshJWTToken's own
+                        // makeRequest produced (often APIError.message, not .unauthorized)
+                        // leaked out here and got treated as "probably just flaky
+                        // network, leave the session alone," so a genuinely dead refresh
+                        // token left the user optimistically "signed in" with a
+                        // permanently broken session and no path back to Welcome.
+                        hlog("JWT refresh failed — session cannot be renewed: \(error.localizedDescription)", "ERROR")
+                        throw APIError.unauthorized
+                    }
                     return try await makeRequest(method: method, endpoint: endpoint, body: body,
                                                  responseType: responseType, requiresAuth: requiresAuth,
                                                  preferHeader: preferHeader, isRetry: true)
