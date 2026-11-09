@@ -51,6 +51,57 @@ class LoginAttemptTracker {
     }
 }
 
+// MARK: - Signup Attempt Tracker
+
+/// T-115: Create Account (`signUp()`) is a public, unauthenticated endpoint — unlike
+/// `LoginAttemptTracker` above, this isn't about a wrong password, it's a plain call-rate
+/// guard against a device hammering the signup endpoint (scripted abuse, or a confused
+/// user mashing the button). Supabase's own server-side rate limit already caps this per
+/// IP (confirmed in the dashboard, Auth > Rate Limits: 360 sign-up/sign-in requests per
+/// 5 minutes) — this is defense-in-depth on top of that, same 5-attempts/10-minutes shape
+/// as the login tracker for consistency, tracking every call (not just failures), since
+/// there's no "wrong password" concept here to distinguish a legitimate retry from spam.
+/// Deliberately does NOT touch the "this email already exists" messaging — that's
+/// explicit by design per Kell's locked Nov 4 2026 decision (see EmailAlreadyExistsView),
+/// not something this ticket should mask.
+class SignupAttemptTracker {
+    private let maxAttempts = 5
+    private let lockoutDuration: TimeInterval = 10 * 60 // 10 minutes
+
+    private var attempts: [Date] = []
+    private var lockoutUntil: Date?
+
+    func recordAttempt() {
+        attempts.append(Date())
+
+        let cutoffTime = Date().addingTimeInterval(-lockoutDuration)
+        attempts.removeAll { $0 < cutoffTime }
+
+        if attempts.count >= maxAttempts {
+            lockoutUntil = Date().addingTimeInterval(lockoutDuration)
+        }
+    }
+
+    func isLockedOut() -> Bool {
+        guard let lockoutTime = lockoutUntil else { return false }
+
+        if Date() >= lockoutTime {
+            lockoutUntil = nil
+            attempts.removeAll()
+            return false
+        }
+
+        return true
+    }
+
+    func secondsUntilUnlock() -> Int {
+        guard let lockoutTime = lockoutUntil else { return 0 }
+
+        let remaining = lockoutTime.timeIntervalSince(Date())
+        return max(0, Int(ceil(remaining)))
+    }
+}
+
 // MARK: - Auth Manager
 
 class AuthManager: ObservableObject {
@@ -83,6 +134,7 @@ class AuthManager: ObservableObject {
     private let apiClient: APIClient
     private let keychain = KeychainManager.shared
     private let loginAttemptTracker = LoginAttemptTracker()
+    private let signupAttemptTracker = SignupAttemptTracker()
 
     private let faceIDEmailKey = "faceIDEmail"
     private let faceIDPasswordKey = "faceIDPassword"
@@ -147,6 +199,20 @@ class AuthManager: ObservableObject {
     /// called — this method assumes a password that already passed those rules and only
     /// handles what the server can tell us (e.g. "email already in use").
     func signUp(email: String, password: String) async -> SignUpResult {
+        // T-115: device-level call-rate guard, on top of Supabase's own per-IP server-side
+        // limit — see SignupAttemptTracker's doc comment for why this tracks every call,
+        // not just failures.
+        if signupAttemptTracker.isLockedOut() {
+            let secondsRemaining = signupAttemptTracker.secondsUntilUnlock()
+            let minutesRemaining = (secondsRemaining + 59) / 60
+            DispatchQueue.main.async {
+                self.errorMessage = "Too many signup attempts. Try again in \(minutesRemaining) minute\(minutesRemaining == 1 ? "" : "s")."
+                self.isLoading = false
+            }
+            return .failure
+        }
+        signupAttemptTracker.recordAttempt()
+
         DispatchQueue.main.async {
             self.isLoading = true
             self.errorMessage = nil
