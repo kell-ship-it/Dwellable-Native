@@ -50,7 +50,7 @@ struct PreparingSpaceView: View {
 
                 Text("Making space to receive\nwhat He has for you.")
                     .font(.system(size: 15))
-                    .foregroundColor(Theme.Onboarding.textMutedWarm)
+                    .foregroundColor(Theme.Payment.textSupporting) // #857d69, per Kell — Theme.Onboarding.textMutedWarm (#807b71) is a different, close-but-wrong shade
 
                 Spacer().frame(height: 36)
 
@@ -68,19 +68,22 @@ struct PreparingSpaceView: View {
             .padding(.horizontal, 28)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
 
-            VStack {
-                Spacer()
-                Button(action: onComplete) {
-                    Text("Capture Your First Moment →")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Theme.Onboarding.backgroundPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 60)
+            if itemStates.allSatisfy({ $0 == .complete }) {
+                VStack {
+                    Spacer()
+                    Button(action: onComplete) {
+                        Text("Capture Your First Moment →")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Theme.Onboarding.backgroundPrimary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 60)
+                    }
+                    .background(Theme.gold)
+                    .clipShape(Capsule())
+                    .padding(.horizontal, 28)
+                    .padding(.bottom, 24)
                 }
-                .background(Theme.gold)
-                .clipShape(Capsule())
-                .padding(.horizontal, 28)
-                .padding(.bottom, 24)
+                .transition(.opacity)
             }
         }
         .onAppear { activate(0) }

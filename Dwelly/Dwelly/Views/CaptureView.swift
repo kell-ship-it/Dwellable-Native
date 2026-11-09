@@ -79,6 +79,8 @@ struct CaptureView: View {
                                         Text(card.title)
                                             .font(.system(size: 16, weight: .semibold))
                                             .foregroundColor(Theme.Capture.textPrimary)
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.85)
                                         Text(card.category)
                                             .font(.system(size: 13))
                                             .foregroundColor(Theme.Capture.textMuted)
