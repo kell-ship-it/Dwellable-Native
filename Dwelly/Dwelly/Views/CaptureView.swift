@@ -145,6 +145,17 @@ struct CaptureView: View {
                         .onSubmit { submitTypedText() }
                         .disabled(audioManager.isRecording || isDownloadingModel)
 
+                    Button(action: handleRecordTap) {
+                        Image(systemName: audioManager.isRecording ? "stop.fill" : "mic.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(Theme.gold)
+                            .frame(width: 44, height: 44)
+                            .background(Theme.Capture.cardBorder)
+                            .clipShape(Circle())
+                    }
+                    .disabled(isDownloadingModel)
+                    .opacity(isDownloadingModel ? 0.4 : 1.0)
+
                     if !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         Button(action: submitTypedText) {
                             Image(systemName: "arrow.up")
@@ -156,17 +167,6 @@ struct CaptureView: View {
                         }
                         .transition(.scale.combined(with: .opacity))
                     }
-
-                    Button(action: handleRecordTap) {
-                        Image(systemName: audioManager.isRecording ? "stop.fill" : "mic.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(Theme.gold)
-                            .frame(width: 44, height: 44)
-                            .background(Theme.Capture.cardBorder)
-                            .clipShape(Circle())
-                    }
-                    .disabled(isDownloadingModel)
-                    .opacity(isDownloadingModel ? 0.4 : 1.0)
                 }
                 .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
                 .padding(.leading, 20)
