@@ -200,6 +200,11 @@ class MockAPIClient: APIClient {
         print("Mock: Synced \(events.count) usage events for user \(userId)")
     }
 
+    func callLLM(messages: [LLMMessage], feature: String) async throws -> LLMResponse {
+        try await Task.sleep(nanoseconds: 400_000_000)
+        return LLMResponse(content: "[Mock response for \(feature)]", model: "mock", provider: "groq")
+    }
+
     func setJWTToken(_ token: String) {
         // Mock implementation - token not used in mock client
     }

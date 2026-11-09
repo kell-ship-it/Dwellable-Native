@@ -28,6 +28,10 @@ protocol APIClient {
     // Analytics endpoints
     func sendUsageEvents(_ events: [UsageEventData], userId: String) async throws
 
+    // LLM endpoint (T-168) — the one call every LLM-backed feature (Capture's
+    // conversation, Prayer generation, Journal synthesis) goes through.
+    func callLLM(messages: [LLMMessage], feature: String) async throws -> LLMResponse
+
     // JWT token management
     func setJWTToken(_ token: String)
     func setTokens(_ jwt: String, refresh: String)
@@ -63,4 +67,21 @@ struct UsageEventData: Codable {
     let eventType: String
     let momentType: String?
     let timestamp: Date
+}
+
+/// T-168. Mirrors the shape OpenAI/Groq-style chat APIs already use — `llm-proxy`
+/// (supabase/functions/llm-proxy) forwards these straight through to whichever provider
+/// actually serves the request.
+struct LLMMessage: Codable {
+    enum Role: String, Codable {
+        case system, user, assistant
+    }
+    let role: Role
+    let content: String
+}
+
+struct LLMResponse: Codable {
+    let content: String
+    let model: String
+    let provider: String
 }

@@ -673,9 +673,26 @@ class SupabaseAPIClient: APIClient {
             preferHeader: "resolution=ignore-duplicates,return=representation"
         )
     }
+
+    // MARK: - LLM API (T-168)
+
+    func callLLM(messages: [LLMMessage], feature: String) async throws -> LLMResponse {
+        let payload = LLMProxyPayload(messages: messages, feature: feature)
+        return try await makeRequest(
+            method: "POST",
+            endpoint: "/functions/v1/llm-proxy",
+            body: payload,
+            responseType: LLMResponse.self
+        )
+    }
 }
 
 // MARK: - Payload and Response Models
+
+struct LLMProxyPayload: Encodable {
+    let messages: [LLMMessage]
+    let feature: String
+}
 
 struct MomentPayload: Codable {
     let id: String
