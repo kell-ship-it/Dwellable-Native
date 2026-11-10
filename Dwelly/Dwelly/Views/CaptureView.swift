@@ -32,6 +32,10 @@ struct CaptureView: View {
     let userId: String
     let userEmail: String?
     let syncManager: SyncManager
+    // Passed through to CaptureConversationView — true only when OnboardingCoordinatorView
+    // presents this screen for the mandatory first capture, where there's no "back" to
+    // go to (Kell, Nov 10 2026).
+    var isOnboarding: Bool = false
     var onMomentSaved: (() -> Void)?
 
     private let topicCards: [(title: String, category: String)] = [
@@ -212,7 +216,7 @@ struct CaptureView: View {
             // conversation (node 38:246) instead of the old single-shot TypeFlowView save
             // screen. Voice capture still goes through ReviewView, unchanged — folding
             // voice into this same conversational flow is separate scope.
-            CaptureConversationView(userId: userId, userEmail: userEmail, syncManager: syncManager, initialMessage: inputText, initialMessageIsPrompt: conversationStartedFromPrompt, onMomentSaved: {
+            CaptureConversationView(userId: userId, userEmail: userEmail, syncManager: syncManager, initialMessage: inputText, initialMessageIsPrompt: conversationStartedFromPrompt, isOnboarding: isOnboarding, onMomentSaved: {
                 onMomentSaved?()
             })
         }

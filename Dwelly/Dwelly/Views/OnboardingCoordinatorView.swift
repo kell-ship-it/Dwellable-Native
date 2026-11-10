@@ -53,7 +53,7 @@ struct OnboardingCoordinatorView: View {
             }
         }
         .fullScreenCover(isPresented: $showFirstCapture) {
-            CaptureView(userId: userId, userEmail: userEmail, syncManager: syncManager, onMomentSaved: {
+            CaptureView(userId: userId, userEmail: userEmail, syncManager: syncManager, isOnboarding: true, onMomentSaved: {
                 ProfileManager.shared.completeOnboarding(userId: userId)
                 showFirstCapture = false
                 onOnboardingComplete()
