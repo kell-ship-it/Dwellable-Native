@@ -522,13 +522,22 @@ struct CaptureConversationView: View {
             } else {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .top) {
-                        TextField("", text: $inputText, axis: .vertical)
+                        // TextField(axis: .vertical) only ever grows to fit its own
+                        // content — handing it a taller frame just leaves the extra
+                        // space as dead padding below the text, not more room to type
+                        // into, which is exactly what Kell caught (Nov 10 2026):
+                        // "it does not allow me to type fully in that space." TextEditor
+                        // actually fills and scrolls within whatever frame it's given.
+                        TextEditor(text: $inputText)
                             .font(.system(size: 13))
                             .foregroundColor(Theme.Payment.textHeading)
                             .tint(Theme.gold)
+                            .scrollContentBackground(.hidden)
+                            .background(Color.clear)
                             .focused($inputFocused)
                             .disabled(isWaitingForDwelly)
-                            .lineLimit(isComposeExpanded ? nil : 5)
+                            .frame(height: isComposeExpanded ? 408 : 72)
+                            .clipped()
 
                         Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isComposeExpanded.toggle() } }) {
                             Image(systemName: isComposeExpanded ? "chevron.down.circle" : "chevron.up.circle")
@@ -537,7 +546,6 @@ struct CaptureConversationView: View {
                         }
                     }
                     .padding(16)
-                    .frame(maxHeight: isComposeExpanded ? 440 : 88)
 
                     Spacer(minLength: 0)
 
