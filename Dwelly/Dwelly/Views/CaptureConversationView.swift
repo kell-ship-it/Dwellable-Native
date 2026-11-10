@@ -57,6 +57,10 @@ struct CaptureConversationView: View {
     // once there's typed/transcribed content — Kell caught this missing entirely
     // (Nov 10 2026): no way to grow the compose box for a long reflection.
     @State private var isComposeExpanded = false
+    // Tracked so the expanded compose box can shrink to stay above the keyboard --
+    // Kell caught (Nov 10 2026) the mic/send buttons sliding under the keyboard in
+    // the expanded state with no way to see them.
+    @State private var keyboardHeight: CGFloat = 0
     // One random "character" per waveform bar, generated once per recording session
     // so bars don't all pulse in perfect lockstep — real voice waveforms (Wispr Flow,
     // Voice Memos) have per-bar variation, not a single uniform pulse.
@@ -241,12 +245,9 @@ struct CaptureConversationView: View {
                     }
                     .padding(.horizontal, isConversationComplete ? 16 : 28)
                     .padding(.top, 14)
-                    // Kell (Nov 10 2026): the counter/rock row should hide once the compose
-                    // box is expanded rather than risk sitting on top of it — the row keeps
-                    // its own fixed height either way (just the text fades), so nothing else
-                    // in the header shifts.
-                    .opacity(isComposeExpanded ? 0 : 1)
-                    .animation(.easeInOut(duration: 0.2), value: isComposeExpanded)
+                    // Kell (Nov 10 2026, reversing his own earlier call once he saw it live):
+                    // "Response N of 3" + the rock icon should ALWAYS stay visible, including
+                    // while the compose box is expanded -- it should never hide.
 
                     Spacer(minLength: 0)
                 }
@@ -342,6 +343,13 @@ struct CaptureConversationView: View {
                 turns = [Turn(role: .user, text: initialMessage)]
                 Task { await requestDwellyResponse() }
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+            guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+            withAnimation(.easeOut(duration: 0.25)) { keyboardHeight = frame.height }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            withAnimation(.easeOut(duration: 0.25)) { keyboardHeight = 0 }
         }
     }
 
@@ -493,6 +501,24 @@ struct CaptureConversationView: View {
         .clipShape(Capsule())
     }
 
+    // Expanded TextEditor height, shrunk to stay above the keyboard — Kell caught
+    // (Nov 10 2026) the mic/send row sliding under the keyboard in the expanded
+    // state with no way to see it. 140 is rough headroom for the box's own fixed
+    // chrome (top/bottom padding + button row) plus a little breathing room.
+    private var expandedTextEditorHeight: CGFloat {
+        let base: CGFloat = 408
+        guard keyboardHeight > 0 else { return base }
+        let available = UIScreen.main.bounds.height - keyboardHeight - headerHeight - 140
+        return max(120, min(base, available))
+    }
+
+    // Computed from the content, same as the collapsed box: 16 (top padding) +
+    // text area + 16 (bottom padding) + 62 (button row).
+    private var composePillHeight: CGFloat {
+        let textHeight = isComposeExpanded ? expandedTextEditorHeight : 72
+        return 16 + textHeight + 16 + 62
+    }
+
     // Component/Compose-Text-Pill (647:221) when empty; once there's content this
     // becomes Component/Typed-Text-Box (651:3966) instead — a card with its own
     // Collapsed (120pt)/Expanded (grows to fit more text) states via the expand/
@@ -542,7 +568,7 @@ struct CaptureConversationView: View {
                             .background(Color.clear)
                             .focused($inputFocused)
                             .disabled(isWaitingForDwelly)
-                            .frame(height: isComposeExpanded ? 408 : 72)
+                            .frame(height: isComposeExpanded ? expandedTextEditorHeight : 72)
                             .clipped()
                             // TextEditor's own internal UIScrollView keeps whatever
                             // scroll offset it had from auto-scrolling to the cursor
@@ -590,18 +616,14 @@ struct CaptureConversationView: View {
                     .padding(.top, 8)
                     .padding(.bottom, 10)
                 }
-                // The previous 120pt/524pt constants were guesses that turned out
-                // smaller than their own content (16pt top+bottom padding on the text
-                // row + the TextEditor's own height + the button row's own height),
-                // so clipShape was literally slicing the bottom off the mic/send
-                // buttons (Kell caught this live, Nov 10 2026, in both collapsed AND
-                // expanded states). Dropping the frame entirely (tried first) was also
-                // wrong -- with no bound, the Spacer above greedily filled the whole
-                // screen above the keyboard instead of hugging the content. These
-                // values are the content's own real height, computed exactly instead
-                // of guessed: 16 (top padding) + 72/408 (TextEditor) + 16 (bottom
-                // padding under it) + 62 (button row: 44pt buttons + 8 top + 10 bottom).
-                .frame(height: isComposeExpanded ? 502 : 166)
+                // Computed exactly from content (composePillHeight), not guessed --
+                // fixed 120pt/524pt constants clipped the button row (Kell, Nov 10
+                // 2026), and dropping the frame entirely let the Spacer above greedily
+                // fill the whole screen instead of hugging the content. This height
+                // also shrinks with the keyboard (via expandedTextEditorHeight) so the
+                // mic/send row stays visible above it instead of sliding underneath.
+                .frame(height: composePillHeight)
+                .animation(.easeOut(duration: 0.25), value: keyboardHeight)
                 .background(Theme.Capture.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
             }

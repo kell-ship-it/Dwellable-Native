@@ -130,11 +130,13 @@ struct CaptureView: View {
                             }) {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 4) {
+                                        // Kell (Nov 10 2026): the prompt text must be fully
+                                        // readable before tapping, not truncated -- the user
+                                        // needs to actually see what they'd be responding to.
                                         Text(card.title)
                                             .font(.system(size: 16, weight: .semibold))
                                             .foregroundColor(Theme.Capture.textPrimary)
-                                            .lineLimit(1)
-                                            .minimumScaleFactor(0.85)
+                                            .fixedSize(horizontal: false, vertical: true)
                                         Text(card.category)
                                             .font(.system(size: 13))
                                             .foregroundColor(Theme.Payment.textSupporting) // #857d69 — same "text/supporting" correction as the subtext above
