@@ -44,14 +44,7 @@ struct CaptureConversationView: View {
     @State private var showMomentDetail = false
 
     private let maxResponses = 3
-    // The prompt-card opening question (see `initialMessageIsPrompt`) renders as an
-    // assistant turn but isn't one of Dwelly's real 3 generated responses — it's the
-    // question the user is about to answer, so it's excluded from the count and from
-    // the "Response N of 3" header.
-    @State private var openedWithPromptQuestion = false
-    private var dwellyResponseCount: Int {
-        turns.filter { $0.role == .assistant }.count - (openedWithPromptQuestion ? 1 : 0)
-    }
+    private var dwellyResponseCount: Int { turns.filter { $0.role == .assistant }.count }
     private var isConversationComplete: Bool { dwellyResponseCount >= maxResponses }
 
     /// Generated once, right after the conversation closes — a title/excerpt/scripture
@@ -230,16 +223,8 @@ struct CaptureConversationView: View {
         .background(Theme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
         .onAppear {
-            if initialMessageIsPrompt {
-                // Dwelly is asking this one, not the user — show it as the opening
-                // assistant turn and wait for the user's actual answer instead of
-                // sending it to the LLM as something the user said.
-                turns = [Turn(role: .assistant, text: initialMessage)]
-                openedWithPromptQuestion = true
-            } else {
-                turns = [Turn(role: .user, text: initialMessage)]
-                Task { await requestDwellyResponse() }
-            }
+            turns = [Turn(role: .user, text: initialMessage)]
+            Task { await requestDwellyResponse() }
         }
     }
 
@@ -391,6 +376,19 @@ struct CaptureConversationView: View {
 
         var messages = [LLMMessage(role: .system, content: systemPrompt)]
         messages.append(contentsOf: turns.map { LLMMessage(role: $0.role, content: $0.text) })
+
+        // The opening message from a tapped prompt card is a question Dwelly posed TO
+        // the user ("Any stillness stand out to you?"), not something the user said —
+        // sent verbatim as a plain user turn, the model just answered its own question
+        // in the first person instead of inviting a real answer (caught live by Kell,
+        // Nov 9 2026). Rewriting just the content sent to the LLM (not what's displayed
+        // in the transcript) keeps the turn/counter logic unchanged while fixing that.
+        if initialMessageIsPrompt, turns.count == 1, let first = messages.last {
+            messages[messages.count - 1] = LLMMessage(
+                role: first.role,
+                content: "The user tapped this reflection prompt to start journaling — they haven't answered it yet: \"\(initialMessage)\". Invite them warmly, in 1 short sentence, to actually share their own answer. Don't answer the question yourself, and don't ask a different one."
+            )
+        }
 
         do {
             let response = try await apiClient.callLLM(messages: messages, feature: "capture_conversation")
