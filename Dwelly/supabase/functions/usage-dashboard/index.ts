@@ -24,6 +24,16 @@ function emptyTotals(): ProviderTotals {
   return { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0 }
 }
 
+// Kell's ask (Nov 10 2026): "a countdown to signal at one point I have to pay." Groq's
+// free tier for openai/gpt-oss-120b (the current primary model, see llm-proxy) is
+// published by Groq as 200,000 tokens/day, resetting daily -- confirmed via several
+// third-party trackers citing Groq's own console limits page as of Nov 2026, not
+// something the API itself exposes, so if Groq changes this, update the constant here
+// (and check console.groq.com's own limits page, which is authoritative). OpenAI has
+// no free tier at all -- every OpenAI call (the fallback whenever Groq errors, or once
+// this budget is exhausted) bills immediately at $0.15/$0.60 per million tokens.
+const GROQ_FREE_DAILY_TOKEN_BUDGET = 200_000
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders })
@@ -67,9 +77,23 @@ Deno.serve(async (req: Request) => {
     const grandTotalTokens = Object.values(totals).reduce((sum, t) => sum + t.totalTokens, 0)
     const grandTotalCalls = Object.values(totals).reduce((sum, t) => sum + t.calls, 0)
 
+    const groqTokensToday = today.groq?.totalTokens ?? 0
+    const groqTokensRemaining = Math.max(0, GROQ_FREE_DAILY_TOKEN_BUDGET - groqTokensToday)
+    const tomorrowUTC = new Date(Date.UTC(
+      new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate() + 1
+    ))
+    const freeTierBudget = {
+      dailyBudget: GROQ_FREE_DAILY_TOKEN_BUDGET,
+      usedToday: groqTokensToday,
+      remainingToday: groqTokensRemaining,
+      percentUsed: Math.min(100, Math.round((groqTokensToday / GROQ_FREE_DAILY_TOKEN_BUDGET) * 100)),
+      resetsAt: tomorrowUTC.toISOString(),
+      resetsInSeconds: Math.max(0, Math.round((tomorrowUTC.getTime() - Date.now()) / 1000)),
+    }
+
     const url = new URL(req.url)
     if (url.searchParams.get("format") === "json") {
-      return new Response(JSON.stringify({ totals, today, grandTotalTokens, grandTotalCalls }), {
+      return new Response(JSON.stringify({ totals, today, grandTotalTokens, grandTotalCalls, freeTierBudget }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }
@@ -109,17 +133,35 @@ Deno.serve(async (req: Request) => {
     .sub { color: #857d69; font-size: 12px; margin-bottom: 16px; }
     .row { display: flex; justify-content: space-between; font-size: 12px; color: #b4ac9b; padding: 4px 0; border-top: 1px solid #2c2c2e; }
     .refresh-note { color: #555; font-size: 11px; margin-top: 24px; }
+    .budget { background: #161618; border: 1px solid #2c2c2e; border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+    .budget-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .budget-header .title { font-size: 13px; font-weight: 600; }
+    .budget-header .resets { font-size: 11px; color: #857d69; }
+    .bar-track { height: 10px; background: #2c2c2e; border-radius: 5px; overflow: hidden; }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, #4ec9b0, #aa925c); }
+    .budget-foot { display: flex; justify-content: space-between; font-size: 12px; color: #b4ac9b; margin-top: 8px; }
   </style>
 </head>
 <body>
   <h1>Dwelly LLM Usage</h1>
   <div class="subtitle">Live token counts from public.llm_usage -- auto-refreshes every 10s</div>
+  <div class="budget">
+    <div class="budget-header">
+      <span class="title">Groq free tier -- resets daily</span>
+      <span class="resets">resets in ${Math.floor(freeTierBudget.resetsInSeconds / 3600)}h ${Math.floor((freeTierBudget.resetsInSeconds % 3600) / 60)}m</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" style="width:${freeTierBudget.percentUsed}%"></div></div>
+    <div class="budget-foot">
+      <span>${fmt(freeTierBudget.usedToday)} / ${fmt(freeTierBudget.dailyBudget)} tokens used today</span>
+      <span>${fmt(freeTierBudget.remainingToday)} left before OpenAI billing kicks in</span>
+    </div>
+  </div>
   <div class="grand">
     <div class="stat"><div class="label">Total tokens (all time)</div><div class="value">${fmt(grandTotalTokens)}</div></div>
     <div class="stat"><div class="label">Total calls (all time)</div><div class="value">${fmt(grandTotalCalls)}</div></div>
   </div>
   <div class="cards">
-    ${providerCard("groq", "Groq (Llama 3 70B)", "#4ec9b0", totals.groq ?? emptyTotals(), today.groq ?? emptyTotals())}
+    ${providerCard("groq", "Groq (gpt-oss-120b)", "#4ec9b0", totals.groq ?? emptyTotals(), today.groq ?? emptyTotals())}
     ${providerCard("openai", "OpenAI (GPT-4o mini)", "#aa925c", totals.openai ?? emptyTotals(), today.openai ?? emptyTotals())}
   </div>
   <div class="refresh-note">Last loaded: ${new Date().toLocaleString()}</div>
