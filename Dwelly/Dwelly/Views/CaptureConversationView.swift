@@ -33,6 +33,15 @@ struct CaptureConversationView: View {
     @Environment(\.apiClient) private var apiClient
     @Environment(\.dismiss) private var dismiss
     @FocusState private var inputFocused: Bool
+    // Voice was scoped out of this screen entirely when it was first built ("Voice
+    // capture still goes through the separate, unchanged ReviewView save path —
+    // folding voice into this same conversational flow is real additional scope, not
+    // done here"). Kell asked for it back in (Nov 10 2026): voice should be available
+    // for every reply in the conversation, not just CaptureView's own first entry.
+    // Reuses the same AudioRecordingManager/TranscriptionManager pattern CaptureView
+    // already uses — record, transcribe, then feed the transcript through the exact
+    // same sendUserTurn() path typed text already uses.
+    @StateObject private var audioManager = AudioRecordingManager()
 
     private struct Turn: Identifiable {
         let id = UUID()
@@ -43,6 +52,7 @@ struct CaptureConversationView: View {
     @State private var turns: [Turn] = []
     @State private var inputText = ""
     @State private var isWaitingForDwelly = false
+    @State private var isTranscribingVoice = false
     // The "Response N of 3" counter hides while the user is actively scrolling the
     // thread and fades back in once scrolling settles — Kell's own suggestion (Nov 10
     // 2026) after flagging it as sitting awkwardly out of line with the header; this
@@ -270,6 +280,19 @@ struct CaptureConversationView: View {
                         .opacity(savedMoment == nil ? 0.5 : 1.0)
                     }
                 } else {
+                    if audioManager.isRecording {
+                        Text(audioManager.formattedDuration(audioManager.recordingDuration))
+                            .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                            .foregroundColor(Theme.gold)
+                    }
+                    if let warningMessage = audioManager.warningMessage {
+                        Text(warningMessage)
+                            .font(.system(size: 12))
+                            .foregroundColor(Theme.gold)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                    }
+
                     HStack(spacing: 8) {
                         TextField("", text: $inputText, prompt: Text("Share what's on your mind...").foregroundColor(Theme.Capture.textMuted), axis: .vertical)
                             .font(.system(size: 16))
@@ -278,19 +301,37 @@ struct CaptureConversationView: View {
                             .focused($inputFocused)
                             .submitLabel(.done)
                             .onSubmit { sendUserTurn() }
-                            .disabled(isWaitingForDwelly)
+                            .disabled(isWaitingForDwelly || audioManager.isRecording || isTranscribingVoice)
 
-                        Button(action: sendUserTurn) {
-                            Image(systemName: "arrow.up")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Theme.goldDark)
+                        Button(action: handleRecordTap) {
+                            Image(systemName: audioManager.isRecording ? "stop.fill" : "mic.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(Theme.gold)
                                 .frame(width: 44, height: 44)
-                                .background(Theme.gold)
+                                .background(Theme.Capture.cardBorder)
                                 .clipShape(Circle())
                         }
-                        .disabled(isWaitingForDwelly || inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                        .opacity(isWaitingForDwelly ? 0.5 : 1.0)
+                        .disabled(isWaitingForDwelly || isTranscribingVoice)
+                        .opacity((isWaitingForDwelly || isTranscribingVoice) ? 0.4 : 1.0)
+
+                        if !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Button(action: sendUserTurn) {
+                                Image(systemName: "arrow.up")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(Theme.goldDark)
+                                    .frame(width: 44, height: 44)
+                                    .background(Theme.gold)
+                                    .clipShape(Circle())
+                            }
+                            .disabled(isWaitingForDwelly)
+                            .transition(.scale.combined(with: .opacity))
+                        } else if isTranscribingVoice {
+                            ProgressView()
+                                .tint(Theme.gold)
+                                .frame(width: 44, height: 44)
+                        }
                     }
+                    .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
                     .padding(.leading, 20)
                     .padding(.trailing, 8)
                     .frame(height: 60)
@@ -483,6 +524,34 @@ struct CaptureConversationView: View {
         inputText = ""
         turns.append(Turn(role: .user, text: text))
         Task { await requestDwellyResponse() }
+    }
+
+    // Mirrors CaptureView.handleRecordTap — record, then transcribe and feed the
+    // result through the exact same sendUserTurn() path typed text already uses,
+    // rather than a separate voice-specific turn type.
+    private func handleRecordTap() {
+        if audioManager.isRecording {
+            audioManager.stopRecording { transcribeAndSend() }
+        } else {
+            audioManager.onRecordingLimitReached = { transcribeAndSend() }
+            audioManager.startRecording()
+        }
+    }
+
+    private func transcribeAndSend() {
+        guard let audioURL = audioManager.audioURL else { return }
+        isTranscribingVoice = true
+        TranscriptionManager.shared.transcribeAudio(from: audioURL) { transcript in
+            DispatchQueue.main.async {
+                isTranscribingVoice = false
+                guard let transcript, !transcript.isEmpty else {
+                    errorMessage = TranscriptionManager.shared.errorMessage ?? "Couldn't make that out — try again, or type it instead."
+                    return
+                }
+                inputText = transcript
+                sendUserTurn()
+            }
+        }
     }
 
     private func requestDwellyResponse() async {
