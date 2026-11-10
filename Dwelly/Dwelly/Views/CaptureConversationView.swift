@@ -325,6 +325,15 @@ struct CaptureConversationView: View {
             }
         }
         .background(Theme.background.ignoresSafeArea())
+        // Expanded: the box stays fixed and the keyboard draws in front of it
+        // (see `expandedTextEditorHeight`), so this screen must stop reacting to
+        // the keyboard's safe area -- otherwise SwiftUI's default avoidance just
+        // pushes the whole screen (header included) up by keyboardHeight, which
+        // is exactly the shift-and-gap combination Kell rejected across several
+        // earlier attempts. Collapsed/idle: leave the default behavior alone
+        // (empty edge set = no-op) so the compose area still rises to stay fully
+        // above the keyboard, same as it always did.
+        .ignoresSafeArea(.keyboard, edges: isComposeExpanded ? .bottom : [])
         .navigationBarBackButtonHidden(true)
         // `.navigationBarBackButtonHidden` only hides the back button, not the bar's
         // own background — the system nav bar's default fill was showing through as a
@@ -507,17 +516,18 @@ struct CaptureConversationView: View {
         .clipShape(Capsule())
     }
 
-    // Expanded TextEditor height. Kell's ChatGPT reference (Nov 10 2026) shows
-    // the box filling essentially ALL the space between the header and the
-    // keyboard when expanded -- flush against the keyboard, no gap -- not a
-    // modest fixed size with wasted black space below it. 94 is the box's own
-    // fixed chrome (16+16 padding + the 62pt button row); only a small buffer
-    // beyond that, not the 140pt of slack the previous version left.
+    // Expanded TextEditor height. Kell's ChatGPT reference (Nov 10 2026, after
+    // several rounds on an artifact mockup) does NOT shrink the box for the
+    // keyboard at all -- it fills essentially the whole screen below the
+    // header, "housed" almost entirely, same whether the keyboard is up or
+    // not, and the keyboard simply draws IN FRONT of it, covering whatever
+    // text is behind it. Only the mic/send row floats above the keyboard
+    // (see `actionButtonsRow` / the `.overlay` in `composePill`) -- the
+    // box's own height never reacts to keyboardHeight. 94 is the box's own
+    // fixed chrome (16+16 padding + the 62pt button row).
     private var expandedTextEditorHeight: CGFloat {
-        let base: CGFloat = 408
-        guard keyboardHeight > 0 else { return base }
         let chrome: CGFloat = 94
-        let available = UIScreen.main.bounds.height - keyboardHeight - headerHeight - chrome - 8
+        let available = UIScreen.main.bounds.height - headerHeight - chrome - 8
         return max(120, available)
     }
 
@@ -599,40 +609,19 @@ struct CaptureConversationView: View {
 
                     Spacer(minLength: 0)
 
-                    HStack {
-                        Spacer()
-                        Button(action: handleRecordTap) {
-                            Image(systemName: "mic.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(Theme.gold)
-                                .frame(width: 44, height: 44)
-                                .background(Theme.Capture.cardBorder)
-                                .clipShape(Circle())
-                        }
-                        .disabled(isWaitingForDwelly)
-
-                        Button(action: sendUserTurn) {
-                            Image(systemName: "arrow.up")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Theme.goldDark)
-                                .frame(width: 44, height: 44)
-                                .background(Theme.gold)
-                                .clipShape(Circle())
-                        }
-                        .disabled(isWaitingForDwelly)
+                    // Hidden here (not removed -- just not rendered inline) once the
+                    // floating copy below takes over, so there's never two overlapping
+                    // copies of the same buttons.
+                    if !(isComposeExpanded && keyboardHeight > 0) {
+                        actionButtonsRow
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.top, 8)
-                    .padding(.bottom, 10)
                 }
                 // Computed exactly from content (composePillHeight), not guessed --
                 // fixed 120pt/524pt constants clipped the button row (Kell, Nov 10
-                // 2026), and dropping the frame entirely let the Spacer above greedily
-                // fill the whole screen instead of hugging the content. This height
-                // also shrinks with the keyboard (via expandedTextEditorHeight) so the
-                // mic/send row stays visible above it instead of sliding underneath.
+                // 2026). Expanded, this no longer reacts to the keyboard at all (see
+                // `expandedTextEditorHeight`) -- it stays flush with the screen bottom
+                // and the keyboard draws in front of it instead.
                 .frame(height: composePillHeight)
-                .animation(.easeOut(duration: 0.25), value: keyboardHeight)
                 .background(Theme.Capture.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
             }
@@ -640,6 +629,48 @@ struct CaptureConversationView: View {
         .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
         .padding(.horizontal, 24)
         .padding(.bottom, Theme.Spacing.xxl)
+        // Expanded + keyboard up: Kell's reference has the send/mic row floating
+        // above the keyboard even though the box itself doesn't move -- the button
+        // row is the one thing that still has to be reachable. Positioned with raw
+        // keyboardHeight, not Theme.Spacing.xxl, since it's escaping this view's own
+        // padding to sit exactly on the keyboard's own top edge.
+        .overlay(alignment: .bottom) {
+            if isComposeExpanded && keyboardHeight > 0 {
+                actionButtonsRow
+                    .padding(.bottom, keyboardHeight)
+            }
+        }
+    }
+
+    // Pulled out of `composePill` so the same row can render either inline (normal
+    // collapsed/expanded-no-keyboard case) or floating above the keyboard (expanded
+    // + keyboard up) without duplicating the buttons themselves.
+    private var actionButtonsRow: some View {
+        HStack {
+            Spacer()
+            Button(action: handleRecordTap) {
+                Image(systemName: "mic.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(Theme.gold)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.Capture.cardBorder)
+                    .clipShape(Circle())
+            }
+            .disabled(isWaitingForDwelly)
+
+            Button(action: sendUserTurn) {
+                Image(systemName: "arrow.up")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Theme.goldDark)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.gold)
+                    .clipShape(Circle())
+            }
+            .disabled(isWaitingForDwelly)
+        }
+        .padding(.horizontal, 10)
+        .padding(.top, 8)
+        .padding(.bottom, 10)
     }
 
     // Component/Recording-Bar (node 648:220) — Cancel (✕) + a live, voice-reactive
