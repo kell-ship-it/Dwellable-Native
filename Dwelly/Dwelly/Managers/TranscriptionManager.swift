@@ -267,7 +267,13 @@ class TranscriptionManager: NSObject, ObservableObject {
                     // Now call completion after audio upload attempt is done
                     await MainActor.run {
                         hlog("About to call completion — audioURL is: \(self.audioURL ?? "nil")", "INFO")
-                        completion(fullText)
+                        // cleanedText, not fullText -- this was handing callers the raw
+                        // WhisperKit output with its own non-speech markers (e.g.
+                        // "[BLANK_AUDIO]") still in it, even though that exact stripping
+                        // logic already existed above and was applied to self.transcript.
+                        // Caught live by Kell (Nov 10 2026): the literal string
+                        // "[BLANK_AUDIO]" landed in the compose box's transcript.
+                        completion(cleanedText)
                     }
                 } else {
                     // No transcription, clean up
