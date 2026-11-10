@@ -44,7 +44,14 @@ struct CaptureConversationView: View {
     @State private var showMomentDetail = false
 
     private let maxResponses = 3
-    private var dwellyResponseCount: Int { turns.filter { $0.role == .assistant }.count }
+    // The prompt-card opening question renders as an assistant turn (see
+    // `initialMessageIsPrompt` below) but isn't one of Dwelly's 3 real generated
+    // responses — it's the question the user is about to answer, so it's excluded
+    // from the count and from the "Response N of 3" header until a real answer lands.
+    @State private var openedWithPromptQuestion = false
+    private var dwellyResponseCount: Int {
+        turns.filter { $0.role == .assistant }.count - (openedWithPromptQuestion ? 1 : 0)
+    }
     private var isConversationComplete: Bool { dwellyResponseCount >= maxResponses }
 
     /// Generated once, right after the conversation closes — a title/excerpt/scripture
@@ -137,7 +144,7 @@ struct CaptureConversationView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         ForEach(turns) { turn in
-                            turnBubble(turn, renderAsDwelly: initialMessageIsPrompt && turn.id == turns.first?.id)
+                            turnBubble(turn)
                                 .id(turn.id)
                         }
                         if isWaitingForDwelly {
@@ -223,8 +230,17 @@ struct CaptureConversationView: View {
         .background(Theme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
         .onAppear {
-            turns = [Turn(role: .user, text: initialMessage)]
-            Task { await requestDwellyResponse() }
+            if initialMessageIsPrompt {
+                // Dwelly is asking this one, not the user — show it as the opening
+                // assistant turn and wait for the user's real answer instead of
+                // calling the LLM immediately, which previously made Dwelly answer
+                // its own question (caught live by Kell, Nov 9 2026).
+                turns = [Turn(role: .assistant, text: initialMessage)]
+                openedWithPromptQuestion = true
+            } else {
+                turns = [Turn(role: .user, text: initialMessage)]
+                Task { await requestDwellyResponse() }
+            }
         }
     }
 
@@ -236,28 +252,9 @@ struct CaptureConversationView: View {
     /// showed). Width is no longer capped at a fixed point value either — Kell's
     /// specific complaint was the box eating landscape — so it now just respects the
     /// screen's own horizontal padding like the journal card below it does.
-    // `renderAsDwelly` is a display-only override: a tapped prompt card is still stored
-    // and sent to the LLM as a plain `.user` turn (that's what makes the "Response N of
-    // 3" counter and the LLM call behave exactly as before), but visually it's the
-    // question Dwelly posed, not something the user said — caught live by Kell (Nov 9
-    // 2026) seeing it rendered as his own message. This only changes which bubble style
-    // is drawn, never the underlying role/counting logic.
     @ViewBuilder
-    private func turnBubble(_ turn: Turn, renderAsDwelly: Bool = false) -> some View {
+    private func turnBubble(_ turn: Turn) -> some View {
         switch turn.role {
-        case .user where renderAsDwelly:
-            VStack(alignment: .leading, spacing: 8) {
-                dwellyBadge
-                Text(turn.text)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Theme.Capture.textBody)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Theme.Capture.cardBackground)
-                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.Capture.cardBorder.opacity(0.4), lineWidth: 1))
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-            }
         case .user:
             HStack {
                 Spacer(minLength: 56)
@@ -395,19 +392,6 @@ struct CaptureConversationView: View {
 
         var messages = [LLMMessage(role: .system, content: systemPrompt)]
         messages.append(contentsOf: turns.map { LLMMessage(role: $0.role, content: $0.text) })
-
-        // The opening message from a tapped prompt card is a question Dwelly posed TO
-        // the user ("Any stillness stand out to you?"), not something the user said —
-        // sent verbatim as a plain user turn, the model just answered its own question
-        // in the first person instead of inviting a real answer (caught live by Kell,
-        // Nov 9 2026). Rewriting just the content sent to the LLM (not what's displayed
-        // in the transcript) keeps the turn/counter logic unchanged while fixing that.
-        if initialMessageIsPrompt, turns.count == 1, let first = messages.last {
-            messages[messages.count - 1] = LLMMessage(
-                role: first.role,
-                content: "The user tapped this reflection prompt to start journaling — they haven't answered it yet: \"\(initialMessage)\". Invite them warmly, in 1 short sentence, to actually share their own answer. Don't answer the question yourself, and don't ask a different one."
-            )
-        }
 
         do {
             let response = try await apiClient.callLLM(messages: messages, feature: "capture_conversation")
