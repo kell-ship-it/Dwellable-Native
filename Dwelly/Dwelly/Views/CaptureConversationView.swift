@@ -241,6 +241,12 @@ struct CaptureConversationView: View {
                     }
                     .padding(.horizontal, isConversationComplete ? 16 : 28)
                     .padding(.top, 14)
+                    // Kell (Nov 10 2026): the counter/rock row should hide once the compose
+                    // box is expanded rather than risk sitting on top of it — the row keeps
+                    // its own fixed height either way (just the text fades), so nothing else
+                    // in the header shifts.
+                    .opacity(isComposeExpanded ? 0 : 1)
+                    .animation(.easeInOut(duration: 0.2), value: isComposeExpanded)
 
                     Spacer(minLength: 0)
                 }
