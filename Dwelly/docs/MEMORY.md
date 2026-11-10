@@ -2,6 +2,16 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (November 10, 2026, continued again — real Journal Detail view/edit/delete built and matched to Figma; hard-delete copy bug found)
+
+**Confirmed Pending Items:**
+1. **Fix the Delete Entry hard-delete/soft-delete mismatch (T-158, priority raised to HIGH).** `JournalDetailView`'s new Delete Entry flow shows T-158's own locked confirmation copy ("moves to Recently Deleted... restore before then"), but `SupabaseAPIClient.deleteMoment` performs a real HTTP `DELETE` against the `moments` row — an immediate, permanent, hard delete. The app is currently telling users something false about recoverability. Needs either T-158's real soft-delete mechanism built before this ships, or the confirmation copy changed to match actual (hard-delete) behavior as a stopgap — do not leave this mismatch live.
+2. **Build `JournalEntry` + encrypted storage (T-152).** This is now blocking two things at once, not just the original transition-screen rationale: T-153's mood editing and T-155's hero photo are both real, working UI with nowhere to actually save to — selections don't survive leaving the screen. T-155 itself also can't move past "In Progress" without it (no real Pending/Approved status split is possible without a real entry record).
+3. **Build the ✕ confirm-discard modal T-155 itself specifies.** Not built this session — tapping ✕ in edit mode currently discards silently instead of confirming first, which is a real (if small) spec gap in the ticket this session otherwise closed out most of.
+4. **T-271: Design + build the capture-to-journal transition screen** — now genuinely unblocked (the real destination screen exists and works), but still needs Kell's own input on *how* he wants it to work before writing code, per his original ask.
+
+**Rationale:** This session closed the loop T-271 was blocked on — a real Journal Detail screen now exists, matches the actual Figma designs (after two separate instances this session of building from instinct instead of checking Figma first, both caught and corrected), and has working edit/delete/photo/mood/voice-note UI. The honest gaps left are: nothing persists except the body text (T-152 is the real unlock), one ticket's own spec item (confirm-discard modal) wasn't built, and one real correctness bug (delete copy vs. actual behavior) needs to be fixed before this ships to anyone, not just noted.
+
 ## Next Session Objective (November 10, 2026, continued — compose box rebuilt as single surface, merged to main; capture-to-journal transition screen next)
 
 **Confirmed Pending Items:**
