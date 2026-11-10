@@ -323,7 +323,18 @@ struct CaptureConversationView: View {
                     }
                 }
             }
+            // Now that the whole screen ignores the keyboard's safe area (below), only
+            // this bottom compose area needs to move for the keyboard -- not the header.
+            // Pushing it up by the tracked keyboard height keeps it above the keyboard
+            // without dragging "Response N of 3"/the rock icon along with it.
+            .padding(.bottom, keyboardHeight)
         }
+        // Without this, SwiftUI's default keyboard avoidance shifts this whole screen
+        // (header included) upward when the keyboard appears — Kell caught (Nov 10
+        // 2026) the "Response N of 3"/logo row subtly sliding up with it. The compose
+        // box already shrinks itself to stay above the keyboard (expandedTextEditorHeight,
+        // keyboardHeight tracking above), so nothing else here needs to move.
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .background(Theme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
         // `.navigationBarBackButtonHidden` only hides the back button, not the bar's
