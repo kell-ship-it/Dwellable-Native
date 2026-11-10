@@ -137,7 +137,7 @@ struct CaptureConversationView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         ForEach(turns) { turn in
-                            turnBubble(turn)
+                            turnBubble(turn, renderAsDwelly: initialMessageIsPrompt && turn.id == turns.first?.id)
                                 .id(turn.id)
                         }
                         if isWaitingForDwelly {
@@ -236,9 +236,28 @@ struct CaptureConversationView: View {
     /// showed). Width is no longer capped at a fixed point value either — Kell's
     /// specific complaint was the box eating landscape — so it now just respects the
     /// screen's own horizontal padding like the journal card below it does.
+    // `renderAsDwelly` is a display-only override: a tapped prompt card is still stored
+    // and sent to the LLM as a plain `.user` turn (that's what makes the "Response N of
+    // 3" counter and the LLM call behave exactly as before), but visually it's the
+    // question Dwelly posed, not something the user said — caught live by Kell (Nov 9
+    // 2026) seeing it rendered as his own message. This only changes which bubble style
+    // is drawn, never the underlying role/counting logic.
     @ViewBuilder
-    private func turnBubble(_ turn: Turn) -> some View {
+    private func turnBubble(_ turn: Turn, renderAsDwelly: Bool = false) -> some View {
         switch turn.role {
+        case .user where renderAsDwelly:
+            VStack(alignment: .leading, spacing: 8) {
+                dwellyBadge
+                Text(turn.text)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Theme.Capture.textBody)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Theme.Capture.cardBackground)
+                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.Capture.cardBorder.opacity(0.4), lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+            }
         case .user:
             HStack {
                 Spacer(minLength: 56)
