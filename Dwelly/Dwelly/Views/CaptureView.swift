@@ -86,7 +86,10 @@ struct CaptureView: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 12) {
                         ForEach(topicCards, id: \.title) { card in
-                            Button(action: { inputText = card.title + " " }) {
+                            Button(action: {
+                                inputText = card.title
+                                submitTypedText()
+                            }) {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(card.title)
