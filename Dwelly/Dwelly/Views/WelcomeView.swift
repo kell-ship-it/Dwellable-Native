@@ -44,36 +44,17 @@ struct WelcomeView: View {
     @State private var destination: WelcomeDestination?
 
     var body: some View {
+        // The wordmark/tagline block is positioned via a GeometryReader `.overlay`
+        // that sits OUTSIDE the button VStack's own ancestry, not as a sibling inside
+        // it — a large fixed offset applied anywhere in the button's own ancestor
+        // chain (a sized `Spacer`/`Color.clear` sibling, `.padding`, `.position`)
+        // reproducibly left Get Started/Log In rendering correctly but silently ate
+        // every tap, confirmed via an in-app debug log that the Button action never
+        // fired (Nov 9, 2026 debugging session). Keeping the button VStack exactly as
+        // plain, unconstrained `Spacer()`s (the one config confirmed tap-working) and
+        // positioning the wordmark in a completely separate overlay layer avoids
+        // touching that ancestry at all.
         VStack(spacing: 0) {
-            // Flexible, unconstrained `Spacer()`s rather than a computed
-            // `.frame(height:)`/`.padding(.top:)`/`.position()` offset — confirmed
-            // reproducibly on simulator (Nov 9, 2026 debugging session): a large fixed
-            // top offset on this screen, however it's computed or applied (a sized
-            // `Spacer`/`Color.clear` sibling, `.padding`, even `.position`), leaves Get
-            // Started/Log In rendering in the visually-correct spot while silently
-            // eating every tap — confirmed via an in-app debug log that the Button
-            // action never fires. Plain flexible `Spacer()`s did not reproduce that in
-            // the same repeated testing. Root cause not fully understood — see the
-            // FullBleedImage comment above for the same situation one layer up (that
-            // "fix" likely only ever dodged this, rather than addressing it). This no
-            // longer pixel-matches Figma's exact 71%/83%-down placement, but a slightly
-            // off position beats a dead button.
-            Spacer()
-
-            VStack(spacing: 8) {
-                Text("dwelly")
-                    .font(.system(size: 52, design: .serif))
-                    .foregroundColor(Theme.Payment.textHeading)
-
-                Text("STEWARD EVERY MOMENT WITH GOD")
-                    .font(.system(size: 13, weight: .medium))
-                    .tracking(1.5)
-                    .foregroundColor(Theme.Payment.textSupporting)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-
-            Spacer()
             Spacer()
 
             VStack(spacing: 16) {
@@ -105,6 +86,26 @@ struct WelcomeView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(FullBleedImage(imageName: "WelcomeHeroBackground"))
         .background(Color(red: 0x0b / 255, green: 0x0a / 255, blue: 0x08 / 255))
+        .overlay(
+            GeometryReader { geo in
+                VStack(spacing: 8) {
+                    Text("dwelly")
+                        .font(.system(size: 52, design: .serif))
+                        .foregroundColor(Theme.Payment.textHeading)
+
+                    Text("STEWARD EVERY MOMENT WITH GOD")
+                        .font(.system(size: 13, weight: .medium))
+                        .tracking(1.5)
+                        .foregroundColor(Theme.Payment.textSupporting)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                // Figma `969:525`: wordmark baseline sits ~78% down the screen,
+                // below the rock illustration.
+                .position(x: geo.size.width / 2, y: geo.size.height * 0.78)
+            }
+            .allowsHitTesting(false)
+        )
         .ignoresSafeArea()
         .fullScreenCover(item: $destination) { destination in
             switch destination {
