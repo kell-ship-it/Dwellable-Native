@@ -209,6 +209,70 @@ struct CaptureConversationView: View {
                             Task { await finishAndSave() }
                         }
                     }
+                    // `.safeAreaInset(edge: .bottom)` attached directly to the ScrollView
+                    // (not to the outer ZStack, which was the first attempt and still left
+                    // the mic/send buttons clipped by the keyboard, Kell caught, Nov 10
+                    // 2026) -- this is the pattern Apple's own keyboard-avoidance docs show
+                    // for a chat-style input bar: attached straight to the scrollable
+                    // content, the system correctly shrinks the ScrollView AND keeps this
+                    // inset content above the keyboard automatically. The header is a
+                    // separate ZStack sibling below, untouched by any of this, so it never
+                    // moves for the keyboard either.
+                    .safeAreaInset(edge: .bottom) {
+                        VStack(spacing: 12) {
+                            if let errorMessage {
+                                Text(errorMessage)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(Theme.error)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 28)
+                            }
+
+                            if isConversationComplete {
+                                // Onboarding has no back chevron (nothing to go back to), but a
+                                // silent timed auto-advance turned out worse — Kell caught it
+                                // pushing him into the next screen before he'd even gotten to
+                                // look at the journal card (Nov 10 2026). A real "Continue" the
+                                // user taps once they're ready replaces that timer.
+                                if isOnboarding {
+                                    Button(action: { onMomentSaved?() }) {
+                                        Text("Continue")
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundColor(Theme.Payment.backgroundPrimary)
+                                            .frame(maxWidth: .infinity)
+                                            .frame(height: 60)
+                                    }
+                                    .background(Theme.gold)
+                                    .clipShape(Capsule())
+                                    .padding(.horizontal, 24)
+                                    .padding(.bottom, Theme.Spacing.xxl)
+                                    .disabled(savedMoment == nil)
+                                    .opacity(savedMoment == nil ? 0.5 : 1.0)
+                                }
+                            } else {
+                                if let warningMessage = audioManager.warningMessage {
+                                    Text(warningMessage)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Theme.gold)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 24)
+                                }
+
+                                // Component/Recording-Bar (Figma node 648:220) / Component/Transcribing-Bar
+                                // (649:3850), pulled exactly rather than approximated — Kell flagged the
+                                // missing stages (Nov 10 2026): record → live waveform/timer with
+                                // Cancel+Stop → transcribing → transcript lands in the compose field for
+                                // review, not sent automatically.
+                                if audioManager.isRecording {
+                                    recordingBar
+                                } else if isTranscribingVoice {
+                                    transcribingBar
+                                } else {
+                                    composePill
+                                }
+                            }
+                        }
+                    }
                 }
 
                 VStack(spacing: 0) {
@@ -269,81 +333,6 @@ struct CaptureConversationView: View {
                 )
                 .allowsHitTesting(true)
             }
-        // `.safeAreaInset(edge: .bottom)` -- SwiftUI's own purpose-built tool for
-        // exactly this "input bar pinned to the bottom, content scrolls above it"
-        // pattern, replacing a long run of manual attempts (a plain VStack sibling
-        // with `.padding(.bottom, keyboardHeight)`, then `.offset`, then an explicit
-        // GeometryReader-measured frame) that all failed the same way on a real
-        // device: the ScrollView never actually gave up the space the compose area
-        // needed, so its buttons stayed clipped by the screen edge or the keyboard
-        // regardless of how that space was asked for. `safeAreaInset` reserves the
-        // exact space its content needs automatically, AND already handles the
-        // keyboard correctly (it's designed for this), so the manual keyboardHeight
-        // tracking/notifications are no longer needed at all.
-        .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 12) {
-                if let errorMessage {
-                    Text(errorMessage)
-                        .font(.system(size: 12))
-                        .foregroundColor(Theme.error)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 28)
-                }
-
-                if isConversationComplete {
-                    // Onboarding has no back chevron (nothing to go back to), but a
-                    // silent timed auto-advance turned out worse — Kell caught it
-                    // pushing him into the next screen before he'd even gotten to
-                    // look at the journal card (Nov 10 2026). A real "Continue" the
-                    // user taps once they're ready replaces that timer.
-                    if isOnboarding {
-                        Button(action: { onMomentSaved?() }) {
-                            Text("Continue")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Theme.Payment.backgroundPrimary)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 60)
-                        }
-                        .background(Theme.gold)
-                        .clipShape(Capsule())
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, Theme.Spacing.xxl)
-                        .disabled(savedMoment == nil)
-                        .opacity(savedMoment == nil ? 0.5 : 1.0)
-                    }
-                } else {
-                    if let warningMessage = audioManager.warningMessage {
-                        Text(warningMessage)
-                            .font(.system(size: 12))
-                            .foregroundColor(Theme.gold)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 24)
-                    }
-
-                    // Component/Recording-Bar (Figma node 648:220) / Component/Transcribing-Bar
-                    // (649:3850), pulled exactly rather than approximated — Kell flagged the
-                    // missing stages (Nov 10 2026): record → live waveform/timer with
-                    // Cancel+Stop → transcribing → transcript lands in the compose field for
-                    // review, not sent automatically.
-                    if audioManager.isRecording {
-                        recordingBar
-                    } else if isTranscribingVoice {
-                        transcribingBar
-                    } else {
-                        composePill
-                    }
-                }
-            }
-        }
-        // `maxHeight: .infinity` lets this VStack grow taller than the actual
-        // screen instead of capping it there, so any time its content (ScrollView
-        // + fixed-height compose area) totals more than one screen, the excess
-        // overflows uncapped past the bottom edge -- exactly the button/bottom
-        // clipping real-device testing kept showing (Nov 10 2026), independent of
-        // keyboard state entirely. Removed: the header no longer drifts because
-        // the compose area's own height is fixed (120/524, see `isComposeExpanded`
-        // above) and the keyboard is handled via `.offset` below, not by resizing
-        // this VStack -- nothing left that needs a height override here.
         .background(Theme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
         // `.navigationBarBackButtonHidden` only hides the back button, not the bar's
@@ -553,51 +542,64 @@ struct CaptureConversationView: View {
                 .background(Theme.Capture.cardBackground)
                 .clipShape(Capsule())
             } else {
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack(alignment: .top) {
-                        // TextField(axis: .vertical) only ever grows to fit its own
-                        // content — handing it a taller frame just leaves the extra
-                        // space as dead padding below the text, not more room to type
-                        // into, which is exactly what Kell caught (Nov 10 2026):
-                        // "it does not allow me to type fully in that space." TextEditor
-                        // actually fills and scrolls within whatever frame it's given.
-                        TextEditor(text: $inputText)
-                            .font(.system(size: 13))
-                            .foregroundColor(Theme.Payment.textHeading)
-                            .tint(Theme.gold)
-                            .scrollContentBackground(.hidden)
-                            .background(Color.clear)
-                            .focused($inputFocused)
-                            .disabled(isWaitingForDwelly)
-                            // Figma's own Component/Typed-Text-Box spec (node 651:3966,
-                            // pulled directly Nov 10 2026): Collapsed card is 120pt with
-                            // a 93pt-tall text area; Expanded is 524pt with a 423pt-tall
-                            // text area. Both fixed, not computed from screen/keyboard
-                            // height -- see the comment on `isComposeExpanded` above.
-                            .frame(height: isComposeExpanded ? 423 : 93)
-                            .clipped()
-                            // TextEditor's own internal UIScrollView keeps whatever
-                            // scroll offset it had from auto-scrolling to the cursor
-                            // while collapsed -- expanding the frame doesn't reset
-                            // that, so it just reveals blank tracking space ABOVE the
-                            // text instead of the text re-flowing to the top, exactly
-                            // what Kell caught (Nov 10 2026). Forcing a fresh view
-                            // identity on toggle rebuilds the underlying UITextView
-                            // with a clean scroll position.
-                            .id(isComposeExpanded)
+                // Figma's own Component/Typed-Text-Box spec (node 651:3966) does NOT
+                // stack text, then a spacer, then a button row sequentially -- it
+                // absolutely positions the text block and the mic/send buttons so the
+                // buttons sit OVER the bottom-right corner of the text area. A plain
+                // VStack{ text row; Spacer; button row } needs at least 16+93+16+62 =
+                // 187pt just for its fixed-size children before the Spacer gets
+                // anything, but the card itself is only 120pt -- that's why the
+                // buttons (and, with the keyboard up, the chevron too) kept clipping
+                // regardless of how the keyboard was handled. Matching Figma's actual
+                // overlay structure fixes it structurally: the buttons are never
+                // competing with a flexible middle section for space, they're pinned
+                // to the card's own fixed-size corner.
+                ZStack(alignment: .topLeading) {
+                    // TextField(axis: .vertical) only ever grows to fit its own
+                    // content — handing it a taller frame just leaves the extra
+                    // space as dead padding below the text, not more room to type
+                    // into, which is exactly what Kell caught (Nov 10 2026):
+                    // "it does not allow me to type fully in that space." TextEditor
+                    // actually fills and scrolls within whatever frame it's given.
+                    TextEditor(text: $inputText)
+                        .font(.system(size: 13))
+                        .foregroundColor(Theme.Payment.textHeading)
+                        .tint(Theme.gold)
+                        .scrollContentBackground(.hidden)
+                        .background(Color.clear)
+                        .focused($inputFocused)
+                        .disabled(isWaitingForDwelly)
+                        .padding(.leading, 16)
+                        .padding(.top, 16)
+                        .padding(.trailing, 44) // clears the chevron's top-right corner
+                        // Figma's own Component/Typed-Text-Box spec (node 651:3966,
+                        // pulled directly Nov 10 2026): Collapsed card is 120pt,
+                        // Expanded is 524pt. Both fixed, not computed from
+                        // screen/keyboard height -- see the comment on
+                        // `isComposeExpanded` above.
+                        .frame(height: isComposeExpanded ? 524 : 120)
+                        .clipped()
+                        // TextEditor's own internal UIScrollView keeps whatever
+                        // scroll offset it had from auto-scrolling to the cursor
+                        // while collapsed -- expanding the frame doesn't reset
+                        // that, so it just reveals blank tracking space ABOVE the
+                        // text instead of the text re-flowing to the top, exactly
+                        // what Kell caught (Nov 10 2026). Forcing a fresh view
+                        // identity on toggle rebuilds the underlying UITextView
+                        // with a clean scroll position.
+                        .id(isComposeExpanded)
 
-                        Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isComposeExpanded.toggle() } }) {
-                            Image(systemName: isComposeExpanded ? "chevron.down.circle" : "chevron.up.circle")
-                                .font(.system(size: 18))
-                                .foregroundColor(Theme.Payment.textSupporting)
-                        }
+                    Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isComposeExpanded.toggle() } }) {
+                        Image(systemName: isComposeExpanded ? "chevron.down.circle" : "chevron.up.circle")
+                            .font(.system(size: 18))
+                            .foregroundColor(Theme.Payment.textSupporting)
+                            .frame(width: 32, height: 32)
                     }
-                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.top, 14)
+                    .padding(.trailing, 14)
 
-                    Spacer(minLength: 0)
-
-                    HStack {
-                        Spacer()
+                    HStack(spacing: 10) {
                         Button(action: handleRecordTap) {
                             Image(systemName: "mic.fill")
                                 .font(.system(size: 16))
@@ -618,13 +620,10 @@ struct CaptureConversationView: View {
                         }
                         .disabled(isWaitingForDwelly)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.top, 8)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    .padding(.trailing, 10)
                     .padding(.bottom, 10)
                 }
-                // Figma's own Component/Typed-Text-Box spec (node 651:3966): 120pt
-                // collapsed, 524pt expanded. Fixed, not computed -- see the comment
-                // on `isComposeExpanded` above for why.
                 .frame(height: isComposeExpanded ? 524 : 120)
                 .background(Theme.Capture.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
