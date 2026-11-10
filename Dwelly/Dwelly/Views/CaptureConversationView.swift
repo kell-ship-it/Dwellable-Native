@@ -144,8 +144,8 @@ struct CaptureConversationView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         ForEach(turns) { turn in
-                            turnBubble(turn)
-                                .id(turn.id)
+                            turnBubble(turn, isFinal: isConversationComplete && turn.id == turns.last?.id)
+                                .id(turn.id == turns.last?.id ? "journalPreview" : turn.id.uuidString)
                         }
                         if isWaitingForDwelly {
                             dwellyBadge
@@ -153,17 +153,6 @@ struct CaptureConversationView: View {
                                 .tint(Theme.gold)
                                 .padding(.leading, 24)
                                 .id("spinner")
-                        }
-                        if isConversationComplete {
-                            VStack(alignment: .leading, spacing: 6) {
-                                dwellyBadge
-                                Text(closingMessage)
-                                    .font(.system(size: 16, weight: .regular))
-                                    .foregroundColor(Theme.Capture.textPrimary)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                            journalPreview
-                                .id("journalPreview")
                         }
                     }
                     .padding(.horizontal, 24)
@@ -229,6 +218,11 @@ struct CaptureConversationView: View {
         }
         .background(Theme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
+        // `.navigationBarBackButtonHidden` only hides the back button, not the bar's
+        // own background — the system nav bar's default fill was showing through as a
+        // hard, unfaded edge at the very top of the screen, caught live by Kell
+        // (Nov 10 2026), against this screen's otherwise full-bleed dark background.
+        .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             if initialMessageIsPrompt {
                 // Dwelly is asking this one, not the user — show it as the opening
@@ -252,8 +246,12 @@ struct CaptureConversationView: View {
     /// showed). Width is no longer capped at a fixed point value either — Kell's
     /// specific complaint was the box eating landscape — so it now just respects the
     /// screen's own horizontal padding like the journal card below it does.
+    // `isFinal` folds the journal-entry preview into this same bubble, below the
+    // closing message text, inside one shared card/border — Kell caught (Nov 10 2026)
+    // that a separate card floating right after the closing text read as broken up,
+    // and asked for it to live inside the response bubble itself.
     @ViewBuilder
-    private func turnBubble(_ turn: Turn) -> some View {
+    private func turnBubble(_ turn: Turn, isFinal: Bool = false) -> some View {
         switch turn.role {
         case .user:
             HStack {
@@ -269,28 +267,36 @@ struct CaptureConversationView: View {
         case .assistant:
             VStack(alignment: .leading, spacing: 8) {
                 dwellyBadge
-                Text(turn.text)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Theme.Capture.textBody)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Theme.Capture.cardBackground)
-                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.Capture.cardBorder.opacity(0.4), lineWidth: 1))
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(turn.text)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Theme.Capture.textBody)
+                    if isFinal {
+                        journalPreviewContent
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.Capture.cardBackground)
+                .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.Capture.cardBorder.opacity(0.4), lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: 18))
             }
         case .system:
             EmptyView()
         }
     }
 
-    /// The journal-entry card shown once the conversation closes (Figma close screen,
-    /// confirmed against Kell's own screenshot Nov 9 2026) — a titled entry with a
-    /// scripture pairing and an "Open" link into the saved moment, not a flat dump of
-    /// what was typed with a manual Save button. `journalMeta` is generated once, right
-    /// after close, by a dedicated LLM call (`generateJournalMeta`); `savedMoment` comes
-    /// from the auto-save that fires in parallel — "Open" is disabled until both land.
-    private var journalPreview: some View {
+    /// The journal-entry preview shown once the conversation closes (Figma close
+    /// screen, confirmed against Kell's own screenshot Nov 9 2026) — a titled entry
+    /// with a scripture pairing and an "Open" link into the saved moment. Folded
+    /// directly into the closing message's own bubble (Kell, Nov 10 2026: it read as
+    /// broken up when this was a separate card floating below the text), so this has
+    /// no background/border of its own — `turnBubble`'s shared card supplies both.
+    /// `journalMeta` is generated once, right after close, by a dedicated LLM call
+    /// (`generateJournalMeta`); `savedMoment` comes from the auto-save that fires in
+    /// parallel — "Open" is disabled until both land.
+    private var journalPreviewContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
                 Text(Date().formatted(date: .abbreviated, time: .omitted).uppercased())
@@ -349,11 +355,8 @@ struct CaptureConversationView: View {
                 .padding(.top, 20)
             }
         }
+        .padding(.top, 20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(Theme.Capture.cardBackground)
-        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.Capture.cardBorder.opacity(0.5), lineWidth: 1))
-        .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
     private var combinedBody: String {
@@ -389,6 +392,19 @@ struct CaptureConversationView: View {
         guard !isConversationComplete else { return }
         isWaitingForDwelly = true
         errorMessage = nil
+
+        // The 3rd/final response doesn't need its own LLM call followed by a separate
+        // fixed hand-off bubble — Kell caught (Nov 10 2026) that showing both a real
+        // generated reply AND the closing message back to back reads as Dwelly
+        // responding twice, and spends tokens on a reply nobody reads before the
+        // hand-off. The fixed closingMessage IS response 3.
+        if dwellyResponseCount == maxResponses - 1 {
+            await MainActor.run {
+                turns.append(Turn(role: .assistant, text: closingMessage))
+                isWaitingForDwelly = false
+            }
+            return
+        }
 
         var messages = [LLMMessage(role: .system, content: systemPrompt)]
         messages.append(contentsOf: turns.map { LLMMessage(role: $0.role, content: $0.text) })
