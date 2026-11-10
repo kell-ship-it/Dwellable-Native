@@ -538,6 +538,15 @@ struct CaptureConversationView: View {
                             .disabled(isWaitingForDwelly)
                             .frame(height: isComposeExpanded ? 408 : 72)
                             .clipped()
+                            // TextEditor's own internal UIScrollView keeps whatever
+                            // scroll offset it had from auto-scrolling to the cursor
+                            // while collapsed -- expanding the frame doesn't reset
+                            // that, so it just reveals blank tracking space ABOVE the
+                            // text instead of the text re-flowing to the top, exactly
+                            // what Kell caught (Nov 10 2026). Forcing a fresh view
+                            // identity on toggle rebuilds the underlying UITextView
+                            // with a clean scroll position.
+                            .id(isComposeExpanded)
 
                         Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isComposeExpanded.toggle() } }) {
                             Image(systemName: isComposeExpanded ? "chevron.down.circle" : "chevron.up.circle")
