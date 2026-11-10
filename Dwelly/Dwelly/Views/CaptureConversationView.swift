@@ -195,8 +195,13 @@ struct CaptureConversationView: View {
                                     .frame(width: 44, height: 44)
                             }
                         }
-                        if dwellyResponseCount > 0 {
-                            Text("Response \(dwellyResponseCount) of \(maxResponses)")
+                        if !turns.isEmpty {
+                            // Shown from the moment the screen opens, even before a
+                            // real response lands — Kell confirmed (Nov 10 2026) the
+                            // opening-prompt screen shouldn't be missing it while
+                            // waiting for an answer. Counts the slot the user's about
+                            // to fill, not just completed responses.
+                            Text("Response \(max(dwellyResponseCount, 1)) of \(maxResponses)")
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundColor(Theme.Payment.textSupporting)
                                 .opacity(isScrollingNow ? 0 : 1)
