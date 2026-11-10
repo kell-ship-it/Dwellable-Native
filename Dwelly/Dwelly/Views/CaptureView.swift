@@ -38,11 +38,43 @@ struct CaptureView: View {
     var isOnboarding: Bool = false
     var onMomentSaved: (() -> Void)?
 
-    private let topicCards: [(title: String, category: String)] = [
-        ("Did God show up in a connection today?", "Relationships"),
-        ("Any stillness stand out to you?", "Quiet moments"),
-        ("Anything you're wrestling with?", "Doubts"),
-    ]
+    // These 3 generic prompts were showing to everyone regardless of the intent they
+    // picked at onboarding (IntentSelectionView's 4 options, stored as
+    // public.users.spiritual_intent) — Kell caught that they need to actually be
+    // contextual to what the user said they came here for (Nov 10 2026), not generic.
+    // Still 3 cards (same layout, same "tap one, or just start talking" framing),
+    // just a different 3 per intent — picking the intent string by exact match
+    // against IntentSelectionView.options, falling back to the original generic set
+    // for "I'm not sure yet" or no intent recorded.
+    private var topicCards: [(title: String, category: String)] {
+        let intent = ProfileManager.shared.localProfile(userId: userId).spiritualIntent
+        switch intent {
+        case "Grow closer to God":
+            return [
+                ("Where did you sense God's presence today?", "Presence"),
+                ("What's stirring your heart toward Him lately?", "Heart"),
+                ("How did you make space for God today?", "Space"),
+            ]
+        case "Process my thoughts and feelings":
+            return [
+                ("What's weighing on your mind right now?", "Weighing on you"),
+                ("What emotion caught you off guard today?", "Emotions"),
+                ("What do you need to let out?", "Release"),
+            ]
+        case "Journal my faith journey":
+            return [
+                ("What's a recent moment that felt like a milestone?", "Milestone"),
+                ("How has your faith shifted lately?", "Shifting faith"),
+                ("What would you want to remember about today?", "Memory"),
+            ]
+        default:
+            return [
+                ("Did God show up in a connection today?", "Relationships"),
+                ("Any stillness stand out to you?", "Quiet moments"),
+                ("Anything you're wrestling with?", "Doubts"),
+            ]
+        }
+    }
 
     var body: some View {
         // Every call site presents `CaptureView` via a plain `.fullScreenCover`, with no
