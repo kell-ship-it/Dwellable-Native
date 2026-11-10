@@ -11,6 +11,12 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
     @Published var recordingDuration: TimeInterval = 0
     @Published var isAudioReadyForReview: Bool = false
     @Published var warningMessage: String? // 9-minute warning
+    // Normalized 0...1 microphone level, sampled every 0.1s from the recorder's own
+    // metering — drives the live waveform while recording (Kell, Nov 10 2026: the
+    // waveform needs to actually react to voice like Wispr Flow/Voice Notes, not sit
+    // static). Not meaningful once recording stops; the UI only reads it while
+    // isRecording is true.
+    @Published var audioLevel: CGFloat = 0
 
     private var audioRecorder: AVAudioRecorder?
     private let audioSession = AVAudioSession.sharedInstance()
@@ -206,6 +212,7 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
 
             audioRecorder = try AVAudioRecorder(url: audioURL, settings: settings)
             audioRecorder?.delegate = self
+            audioRecorder?.isMeteringEnabled = true
 
             guard audioRecorder?.record() == true else {
                 DispatchQueue.main.async {
@@ -247,6 +254,7 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
 
         DispatchQueue.main.async {
             self.isRecording = false
+            self.audioLevel = 0
         }
     }
 
@@ -267,7 +275,16 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
             guard let self = self, let startTime = self.recordingStartTime else { return }
             let elapsed = Date().timeIntervalSince(startTime)
 
+            self.audioRecorder?.updateMeters()
+            // averagePower is in dB, roughly -160 (silence) to 0 (max) -- normalized
+            // via a linear floor/ceiling rather than the full dB range so normal
+            // speaking volume actually swings the visible range instead of living in
+            // the bottom few percent.
+            let power = self.audioRecorder?.averagePower(forChannel: 0) ?? -160
+            let normalized = max(0, min(1, (power + 50) / 50))
+
             DispatchQueue.main.async {
+                self.audioLevel = CGFloat(normalized)
                 // Show warning at 9 minutes
                 if elapsed >= Self.WARNING_THRESHOLD && !self.hasShownWarning {
                     self.hasShownWarning = true
