@@ -249,7 +249,26 @@ struct CaptureConversationView: View {
                 }
 
                 if isConversationComplete {
-                    EmptyView()
+                    // Onboarding has no back chevron (nothing to go back to), but a
+                    // silent timed auto-advance turned out worse — Kell caught it
+                    // pushing him into the next screen before he'd even gotten to
+                    // look at the journal card (Nov 10 2026). A real "Continue" the
+                    // user taps once they're ready replaces that timer.
+                    if isOnboarding {
+                        Button(action: { onMomentSaved?() }) {
+                            Text("Continue")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Theme.Payment.backgroundPrimary)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 60)
+                        }
+                        .background(Theme.gold)
+                        .clipShape(Capsule())
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, Theme.Spacing.xxl)
+                        .disabled(savedMoment == nil)
+                        .opacity(savedMoment == nil ? 0.5 : 1.0)
+                    }
                 } else {
                     HStack(spacing: 8) {
                         TextField("", text: $inputText, prompt: Text("Share what's on your mind...").foregroundColor(Theme.Capture.textMuted), axis: .vertical)
@@ -507,11 +526,11 @@ struct CaptureConversationView: View {
     /// appears. Deliberately does NOT call `onMomentSaved?()` here: every call site
     /// (MainTabView, OnboardingCoordinatorView, MomentsListView) uses that callback to
     /// dismiss this whole screen, which would hide the journal card the instant it
-    /// appeared. Outside onboarding, that callback fires from the back chevron instead,
-    /// once the user has actually seen the card and is ready to leave — but onboarding
-    /// has no chevron at all (Kell, Nov 10 2026: no "back" to go to mid-onboarding), so
-    /// it auto-advances a few seconds after the card appears, giving the user a moment
-    /// to actually see it rather than yanking them into the next screen instantly.
+    /// appeared. Outside onboarding, that callback fires from the back chevron instead;
+    /// onboarding has no chevron (nothing to go back to), so it gets its own explicit
+    /// "Continue" button in the footer instead — a timed auto-advance was tried first
+    /// and rejected by Kell (Nov 10 2026) for pushing him past the card before he'd
+    /// even gotten to look at it.
     private func finishAndSave() async {
         isSaving = true
         errorMessage = nil
@@ -540,11 +559,6 @@ struct CaptureConversationView: View {
         }
 
         await metaTask
-
-        if isOnboarding {
-            try? await Task.sleep(nanoseconds: 3_000_000_000)
-            await MainActor.run { onMomentSaved?() }
-        }
     }
 
     /// One extra LLM call, fired in parallel with the save itself — asks for strict JSON
