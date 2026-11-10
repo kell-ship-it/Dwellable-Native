@@ -507,15 +507,18 @@ struct CaptureConversationView: View {
         .clipShape(Capsule())
     }
 
-    // Expanded TextEditor height, shrunk to stay above the keyboard — Kell caught
-    // (Nov 10 2026) the mic/send row sliding under the keyboard in the expanded
-    // state with no way to see it. 140 is rough headroom for the box's own fixed
-    // chrome (top/bottom padding + button row) plus a little breathing room.
+    // Expanded TextEditor height. Kell's ChatGPT reference (Nov 10 2026) shows
+    // the box filling essentially ALL the space between the header and the
+    // keyboard when expanded -- flush against the keyboard, no gap -- not a
+    // modest fixed size with wasted black space below it. 94 is the box's own
+    // fixed chrome (16+16 padding + the 62pt button row); only a small buffer
+    // beyond that, not the 140pt of slack the previous version left.
     private var expandedTextEditorHeight: CGFloat {
         let base: CGFloat = 408
         guard keyboardHeight > 0 else { return base }
-        let available = UIScreen.main.bounds.height - keyboardHeight - headerHeight - 140
-        return max(120, min(base, available))
+        let chrome: CGFloat = 94
+        let available = UIScreen.main.bounds.height - keyboardHeight - headerHeight - chrome - 8
+        return max(120, available)
     }
 
     // Computed from the content, same as the collapsed box: 16 (top padding) +
