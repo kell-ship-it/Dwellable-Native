@@ -2,6 +2,15 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (November 10, 2026 — Groq live, CaptureConversationView rebuilt)
+
+**Confirmed Pending Items:**
+1. **Verify real Groq calls are actually landing on `openai/gpt-oss-120b`** (T-269) — confirmed via Groq's own `/v1/models` endpoint that this is the right model ID for this account, and the edge function redeployed, but no real authenticated conversation turn was run through it after that exact fix (session shifted straight into the CaptureConversationView design-review thread). Send a message through the app and check the usage dashboard for a real Groq hit, not another 100%-OpenAI fallback.
+2. **Confirm the Groq free-tier daily token budget directly against `console.groq.com`** — the usage dashboard's countdown (T-269) uses `200,000 tokens/day` sourced from third-party trackers describing Groq's own limits page, not read from the API itself. If it's wrong, the countdown on the dashboard is wrong too.
+3. **Drive one full, continuous conversation (open → 3 responses → journal card) end-to-end, including the onboarding mandatory-capture path with the new `isOnboarding` auto-advance**, as one real run rather than the many separate screenshots this session's review was built from. T-270 touched a lot of surface area (header layout, scroll fade, response counter, journal card, back-chevron suppression) across ~10 iterations in one sitting — each piece was confirmed individually by Kell, but the whole thing hasn't been watched start-to-finish in one pass, including the ~3s auto-advance timing out of onboarding.
+
+**Rationale:** T-168's Groq integration finally went live and got real design-review attention this session after sitting unverified for a while, but the session's own tooling (both the AI's simulator automation, which proved unreliable multiple times, and the pace of rapid iteration) means "Kell confirmed it" happened per-screenshot, not as one continuous real pass. Confirming the model/budget numbers and running one full real conversation closes that gap before building anything further on top of this screen.
+
 ## Next Session Objective (November 4, 2026, continued again — T-110/T-111/T-112 built)
 
 **Confirmed Pending Items:**
