@@ -2,6 +2,15 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (November 10, 2026, continued — compose box rebuilt as single surface, merged to main; capture-to-journal transition screen next)
+
+**Confirmed Pending Items:**
+1. **T-271 (new, HIGH): Design + build the capture-to-journal transition screen.** Kell's own explicit ask to open next session with: "how we go from open journal to journal" — going from the closing "journal preview" card at the end of `CaptureConversationView` to actually opening the full journal entry. Currently a bare `.navigationDestination` push straight to `MomentDetailView` with no transition treatment at all. Kell said outright he doesn't know how he wants this to work — start by proposing 2-3 concrete options (e.g. a shared-element-style transition, a dedicated intermediate confirmation/animation screen, or a refined push transition) before writing any code.
+2. **T-155: Build the real Journal Detail Screen (View + Edit).** The actual destination T-271's transition needs to land on — `MomentDetailView` is the old pre-Phase-2 moment reader, not the Pillar 4 Journal Detail screen described in `PILLAR_4_SUMMARY.html`/`docs/PILLAR_4_SUMMARY.html`. Designing a transition into a screen that doesn't really exist yet is designing it twice.
+3. **T-152: Build the `JournalEntry` model + encrypted storage.** Also upstream of both of the above — the journal preview card currently only has `journalMeta` (title/excerpt/scripture, LLM-generated, never persisted as its own record) plus the raw `Moment`. A real transition/detail screen needs a real `JournalEntry` to open into, not the same `Moment` it was synthesized from.
+
+**Rationale:** Kell confirmed the compose-box rebuild (`unifiedComposeSurface`, this session's whole debugging arc) is solid and asked to move it to `main` — done, merged and pushed. He then moved straight to the next real gap: the hand-off from finishing a capture to reading it as a journal entry has no real transition, and he doesn't have a design for one yet. T-155/T-152 are flagged alongside his own ask because a transition screen needs a real place to land — they're the two things standing between "closing card" and "actual journal entry" today.
+
 ## Next Session Objective (November 10, 2026 — Groq live, CaptureConversationView rebuilt)
 
 **Confirmed Pending Items:**
