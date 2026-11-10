@@ -14,6 +14,13 @@ struct CaptureConversationView: View {
     let userEmail: String?
     let syncManager: SyncManager
     let initialMessage: String
+    // When the conversation is opened from one of CaptureView's suggested prompt cards,
+    // `initialMessage` is a question Dwelly is posing TO the user ("Any stillness stand
+    // out to you?"), not something the user is saying to Dwelly — sending it as a user
+    // turn made the model answer its own question in the first person instead of
+    // inviting a real answer (caught by Kell live, Nov 9 2026). Defaults to false for
+    // the free-typed-text path, which is unchanged.
+    var initialMessageIsPrompt: Bool = false
     var onMomentSaved: (() -> Void)?
 
     @Environment(\.apiClient) private var apiClient
@@ -37,7 +44,14 @@ struct CaptureConversationView: View {
     @State private var showMomentDetail = false
 
     private let maxResponses = 3
-    private var dwellyResponseCount: Int { turns.filter { $0.role == .assistant }.count }
+    // The prompt-card opening question (see `initialMessageIsPrompt`) renders as an
+    // assistant turn but isn't one of Dwelly's real 3 generated responses — it's the
+    // question the user is about to answer, so it's excluded from the count and from
+    // the "Response N of 3" header.
+    @State private var openedWithPromptQuestion = false
+    private var dwellyResponseCount: Int {
+        turns.filter { $0.role == .assistant }.count - (openedWithPromptQuestion ? 1 : 0)
+    }
     private var isConversationComplete: Bool { dwellyResponseCount >= maxResponses }
 
     /// Generated once, right after the conversation closes — a title/excerpt/scripture
@@ -216,8 +230,16 @@ struct CaptureConversationView: View {
         .background(Theme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
         .onAppear {
-            turns = [Turn(role: .user, text: initialMessage)]
-            Task { await requestDwellyResponse() }
+            if initialMessageIsPrompt {
+                // Dwelly is asking this one, not the user — show it as the opening
+                // assistant turn and wait for the user's actual answer instead of
+                // sending it to the LLM as something the user said.
+                turns = [Turn(role: .assistant, text: initialMessage)]
+                openedWithPromptQuestion = true
+            } else {
+                turns = [Turn(role: .user, text: initialMessage)]
+                Task { await requestDwellyResponse() }
+            }
         }
     }
 
