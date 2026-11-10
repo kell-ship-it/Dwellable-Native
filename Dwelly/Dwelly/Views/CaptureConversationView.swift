@@ -581,9 +581,17 @@ struct CaptureConversationView: View {
                         .disabled(isWaitingForDwelly)
                     }
                     .padding(.horizontal, 10)
+                    .padding(.top, 8)
                     .padding(.bottom, 10)
                 }
-                .frame(height: isComposeExpanded ? 524 : 120)
+                // No fixed outer height here anymore -- the previous 120pt/524pt
+                // constants were just guesses that turned out smaller than their own
+                // content (16pt padding + text area + the button row's own height),
+                // so clipShape was literally slicing the bottom off the mic/send
+                // buttons (Kell caught this live, Nov 10 2026, in both collapsed AND
+                // expanded states). Sizing naturally to content, with only the
+                // TextEditor's own explicit height controlling how "tall" collapsed
+                // vs. expanded feels, means there's nothing left to clip.
                 .background(Theme.Capture.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
             }
