@@ -56,10 +56,16 @@ interface TokenUsage {
   totalTokens: number | null
 }
 
-// llama3-70b-8192 was retired by Groq -- every call was silently falling back to
-// OpenAI (Kell caught this Nov 9 2026 from the usage dashboard showing 100% OpenAI,
-// 0% Groq). llama-3.3-70b-versatile is Groq's current production 70B model.
-const GROQ_MODEL = "llama-3.3-70b-versatile"
+// llama3-70b-8192, then llama-3.3-70b-versatile, were both retired by Groq -- every
+// call was silently falling back to OpenAI (Kell caught this Nov 9/10 2026 from the
+// usage dashboard still showing 100% OpenAI after the first fix). Confirmed via
+// GET https://api.groq.com/openai/v1/models with this account's own GROQ_API_KEY
+// (Nov 10 2026): Groq's lineup has moved away from Llama chat models entirely --
+// the only text models available now are meta-llama/llama-prompt-guard-2-* (a
+// moderation classifier, not a chat model), qwen/qwen3.8-27b, allam-2-7b, and the
+// openai/gpt-oss-* family. openai/gpt-oss-120b is the largest general-purpose one
+// (131K context), so it's the new primary.
+const GROQ_MODEL = "openai/gpt-oss-120b"
 const OPENAI_MODEL = "gpt-4o-mini"
 const DEFAULT_MAX_TOKENS = 500
 const DEFAULT_TEMPERATURE = 0.8
