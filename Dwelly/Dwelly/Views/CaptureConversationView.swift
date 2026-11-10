@@ -516,6 +516,19 @@ struct CaptureConversationView: View {
         .clipShape(Capsule())
     }
 
+    // `UIScreen.main.bounds.height` is the FULL device height, status bar/notch
+    // included -- real-device testing (Nov 10 2026) showed the header and the
+    // expanded box both shoved up into the status bar/battery icon, because
+    // leaving that inset out made the computed height taller than the actual
+    // usable screen, and this content sits in a container that centers
+    // overflow rather than clipping it. Reading the real inset instead of
+    // guessing a device-specific constant.
+    private var topSafeAreaInset: CGFloat {
+        UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+            .first?.safeAreaInsets.top ?? 47
+    }
+
     // Expanded TextEditor height. Kell's ChatGPT reference (Nov 10 2026, after
     // several rounds on an artifact mockup) does NOT shrink the box for the
     // keyboard at all -- it fills essentially the whole screen below the
@@ -527,7 +540,7 @@ struct CaptureConversationView: View {
     // fixed chrome (16+16 padding + the 62pt button row).
     private var expandedTextEditorHeight: CGFloat {
         let chrome: CGFloat = 94
-        let available = UIScreen.main.bounds.height - headerHeight - chrome - 8
+        let available = UIScreen.main.bounds.height - topSafeAreaInset - headerHeight - chrome - 8
         return max(120, available)
     }
 
@@ -637,6 +650,13 @@ struct CaptureConversationView: View {
         .overlay(alignment: .bottom) {
             if isComposeExpanded && keyboardHeight > 0 {
                 actionButtonsRow
+                    // Matches the card's own background/corner so this reads as
+                    // the bottom of the box itself showing through above the
+                    // keyboard -- Kell caught (Nov 10 2026) a bare floating pair
+                    // of circles looking "in front of" the box instead of part
+                    // of it.
+                    .background(Theme.Capture.cardBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                     .padding(.bottom, keyboardHeight)
             }
         }
