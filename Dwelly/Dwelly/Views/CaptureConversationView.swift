@@ -59,10 +59,8 @@ struct CaptureConversationView: View {
     // is 120pt, Expanded is 524pt -- both FIXED, per the Figma component spec (pulled
     // directly, Nov 10 2026), not computed from screen/keyboard height. Several
     // intermediate attempts at a "fill the screen, keyboard draws in front of it"
-    // ChatGPT-style behavior caused repeated real-device bugs (header drifting,
-    // duplicate button rows) and were a departure from this locked spec -- reverted
-    // back to it entirely. The box, like everything else on this screen, just rises
-    // above the keyboard via the system's own default keyboard avoidance.
+    // ChatGPT-style behavior caused repeated real-device bugs and were a departure
+    // from this locked spec -- reverted back to it entirely.
     @State private var isComposeExpanded = false
     // One random "character" per waveform bar, generated once per recording session
     // so bars don't all pulse in perfect lockstep — real voice waveforms (Wispr Flow,
@@ -160,7 +158,6 @@ struct CaptureConversationView: View {
     private let headerHeight: CGFloat = 62
 
     var body: some View {
-        VStack(spacing: 0) {
             ZStack(alignment: .top) {
                 // Content scrolls the full height of the screen, UNDER the floating
                 // header below — like ChatGPT/iMessage, not a fixed opaque bar the
@@ -272,7 +269,18 @@ struct CaptureConversationView: View {
                 )
                 .allowsHitTesting(true)
             }
-
+        // `.safeAreaInset(edge: .bottom)` -- SwiftUI's own purpose-built tool for
+        // exactly this "input bar pinned to the bottom, content scrolls above it"
+        // pattern, replacing a long run of manual attempts (a plain VStack sibling
+        // with `.padding(.bottom, keyboardHeight)`, then `.offset`, then an explicit
+        // GeometryReader-measured frame) that all failed the same way on a real
+        // device: the ScrollView never actually gave up the space the compose area
+        // needed, so its buttons stayed clipped by the screen edge or the keyboard
+        // regardless of how that space was asked for. `safeAreaInset` reserves the
+        // exact space its content needs automatically, AND already handles the
+        // keyboard correctly (it's designed for this), so the manual keyboardHeight
+        // tracking/notifications are no longer needed at all.
+        .safeAreaInset(edge: .bottom) {
             VStack(spacing: 12) {
                 if let errorMessage {
                     Text(errorMessage)
@@ -327,14 +335,15 @@ struct CaptureConversationView: View {
                 }
             }
         }
-        // Pinned to the top so this screen's layout is identical regardless of
-        // which state the compose card is in -- Kell caught (Nov 10 2026) the
-        // header visibly drifting between states when nothing forced that, which
-        // traced back to several iterations' worth of now-removed keyboard/safe-
-        // area special-casing (see the comment on `isComposeExpanded` above).
-        // With fixed card heights and plain default keyboard avoidance for both
-        // states, there's nothing left that could shift the header.
-        .frame(maxHeight: .infinity, alignment: .top)
+        // `maxHeight: .infinity` lets this VStack grow taller than the actual
+        // screen instead of capping it there, so any time its content (ScrollView
+        // + fixed-height compose area) totals more than one screen, the excess
+        // overflows uncapped past the bottom edge -- exactly the button/bottom
+        // clipping real-device testing kept showing (Nov 10 2026), independent of
+        // keyboard state entirely. Removed: the header no longer drifts because
+        // the compose area's own height is fixed (120/524, see `isComposeExpanded`
+        // above) and the keyboard is handled via `.offset` below, not by resizing
+        // this VStack -- nothing left that needs a height override here.
         .background(Theme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
         // `.navigationBarBackButtonHidden` only hides the back button, not the bar's
