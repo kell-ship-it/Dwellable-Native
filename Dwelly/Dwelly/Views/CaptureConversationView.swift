@@ -280,11 +280,6 @@ struct CaptureConversationView: View {
                         .opacity(savedMoment == nil ? 0.5 : 1.0)
                     }
                 } else {
-                    if audioManager.isRecording {
-                        Text(audioManager.formattedDuration(audioManager.recordingDuration))
-                            .font(.system(size: 16, weight: .semibold, design: .monospaced))
-                            .foregroundColor(Theme.gold)
-                    }
                     if let warningMessage = audioManager.warningMessage {
                         Text(warningMessage)
                             .font(.system(size: 12))
@@ -293,52 +288,18 @@ struct CaptureConversationView: View {
                             .padding(.horizontal, 24)
                     }
 
-                    HStack(spacing: 8) {
-                        TextField("", text: $inputText, prompt: Text("Share what's on your mind...").foregroundColor(Theme.Capture.textMuted), axis: .vertical)
-                            .font(.system(size: 16))
-                            .foregroundColor(Theme.Capture.textPrimary)
-                            .tint(Theme.gold)
-                            .focused($inputFocused)
-                            .submitLabel(.done)
-                            .onSubmit { sendUserTurn() }
-                            .disabled(isWaitingForDwelly || audioManager.isRecording || isTranscribingVoice)
-
-                        Button(action: handleRecordTap) {
-                            Image(systemName: audioManager.isRecording ? "stop.fill" : "mic.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(Theme.gold)
-                                .frame(width: 44, height: 44)
-                                .background(Theme.Capture.cardBorder)
-                                .clipShape(Circle())
-                        }
-                        .disabled(isWaitingForDwelly || isTranscribingVoice)
-                        .opacity((isWaitingForDwelly || isTranscribingVoice) ? 0.4 : 1.0)
-
-                        if !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            Button(action: sendUserTurn) {
-                                Image(systemName: "arrow.up")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(Theme.goldDark)
-                                    .frame(width: 44, height: 44)
-                                    .background(Theme.gold)
-                                    .clipShape(Circle())
-                            }
-                            .disabled(isWaitingForDwelly)
-                            .transition(.scale.combined(with: .opacity))
-                        } else if isTranscribingVoice {
-                            ProgressView()
-                                .tint(Theme.gold)
-                                .frame(width: 44, height: 44)
-                        }
+                    // Component/Recording-Bar (Figma node 648:220) / Component/Transcribing-Bar
+                    // (649:3850), pulled exactly rather than approximated — Kell flagged the
+                    // missing stages (Nov 10 2026): record → live waveform/timer with
+                    // Cancel+Stop → transcribing → transcript lands in the compose field for
+                    // review, not sent automatically.
+                    if audioManager.isRecording {
+                        recordingBar
+                    } else if isTranscribingVoice {
+                        transcribingBar
+                    } else {
+                        composePill
                     }
-                    .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
-                    .padding(.leading, 20)
-                    .padding(.trailing, 8)
-                    .frame(height: 60)
-                    .background(Theme.Capture.cardBackground)
-                    .clipShape(Capsule())
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, Theme.Spacing.xxl)
                 }
             }
         }
@@ -518,6 +479,137 @@ struct CaptureConversationView: View {
         .clipShape(Capsule())
     }
 
+    // Component/Compose-Text-Pill (node 647:221) — the idle state: typed or
+    // transcribed text, mic to start recording, send once there's text.
+    private var composePill: some View {
+        HStack(spacing: 8) {
+            TextField("", text: $inputText, prompt: Text("Share what's on your mind...").foregroundColor(Theme.Capture.textMuted), axis: .vertical)
+                .font(.system(size: 16))
+                .foregroundColor(Theme.Capture.textPrimary)
+                .tint(Theme.gold)
+                .focused($inputFocused)
+                .submitLabel(.done)
+                .onSubmit { sendUserTurn() }
+                .disabled(isWaitingForDwelly)
+
+            Button(action: handleRecordTap) {
+                Image(systemName: "mic.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(Theme.gold)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.Capture.cardBorder)
+                    .clipShape(Circle())
+            }
+            .disabled(isWaitingForDwelly)
+
+            if !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Button(action: sendUserTurn) {
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Theme.goldDark)
+                        .frame(width: 44, height: 44)
+                        .background(Theme.gold)
+                        .clipShape(Circle())
+                }
+                .disabled(isWaitingForDwelly)
+                .transition(.scale.combined(with: .opacity))
+            }
+        }
+        .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
+        .padding(.leading, 20)
+        .padding(.trailing, 8)
+        .frame(height: 60)
+        .background(Theme.Capture.cardBackground)
+        .clipShape(Capsule())
+        .padding(.horizontal, 24)
+        .padding(.bottom, Theme.Spacing.xxl)
+    }
+
+    // Component/Recording-Bar (node 648:220) — Cancel (✕) + a static decorative
+    // waveform + live timer + Stop (circled gold, the "commits right now" action per
+    // this design system's own Icon-Circle rule).
+    private var recordingBar: some View {
+        HStack(spacing: 0) {
+            Button(action: cancelRecording) {
+                Text("✕")
+                    .font(.system(size: 13))
+                    .foregroundColor(Theme.Capture.textMuted)
+                    .frame(width: 44, height: 44)
+            }
+
+            HStack(spacing: 10) {
+                waveform(color: Theme.gold)
+                Text(audioManager.formattedDuration(audioManager.recordingDuration))
+                    .font(.system(size: 14))
+                    .foregroundColor(Theme.Payment.textSupporting)
+            }
+            .frame(maxWidth: .infinity)
+
+            Button(action: handleRecordTap) {
+                Rectangle()
+                    .fill(Theme.Payment.backgroundPrimary)
+                    .frame(width: 10, height: 10)
+                    .cornerRadius(2)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.gold)
+                    .clipShape(Circle())
+            }
+        }
+        .padding(.leading, 20)
+        .padding(.trailing, 10)
+        .frame(height: 64)
+        .background(Theme.Capture.cardBackground)
+        .clipShape(Capsule())
+        .padding(.horizontal, 24)
+        .padding(.bottom, Theme.Spacing.xxl)
+    }
+
+    // Component/Transcribing-Bar (node 649:3850) — same waveform muted (not live gold)
+    // plus a status label, shown the moment recording stops while speech-to-text runs.
+    private var transcribingBar: some View {
+        HStack(spacing: 8) {
+            Circle().fill(Theme.Payment.textSupporting).frame(width: 6, height: 6)
+            waveform(color: Theme.Payment.textSupporting)
+            Spacer()
+            Text("Transcribing...")
+                .font(.system(size: 14))
+                .foregroundColor(Theme.Payment.textSupporting)
+        }
+        .padding(.horizontal, 20)
+        .frame(height: 64)
+        .background(Theme.Capture.cardBackground)
+        .clipShape(Capsule())
+        .padding(.horizontal, 24)
+        .padding(.bottom, Theme.Spacing.xxl)
+    }
+
+    // Static decorative bar heights copied from the Figma component itself (it isn't
+    // actually live-animated there either — a fixed pattern, not audio-reactive).
+    private static let waveformBarHeights: [CGFloat] = [6, 14, 20, 10, 24, 16, 8, 18, 12, 22, 9, 15, 7, 19, 11, 17, 6, 13, 20, 8]
+
+    private func waveform(color: Color) -> some View {
+        HStack(spacing: 3) {
+            ForEach(Array(Self.waveformBarHeights.enumerated()), id: \.offset) { _, height in
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(color)
+                    .frame(width: 2.5, height: height)
+            }
+        }
+        .frame(height: 24)
+    }
+
+    // Discards the in-progress recording entirely — no transcription, nothing lands
+    // in the compose field. Distinct from Stop, which hands the audio off to
+    // transcribeIntoTextField().
+    private func cancelRecording() {
+        audioManager.stopRecording {
+            if let url = audioManager.audioURL {
+                try? FileManager.default.removeItem(at: url)
+            }
+            audioManager.audioURL = nil
+        }
+    }
+
     private func sendUserTurn() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !isWaitingForDwelly else { return }
@@ -526,19 +618,21 @@ struct CaptureConversationView: View {
         Task { await requestDwellyResponse() }
     }
 
-    // Mirrors CaptureView.handleRecordTap — record, then transcribe and feed the
-    // result through the exact same sendUserTurn() path typed text already uses,
-    // rather than a separate voice-specific turn type.
     private func handleRecordTap() {
         if audioManager.isRecording {
-            audioManager.stopRecording { transcribeAndSend() }
+            audioManager.stopRecording { transcribeIntoTextField() }
         } else {
-            audioManager.onRecordingLimitReached = { transcribeAndSend() }
+            audioManager.onRecordingLimitReached = { transcribeIntoTextField() }
             audioManager.startRecording()
         }
     }
 
-    private func transcribeAndSend() {
+    // Lands the transcript in the compose field for the user to read, edit, or
+    // discard — does NOT send it. Kell caught this sending straight to the
+    // conversation (Nov 10 2026): the design's own flow is record → transcribe →
+    // review/edit in the text box → the user decides when to actually send, same as
+    // every other message here, not a voice-specific shortcut that skips review.
+    private func transcribeIntoTextField() {
         guard let audioURL = audioManager.audioURL else { return }
         isTranscribingVoice = true
         TranscriptionManager.shared.transcribeAudio(from: audioURL) { transcript in
@@ -549,7 +643,7 @@ struct CaptureConversationView: View {
                     return
                 }
                 inputText = transcript
-                sendUserTurn()
+                inputFocused = true
             }
         }
     }
