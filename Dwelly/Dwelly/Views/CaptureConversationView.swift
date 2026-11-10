@@ -107,84 +107,100 @@ struct CaptureConversationView: View {
     // z-stacked under another interactive view, instead of laid out as a sibling above
     // it, is the common thread in this whole family of bugs. Root cause not fully
     // understood — see WelcomeView's comment for the fuller account.
+    // Height the floating header (chevron/rock icon + "Response N of 3") occupies,
+    // including its own top padding — used both to inset the ScrollView's content (so
+    // the first bubble doesn't start underneath the header) and to size the fade
+    // behind it.
+    private var headerHeight: CGFloat { dwellyResponseCount > 0 ? 104 : 62 }
+
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                // Only once the entry is saved — mid-conversation, leaving loses it with
-                // nothing to come back to, so there's nothing to navigate back TO yet.
-                if isConversationComplete {
-                    Button(action: { onMomentSaved?(); dismiss() }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(Theme.Capture.textPrimary)
-                            .frame(width: 44, height: 44)
-                    }
-                }
-                Spacer()
-                Image("DwellyRockIcon")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 24, height: 24)
-            }
-            .padding(.horizontal, isConversationComplete ? 16 : 28)
-            .padding(.top, 14)
-
-            if dwellyResponseCount > 0 {
-                HStack {
-                    Text("Response \(dwellyResponseCount) of \(maxResponses)")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(Theme.Payment.textSupporting)
-                    Spacer()
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 20)
-            }
-
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        ForEach(turns) { turn in
-                            turnBubble(turn, isFinal: isConversationComplete && turn.id == turns.last?.id)
-                                .id(turn.id == turns.last?.id ? "journalPreview" : turn.id.uuidString)
+            ZStack(alignment: .top) {
+                // Content scrolls the full height of the screen, UNDER the floating
+                // header below — like ChatGPT/iMessage, not a fixed opaque bar the
+                // thread starts beneath. Kell showed a reference video (Nov 10 2026):
+                // the top fade needs to reach the very top of the screen, with content
+                // visibly passing beneath and fading out as it does, not just a sliver
+                // of fade low in the scroll area.
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
+                            ForEach(turns) { turn in
+                                turnBubble(turn, isFinal: isConversationComplete && turn.id == turns.last?.id)
+                                    .id(turn.id == turns.last?.id ? "journalPreview" : turn.id.uuidString)
+                            }
+                            if isWaitingForDwelly {
+                                dwellyBadge
+                                ProgressView()
+                                    .tint(Theme.gold)
+                                    .padding(.leading, 24)
+                                    .id("spinner")
+                            }
                         }
-                        if isWaitingForDwelly {
-                            dwellyBadge
-                            ProgressView()
-                                .tint(Theme.gold)
-                                .padding(.leading, 24)
-                                .id("spinner")
+                        .padding(.horizontal, 24)
+                        .padding(.top, headerHeight)
+                        .padding(.bottom, 24)
+                    }
+                    .onChange(of: turns.count) { _ in
+                        withAnimation { proxy.scrollTo(turns.last?.id, anchor: .bottom) }
+                    }
+                    .onChange(of: isWaitingForDwelly) { waiting in
+                        if waiting { withAnimation { proxy.scrollTo("spinner", anchor: .bottom) } }
+                    }
+                    .onChange(of: isConversationComplete) { complete in
+                        if complete {
+                            withAnimation { proxy.scrollTo("journalPreview", anchor: .bottom) }
+                            Task { await finishAndSave() }
                         }
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 20)
-                    .padding(.bottom, 24)
                 }
-                .overlay(alignment: .top) {
-                    // Fades the chat thread as it scrolls under this screen's own
-                    // header, not the header itself — Kell caught (Nov 10 2026) that
-                    // an earlier version of this fade sat on top of the whole screen,
-                    // including the back chevron/rock icon, visibly dimming them
-                    // instead of just softening scrolled-under content. Scoped to the
-                    // ScrollView's own bounds, it can never touch the header above it.
+
+                VStack(spacing: 0) {
+                    HStack {
+                        // Only once the entry is saved — mid-conversation, leaving
+                        // loses it with nothing to come back to, so there's nothing to
+                        // navigate back TO yet.
+                        if isConversationComplete {
+                            Button(action: { onMomentSaved?(); dismiss() }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(Theme.Capture.textPrimary)
+                                    .frame(width: 44, height: 44)
+                            }
+                        }
+                        Spacer()
+                        Image("DwellyRockIcon")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                    }
+                    .padding(.horizontal, isConversationComplete ? 16 : 28)
+                    .padding(.top, 14)
+
+                    if dwellyResponseCount > 0 {
+                        HStack {
+                            Text("Response \(dwellyResponseCount) of \(maxResponses)")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(Theme.Payment.textSupporting)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.top, 20)
+                    }
+
+                    Spacer(minLength: 0)
+                }
+                .frame(height: headerHeight)
+                .background(
                     LinearGradient(
-                        colors: [Theme.background, Theme.background.opacity(0)],
+                        colors: [Theme.background, Theme.background, Theme.background.opacity(0)],
                         startPoint: .top, endPoint: .bottom
                     )
-                    .frame(height: 24)
-                    .allowsHitTesting(false)
-                }
-                .onChange(of: turns.count) { _ in
-                    withAnimation { proxy.scrollTo(turns.last?.id, anchor: .bottom) }
-                }
-                .onChange(of: isWaitingForDwelly) { waiting in
-                    if waiting { withAnimation { proxy.scrollTo("spinner", anchor: .bottom) } }
-                }
-                .onChange(of: isConversationComplete) { complete in
-                    if complete {
-                        withAnimation { proxy.scrollTo("journalPreview", anchor: .bottom) }
-                        Task { await finishAndSave() }
-                    }
-                }
+                    .frame(height: headerHeight + 40)
+                    .offset(y: -40)
+                    .ignoresSafeArea(edges: .top)
+                )
+                .allowsHitTesting(true)
             }
 
             VStack(spacing: 12) {
