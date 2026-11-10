@@ -241,7 +241,7 @@ struct MomentsListView: View {
                     .padding(20)
 
                     List(moments) { moment in
-                        NavigationLink(destination: MomentDetailView(moment: moment)) {
+                        NavigationLink(destination: JournalDetailView(moment: moment, syncManager: syncManager)) {
                             MomentRow(moment: moment)
                         }
                         .listRowBackground(Theme.background)

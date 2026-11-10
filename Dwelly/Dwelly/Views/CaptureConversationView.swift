@@ -285,8 +285,16 @@ struct CaptureConversationView: View {
                                 // pushing him into the next screen before he'd even gotten to
                                 // look at the journal card (Nov 10 2026). A real "Continue" the
                                 // user taps once they're ready replaces that timer.
+                                //
+                                // Nov 10 2026 (continued): this used to call `onMomentSaved?()`
+                                // directly, which skipped straight past the journal into the
+                                // main app -- a brand-new user's very first journal, the thing
+                                // meant to hook them, was entirely skippable. Now it opens the
+                                // real `JournalDetailView` first; THAT screen's own `onDone`
+                                // (set only in this onboarding case) is what finally calls
+                                // `onMomentSaved?()`, once the user has actually read it.
                                 if isOnboarding {
-                                    Button(action: { onMomentSaved?() }) {
+                                    Button(action: { showMomentDetail = true }) {
                                         Text("Continue")
                                             .font(.system(size: 16, weight: .semibold))
                                             .foregroundColor(Theme.Payment.backgroundPrimary)
@@ -299,6 +307,11 @@ struct CaptureConversationView: View {
                                     .padding(.bottom, Theme.Spacing.xxl)
                                     .disabled(savedMoment == nil)
                                     .opacity(savedMoment == nil ? 0.5 : 1.0)
+                                    // Single shared `.navigationDestination(isPresented:
+                                    // $showMomentDetail)` lives on the inline "Open" link in
+                                    // `journalPreviewContent` below -- two destinations bound
+                                    // to the same trigger state is undefined behavior, so this
+                                    // button only sets the flag, same as "Open" does.
                                 }
                             } else {
                                 if let warningMessage = audioManager.warningMessage {
@@ -525,8 +538,25 @@ struct CaptureConversationView: View {
                             .frame(width: 60, height: 24)
                     }
                     .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
+                    // Shared by both the inline "Open" link here and the onboarding
+                    // "Continue" button above -- they're the same destination either
+                    // way, just reached differently. `onDone` is non-nil only for
+                    // onboarding's mandatory first capture: that's the one case
+                    // where finishing this screen needs to actually continue
+                    // onward into the main app, not just dismiss back to the chat.
                     .navigationDestination(isPresented: $showMomentDetail) {
-                        MomentDetailView(moment: savedMoment)
+                        JournalDetailView(
+                            moment: savedMoment,
+                            syncManager: syncManager,
+                            meta: journalMeta.map {
+                                JournalDisplayMeta(
+                                    title: $0.title,
+                                    scriptureQuote: $0.scriptureQuote,
+                                    scriptureReference: $0.scriptureReference
+                                )
+                            },
+                            onDone: isOnboarding ? { onMomentSaved?() } : nil
+                        )
                     }
                 } else {
                     ProgressView().tint(Theme.gold)

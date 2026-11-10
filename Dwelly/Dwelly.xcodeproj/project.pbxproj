@@ -42,6 +42,7 @@
 		013c /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013d /* SyncManager.swift */; };
 		013e /* TypeFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013f /* TypeFlowView.swift */; };
 		0190 /* CaptureConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0191 /* CaptureConversationView.swift */; };
+		F00D /* JournalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00E /* JournalDetailView.swift */; };
 		0144 /* MomentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0145 /* MomentDetailView.swift */; };
 		0146 /* MomentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0147 /* MomentRow.swift */; };
 		0148 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0149 /* SettingsView.swift */; };
@@ -114,6 +115,7 @@
 		013d /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
 		013f /* TypeFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeFlowView.swift; sourceTree = "<group>"; };
 		0191 /* CaptureConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureConversationView.swift; sourceTree = "<group>"; };
+		F00E /* JournalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalDetailView.swift; sourceTree = "<group>"; };
 		0145 /* MomentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentDetailView.swift; sourceTree = "<group>"; };
 		0147 /* MomentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentRow.swift; sourceTree = "<group>"; };
 		0149 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 				0111 /* MomentsListView.swift */,
 				013f /* TypeFlowView.swift */,
 				0191 /* CaptureConversationView.swift */,
+				F00E /* JournalDetailView.swift */,
 				0145 /* MomentDetailView.swift */,
 				0147 /* MomentRow.swift */,
 				0149 /* SettingsView.swift */,
@@ -436,6 +439,7 @@
 				0110 /* MomentsListView.swift in Sources */,
 				013e /* TypeFlowView.swift in Sources */,
 				0190 /* CaptureConversationView.swift in Sources */,
+				F00D /* JournalDetailView.swift in Sources */,
 				0144 /* MomentDetailView.swift in Sources */,
 				0146 /* MomentRow.swift in Sources */,
 				0148 /* SettingsView.swift in Sources */,
