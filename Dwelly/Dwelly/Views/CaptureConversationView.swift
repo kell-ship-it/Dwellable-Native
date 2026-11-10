@@ -332,6 +332,21 @@ struct CaptureConversationView: View {
                     .ignoresSafeArea(edges: .top)
                 )
                 .allowsHitTesting(true)
+
+                // Expanded compose: Kell's own words (Nov 10 2026) -- "the text box
+                // should be fully flushed to the top of the screen. You shouldn't even
+                // see the response count or the Dwelly logo. It should be behind the
+                // text box." Declared LAST in this ZStack so it renders on top of (in
+                // front of) both the scroll content and the header above, covering the
+                // whole screen regardless of how much the header/thread would otherwise
+                // occupy. A completely separate view from the collapsed compose pill
+                // (not just a taller version of the same ZStack) -- it has no mic button
+                // at all, per Kell's own correction after seeing it live: "remove the
+                // mic because it creates a different experience... the only time you
+                // can use the mic is if it's in a collapsed view."
+                if isComposeExpanded {
+                    expandedComposeOverlay
+                }
             }
         .background(Theme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
@@ -541,7 +556,7 @@ struct CaptureConversationView: View {
                 .frame(height: 60)
                 .background(Theme.Capture.cardBackground)
                 .clipShape(Capsule())
-            } else {
+            } else if !isComposeExpanded {
                 // Figma's own Component/Typed-Text-Box spec (node 651:3966) does NOT
                 // stack text, then a spacer, then a button row sequentially -- it
                 // absolutely positions the text block and the mic/send buttons so the
@@ -581,24 +596,15 @@ struct CaptureConversationView: View {
                         // last one or two.
                         .padding(.bottom, 58)
                         // Figma's own Component/Typed-Text-Box spec (node 651:3966,
-                        // pulled directly Nov 10 2026): Collapsed card is 120pt,
-                        // Expanded is 524pt. Both fixed, not computed from
-                        // screen/keyboard height -- see the comment on
-                        // `isComposeExpanded` above.
-                        .frame(height: isComposeExpanded ? 524 : 120)
+                        // pulled directly Nov 10 2026): Collapsed card is a fixed 120pt.
+                        // Expanded moved to a completely separate full-screen overlay
+                        // (`expandedComposeOverlay`, see `isComposeExpanded` above) --
+                        // this branch only ever renders collapsed now.
+                        .frame(height: 120)
                         .clipped()
-                        // TextEditor's own internal UIScrollView keeps whatever
-                        // scroll offset it had from auto-scrolling to the cursor
-                        // while collapsed -- expanding the frame doesn't reset
-                        // that, so it just reveals blank tracking space ABOVE the
-                        // text instead of the text re-flowing to the top, exactly
-                        // what Kell caught (Nov 10 2026). Forcing a fresh view
-                        // identity on toggle rebuilds the underlying UITextView
-                        // with a clean scroll position.
-                        .id(isComposeExpanded)
 
-                    Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isComposeExpanded.toggle() } }) {
-                        Image(systemName: isComposeExpanded ? "chevron.down.circle" : "chevron.up.circle")
+                    Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isComposeExpanded = true } }) {
+                        Image(systemName: "chevron.up.circle")
                             .font(.system(size: 18))
                             .foregroundColor(Theme.Payment.textSupporting)
                             .frame(width: 32, height: 32)
@@ -608,6 +614,10 @@ struct CaptureConversationView: View {
                     .padding(.trailing, 14)
 
                     HStack(spacing: 10) {
+                        // Mic only ever shows in the collapsed card -- Kell caught this
+                        // live (Nov 10 2026) and reversed his own earlier call: "remove
+                        // the mic because it creates a different experience... the only
+                        // time you can use the mic is if it's in a collapsed view."
                         Button(action: handleRecordTap) {
                             Image(systemName: "mic.fill")
                                 .font(.system(size: 16))
@@ -632,7 +642,7 @@ struct CaptureConversationView: View {
                     .padding(.trailing, 10)
                     .padding(.bottom, 10)
                 }
-                .frame(height: isComposeExpanded ? 524 : 120)
+                .frame(height: 120)
                 .background(Theme.Capture.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
             }
@@ -640,6 +650,58 @@ struct CaptureConversationView: View {
         .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
         .padding(.horizontal, 24)
         .padding(.bottom, Theme.Spacing.xxl)
+    }
+
+    // Full-screen takeover for the expanded compose state -- see the comment on
+    // `isComposeExpanded` and on this view's usage in `body` for why this is a
+    // completely separate view from the collapsed compose pill rather than just a
+    // taller version of the same ZStack. No mic button here at all (collapsed-only,
+    // per Kell, Nov 10 2026); only Send. Keyboard avoidance via `.safeAreaInset
+    // (edge: .bottom)`, the same reliable pattern validated for the collapsed card.
+    private var expandedComposeOverlay: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Spacer()
+                Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isComposeExpanded = false } }) {
+                    Image(systemName: "chevron.down.circle")
+                        .font(.system(size: 18))
+                        .foregroundColor(Theme.Payment.textSupporting)
+                        .frame(width: 32, height: 32)
+                }
+            }
+            .padding(.top, 14)
+            .padding(.trailing, 20)
+
+            TextEditor(text: $inputText)
+                .font(.system(size: 13))
+                .foregroundColor(Theme.Payment.textHeading)
+                .tint(Theme.gold)
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .focused($inputFocused)
+                .disabled(isWaitingForDwelly)
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+        }
+        .safeAreaInset(edge: .bottom) {
+            HStack {
+                Spacer()
+                Button(action: sendUserTurn) {
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Theme.goldDark)
+                        .frame(width: 44, height: 44)
+                        .background(Theme.gold)
+                        .clipShape(Circle())
+                }
+                .disabled(isWaitingForDwelly)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 16)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.Capture.cardBackground.ignoresSafeArea())
+        .transition(.opacity)
     }
 
     // Component/Recording-Bar (node 648:220) — Cancel (✕) + a live, voice-reactive
