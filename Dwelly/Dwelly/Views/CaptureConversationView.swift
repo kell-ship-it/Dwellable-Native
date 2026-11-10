@@ -159,6 +159,20 @@ struct CaptureConversationView: View {
                     .padding(.top, 20)
                     .padding(.bottom, 24)
                 }
+                .overlay(alignment: .top) {
+                    // Fades the chat thread as it scrolls under this screen's own
+                    // header, not the header itself — Kell caught (Nov 10 2026) that
+                    // an earlier version of this fade sat on top of the whole screen,
+                    // including the back chevron/rock icon, visibly dimming them
+                    // instead of just softening scrolled-under content. Scoped to the
+                    // ScrollView's own bounds, it can never touch the header above it.
+                    LinearGradient(
+                        colors: [Theme.background, Theme.background.opacity(0)],
+                        startPoint: .top, endPoint: .bottom
+                    )
+                    .frame(height: 24)
+                    .allowsHitTesting(false)
+                }
                 .onChange(of: turns.count) { _ in
                     withAnimation { proxy.scrollTo(turns.last?.id, anchor: .bottom) }
                 }
@@ -217,18 +231,6 @@ struct CaptureConversationView: View {
             }
         }
         .background(Theme.background.ignoresSafeArea())
-        // Not in the Figma reference — proposed by Kell (Nov 10 2026) and approved via
-        // mockup to soften the remaining seam at the very top of the screen, matching
-        // the bottom scroll-fade the design already uses near the compose bar.
-        .overlay(alignment: .top) {
-            LinearGradient(
-                colors: [Theme.background, Theme.background, Theme.background.opacity(0)],
-                startPoint: .top, endPoint: .bottom
-            )
-            .frame(height: 70)
-            .ignoresSafeArea(edges: .top)
-            .allowsHitTesting(false)
-        }
         .navigationBarBackButtonHidden(true)
         // `.navigationBarBackButtonHidden` only hides the back button, not the bar's
         // own background — the system nav bar's default fill was showing through as a
@@ -495,9 +497,10 @@ struct CaptureConversationView: View {
         Based on this reflection, return ONLY a single JSON object (no markdown, no \
         commentary) with these exact keys: "title" (a short, warm, 2-5 word title for this \
         journal entry), "excerpt" (a 1-2 sentence third-person summary of what they shared, \
-        under 160 characters), "scripture_quote" (a short, real Bible verse quote that \
-        genuinely fits the moment, or null if none truly fits), "scripture_reference" (e.g. \
-        "Psalm 46:10", or null if scripture_quote is null).
+        under 160 characters), "scripture_quote" (a short, real Bible verse quote — always \
+        include one, even for a brief or minimal reflection; pick whatever verse about God's \
+        presence, patience, or care genuinely fits best, never null), "scripture_reference" \
+        (e.g. "Psalm 46:10" — the real reference for scripture_quote, never null).
 
         Reflection:
         \(combinedBody)
@@ -515,11 +518,14 @@ struct CaptureConversationView: View {
         } catch {
             HTMLLogManager.shared.log("journal meta generation failed, using fallback: \(error.localizedDescription)", level: "WARNING")
             await MainActor.run {
+                // Even the hard-failure fallback keeps a verse -- Kell confirmed (Nov 10
+                // 2026) the card should never show without one, matching the Figma
+                // reference, which always pairs an entry with scripture.
                 journalMeta = JournalMeta(
                     title: "A Moment With God",
                     excerpt: String(combinedBody.prefix(140)),
-                    scriptureQuote: nil,
-                    scriptureReference: nil
+                    scriptureQuote: "Be still, and know that I am God.",
+                    scriptureReference: "Psalm 46:10"
                 )
             }
         }
