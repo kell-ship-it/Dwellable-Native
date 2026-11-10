@@ -46,6 +46,8 @@
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Dwelly uses your microphone to capture voice moments. We only record when you tap the mic button.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Dwelly uses your camera to add a photo to your journal entry.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Dwelly uses speech recognition to transcribe your voice moments into text.</string>
 	<key>NSFaceIDUsageDescription</key>
