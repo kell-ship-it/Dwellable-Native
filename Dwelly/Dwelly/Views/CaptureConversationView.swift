@@ -572,6 +572,14 @@ struct CaptureConversationView: View {
                         .padding(.leading, 16)
                         .padding(.top, 16)
                         .padding(.trailing, 44) // clears the chevron's top-right corner
+                        // Longer text (Kell's "~200 character" scenario, Nov 10 2026)
+                        // reaches the bottom of the box and runs straight under the
+                        // mic/send buttons without this -- TextEditor has no concept of
+                        // a per-corner exclusion zone, so a uniform bottom inset is the
+                        // practical fix: it keeps every line clear of the button row's
+                        // full height (44pt buttons + 10pt margin) instead of just the
+                        // last one or two.
+                        .padding(.bottom, 58)
                         // Figma's own Component/Typed-Text-Box spec (node 651:3966,
                         // pulled directly Nov 10 2026): Collapsed card is 120pt,
                         // Expanded is 524pt. Both fixed, not computed from
