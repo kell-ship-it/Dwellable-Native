@@ -220,9 +220,15 @@ struct CaptureConversationView: View {
         .navigationBarBackButtonHidden(true)
         // `.navigationBarBackButtonHidden` only hides the back button, not the bar's
         // own background — the system nav bar's default fill was showing through as a
-        // hard, unfaded edge at the very top of the screen, caught live by Kell
-        // (Nov 10 2026), against this screen's otherwise full-bleed dark background.
+        // visible line/edge at the very top of the screen, caught live by Kell twice
+        // (Nov 10 2026: still present after `.toolbar(.hidden, for:)` alone). Belt and
+        // suspenders: hide the bar itself, force its background and color scheme too,
+        // so there's no residual system chrome to show a seam against this screen's
+        // full-bleed dark background.
         .toolbar(.hidden, for: .navigationBar)
+        .navigationBarHidden(true)
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .onAppear {
             if initialMessageIsPrompt {
                 // Dwelly is asking this one, not the user — show it as the opening
@@ -288,11 +294,14 @@ struct CaptureConversationView: View {
     }
 
     /// The journal-entry preview shown once the conversation closes (Figma close
-    /// screen, confirmed against Kell's own screenshot Nov 9 2026) — a titled entry
-    /// with a scripture pairing and an "Open" link into the saved moment. Folded
-    /// directly into the closing message's own bubble (Kell, Nov 10 2026: it read as
-    /// broken up when this was a separate card floating below the text), so this has
-    /// no background/border of its own — `turnBubble`'s shared card supplies both.
+    /// screen, confirmed against Kell's own screenshot Nov 9/10 2026) — a titled entry
+    /// with a scripture pairing and an "Open" link into the saved moment, nested as its
+    /// own distinct box INSIDE the closing message's bubble: Kell first flagged this as
+    /// a separate card floating below the text (fixed by folding it into the same
+    /// outer bubble), then flagged the opposite problem — once nested, it needs its
+    /// own inner background/border to read as a preview card, not just more plain text
+    /// inside the bubble ("should be another preview box inside of this"). So this
+    /// keeps its own background/border, nested inside `turnBubble`'s outer one.
     /// `journalMeta` is generated once, right after close, by a dedicated LLM call
     /// (`generateJournalMeta`); `savedMoment` comes from the auto-save that fires in
     /// parallel — "Open" is disabled until both land.
@@ -355,8 +364,12 @@ struct CaptureConversationView: View {
                 .padding(.top, 20)
             }
         }
-        .padding(.top, 20)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.background)
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.Capture.cardBorder.opacity(0.5), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .padding(.top, 16)
     }
 
     private var combinedBody: String {
