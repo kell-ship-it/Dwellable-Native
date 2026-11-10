@@ -55,12 +55,15 @@ struct CaptureConversationView: View {
     @State private var isTranscribingVoice = false
     // Component/Typed-Text-Box (node 651:3966) has its own Collapsed/Expanded states
     // once there's typed/transcribed content — Kell caught this missing entirely
-    // (Nov 10 2026): no way to grow the compose box for a long reflection.
+    // (Nov 10 2026): no way to grow the compose box for a long reflection. Collapsed
+    // is 120pt, Expanded is 524pt -- both FIXED, per the Figma component spec (pulled
+    // directly, Nov 10 2026), not computed from screen/keyboard height. Several
+    // intermediate attempts at a "fill the screen, keyboard draws in front of it"
+    // ChatGPT-style behavior caused repeated real-device bugs (header drifting,
+    // duplicate button rows) and were a departure from this locked spec -- reverted
+    // back to it entirely. The box, like everything else on this screen, just rises
+    // above the keyboard via the system's own default keyboard avoidance.
     @State private var isComposeExpanded = false
-    // Tracked so the expanded compose box can shrink to stay above the keyboard --
-    // Kell caught (Nov 10 2026) the mic/send buttons sliding under the keyboard in
-    // the expanded state with no way to see them.
-    @State private var keyboardHeight: CGFloat = 0
     // One random "character" per waveform bar, generated once per recording session
     // so bars don't all pulse in perfect lockstep — real voice waveforms (Wispr Flow,
     // Voice Memos) have per-bar variation, not a single uniform pulse.
@@ -323,24 +326,16 @@ struct CaptureConversationView: View {
                     }
                 }
             }
-            // Collapsed/idle only: rise above the keyboard manually, since the
-            // screen as a whole now ALWAYS ignores the keyboard's safe area
-            // (see below) -- toggling `.ignoresSafeArea(.keyboard)` itself on
-            // and off by state turned out unreliable on a real device (Kell's
-            // Nov 10 2026 recording: the whole screen still got shoved up by
-            // the keyboard even while expanded, as if the conditional never
-            // took effect). A plain CGFloat padding value, by contrast,
-            // reliably updates every time keyboardHeight/isComposeExpanded
-            // change. Expanded gets 0 here -- it stays fixed and the keyboard
-            // draws in front of it instead (see `expandedTextEditorHeight`).
-            .padding(.bottom, isComposeExpanded ? 0 : keyboardHeight)
-            .animation(.easeOut(duration: 0.25), value: keyboardHeight)
         }
+        // Pinned to the top so this screen's layout is identical regardless of
+        // which state the compose card is in -- Kell caught (Nov 10 2026) the
+        // header visibly drifting between states when nothing forced that, which
+        // traced back to several iterations' worth of now-removed keyboard/safe-
+        // area special-casing (see the comment on `isComposeExpanded` above).
+        // With fixed card heights and plain default keyboard avoidance for both
+        // states, there's nothing left that could shift the header.
         .frame(maxHeight: .infinity, alignment: .top)
         .background(Theme.background.ignoresSafeArea())
-        // Always ignored, not conditional -- see the comment above on the
-        // `.padding(.bottom,...)` that replaces it for the collapsed/idle case.
-        .ignoresSafeArea(.keyboard, edges: .bottom)
         .navigationBarBackButtonHidden(true)
         // `.navigationBarBackButtonHidden` only hides the back button, not the bar's
         // own background — the system nav bar's default fill was showing through as a
@@ -365,13 +360,6 @@ struct CaptureConversationView: View {
                 turns = [Turn(role: .user, text: initialMessage)]
                 Task { await requestDwellyResponse() }
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
-            guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-            withAnimation(.easeOut(duration: 0.25)) { keyboardHeight = frame.height }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-            withAnimation(.easeOut(duration: 0.25)) { keyboardHeight = 0 }
         }
     }
 
@@ -523,41 +511,6 @@ struct CaptureConversationView: View {
         .clipShape(Capsule())
     }
 
-    // `UIScreen.main.bounds.height` is the FULL device height, status bar/notch
-    // included -- real-device testing (Nov 10 2026) showed the header and the
-    // expanded box both shoved up into the status bar/battery icon, because
-    // leaving that inset out made the computed height taller than the actual
-    // usable screen, and this content sits in a container that centers
-    // overflow rather than clipping it. Reading the real inset instead of
-    // guessing a device-specific constant.
-    private var topSafeAreaInset: CGFloat {
-        UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
-            .first?.safeAreaInsets.top ?? 47
-    }
-
-    // Expanded TextEditor height. Kell's ChatGPT reference (Nov 10 2026, after
-    // several rounds on an artifact mockup) does NOT shrink the box for the
-    // keyboard at all -- it fills essentially the whole screen below the
-    // header, "housed" almost entirely, same whether the keyboard is up or
-    // not, and the keyboard simply draws IN FRONT of it, covering whatever
-    // text is behind it. Only the mic/send row floats above the keyboard
-    // (see `actionButtonsRow` / the `.overlay` in `composePill`) -- the
-    // box's own height never reacts to keyboardHeight. 94 is the box's own
-    // fixed chrome (16+16 padding + the 62pt button row).
-    private var expandedTextEditorHeight: CGFloat {
-        let chrome: CGFloat = 94
-        let available = UIScreen.main.bounds.height - topSafeAreaInset - headerHeight - chrome - 8
-        return max(120, available)
-    }
-
-    // Computed from the content, same as the collapsed box: 16 (top padding) +
-    // text area + 16 (bottom padding) + 62 (button row).
-    private var composePillHeight: CGFloat {
-        let textHeight = isComposeExpanded ? expandedTextEditorHeight : 72
-        return 16 + textHeight + 16 + 62
-    }
-
     // Component/Compose-Text-Pill (647:221) when empty; once there's content this
     // becomes Component/Typed-Text-Box (651:3966) instead — a card with its own
     // Collapsed (120pt)/Expanded (grows to fit more text) states via the expand/
@@ -607,7 +560,12 @@ struct CaptureConversationView: View {
                             .background(Color.clear)
                             .focused($inputFocused)
                             .disabled(isWaitingForDwelly)
-                            .frame(height: isComposeExpanded ? expandedTextEditorHeight : 72)
+                            // Figma's own Component/Typed-Text-Box spec (node 651:3966,
+                            // pulled directly Nov 10 2026): Collapsed card is 120pt with
+                            // a 93pt-tall text area; Expanded is 524pt with a 423pt-tall
+                            // text area. Both fixed, not computed from screen/keyboard
+                            // height -- see the comment on `isComposeExpanded` above.
+                            .frame(height: isComposeExpanded ? 423 : 93)
                             .clipped()
                             // TextEditor's own internal UIScrollView keeps whatever
                             // scroll offset it had from auto-scrolling to the cursor
@@ -629,19 +587,36 @@ struct CaptureConversationView: View {
 
                     Spacer(minLength: 0)
 
-                    // Hidden here (not removed -- just not rendered inline) once the
-                    // floating copy below takes over, so there's never two overlapping
-                    // copies of the same buttons.
-                    if !(isComposeExpanded && keyboardHeight > 0) {
-                        actionButtonsRow
+                    HStack {
+                        Spacer()
+                        Button(action: handleRecordTap) {
+                            Image(systemName: "mic.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(Theme.gold)
+                                .frame(width: 44, height: 44)
+                                .background(Theme.Capture.cardBorder)
+                                .clipShape(Circle())
+                        }
+                        .disabled(isWaitingForDwelly)
+
+                        Button(action: sendUserTurn) {
+                            Image(systemName: "arrow.up")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Theme.goldDark)
+                                .frame(width: 44, height: 44)
+                                .background(Theme.gold)
+                                .clipShape(Circle())
+                        }
+                        .disabled(isWaitingForDwelly)
                     }
+                    .padding(.horizontal, 10)
+                    .padding(.top, 8)
+                    .padding(.bottom, 10)
                 }
-                // Computed exactly from content (composePillHeight), not guessed --
-                // fixed 120pt/524pt constants clipped the button row (Kell, Nov 10
-                // 2026). Expanded, this no longer reacts to the keyboard at all (see
-                // `expandedTextEditorHeight`) -- it stays flush with the screen bottom
-                // and the keyboard draws in front of it instead.
-                .frame(height: composePillHeight)
+                // Figma's own Component/Typed-Text-Box spec (node 651:3966): 120pt
+                // collapsed, 524pt expanded. Fixed, not computed -- see the comment
+                // on `isComposeExpanded` above for why.
+                .frame(height: isComposeExpanded ? 524 : 120)
                 .background(Theme.Capture.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
             }
@@ -649,55 +624,6 @@ struct CaptureConversationView: View {
         .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
         .padding(.horizontal, 24)
         .padding(.bottom, Theme.Spacing.xxl)
-        // Expanded + keyboard up: Kell's reference has the send/mic row floating
-        // above the keyboard even though the box itself doesn't move -- the button
-        // row is the one thing that still has to be reachable. Positioned with raw
-        // keyboardHeight, not Theme.Spacing.xxl, since it's escaping this view's own
-        // padding to sit exactly on the keyboard's own top edge.
-        .overlay(alignment: .bottom) {
-            if isComposeExpanded && keyboardHeight > 0 {
-                actionButtonsRow
-                    // Matches the card's own background/corner so this reads as
-                    // the bottom of the box itself showing through above the
-                    // keyboard -- Kell caught (Nov 10 2026) a bare floating pair
-                    // of circles looking "in front of" the box instead of part
-                    // of it.
-                    .background(Theme.Capture.cardBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                    .padding(.bottom, keyboardHeight)
-            }
-        }
-    }
-
-    // Pulled out of `composePill` so the same row can render either inline (normal
-    // collapsed/expanded-no-keyboard case) or floating above the keyboard (expanded
-    // + keyboard up) without duplicating the buttons themselves.
-    private var actionButtonsRow: some View {
-        HStack {
-            Spacer()
-            Button(action: handleRecordTap) {
-                Image(systemName: "mic.fill")
-                    .font(.system(size: 16))
-                    .foregroundColor(Theme.gold)
-                    .frame(width: 44, height: 44)
-                    .background(Theme.Capture.cardBorder)
-                    .clipShape(Circle())
-            }
-            .disabled(isWaitingForDwelly)
-
-            Button(action: sendUserTurn) {
-                Image(systemName: "arrow.up")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Theme.goldDark)
-                    .frame(width: 44, height: 44)
-                    .background(Theme.gold)
-                    .clipShape(Circle())
-            }
-            .disabled(isWaitingForDwelly)
-        }
-        .padding(.horizontal, 10)
-        .padding(.top, 8)
-        .padding(.bottom, 10)
     }
 
     // Component/Recording-Bar (node 648:220) — Cancel (✕) + a live, voice-reactive
