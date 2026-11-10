@@ -217,6 +217,18 @@ struct CaptureConversationView: View {
             }
         }
         .background(Theme.background.ignoresSafeArea())
+        // Not in the Figma reference — proposed by Kell (Nov 10 2026) and approved via
+        // mockup to soften the remaining seam at the very top of the screen, matching
+        // the bottom scroll-fade the design already uses near the compose bar.
+        .overlay(alignment: .top) {
+            LinearGradient(
+                colors: [Theme.background, Theme.background, Theme.background.opacity(0)],
+                startPoint: .top, endPoint: .bottom
+            )
+            .frame(height: 70)
+            .ignoresSafeArea(edges: .top)
+            .allowsHitTesting(false)
+        }
         .navigationBarBackButtonHidden(true)
         // `.navigationBarBackButtonHidden` only hides the back button, not the bar's
         // own background — the system nav bar's default fill was showing through as a
@@ -306,20 +318,22 @@ struct CaptureConversationView: View {
     /// (`generateJournalMeta`); `savedMoment` comes from the auto-save that fires in
     /// parallel — "Open" is disabled until both land.
     private var journalPreviewContent: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        // Exact Component/Journal-Preview-Card spec (Figma node 650:220, pulled via
+        // Figma MCP Nov 10 2026) — fill/border/fonts/sizes/14px gap all match verbatim,
+        // not approximated, after Kell flagged the card reading as flat black instead
+        // of the design's actual warm tone.
+        VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top) {
                 Text(Date().formatted(date: .abbreviated, time: .omitted).uppercased())
-                    .font(.system(size: 12, weight: .medium))
-                    .tracking(0.3)
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundColor(Theme.Payment.textSupporting)
                 Spacer()
                 if let savedMoment {
                     Button(action: { showMomentDetail = true }) {
                         Text("Open")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(Theme.gold)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(Theme.Capture.goldBright)
+                            .frame(width: 60, height: 24)
                     }
                     .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
                     .navigationDestination(isPresented: $showMomentDetail) {
@@ -332,27 +346,24 @@ struct CaptureConversationView: View {
 
             if let journalMeta {
                 Text(journalMeta.title)
-                    .font(.system(size: 22, design: .serif))
-                    .foregroundColor(Theme.Capture.textPrimary)
-                    .padding(.top, 20)
+                    .font(.system(size: 17, design: .serif))
+                    .foregroundColor(Theme.Payment.textHeading)
+                    .lineLimit(1)
 
                 Text(journalMeta.excerpt)
-                    .font(.system(size: 14))
-                    .foregroundColor(Theme.Payment.textSupporting)
-                    .padding(.top, 12)
+                    .font(.system(size: 12))
+                    .foregroundColor(Theme.Capture.textBody)
                     .fixedSize(horizontal: false, vertical: true)
 
                 if let quote = journalMeta.scriptureQuote, let reference = journalMeta.scriptureReference {
                     Rectangle()
                         .fill(Theme.gold)
                         .frame(height: 1)
-                        .padding(.top, 20)
 
                     Text("\u{201C}\(quote)\u{201D} — \(reference)")
-                        .font(.system(size: 13, design: .serif))
+                        .font(.system(size: 11, design: .serif))
                         .italic()
                         .foregroundColor(Theme.gold)
-                        .padding(.top, 16)
                 }
             } else {
                 HStack(spacing: 8) {
@@ -361,14 +372,14 @@ struct CaptureConversationView: View {
                         .font(.system(size: 13))
                         .foregroundColor(Theme.Payment.textSupporting)
                 }
-                .padding(.top, 20)
             }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.background)
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.Capture.cardBorder.opacity(0.5), lineWidth: 1))
+        .background(Theme.Capture.badgeBackground)
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.Capture.journalCardBorder, lineWidth: 1))
         .clipShape(RoundedRectangle(cornerRadius: 14))
+        .padding(.top, 16)
         .padding(.top, 16)
     }
 

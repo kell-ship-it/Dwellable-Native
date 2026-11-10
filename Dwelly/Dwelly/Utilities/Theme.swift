@@ -56,6 +56,12 @@ struct Theme {
         static let userBubble = Color(red: 0xaa / 255, green: 0x92 / 255, blue: 0x5c / 255)       // #aa925c — surface/user-bubble
         static let textBody = Color(red: 0xb4 / 255, green: 0xac / 255, blue: 0x9b / 255)         // #b4ac9b — text/body (Dwelly's bubble text)
         static let badgeBackground = Color(red: 0x26 / 255, green: 0x24 / 255, blue: 0x1f / 255)  // #26241f — surface/pill (the "dwelly" badge)
+        // Component/Journal-Preview-Card (node 650:220) — pulled directly via Figma MCP
+        // Nov 10 2026 after Kell flagged the card's background as flat black, not the
+        // design's actual warm tone. Fill reuses badgeBackground (#26241f is both
+        // surface/pill tokens); border/gold-bright are new, this component's own.
+        static let journalCardBorder = Color(red: 0x33 / 255, green: 0x33 / 255, blue: 0x33 / 255) // #333 — border/divider
+        static let goldBright = Color(red: 0xe5 / 255, green: 0xc7 / 255, blue: 0x6b / 255)         // #e5c76b — accent/gold-bright (Open button text)
     }
 
     // MARK: - Font Sizes
