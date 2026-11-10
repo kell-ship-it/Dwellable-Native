@@ -243,6 +243,12 @@ struct CaptureConversationView: View {
                             .scaledToFit()
                             .frame(width: 24, height: 24)
                     }
+                    // Fixed height regardless of which elements are present -- without
+                    // this, the row grew from ~24pt to 44pt the moment the back chevron
+                    // (its own 44x44 tap target) appeared post-completion, shifting the
+                    // counter/logo down. Kell asked (Nov 10 2026) for the counter/logo
+                    // row to sit at a fixed height always.
+                    .frame(height: 44)
                     .padding(.horizontal, isConversationComplete ? 16 : 28)
                     .padding(.top, 14)
                     // Kell (Nov 10 2026, reversing his own earlier call once he saw it live):
@@ -867,8 +873,9 @@ struct CaptureConversationView: View {
         let prompt = """
         Based on this reflection, return ONLY a single JSON object (no markdown, no \
         commentary) with these exact keys: "title" (a short, warm, 2-5 word title for this \
-        journal entry), "excerpt" (a 1-2 sentence third-person summary of what they shared, \
-        under 160 characters), "scripture_quote" (a short, real Bible verse quote — always \
+        journal entry), "excerpt" (a 1-2 sentence FIRST-PERSON summary of what I shared, as \
+        if I wrote it myself in my own journal — "I contemplated...", "I felt...", never \
+        "they"/"he"/"she", under 160 characters), "scripture_quote" (a short, real Bible verse quote — always \
         include one, even for a brief or minimal reflection; pick whatever verse about God's \
         presence, patience, or care genuinely fits best, never null), "scripture_reference" \
         (e.g. "Psalm 46:10" — the real reference for scripture_quote, never null).
