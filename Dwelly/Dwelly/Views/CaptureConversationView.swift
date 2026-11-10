@@ -590,14 +590,18 @@ struct CaptureConversationView: View {
                     .padding(.top, 8)
                     .padding(.bottom, 10)
                 }
-                // No fixed outer height here anymore -- the previous 120pt/524pt
-                // constants were just guesses that turned out smaller than their own
-                // content (16pt padding + text area + the button row's own height),
+                // The previous 120pt/524pt constants were guesses that turned out
+                // smaller than their own content (16pt top+bottom padding on the text
+                // row + the TextEditor's own height + the button row's own height),
                 // so clipShape was literally slicing the bottom off the mic/send
                 // buttons (Kell caught this live, Nov 10 2026, in both collapsed AND
-                // expanded states). Sizing naturally to content, with only the
-                // TextEditor's own explicit height controlling how "tall" collapsed
-                // vs. expanded feels, means there's nothing left to clip.
+                // expanded states). Dropping the frame entirely (tried first) was also
+                // wrong -- with no bound, the Spacer above greedily filled the whole
+                // screen above the keyboard instead of hugging the content. These
+                // values are the content's own real height, computed exactly instead
+                // of guessed: 16 (top padding) + 72/408 (TextEditor) + 16 (bottom
+                // padding under it) + 62 (button row: 44pt buttons + 8 top + 10 bottom).
+                .frame(height: isComposeExpanded ? 502 : 166)
                 .background(Theme.Capture.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
             }
