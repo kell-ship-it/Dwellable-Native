@@ -36,6 +36,13 @@ struct CaptureConversationView: View {
     @State private var turns: [Turn] = []
     @State private var inputText = ""
     @State private var isWaitingForDwelly = false
+    // The "Response N of 3" counter hides while the user is actively scrolling the
+    // thread and fades back in once scrolling settles — Kell's own suggestion (Nov 10
+    // 2026) after flagging it as sitting awkwardly out of line with the header; this
+    // also resolved the alignment complaint by moving it into the header's own row
+    // instead of a separate one below it.
+    @State private var isScrollingNow = false
+    @State private var scrollSettleWorkItem: DispatchWorkItem?
     @State private var isSaving = false
     @State private var isSyncPending = false
     @State private var errorMessage: String?
@@ -53,6 +60,11 @@ struct CaptureConversationView: View {
         turns.filter { $0.role == .assistant }.count - (openedWithPromptQuestion ? 1 : 0)
     }
     private var isConversationComplete: Bool { dwellyResponseCount >= maxResponses }
+
+    private struct ScrollOffsetKey: PreferenceKey {
+        static var defaultValue: CGFloat = 0
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+    }
 
     /// Generated once, right after the conversation closes — a title/excerpt/scripture
     /// pairing for the journal-entry card (Figma's closing screen, which Kell confirmed
@@ -107,11 +119,13 @@ struct CaptureConversationView: View {
     // z-stacked under another interactive view, instead of laid out as a sibling above
     // it, is the common thread in this whole family of bugs. Root cause not fully
     // understood — see WelcomeView's comment for the fuller account.
-    // Height the floating header (chevron/rock icon + "Response N of 3") occupies,
-    // including its own top padding — used both to inset the ScrollView's content (so
-    // the first bubble doesn't start underneath the header) and to size the fade
-    // behind it.
-    private var headerHeight: CGFloat { dwellyResponseCount > 0 ? 104 : 62 }
+    // Height the floating header (chevron/rock icon, "Response N of 3" all in one row
+    // now) occupies, including its own top padding — used both to inset the
+    // ScrollView's content (so the first bubble doesn't start underneath the header)
+    // and to size the fade behind it. Kell caught (Nov 10 2026) the counter sitting
+    // out of line with the rock icon in its own row below — it's one row now, so this
+    // no longer varies by whether the counter is showing.
+    private let headerHeight: CGFloat = 62
 
     var body: some View {
         VStack(spacing: 0) {
@@ -140,6 +154,19 @@ struct CaptureConversationView: View {
                         .padding(.horizontal, 24)
                         .padding(.top, headerHeight)
                         .padding(.bottom, 24)
+                        .background(
+                            GeometryReader { geo in
+                                Color.clear.preference(key: ScrollOffsetKey.self, value: geo.frame(in: .named("conversationScroll")).minY)
+                            }
+                        )
+                    }
+                    .coordinateSpace(name: "conversationScroll")
+                    .onPreferenceChange(ScrollOffsetKey.self) { _ in
+                        isScrollingNow = true
+                        scrollSettleWorkItem?.cancel()
+                        let workItem = DispatchWorkItem { withAnimation { isScrollingNow = false } }
+                        scrollSettleWorkItem = workItem
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: workItem)
                     }
                     .onChange(of: turns.count) { _ in
                         withAnimation { proxy.scrollTo(turns.last?.id, anchor: .bottom) }
@@ -168,6 +195,13 @@ struct CaptureConversationView: View {
                                     .frame(width: 44, height: 44)
                             }
                         }
+                        if dwellyResponseCount > 0 {
+                            Text("Response \(dwellyResponseCount) of \(maxResponses)")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(Theme.Payment.textSupporting)
+                                .opacity(isScrollingNow ? 0 : 1)
+                                .animation(.easeInOut(duration: 0.2), value: isScrollingNow)
+                        }
                         Spacer()
                         Image("DwellyRockIcon")
                             .resizable()
@@ -176,17 +210,6 @@ struct CaptureConversationView: View {
                     }
                     .padding(.horizontal, isConversationComplete ? 16 : 28)
                     .padding(.top, 14)
-
-                    if dwellyResponseCount > 0 {
-                        HStack {
-                            Text("Response \(dwellyResponseCount) of \(maxResponses)")
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(Theme.Payment.textSupporting)
-                            Spacer()
-                        }
-                        .padding(.horizontal, 24)
-                        .padding(.top, 20)
-                    }
 
                     Spacer(minLength: 0)
                 }
