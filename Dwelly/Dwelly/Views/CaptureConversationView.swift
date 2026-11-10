@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// The real "Dwelly Responds" conversation (Figma `jBOzv1vO2C2DSMePqRl4c4`, node 38:246,
 /// "Scenario 2: Dwelly Responds") — the piece of P1 Capture that was blocked on T-168
@@ -66,6 +67,16 @@ struct CaptureConversationView: View {
     // so bars don't all pulse in perfect lockstep — real voice waveforms (Wispr Flow,
     // Voice Memos) have per-bar variation, not a single uniform pulse.
     @State private var waveformSeeds: [CGFloat] = (0..<24).map { _ in CGFloat.random(in: 0.4...1.0) }
+    // `unifiedComposeSurface` positions itself by hand (`.position()`, not
+    // `.safeAreaInset`), so it does NOT get the automatic keyboard-avoidance
+    // `.safeAreaInset(edge: .bottom)` gave the old `composePill`/
+    // `expandedComposeOverlay` for free -- confirmed live by Kell (Nov 10 2026):
+    // with the keyboard up, the collapsed card sat at its no-keyboard position,
+    // leaving a dead gap between the box and the keyboard's top edge. Tracking the
+    // real keyboard height by hand via `UIResponder` notifications (below) and
+    // folding it into that surface's own position math is what `.safeAreaInset`
+    // was doing automatically before.
+    @State private var keyboardHeight: CGFloat = 0
     // The "Response N of 3" counter hides while the user is actively scrolling the
     // thread and fades back in once scrolling settles — Kell's own suggestion (Nov 10
     // 2026) after flagging it as sitting awkwardly out of line with the header; this
@@ -156,6 +167,46 @@ struct CaptureConversationView: View {
     // out of line with the rock icon in its own row below — it's one row now, so this
     // no longer varies by whether the counter is showing.
     private let headerHeight: CGFloat = 62
+
+    // `unifiedComposeSurface` (Nov 10 2026 rebuild) needs the device's REAL top/
+    // bottom safe-area insets to compute its full-bleed expanded frame and its
+    // collapsed position -- but it has to read them this way, not via a
+    // `GeometryReader`'s `proxy.safeAreaInsets`. This screen's outer `ZStack`
+    // already has `.ignoresSafeArea()` applied (for `Theme.background`), and once
+    // ANY ancestor in the chain ignores the safe area, every `GeometryReader`
+    // further down reports its insets as already-consumed -- i.e. 0 -- regardless
+    // of whether that specific reader itself calls `.ignoresSafeArea()`. Confirmed
+    // empirically: the collapse chevron kept landing under the status bar no
+    // matter what padding math was tried against `proxy.safeAreaInsets.top`,
+    // because that number was always 0 by the time it reached this subtree. Going
+    // straight to the key window's own `safeAreaInsets` sidesteps that entirely.
+    private var deviceSafeAreaInsets: UIEdgeInsets {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?
+            .windows
+            .first(where: \.isKeyWindow)?
+            .safeAreaInsets ?? .zero
+    }
+
+    // `GeometryReader.proxy.size` is ALSO unreliable here, for the same family of
+    // reason as `deviceSafeAreaInsets` above -- confirmed Nov 10 2026 with a
+    // temporary on-screen readout showing `proxy.size.height` reporting 778pt on a
+    // device whose true screen height is ~874pt, a ~96pt shortfall that tracked
+    // almost exactly with this screen's OTHER views' own `.safeAreaInset` usage
+    // elsewhere in the same ancestor `ZStack`. SwiftUI's safe-area bookkeeping
+    // isn't cleanly scoped per-sibling; a `.safeAreaInset` used by one sibling can
+    // still shrink what a `GeometryReader` elsewhere in the same tree reports. The
+    // key window's own `bounds.size` sidesteps that exactly like
+    // `deviceSafeAreaInsets` does for insets.
+    private var deviceScreenSize: CGSize {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?
+            .windows
+            .first(where: \.isKeyWindow)?
+            .bounds.size ?? .zero
+    }
 
     var body: some View {
             ZStack(alignment: .top) {
@@ -333,20 +384,19 @@ struct CaptureConversationView: View {
                 )
                 .allowsHitTesting(true)
 
-                // Expanded compose: Kell's own words (Nov 10 2026) -- "the text box
-                // should be fully flushed to the top of the screen. You shouldn't even
-                // see the response count or the Dwelly logo. It should be behind the
-                // text box." Declared LAST in this ZStack so it renders on top of (in
-                // front of) both the scroll content and the header above, covering the
-                // whole screen regardless of how much the header/thread would otherwise
-                // occupy. A completely separate view from the collapsed compose pill
-                // (not just a taller version of the same ZStack) -- it has no mic button
-                // at all, per Kell's own correction after seeing it live: "remove the
-                // mic because it creates a different experience... the only time you
-                // can use the mic is if it's in a collapsed view."
-                if isComposeExpanded {
-                    expandedComposeOverlay
-                }
+                // Nov 10 2026 rebuild: this used to be `if isComposeExpanded { scrim;
+                // expandedComposeOverlay }` -- a scrim plus a SECOND, fully separate
+                // full-screen view, cross-faded/slid against the collapsed card
+                // elsewhere in the tree. Every round of tuning that shape (scrim
+                // opacity, transition timing, `.identity`) fixed one symptom and
+                // surfaced another, because the shape itself was two screens
+                // replacing each other, not one surface changing size. Replaced with
+                // `unifiedComposeSurface`: ONE view, always mounted once there's
+                // text, whose own container animates between the collapsed card's
+                // geometry and full-screen. It's declared last here for the same
+                // reason the old overlay was: so it renders in front of the header
+                // and scroll content once it grows past the collapsed card's bounds.
+                unifiedComposeSurface
             }
         .background(Theme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
@@ -372,6 +422,25 @@ struct CaptureConversationView: View {
             } else {
                 turns = [Turn(role: .user, text: initialMessage)]
                 Task { await requestDwellyResponse() }
+            }
+        }
+        // `unifiedComposeSurface` needs the REAL, live keyboard height (see
+        // `keyboardHeight` above) because it positions itself by hand instead of
+        // through `.safeAreaInset`, which used to track the keyboard for free.
+        // Reading the notification's own animation duration/curve (rather than a
+        // fixed spring) keeps this in lockstep with the system keyboard's actual
+        // motion instead of guessing at one.
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+            guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+            let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
+            withAnimation(.easeInOut(duration: duration)) {
+                keyboardHeight = frame.height
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { notification in
+            let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
+            withAnimation(.easeInOut(duration: duration)) {
+                keyboardHeight = 0
             }
         }
     }
@@ -556,26 +625,108 @@ struct CaptureConversationView: View {
                 .frame(height: 60)
                 .background(Theme.Capture.cardBackground)
                 .clipShape(Capsule())
-            } else if !isComposeExpanded {
-                // Figma's own Component/Typed-Text-Box spec (node 651:3966) does NOT
-                // stack text, then a spacer, then a button row sequentially -- it
-                // absolutely positions the text block and the mic/send buttons so the
-                // buttons sit OVER the bottom-right corner of the text area. A plain
-                // VStack{ text row; Spacer; button row } needs at least 16+93+16+62 =
-                // 187pt just for its fixed-size children before the Spacer gets
-                // anything, but the card itself is only 120pt -- that's why the
-                // buttons (and, with the keyboard up, the chevron too) kept clipping
-                // regardless of how the keyboard was handled. Matching Figma's actual
-                // overlay structure fixes it structurally: the buttons are never
-                // competing with a flexible middle section for space, they're pinned
-                // to the card's own fixed-size corner.
+            } else {
+                // Nov 10 2026 rebuild: this used to be a second, fully separate card
+                // view here, cross-faded against `expandedComposeOverlay` (a THIRD,
+                // also-separate full-screen view) -- two independent `TextEditor`s
+                // bound to the same `$inputText`, swapped via conditional rendering.
+                // No matter how the transition/scrim/opacity was tuned, that shape
+                // kept producing some form of "two screens replacing each other"
+                // glitch, confirmed repeatedly by recording and frame-extracting our
+                // own build. Kell's own diagnosis, and a second model's independent
+                // read of the same handoff, agreed: the fix is architectural, not a
+                // timing tweak -- one `TextEditor`, never unmounted, whose
+                // *container* animates size/position/corner-radius. That single
+                // surface now lives in `unifiedComposeSurface`, floated as its own
+                // top-level sibling in `body`'s outer ZStack (so it can span from the
+                // collapsed card's position all the way to full-screen). This branch
+                // only reserves the same footprint the collapsed card occupies, so
+                // the scrolling thread still clears it -- it renders nothing visible.
+                Color.clear.frame(height: 120)
+            }
+        }
+        .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
+        .padding(.horizontal, 24)
+        .padding(.bottom, Theme.Spacing.xxl)
+    }
+
+    // The single persistent compose surface -- ONE `TextEditor`, mounted for as
+    // long as `inputText` is non-empty, regardless of `isComposeExpanded`. Its
+    // *container* (this GeometryReader + the `.frame`/`.position` below) is what
+    // animates between the collapsed card's geometry and the full screen, not the
+    // editor itself being swapped for a different instance. Because the editor is
+    // never removed/reinserted, SwiftUI preserves its scroll position and
+    // `$inputFocused` state across the transition for free -- no manual
+    // coordination needed (Nov 10 2026 rebuild, replacing the old two-view
+    // `composePill`/`expandedComposeOverlay` split; see the comment on that old
+    // branch in `composePill` above for why).
+    @ViewBuilder
+    private var unifiedComposeSurface: some View {
+        if !inputText.isEmpty {
+            // No `GeometryReader` here at all, on purpose -- both `proxy.safeAreaInsets`
+            // AND `proxy.size` proved unreliable in this specific tree (confirmed
+            // empirically, Nov 10 2026, each time via a temporary on-screen debug
+            // readout showing real numbers: insets silently zeroed by an
+            // ancestor's `.ignoresSafeArea()`, and size undercounted by ~96pt due
+            // to a sibling's `.safeAreaInset` usage elsewhere in the same `ZStack`
+            // bleeding into this reader's geometry proposal). Reading both
+            // straight from the key window sidesteps SwiftUI's safe-area/
+            // geometry bookkeeping entirely rather than trying to out-guess it a
+            // third time.
+            let safeTop = deviceSafeAreaInsets.top
+            let safeBottom = deviceSafeAreaInsets.bottom
+            let fullWidth = deviceScreenSize.width
+            let fullHeight = deviceScreenSize.height
+                // Matches the OLD composePill's footprint exactly, so the collapsed
+                // end-state of this surface lands pixel-for-pixel where the static
+                // reservation spacer above (and the real card before this rebuild)
+                // sat: 24pt horizontal padding each side, and `Theme.Spacing.xxl`
+                // above the device's own home-indicator safe area.
+                let collapsedWidth = fullWidth - 48
+                let collapsedHeight: CGFloat = 120
+                // With the keyboard up, float just above IT instead of the static
+                // home-indicator inset -- `keyboardHeight` (tracked by hand, see the
+                // comment on that `@State` above) already measures from the true
+                // bottom of the screen, so it replaces `safeBottom` entirely rather
+                // than stacking on top of it.
+                let bottomInset = keyboardHeight > 0 ? keyboardHeight : safeBottom
+                let collapsedBottomMargin = bottomInset + Theme.Spacing.xxl
+                // Content padding (chevron, TextEditor) adds this back in by hand
+                // when expanded, so it clears the status bar/notch instead of
+                // colliding with it.
+                let expandedTopInset = safeTop
+                // Nov 10 2026: an outer-wrapper-plus-padding alternative to
+                // `.position()` was tried here (to address a separately-confirmed
+                // chevron-lag bug) and measured to land the card ~400pt above
+                // where it belongs -- a NEW, worse bug, not a fix. Reverted.
+                // `.frame(width:height:).position(x:y:)` directly on this card,
+                // using `fullWidth`/`fullHeight` now correctly sourced from
+                // `deviceScreenSize` (NOT the old, contaminated `proxy.size`), is
+                // the one placement approach actually measured pixel-correct
+                // across this entire session.
+                let cardWidth = isComposeExpanded ? fullWidth : collapsedWidth
+                let cardHeight = isComposeExpanded ? fullHeight : collapsedHeight
+                let cardCenterY = isComposeExpanded
+                    ? fullHeight / 2
+                    : fullHeight - collapsedBottomMargin - collapsedHeight / 2
+                // Giving the chevron its OWN `.position()`, nested INSIDE the same
+                // ZStack as the TextEditor/mic/send (which use normal alignment-
+                // flow, not `.position()`), measured (via recording + frame
+                // capture) as landing hundreds of points off target: mixing a
+                // `.position()`-ed child with alignment-flow siblings inside one
+                // ZStack resolves that child's coordinate space against the
+                // stack's UNCONSTRAINED proposed size (inflated by the
+                // TextEditor's own unbounded-height demand when expanded), not
+                // the final size the outer `.frame()` clamps it to. Pulling the
+                // chevron OUT as a true sibling of the card -- both positioned in
+                // the SAME absolute screen coordinates the card's own
+                // `.position()` already uses -- sidesteps that entirely: there is
+                // no shared local coordinate space to get contaminated.
+                let cardTopY = cardCenterY - cardHeight / 2
+                let cardRightX = fullWidth / 2 + cardWidth / 2
+
                 ZStack(alignment: .topLeading) {
-                    // TextField(axis: .vertical) only ever grows to fit its own
-                    // content — handing it a taller frame just leaves the extra
-                    // space as dead padding below the text, not more room to type
-                    // into, which is exactly what Kell caught (Nov 10 2026):
-                    // "it does not allow me to type fully in that space." TextEditor
-                    // actually fills and scrolls within whatever frame it's given.
+                ZStack(alignment: .topLeading) {
                     TextEditor(text: $inputText)
                         .font(.system(size: 13))
                         .foregroundColor(Theme.Payment.textHeading)
@@ -584,49 +735,33 @@ struct CaptureConversationView: View {
                         .background(Color.clear)
                         .focused($inputFocused)
                         .disabled(isWaitingForDwelly)
-                        .padding(.leading, 16)
-                        .padding(.top, 16)
-                        .padding(.trailing, 44) // clears the chevron's top-right corner
-                        // Longer text (Kell's "~200 character" scenario, Nov 10 2026)
-                        // reaches the bottom of the box and runs straight under the
-                        // mic/send buttons without this -- TextEditor has no concept of
-                        // a per-corner exclusion zone, so a uniform bottom inset is the
-                        // practical fix: it keeps every line clear of the button row's
-                        // full height (44pt buttons + 10pt margin) instead of just the
-                        // last one or two.
-                        .padding(.bottom, 58)
-                        // Figma's own Component/Typed-Text-Box spec (node 651:3966,
-                        // pulled directly Nov 10 2026): Collapsed card is a fixed 120pt.
-                        // Expanded moved to a completely separate full-screen overlay
-                        // (`expandedComposeOverlay`, see `isComposeExpanded` above) --
-                        // this branch only ever renders collapsed now.
-                        .frame(height: 120)
+                        .padding(.leading, isComposeExpanded ? 20 : 16)
+                        .padding(.top, isComposeExpanded ? expandedTopInset + 44 : 16)
+                        .padding(.trailing, isComposeExpanded ? 20 : 44)
+                        .padding(.bottom, isComposeExpanded ? keyboardHeight + 70 : 58)
+                        .frame(height: isComposeExpanded ? nil : 120)
                         .clipped()
 
-                    Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isComposeExpanded = true } }) {
-                        Image(systemName: "chevron.up.circle")
-                            .font(.system(size: 18))
-                            .foregroundColor(Theme.Payment.textSupporting)
-                            .frame(width: 32, height: 32)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.top, 14)
-                    .padding(.trailing, 14)
-
                     HStack(spacing: 10) {
-                        // Mic only ever shows in the collapsed card -- Kell caught this
-                        // live (Nov 10 2026) and reversed his own earlier call: "remove
-                        // the mic because it creates a different experience... the only
+                        // Mic only ever shows collapsed -- Kell's own correction
+                        // after seeing it live (Nov 10 2026): "remove the mic
+                        // because it creates a different experience... the only
                         // time you can use the mic is if it's in a collapsed view."
-                        Button(action: handleRecordTap) {
-                            Image(systemName: "mic.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(Theme.gold)
-                                .frame(width: 44, height: 44)
-                                .background(Theme.Capture.cardBorder)
-                                .clipShape(Circle())
+                        // A plain `if` here (not a separate view) because this
+                        // button was never the thing causing the ghosting -- it's a
+                        // small icon, not a second copy of the user's text.
+                        if !isComposeExpanded {
+                            Button(action: handleRecordTap) {
+                                Image(systemName: "mic.fill")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(Theme.gold)
+                                    .frame(width: 44, height: 44)
+                                    .background(Theme.Capture.cardBorder)
+                                    .clipShape(Circle())
+                            }
+                            .disabled(isWaitingForDwelly)
+                            .transition(.opacity)
                         }
-                        .disabled(isWaitingForDwelly)
 
                         Button(action: sendUserTurn) {
                             Image(systemName: "arrow.up")
@@ -639,69 +774,47 @@ struct CaptureConversationView: View {
                         .disabled(isWaitingForDwelly)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                    .padding(.trailing, 10)
-                    .padding(.bottom, 10)
+                    .padding(.trailing, isComposeExpanded ? 20 : 10)
+                    // Send button needs to clear the keyboard in the expanded case
+                    // too -- `.safeAreaInset(edge: .bottom)` used to do this for
+                    // free on the old `expandedComposeOverlay`; this floating
+                    // surface has to track it by hand via `keyboardHeight`.
+                    .padding(.bottom, isComposeExpanded ? keyboardHeight + 16 : 10)
                 }
-                .frame(height: 120)
+                .frame(
+                    width: isComposeExpanded ? fullWidth : collapsedWidth,
+                    height: isComposeExpanded ? fullHeight : collapsedHeight
+                )
                 .background(Theme.Capture.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-            }
-        }
-        .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
-        .padding(.horizontal, 24)
-        .padding(.bottom, Theme.Spacing.xxl)
-    }
+                .clipShape(RoundedRectangle(cornerRadius: isComposeExpanded ? 0 : 20))
+                .position(x: fullWidth / 2, y: cardCenterY)
+                .ignoresSafeArea()
 
-    // Full-screen takeover for the expanded compose state -- see the comment on
-    // `isComposeExpanded` and on this view's usage in `body` for why this is a
-    // completely separate view from the collapsed compose pill rather than just a
-    // taller version of the same ZStack. No mic button here at all (collapsed-only,
-    // per Kell, Nov 10 2026); only Send. Keyboard avoidance via `.safeAreaInset
-    // (edge: .bottom)`, the same reliable pattern validated for the collapsed card.
-    private var expandedComposeOverlay: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Spacer()
-                Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isComposeExpanded = false } }) {
-                    Image(systemName: "chevron.down.circle")
+                // Sibling of the card (not nested inside it) -- see the comment
+                // above on why that matters. Same absolute screen coordinates the
+                // card's own `.position()` uses, so there is exactly one shared
+                // coordinate system for both, and nothing for them to disagree on
+                // mid-animation.
+                Button(action: toggleComposeExpanded) {
+                    Image(systemName: isComposeExpanded ? "chevron.down.circle" : "chevron.up.circle")
                         .font(.system(size: 18))
                         .foregroundColor(Theme.Payment.textSupporting)
                         .frame(width: 32, height: 32)
                 }
+                .position(
+                    x: cardRightX - (isComposeExpanded ? 20 : 14) - 16,
+                    y: cardTopY + (isComposeExpanded ? expandedTopInset : 0) + 14 + 16
+                )
+                .ignoresSafeArea()
             }
-            .padding(.top, 14)
-            .padding(.trailing, 20)
+            .transition(.identity)
+        }
+    }
 
-            TextEditor(text: $inputText)
-                .font(.system(size: 13))
-                .foregroundColor(Theme.Payment.textHeading)
-                .tint(Theme.gold)
-                .scrollContentBackground(.hidden)
-                .background(Color.clear)
-                .focused($inputFocused)
-                .disabled(isWaitingForDwelly)
-                .padding(.horizontal, 20)
-                .padding(.top, 4)
+    private func toggleComposeExpanded() {
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.86)) {
+            isComposeExpanded.toggle()
         }
-        .safeAreaInset(edge: .bottom) {
-            HStack {
-                Spacer()
-                Button(action: sendUserTurn) {
-                    Image(systemName: "arrow.up")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Theme.goldDark)
-                        .frame(width: 44, height: 44)
-                        .background(Theme.gold)
-                        .clipShape(Circle())
-                }
-                .disabled(isWaitingForDwelly)
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 16)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.Capture.cardBackground.ignoresSafeArea())
-        .transition(.opacity)
     }
 
     // Component/Recording-Bar (node 648:220) — Cancel (✕) + a live, voice-reactive
