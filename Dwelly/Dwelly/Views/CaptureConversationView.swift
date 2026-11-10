@@ -323,17 +323,24 @@ struct CaptureConversationView: View {
                     }
                 }
             }
+            // Collapsed/idle only: rise above the keyboard manually, since the
+            // screen as a whole now ALWAYS ignores the keyboard's safe area
+            // (see below) -- toggling `.ignoresSafeArea(.keyboard)` itself on
+            // and off by state turned out unreliable on a real device (Kell's
+            // Nov 10 2026 recording: the whole screen still got shoved up by
+            // the keyboard even while expanded, as if the conditional never
+            // took effect). A plain CGFloat padding value, by contrast,
+            // reliably updates every time keyboardHeight/isComposeExpanded
+            // change. Expanded gets 0 here -- it stays fixed and the keyboard
+            // draws in front of it instead (see `expandedTextEditorHeight`).
+            .padding(.bottom, isComposeExpanded ? 0 : keyboardHeight)
+            .animation(.easeOut(duration: 0.25), value: keyboardHeight)
         }
+        .frame(maxHeight: .infinity, alignment: .top)
         .background(Theme.background.ignoresSafeArea())
-        // Expanded: the box stays fixed and the keyboard draws in front of it
-        // (see `expandedTextEditorHeight`), so this screen must stop reacting to
-        // the keyboard's safe area -- otherwise SwiftUI's default avoidance just
-        // pushes the whole screen (header included) up by keyboardHeight, which
-        // is exactly the shift-and-gap combination Kell rejected across several
-        // earlier attempts. Collapsed/idle: leave the default behavior alone
-        // (empty edge set = no-op) so the compose area still rises to stay fully
-        // above the keyboard, same as it always did.
-        .ignoresSafeArea(.keyboard, edges: isComposeExpanded ? .bottom : [])
+        // Always ignored, not conditional -- see the comment above on the
+        // `.padding(.bottom,...)` that replaces it for the collapsed/idle case.
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .navigationBarBackButtonHidden(true)
         // `.navigationBarBackButtonHidden` only hides the back button, not the bar's
         // own background — the system nav bar's default fill was showing through as a
