@@ -67,7 +67,15 @@ interface TokenUsage {
 // (131K context), so it's the new primary.
 const GROQ_MODEL = "openai/gpt-oss-120b"
 const OPENAI_MODEL = "gpt-4o-mini"
-const DEFAULT_MAX_TOKENS = 500
+// Raised from 500 (Nov 11 2026): gpt-oss-120b is a reasoning model -- it spends
+// tokens on hidden "thinking" before its visible answer, and at 500 it sometimes
+// burned the whole budget on that and returned an empty choices[0].message.content,
+// which this proxy correctly treated as a Groq failure and fell back to OpenAI for
+// (confirmed via function_logs: "Groq response missing choices[0].message.content",
+// not a free-tier/rate-limit error -- Kell asked why OpenAI was being called at all
+// when the Groq free tier hadn't been exceeded). Paired with reasoning_effort: "low"
+// below, which cuts down how much of the budget reasoning eats in the first place.
+const DEFAULT_MAX_TOKENS = 1000
 const DEFAULT_TEMPERATURE = 0.8
 const GROQ_TIMEOUT_MS = 10_000
 const DAILY_CALL_LIMIT = 60
@@ -99,6 +107,10 @@ async function callGroq(messages: ChatMessage[], maxTokens: number, temperature:
         messages,
         max_tokens: maxTokens,
         temperature,
+        // gpt-oss-120b-specific (Groq API): keeps its hidden reasoning pass short
+        // so more of max_tokens is left for the actual visible answer -- none of
+        // this app's features need deep multi-step reasoning out of this model.
+        reasoning_effort: "low",
       }),
       signal: controller.signal,
     })
