@@ -125,7 +125,14 @@ struct CaptureConversationView: View {
     private var dwellyResponseCount: Int {
         turns.filter { $0.role == .assistant }.count - (openedWithPromptQuestion ? 1 : 0)
     }
-    private var isConversationComplete: Bool { dwellyResponseCount >= maxResponses }
+    // Kell's direct ask (Nov 11 2026): post-onboarding conversations need a real way to
+    // stop early instead of being forced through exactly 3 responses -- the "Done"
+    // button in the header sets this, which this flag folds into the exact same
+    // completion path reaching maxResponses already uses (same finishAndSave() call,
+    // same journal-preview UI afterward). Onboarding has no such button and never sets
+    // this -- it keeps the existing forced-3 behavior unchanged.
+    @State private var manuallyFinished = false
+    private var isConversationComplete: Bool { dwellyResponseCount >= maxResponses || manuallyFinished }
 
     private struct ScrollOffsetKey: PreferenceKey {
         static var defaultValue: CGFloat = 0
@@ -372,11 +379,22 @@ struct CaptureConversationView: View {
 
                 VStack(spacing: 0) {
                     HStack {
-                        // Only once the entry is saved — mid-conversation, leaving
-                        // loses it with nothing to come back to, so there's nothing to
-                        // navigate back TO yet. Never during onboarding, which has no
-                        // prior screen for this to return to at all.
-                        if isConversationComplete && !isOnboarding {
+                        // Onboarding keeps its existing behavior unchanged -- no way
+                        // back mid-conversation (there's nothing to go back TO), chevron
+                        // only once complete, logo always shown. Post-onboarding now
+                        // gets a real way out at any point (Kell's direct ask, Nov 11
+                        // 2026, after finding there was literally no way to leave this
+                        // screen mid-conversation): the conversation hasn't been saved
+                        // as a moment yet at this point, so leaving here means
+                        // discarding it, same as it always implicitly would have.
+                        if !isOnboarding {
+                            Button(action: { onMomentSaved?(); dismiss() }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(Theme.Capture.textPrimary)
+                                    .frame(width: 44, height: 44)
+                            }
+                        } else if isConversationComplete {
                             Button(action: { onMomentSaved?(); dismiss() }) {
                                 Image(systemName: "chevron.left")
                                     .font(.system(size: 18, weight: .medium))
@@ -397,10 +415,27 @@ struct CaptureConversationView: View {
                                 .animation(.easeInOut(duration: 0.2), value: isScrollingNow)
                         }
                         Spacer()
-                        Image("DwellyRockIcon")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
+                        // Post-onboarding never shows the logo at all (Kell: "there
+                        // should be no logo") -- a real "Done" sits in that exact slot
+                        // instead once there's been at least one real exchange, letting
+                        // the user end the conversation on their own terms rather than
+                        // being forced through all 3 responses. Onboarding is unchanged
+                        // -- the logo stays, no early exit exists there.
+                        if !isOnboarding {
+                            if dwellyResponseCount >= 1 && !isConversationComplete {
+                                Button(action: { manuallyFinished = true }) {
+                                    Text("Done")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(Theme.gold)
+                                        .frame(height: 24)
+                                }
+                            }
+                        } else {
+                            Image("DwellyRockIcon")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24)
+                        }
                     }
                     // Fixed height regardless of which elements are present -- without
                     // this, the row grew from ~24pt to 44pt the moment the back chevron
@@ -408,7 +443,10 @@ struct CaptureConversationView: View {
                     // counter/logo down. Kell asked (Nov 10 2026) for the counter/logo
                     // row to sit at a fixed height always.
                     .frame(height: 44)
-                    .padding(.horizontal, isConversationComplete ? 16 : 28)
+                    // Tighter inset whenever the chevron's own 44pt tap target is
+                    // present -- true for the whole post-onboarding conversation now,
+                    // not just once complete, now that the chevron shows from the start.
+                    .padding(.horizontal, (!isOnboarding || isConversationComplete) ? 16 : 28)
                     .padding(.top, 14)
                     // Kell (Nov 10 2026, reversing his own earlier call once he saw it live):
                     // "Response N of 3" + the rock icon should ALWAYS stay visible, including

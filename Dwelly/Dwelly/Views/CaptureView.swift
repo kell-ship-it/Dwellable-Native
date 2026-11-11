@@ -102,13 +102,29 @@ struct CaptureView: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Spacer()
-                    Image("DwellyRockIcon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 24, height: 24)
+                    // Kell caught this live (Nov 11 2026): post-onboarding, there was
+                    // no way to leave this screen at all if you opened it and changed
+                    // your mind -- no close button, nothing. Onboarding keeps the logo
+                    // and no close button, same reasoning as everywhere else in this
+                    // flow (there's nothing to go back TO during the mandatory first
+                    // capture).
+                    if !isOnboarding {
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Theme.Capture.textPrimary)
+                                .frame(width: 44, height: 44)
+                        }
+                        Spacer()
+                    } else {
+                        Spacer()
+                        Image("DwellyRockIcon")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                    }
                 }
-                .padding(.horizontal, 28)
+                .padding(.horizontal, isOnboarding ? 28 : 16)
                 .padding(.top, 14)
 
                 Spacer().frame(height: 42)
