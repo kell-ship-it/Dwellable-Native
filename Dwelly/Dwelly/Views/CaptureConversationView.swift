@@ -124,11 +124,14 @@ struct CaptureConversationView: View {
     private struct JournalMeta: Decodable {
         let title: String
         let excerpt: String
+        // The real synthesized narrative (Nov 11 2026) -- nil only on the
+        // hard-failure fallback below, where there's no real synthesis to show.
+        let body: String?
         let scriptureQuote: String?
         let scriptureReference: String?
 
         enum CodingKeys: String, CodingKey {
-            case title, excerpt
+            case title, excerpt, body
             case scriptureQuote = "scripture_quote"
             case scriptureReference = "scripture_reference"
         }
@@ -559,6 +562,7 @@ struct CaptureConversationView: View {
                             meta: journalMeta.map {
                                 JournalDisplayMeta(
                                     title: $0.title,
+                                    body: $0.body,
                                     scriptureQuote: $0.scriptureQuote,
                                     scriptureReference: $0.scriptureReference
                                 )
@@ -614,6 +618,18 @@ struct CaptureConversationView: View {
         turns
             .filter { $0.role == .user }
             .map(\.text)
+            .joined(separator: "\n\n")
+    }
+
+    /// Both sides of the conversation, role-labeled -- used ONLY as synthesis context
+    /// (Nov 11 2026, real body-synthesis build), never stored or shown directly.
+    /// `combinedBody` (user words only) stays what's saved as `moment.body` and shown
+    /// as "In your words"/the pending placeholder; the model needs Dwelly's own
+    /// questions too to understand the arc of the conversation well enough to write a
+    /// real reframed narrative, not just a concatenation of answers.
+    private var fullTranscript: String {
+        turns
+            .map { "\($0.role == .user ? "Me" : "Dwelly"): \($0.text)" }
             .joined(separator: "\n\n")
     }
 
@@ -1097,6 +1113,7 @@ struct CaptureConversationView: View {
                 userId: userId,
                 status: "approved",
                 title: journalMeta.title,
+                body: journalMeta.body,
                 scriptureQuote: journalMeta.scriptureQuote,
                 scriptureReference: journalMeta.scriptureReference
             )
@@ -1122,10 +1139,11 @@ struct CaptureConversationView: View {
             // Shares the exact same synthesis call the retry sweep uses (T-159) --
             // a pending entry retried later is synthesized identically to how it
             // would have been the first time.
-            let result = try await JournalSynthesisManager.synthesize(transcript: combinedBody, apiClient: apiClient)
+            let result = try await JournalSynthesisManager.synthesize(transcript: fullTranscript, apiClient: apiClient)
             let meta = JournalMeta(
                 title: result.title,
                 excerpt: result.excerpt,
+                body: result.body,
                 scriptureQuote: result.scriptureQuote,
                 scriptureReference: result.scriptureReference
             )
@@ -1142,6 +1160,7 @@ struct CaptureConversationView: View {
                 journalMeta = JournalMeta(
                     title: "A Moment With God",
                     excerpt: String(combinedBody.prefix(140)),
+                    body: nil,
                     scriptureQuote: "Be still, and know that I am God.",
                     scriptureReference: "Psalm 46:10"
                 )

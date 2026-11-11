@@ -23,12 +23,17 @@ import UIKit
 struct JournalDisplayMeta {
     let title: String
     let moods: [String]
+    // Nov 11 2026: the real synthesized narrative (optimistic, pre-`loadEntry()`) --
+    // see `JournalDetailView.effectiveBody`'s own comment for why this is no longer
+    // ever `moment.body` (the raw transcript) once synthesis has actually succeeded.
+    let body: String?
     let scriptureQuote: String?
     let scriptureReference: String?
 
-    init(title: String, moods: [String] = [], scriptureQuote: String? = nil, scriptureReference: String? = nil) {
+    init(title: String, moods: [String] = [], body: String? = nil, scriptureQuote: String? = nil, scriptureReference: String? = nil) {
         self.title = title
         self.moods = moods
+        self.body = body
         self.scriptureQuote = scriptureQuote
         self.scriptureReference = scriptureReference
     }
@@ -122,8 +127,15 @@ struct JournalDetailView: View {
         self.syncManager = syncManager
         self.meta = meta
         self.onDone = onDone
-        _editedBody = State(initialValue: moment.body)
-        _displayBody = State(initialValue: moment.body)
+        // Nov 11 2026: seeded from the real synthesized body when the optimistic
+        // `meta` already has one (right after a capture that synthesized
+        // successfully); `moment.body` (the raw transcript) is only ever the
+        // fallback here -- before synthesis has a chance to run at all, or if it
+        // never produced a body. `loadEntry()` below corrects this once the real
+        // persisted entry loads, same pattern as title/moods/scripture.
+        let initialBody = meta?.body ?? moment.body
+        _editedBody = State(initialValue: initialBody)
+        _displayBody = State(initialValue: initialBody)
         _selectedMoods = State(initialValue: meta?.moods ?? [])
     }
 
@@ -663,6 +675,12 @@ struct JournalDetailView: View {
 
     // MARK: - Actions
 
+    /// Nov 11 2026: edits the synthesized entry (`journal_entries.body`), NOT
+    /// `moments.body` (the raw transcript) -- matches the locked spec's own "What's
+    /// NOT Editable" list (original moment transcript stays untouched). Before the
+    /// real body-synthesis build, this was the only body there was to edit, so it
+    /// wrote through `apiClient.saveMoment`; that's gone now that there's a real
+    /// distinction between "what I actually said" and "the journal entry about it."
     private func saveEdit() async {
         let trimmed = editedBody.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -672,55 +690,38 @@ struct JournalDetailView: View {
         }
         isSaving = true
         saveErrorMessage = nil
-
-        let updated = Moment(
-            id: moment.id,
-            userId: moment.userId,
-            body: editedBody,
-            senseOfLord: moment.senseOfLord,
-            createdAt: moment.createdAt,
-            syncedAt: moment.syncedAt,
-            audioURL: moment.audioURL
-        )
-
-        do {
-            _ = try await apiClient.saveMoment(updated)
-            displayBody = editedBody
-            isEditing = false
-        } catch {
-            // Same offline-first fallback `finishAndSave()` already uses elsewhere --
-            // the edit isn't lost, it queues for SyncManager's existing retry sweep
-            // instead of failing silently or blocking the user on a network error.
-            syncManager?.markMomentAsPending(updated)
-            displayBody = editedBody
-            isEditing = false
-            saveErrorMessage = "Saved on this device — will sync once you're back online."
-        }
-
+        displayBody = editedBody
+        isEditing = false
         await persistEntry(edited: true)
         isSaving = false
     }
 
-    /// T-152: loads the real persisted title/moods/scripture/starred for this moment,
-    /// if an entry exists yet. `meta` (from a just-finished capture) stays the display
-    /// fallback until this returns -- see `effectiveTitle` etc. above.
+    /// T-152: loads the real persisted title/body/moods/scripture/starred for this
+    /// moment, if an entry exists yet. `meta` (from a just-finished capture) stays the
+    /// display fallback until this returns -- see `effectiveTitle` etc. above.
     private func loadEntry() async {
         guard let entry = try? await apiClient.fetchJournalEntry(momentId: moment.id) else { return }
         loadedEntry = entry
         if !entry.moods.isEmpty { selectedMoods = entry.moods }
+        if let body = entry.body, !isEditing {
+            displayBody = body
+            editedBody = body
+        }
         isFavorited = entry.starred
     }
 
-    /// Writes the current moods/starred (+ title/scripture, carried over from whatever
-    /// `effectiveTitle`/`effectiveScripture*` already resolve to) back to `journal_entries`.
-    /// Safe to call from capture time (no `loadedEntry` yet) through to a body edit years
-    /// later (`loadedEntry` already exists) -- upserts on `moment_id` either way.
+    /// Writes the current body/moods/starred (+ title/scripture, carried over from
+    /// whatever `effectiveTitle`/`effectiveScripture*` already resolve to) back to
+    /// `journal_entries`. Safe to call from capture time (no `loadedEntry` yet)
+    /// through to a body edit years later (`loadedEntry` already exists) -- upserts
+    /// on `moment_id` either way.
     private func persistEntry(edited: Bool = false) async {
         let entry = JournalEntry(
             id: loadedEntry?.id ?? UUID().uuidString,
             momentId: moment.id,
             userId: moment.userId,
             title: effectiveTitle,
+            body: displayBody,
             moods: selectedMoods,
             scriptureQuote: effectiveScriptureQuote,
             scriptureReference: effectiveScriptureReference,

@@ -116,11 +116,17 @@ class SyncManager: ObservableObject {
 
         for entry in pending {
             guard let moment = try? await apiClient.fetchMoment(id: entry.momentId) else { continue }
+            // Only the user's own words are available here, not Dwelly's side of the
+            // conversation (that's never persisted anywhere -- see
+            // CaptureConversationView.fullTranscript's own comment) -- a retried
+            // synthesis is real, just with less conversational context than the
+            // original attempt had.
             guard let result = try? await JournalSynthesisManager.synthesize(transcript: moment.body, apiClient: apiClient) else { continue }
 
             var updated = entry
             updated.status = "approved"
             updated.title = result.title
+            updated.body = result.body
             updated.scriptureQuote = result.scriptureQuote
             updated.scriptureReference = result.scriptureReference
             _ = try? await apiClient.saveJournalEntry(updated)

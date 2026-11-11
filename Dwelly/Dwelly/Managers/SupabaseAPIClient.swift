@@ -339,6 +339,7 @@ class SupabaseAPIClient: APIClient {
             user_id: entry.userId,
             status: entry.status,
             title: entry.title,
+            body: entry.body,
             moods: entry.moods,
             scripture_quote: entry.scriptureQuote,
             scripture_reference: entry.scriptureReference,
@@ -774,8 +775,8 @@ class SupabaseAPIClient: APIClient {
 
     // MARK: - LLM API (T-168)
 
-    func callLLM(messages: [LLMMessage], feature: String) async throws -> LLMResponse {
-        let payload = LLMProxyPayload(messages: messages, feature: feature)
+    func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int? = nil) async throws -> LLMResponse {
+        let payload = LLMProxyPayload(messages: messages, feature: feature, max_tokens: maxTokens)
         return try await makeRequest(
             method: "POST",
             endpoint: "/functions/v1/llm-proxy",
@@ -790,6 +791,11 @@ class SupabaseAPIClient: APIClient {
 struct LLMProxyPayload: Encodable {
     let messages: [LLMMessage]
     let feature: String
+    // Real narrative body-synthesis (Nov 11 2026) needs more room than this proxy's
+    // own 1000-token default (title+excerpt+verse alone fit comfortably in that; a
+    // 2-3 paragraph body does not) -- nil lets every other feature keep using the
+    // proxy's own default unchanged.
+    let max_tokens: Int?
 }
 
 struct MomentPayload: Codable {
@@ -808,6 +814,7 @@ struct JournalEntryPayload: Codable {
     let user_id: String
     let status: String
     let title: String?
+    let body: String?
     let moods: [String]
     let scripture_quote: String?
     let scripture_reference: String?

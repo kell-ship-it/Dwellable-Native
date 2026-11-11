@@ -13,9 +13,17 @@ enum JournalSynthesisManager {
     struct Result {
         let title: String
         /// 1-2 sentence first-person excerpt -- display-only (the inline post-capture
-        /// card), never persisted to `journal_entries` (no column for it; the spec's
-        /// artifact structure doesn't have one either, just title/body/moods).
+        /// card), never persisted to `journal_entries`.
         let excerpt: String
+        /// The actual journal entry (Nov 11 2026, real body-synthesis build): a 2-3
+        /// paragraph first-person narrative, reframing the conversation as spiritual
+        /// reflection -- NOT the raw transcript, and NOT the one-line `excerpt`. This
+        /// is what was missing entirely before this build: synthesis only ever
+        /// produced title/excerpt/verse, while the displayed "body" was silently just
+        /// `moment.body` (the user's raw words). Kell caught this directly (Nov 11
+        /// 2026) comparing a real entry's displayed body against what synthesis
+        /// actually generates.
+        let body: String
         let scriptureQuote: String
         let scriptureReference: String
     }
@@ -23,28 +31,50 @@ enum JournalSynthesisManager {
     private struct LLMJSON: Decodable {
         let title: String
         let excerpt: String
+        let body: String
         let scriptureQuote: String
         let scriptureReference: String
 
         enum CodingKeys: String, CodingKey {
-            case title, excerpt
+            case title, excerpt, body
             case scriptureQuote = "scripture_quote"
             case scriptureReference = "scripture_reference"
         }
     }
 
+    /// `transcript` should be the FULL conversation (both sides, role-labeled) -- the
+    /// model needs Dwelly's own questions to understand the arc well enough to write a
+    /// real narrative, not just a concatenation of the user's answers. See
+    /// `CaptureConversationView.fullTranscript` vs. `combinedBody` (user-only, what
+    /// actually gets saved as `moment.body`).
     static func synthesize(transcript: String, apiClient: APIClient) async throws -> Result {
         let prompt = """
-        Based on this reflection, return ONLY a single JSON object (no markdown, no \
-        commentary) with these exact keys: "title" (a short, warm, 2-5 word title for this \
-        journal entry), "excerpt" (a 1-2 sentence FIRST-PERSON summary of what I shared, as \
-        if I wrote it myself in my own journal — "I contemplated...", "I felt...", never \
-        "they"/"he"/"she", under 160 characters), "scripture_quote" (a short, real Bible verse quote — always \
-        include one, even for a brief or minimal reflection; pick whatever verse about God's \
-        presence, patience, or care genuinely fits best, never null), "scripture_reference" \
-        (e.g. "Psalm 46:10" — the real reference for scripture_quote, never null).
+        Based on this conversation between me and Dwelly, return ONLY a single JSON \
+        object (no markdown, no commentary) with these exact keys:
 
-        Reflection:
+        "title" (a short, warm, 2-5 word title for this journal entry)
+
+        "excerpt" (a 1-2 sentence FIRST-PERSON summary of what I shared, as if I wrote \
+        it myself in my own journal — "I contemplated...", "I felt...", never \
+        "they"/"he"/"she", under 160 characters)
+
+        "body" (the actual journal entry: 2-3 paragraphs of FIRST-PERSON reflective \
+        narrative prose, not structured sections, not a Q&A transcript, not bullet \
+        points. Written entirely in my own voice as if I sat down and wrote this in my \
+        journal myself -- mirror my own words, phrasing, and specific details from what \
+        I actually said, but reframe it into reflective prose rather than copying my \
+        answers verbatim or including any of Dwelly's own questions. This should read \
+        like a real, personal journal entry someone would actually want to keep and \
+        reread, not a summary of a conversation.)
+
+        "scripture_quote" (a short, real Bible verse quote — always include one, even \
+        for a brief or minimal reflection; pick whatever verse about God's presence, \
+        patience, or care genuinely fits best, never null)
+
+        "scripture_reference" (e.g. "Psalm 46:10" — the real reference for \
+        scripture_quote, never null)
+
+        Conversation:
         \(transcript)
         """
         let messages = [
@@ -52,12 +82,14 @@ enum JournalSynthesisManager {
             LLMMessage(role: .user, content: prompt),
         ]
 
-        let response = try await apiClient.callLLM(messages: messages, feature: "journal_synthesis")
+        // 1500, not the proxy's own 1000 default -- a real 2-3 paragraph body plus
+        // title/excerpt/verse plus JSON structure needs more room than metadata alone did.
+        let response = try await apiClient.callLLM(messages: messages, feature: "journal_synthesis", maxTokens: 1500)
         guard let start = response.content.firstIndex(of: "{"), let end = response.content.lastIndex(of: "}") else {
             throw NSError(domain: "JournalSynthesisManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "No JSON object in LLM response"])
         }
         let jsonSubstring = response.content[start...end]
         let parsed = try JSONDecoder().decode(LLMJSON.self, from: Data(jsonSubstring.utf8))
-        return Result(title: parsed.title, excerpt: parsed.excerpt, scriptureQuote: parsed.scriptureQuote, scriptureReference: parsed.scriptureReference)
+        return Result(title: parsed.title, excerpt: parsed.excerpt, body: parsed.body, scriptureQuote: parsed.scriptureQuote, scriptureReference: parsed.scriptureReference)
     }
 }

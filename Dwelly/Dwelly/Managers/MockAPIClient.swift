@@ -260,8 +260,21 @@ class MockAPIClient: APIClient {
         print("Mock: Synced \(events.count) usage events for user \(userId)")
     }
 
-    func callLLM(messages: [LLMMessage], feature: String) async throws -> LLMResponse {
+    func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int? = nil) async throws -> LLMResponse {
         try await Task.sleep(nanoseconds: 400_000_000)
+        if feature == "journal_synthesis" {
+            // Real JSON, not a placeholder string -- so JournalSynthesisManager's own
+            // parsing path gets exercised in previews/mock-backed debug runs instead
+            // of always hitting its catch branch.
+            let json = """
+            {"title": "A Quiet Kind of Peace", "excerpt": "I felt God's quiet presence today.", \
+            "body": "Today carried an unexpected stillness. Sitting with the moment, I noticed \
+            a peace that wasn't something I had to work for -- it simply arrived, uninvited and \
+            welcome.\\n\\nLooking back, I'm grateful for how ordinary it felt, and how clear.", \
+            "scripture_quote": "Be still, and know that I am God.", "scripture_reference": "Psalm 46:10"}
+            """
+            return LLMResponse(content: json, model: "mock", provider: "groq")
+        }
         return LLMResponse(content: "[Mock response for \(feature)]", model: "mock", provider: "groq")
     }
 

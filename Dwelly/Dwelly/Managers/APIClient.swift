@@ -44,11 +44,20 @@ protocol APIClient {
 
     // LLM endpoint (T-168) — the one call every LLM-backed feature (Capture's
     // conversation, Prayer generation, Journal synthesis) goes through.
-    func callLLM(messages: [LLMMessage], feature: String) async throws -> LLMResponse
+    func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int?) async throws -> LLMResponse
 
     // JWT token management
     func setJWTToken(_ token: String)
     func setTokens(_ jwt: String, refresh: String)
+}
+
+extension APIClient {
+    /// Convenience overload -- every existing call site that doesn't need a custom
+    /// token budget keeps working unchanged; only real-body synthesis (which needs
+    /// more room than the proxy's own default) passes `maxTokens` explicitly.
+    func callLLM(messages: [LLMMessage], feature: String) async throws -> LLMResponse {
+        try await callLLM(messages: messages, feature: feature, maxTokens: nil)
+    }
 }
 
 struct AuthToken: Codable {
