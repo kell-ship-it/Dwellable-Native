@@ -1,20 +1,29 @@
 import SwiftUI
 
-/// Onboarding "Intent Selection" screen (T-110, T-238 Screen 5). Options and the framing
-/// question are the 5 already locked in `docs/PILLAR_ONBOARDING_STRATEGY.md` Screen 3 —
-/// single-select, matching `public.users.spiritual_intent` being a single `text` column
-/// (not an array) and the locked Formation Intelligence mechanism (a deterministic
-/// lookup-table match on one stated intent, not a multi-value blend).
+/// Onboarding "Intent Selection" screen (T-110, T-238 Screen 5; options relocked T-273,
+/// Nov 11 2026). Single-select, matching `public.users.spiritual_intent` being a single
+/// `text` column (not an array) and the locked Formation Intelligence mechanism (a
+/// deterministic lookup-table match on one stated intent, not a multi-value blend).
+///
+/// These 5 replace the earlier 4 ("Grow closer to God" / "Process my thoughts and
+/// feelings" / "Journal my faith journey" / "I'm not sure yet") — "Grow closer to God"
+/// was dropped as too vague (no verb, names a destination not an action) and the
+/// blank/skip option was dropped deliberately: every user is forced to pick one, no
+/// escape hatch. MVP scope for what Intent actually does: (1) a motivation signal
+/// stored for later, and (2) picks the one topic-card prompt shown on the mandatory
+/// onboarding first-capture screen only (see `CaptureView.topicCards`) — it plays no
+/// role in any capture after that.
 struct IntentSelectionView: View {
     let userId: String
     var onContinue: () -> Void
     var onBack: () -> Void
 
     private let options = [
-        "Grow closer to God",
-        "Process my thoughts and feelings",
-        "Journal my faith journey",
-        "I'm not sure yet"
+        "I want to journal my encounters with God",
+        "A place to process my thoughts and feelings",
+        "I want to work through my doubts",
+        "I want to see my patterns in my spiritual journey",
+        "I want to remember what God's done for me"
     ]
 
     @State private var selected: String?

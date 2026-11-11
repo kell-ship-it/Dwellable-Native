@@ -9,8 +9,9 @@ import Combine
 /// that has no infrastructure dependency — everything past this screen needs T-168
 /// (Shared LLM Proxy Service), which doesn't exist yet, so this view still only wires
 /// Entry into the existing voice/type → save path, not the real conversational flow.
-/// Topic cards are the 3 fixed ones the design specifies verbatim, not yet personalized
-/// per-user from onboarding Intent — that's separate scope.
+/// Topic cards are personalized to onboarding Intent, but only during the mandatory
+/// onboarding first capture (see `topicCards` below) — every other capture uses the
+/// original generic 3-card set the design specifies verbatim.
 struct CaptureView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.scenePhase) var scenePhase
@@ -38,41 +39,42 @@ struct CaptureView: View {
     var isOnboarding: Bool = false
     var onMomentSaved: (() -> Void)?
 
-    // These 3 generic prompts were showing to everyone regardless of the intent they
-    // picked at onboarding (IntentSelectionView's 4 options, stored as
-    // public.users.spiritual_intent) — Kell caught that they need to actually be
-    // contextual to what the user said they came here for (Nov 10 2026), not generic.
-    // Still 3 cards (same layout, same "tap one, or just start talking" framing),
-    // just a different 3 per intent — picking the intent string by exact match
-    // against IntentSelectionView.options, falling back to the original generic set
-    // for "I'm not sure yet" or no intent recorded.
+    // Intent-tailored prompts apply ONLY to the mandatory onboarding first-capture
+    // screen (isOnboarding == true) — confirmed with Kell (Nov 11 2026): intent can't
+    // even be changed until a user is subscribed (well past onboarding), and by that
+    // point the one-time personalization moment (their very first capture) has
+    // already happened, so re-applying intent to every later capture would be
+    // personalizing against a moment that's already over. Every capture after
+    // onboarding uses the original generic set below, unconditionally, regardless of
+    // intent — a separate, not-yet-built mechanism (Today tab's own rules) governs
+    // post-onboarding prompt rotation, not this.
+    //
+    // Reduced from 3 cards to 1 per intent (Nov 11 2026) — one laser-focused prompt
+    // tied to what the user just said they came here for, not a menu of options.
+    // Re-keyed to the 5 intents locked the same session (IntentSelectionView),
+    // replacing the earlier 4-option set.
     private var topicCards: [(title: String, category: String)] {
+        let generic: [(title: String, category: String)] = [
+            ("Did God show up in a connection today?", "Relationships"),
+            ("Any stillness stand out to you?", "Quiet moments"),
+            ("Anything you're wrestling with?", "Doubts"),
+        ]
+        guard isOnboarding else { return generic }
+
         let intent = ProfileManager.shared.localProfile(userId: userId).spiritualIntent
         switch intent {
-        case "Grow closer to God":
-            return [
-                ("Where did you sense God's presence today?", "Presence"),
-                ("What's stirring your heart toward Him lately?", "Heart"),
-                ("How did you make space for God today?", "Space"),
-            ]
-        case "Process my thoughts and feelings":
-            return [
-                ("What's weighing on your mind right now?", "Weighing on you"),
-                ("What emotion caught you off guard today?", "Emotions"),
-                ("What do you need to let out?", "Release"),
-            ]
-        case "Journal my faith journey":
-            return [
-                ("What's a recent moment that felt like a milestone?", "Milestone"),
-                ("How has your faith shifted lately?", "Shifting faith"),
-                ("What would you want to remember about today?", "Memory"),
-            ]
+        case "I want to journal my encounters with God":
+            return [("What's a moment with God you want to remember from today?", "Encounter")]
+        case "A place to process my thoughts and feelings":
+            return [("What's weighing on your mind right now?", "Weighing on you")]
+        case "I want to work through my doubts":
+            return [("What's a doubt you've been sitting with?", "Doubts")]
+        case "I want to see my patterns in my spiritual journey":
+            return [("What's something you keep coming back to lately?", "Patterns")]
+        case "I want to remember what God's done for me":
+            return [("What's something God's done that you don't want to forget?", "Remembering")]
         default:
-            return [
-                ("Did God show up in a connection today?", "Relationships"),
-                ("Any stillness stand out to you?", "Quiet moments"),
-                ("Anything you're wrestling with?", "Doubts"),
-            ]
+            return generic
         }
     }
 
