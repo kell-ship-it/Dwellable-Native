@@ -41,7 +41,9 @@ struct JournalDisplayMeta {
 
 /// Figma's full preset list (Mood Sheet, Scenario 7) -- same eight words shown across all
 /// three mood-sheet variants in the file.
-private let presetMoods = ["Peaceful", "Grateful", "Reflective", "Hopeful", "Conflicted", "Exhausted", "Prayerful", "Loved"]
+// Not `private` -- `JournalSynthesisManager` reuses this exact list (Nov 11 2026) so
+// LLM-suggested moods match the manual picker's vocabulary instead of drifting from it.
+let presetMoods = ["Peaceful", "Grateful", "Reflective", "Hopeful", "Conflicted", "Exhausted", "Prayerful", "Loved"]
 private let maxMoods = 3
 
 struct JournalDetailView: View {
@@ -297,7 +299,15 @@ struct JournalDetailView: View {
                                 .foregroundColor(Theme.Capture.textBody)
                                 .scrollContentBackground(.hidden)
                                 .background(Color.clear)
-                                .frame(minHeight: 200)
+                                // A TextEditor nested inside a ScrollView sizes itself to
+                                // its own minHeight rather than filling available space --
+                                // ScrollView gives children their ideal size, it doesn't
+                                // stretch them. 200pt left a large, unusable empty gap
+                                // between the editor and the toolbar below; Kell flagged
+                                // this live (Nov 11 2026) as "the space is very limiting."
+                                // A screen-relative minHeight fills that gap without the
+                                // GeometryReader plumbing a precise fill would need.
+                                .frame(minHeight: UIScreen.main.bounds.height * 0.45)
                         } else {
                             Text(displayBody)
                                 .font(.system(size: 17, weight: .light))
@@ -377,13 +387,13 @@ struct JournalDetailView: View {
                             exitEditMode()
                         }
                     }) {
-                        ZStack {
-                            Circle().fill(Theme.Capture.cardBorder)
-                            Image(systemName: "xmark")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(Theme.Capture.textPrimary)
-                        }
-                        .frame(width: 38, height: 38)
+                        // Plain icon, no circle -- Kell caught (Nov 11 2026) that the
+                        // circle emphasis had ended up here instead of on the checkmark,
+                        // where the locked design actually puts it.
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(Theme.Capture.textPrimary)
+                            .frame(width: 38, height: 38)
                     }
 
                     Spacer()
@@ -395,18 +405,33 @@ struct JournalDetailView: View {
                         }) {
                             Image(systemName: "arrow.uturn.backward")
                                 .font(.system(size: 17))
-                                .foregroundColor(Theme.Capture.textPrimary)
+                                .foregroundColor(hasUnsavedChanges ? Theme.Capture.textPrimary : Theme.Capture.textMuted)
                         }
+                        .disabled(!hasUnsavedChanges)
+
                         Button(action: { Task { await saveEdit() } }) {
                             if isSaving {
                                 ProgressView().tint(Theme.gold)
+                                    .frame(width: 32, height: 32)
+                            } else if hasUnsavedChanges {
+                                // Gold circle only appears when there's something to
+                                // save -- matches the Stop-button's own "commits right
+                                // now" emphasis convention elsewhere in this design system.
+                                ZStack {
+                                    Circle().fill(Theme.gold)
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 15, weight: .semibold))
+                                        .foregroundColor(Theme.Payment.backgroundPrimary)
+                                }
+                                .frame(width: 32, height: 32)
                             } else {
                                 Image(systemName: "checkmark")
                                     .font(.system(size: 17, weight: .semibold))
-                                    .foregroundColor(Theme.Capture.textPrimary)
+                                    .foregroundColor(Theme.Capture.textMuted)
+                                    .frame(width: 32, height: 32)
                             }
                         }
-                        .disabled(isSaving || editedBody.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .disabled(isSaving || !hasUnsavedChanges || editedBody.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
                 }
             }

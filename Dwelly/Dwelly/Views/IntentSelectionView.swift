@@ -42,7 +42,13 @@ struct IntentSelectionView: View {
             // in the same testing. Root cause not fully understood — see WelcomeView's
             // comment for the fuller account.
             VStack(alignment: .leading, spacing: 0) {
-                Spacer()
+                // Fixed, not flexible — a flexible Spacer() here competed with the two
+                // below it for space, so growing from 4 to 5 options (Nov 11 2026,
+                // T-273) shrank this one disproportionately and pushed the heading up
+                // underneath the back chevron (which sits at a fixed .padding(.top, 52)
+                // + 44pt tall, independent of how much content is below it). 100pt
+                // clears that with room to spare, regardless of option count.
+                Spacer().frame(height: 100)
 
                 Text("How can dwelly help you?")
                     .font(.system(size: 28, design: .serif))

@@ -14,6 +14,15 @@ enum DwellerProfileManager {
         guard !newEntryBody.isEmpty else { return }
         let existing = try? await apiClient.fetchDwellerProfile(userId: userId)
 
+        // Kell caught this live (Nov 11 2026): the old prompt said "third person" with no
+        // name, so the model defaulted to the generic, impersonal "The writer is...". A
+        // real first name (set during onboarding's Name Entry screen) reads far more like
+        // something personal, not a stranger's case notes. Falls back to the Figma
+        // reference copy's own voice ("you") when no name is on file, rather than ever
+        // inventing one.
+        let name = ProfileManager.shared.localProfile(userId: userId).name
+        let subject = name.map { "the person's first name, \($0)," } ?? "\"you\" (second person)"
+
         let prompt: String
         if let priorSummary = existing?.runningSummary, !priorSummary.isEmpty {
             prompt = """
@@ -25,11 +34,12 @@ enum DwellerProfileManager {
 
             \(newEntryBody)
 
-            Write an updated running summary -- 2 to 4 sentences, third person, warm and \
-            plain (not clinical), capturing who this person is and what they're navigating \
-            lately. Fold in anything from the new entry that's genuinely new or shifts the \
-            picture; let anything no longer relevant quietly drop off. Return ONLY the \
-            updated summary text, no preamble, no quotes, no markdown.
+            Write an updated running summary -- 2 to 4 sentences, warm and plain (not \
+            clinical), referring to them by \(subject), never "the writer" or "they/them". \
+            Capture who this person is and what they're navigating lately. Fold in anything \
+            from the new entry that's genuinely new or shifts the picture; let anything no \
+            longer relevant quietly drop off. Return ONLY the updated summary text, no \
+            preamble, no quotes, no markdown.
             """
         } else {
             prompt = """
@@ -37,15 +47,15 @@ enum DwellerProfileManager {
 
             \(newEntryBody)
 
-            Write a short running summary -- 2 to 4 sentences, third person, warm and plain \
-            (not clinical), capturing who this person is and what they're navigating lately, \
-            based only on this entry. Return ONLY the summary text, no preamble, no quotes, \
-            no markdown.
+            Write a short running summary -- 2 to 4 sentences, warm and plain (not \
+            clinical), referring to them by \(subject), never "the writer" or "they/them". \
+            Capture who this person is and what they're navigating lately, based only on \
+            this entry. Return ONLY the summary text, no preamble, no quotes, no markdown.
             """
         }
 
         let messages = [
-            LLMMessage(role: .system, content: "You write short, plain, third-person summaries. No markdown, no preamble."),
+            LLMMessage(role: .system, content: "You write short, warm, plain summaries. No markdown, no preamble, never \"the writer\"."),
             LLMMessage(role: .user, content: prompt),
         ]
 

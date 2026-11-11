@@ -146,9 +146,12 @@ struct CaptureConversationView: View {
         let body: String?
         let scriptureQuote: String?
         let scriptureReference: String?
+        // LLM-suggested moods (Nov 11 2026) -- empty on the hard-failure fallback,
+        // same as `body`.
+        let moods: [String]
 
         enum CodingKeys: String, CodingKey {
-            case title, excerpt, body
+            case title, excerpt, body, moods
             case scriptureQuote = "scripture_quote"
             case scriptureReference = "scripture_reference"
         }
@@ -915,6 +918,15 @@ struct CaptureConversationView: View {
                     .font(.system(size: 13))
                     .foregroundColor(Theme.Capture.textMuted)
                     .frame(width: 44, height: 44)
+                    // Kell's direct ask (Nov 11 2026) after testing live: a bare ✕ with
+                    // no circle didn't read clearly enough as a tappable cancel action,
+                    // especially next to Stop's gold circle. Figma's own component has
+                    // no fill here either, so this is a deliberate addition beyond the
+                    // locked design, not a correction to it -- muted/soft (not gold),
+                    // so Cancel still reads as the secondary action next to Stop's
+                    // primary gold circle.
+                    .background(Theme.Capture.badgeBackground)
+                    .clipShape(Circle())
             }
 
             HStack(spacing: 10) {
@@ -1148,6 +1160,7 @@ struct CaptureConversationView: View {
                 status: "approved",
                 title: journalMeta.title,
                 body: journalMeta.body,
+                moods: journalMeta.moods,
                 scriptureQuote: journalMeta.scriptureQuote,
                 scriptureReference: journalMeta.scriptureReference
             )
@@ -1186,7 +1199,8 @@ struct CaptureConversationView: View {
                 excerpt: result.excerpt,
                 body: result.body,
                 scriptureQuote: result.scriptureQuote,
-                scriptureReference: result.scriptureReference
+                scriptureReference: result.scriptureReference,
+                moods: result.moods
             )
             await MainActor.run {
                 journalMeta = meta
@@ -1203,7 +1217,8 @@ struct CaptureConversationView: View {
                     excerpt: String(combinedBody.prefix(140)),
                     body: nil,
                     scriptureQuote: "Be still, and know that I am God.",
-                    scriptureReference: "Psalm 46:10"
+                    scriptureReference: "Psalm 46:10",
+                    moods: []
                 )
             }
         }

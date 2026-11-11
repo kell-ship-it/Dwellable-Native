@@ -6,27 +6,33 @@ import SwiftUI
 /// T-274 already generates store-and-show-only -- this is that same data, just shown in
 /// its real, designed home instead of the throwaway Settings screen T-274 first used.
 ///
-/// Matches T-163's already-design-complete confirm/correct spec, though T-163's own
-/// backend (T-161/T-162/T-164) doesn't exist yet -- see below.
+/// Matches T-163's already-design-complete confirm/correct spec, though T-163's own full
+/// backend (T-162/T-164) doesn't exist yet -- see below.
 ///
-/// Honest gap: Figma's real gate is T-161's reflection-count threshold (0-2 qualifying
-/// reflections = Pre-Threshold copy, 3-5 = Tier 1 unlocks, 6+ = Tier 2/"deepens," Post-MVP)
-/// -- that counter/engine doesn't exist yet. This uses "does a running summary exist at
-/// all" as a stand-in gate, which is close but not the same thing (T-274 generates a
-/// summary after the very first entry, not after 3). Confirm/correct here is visual only
-/// too -- "Yes, that's me" and "Not quite" match T-161's locked spec (Yes logs silently
-/// with no visible state change; Not quite opens a free-text field), but there's no
-/// reassessment engine yet for "Not quite" to actually feed into -- submitting it has
-/// nowhere real to go until T-161 is built, so it's disabled with a short explanation
-/// rather than faking a submission that does nothing.
+/// T-161's real threshold is now wired in (Nov 11 2026, confirmed with Kell): 0-2
+/// qualifying reflections = Pre-Threshold copy, 3+ = Tier 1 unlocks. "Qualifying
+/// reflection" here means an approved (synthesized) `JournalEntry` -- a pending one has
+/// no real content yet, so it doesn't count. No visible count/countdown is shown in the
+/// 0-2 state, per the locked spec's own anti-gaming decision -- the soft "still forming"
+/// copy never hints how close someone is. The one remaining simplification: T-161's full
+/// design also has a 6+ "deepens" Tier 2, which is explicitly Post-MVP and not built here.
+///
+/// Confirm/correct here is still visual only -- "Yes, that's me" and "Not quite" match
+/// T-161's locked spec (Yes logs silently with no visible state change; Not quite opens a
+/// free-text field), but there's no reassessment engine yet for "Not quite" to actually
+/// feed into -- submitting it has nowhere real to go until T-162/T-164 are built, so it's
+/// disabled with a short explanation rather than faking a submission that does nothing.
 struct YourNarrativeCard: View {
     let userId: String
     @Environment(\.apiClient) private var apiClient
 
     @State private var profile: DwellerProfile?
+    @State private var qualifyingReflectionCount = 0
     @State private var isLoading = true
     @State private var showNotQuiteField = false
     @State private var confirmedThisSession = false
+
+    private static let unlockThreshold = 3
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
         let formatter = RelativeDateTimeFormatter()
@@ -43,7 +49,7 @@ struct YourNarrativeCard: View {
                 // appears to never mount lifecycle hooks for a container whose
                 // resolved content is empty on first render.
                 ProgressView().tint(Theme.gold)
-            } else if let summary = profile?.runningSummary, !summary.isEmpty {
+            } else if qualifyingReflectionCount >= Self.unlockThreshold, let summary = profile?.runningSummary, !summary.isEmpty {
                 tierOneCard(summary: summary)
             } else {
                 preThresholdCard
@@ -55,7 +61,9 @@ struct YourNarrativeCard: View {
     private func tierOneCard(summary: String) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("YOUR NARRATIVE")
+                // Relabeled from Figma's literal "YOUR NARRATIVE" per Kell's direct ask
+                // (Nov 11 2026), choosing this over "Dwelly Profile" when given both options.
+                Text("YOUR SPIRITUAL JOURNEY")
                     .font(.system(size: 11, weight: .semibold))
                     .tracking(0.88)
                     .foregroundColor(Theme.gold)
@@ -152,6 +160,8 @@ struct YourNarrativeCard: View {
     private func load() async {
         isLoading = true
         profile = try? await apiClient.fetchDwellerProfile(userId: userId)
+        let approved = try? await apiClient.fetchApprovedJournalEntries(userId: userId)
+        qualifyingReflectionCount = approved?.count ?? 0
         isLoading = false
     }
 }

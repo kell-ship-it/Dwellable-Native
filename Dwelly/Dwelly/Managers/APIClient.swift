@@ -20,6 +20,10 @@ protocol APIClient {
     func saveJournalEntry(_ entry: JournalEntry) async throws -> JournalEntry
     // T-159: every pending entry for a user, for the background retry sweep to walk.
     func fetchPendingJournalEntries(userId: String) async throws -> [JournalEntry]
+    // T-161: every approved (real, synthesized) entry for a user -- used to count
+    // qualifying reflections against the Growth narrative's unlock threshold. A pending
+    // entry has no real content yet, so it doesn't count.
+    func fetchApprovedJournalEntries(userId: String) async throws -> [JournalEntry]
 
     // DwellerProfile endpoints (T-274) — the store-and-show-only running summary.
     // `nil` means no profile exists yet (a new user with no approved journal entry).

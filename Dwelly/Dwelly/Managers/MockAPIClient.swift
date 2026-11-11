@@ -135,6 +135,11 @@ class MockAPIClient: APIClient {
         return storedJournalEntries.filter { $0.userId == userId && $0.status == "pending" }
     }
 
+    func fetchApprovedJournalEntries(userId: String) async throws -> [JournalEntry] {
+        try await Task.sleep(nanoseconds: 200_000_000)
+        return storedJournalEntries.filter { $0.userId == userId && $0.status == "approved" }
+    }
+
     // MARK: - DwellerProfile API (T-274)
 
     private var storedDwellerProfiles: [String: DwellerProfile] = [:]
@@ -290,7 +295,8 @@ class MockAPIClient: APIClient {
             "body": "Today carried an unexpected stillness. Sitting with the moment, I noticed \
             a peace that wasn't something I had to work for -- it simply arrived, uninvited and \
             welcome.\\n\\nLooking back, I'm grateful for how ordinary it felt, and how clear.", \
-            "scripture_quote": "Be still, and know that I am God.", "scripture_reference": "Psalm 46:10"}
+            "scripture_quote": "Be still, and know that I am God.", "scripture_reference": "Psalm 46:10", \
+            "moods": ["Peaceful", "Grateful"]}
             """
             return LLMResponse(content: json, model: "mock", provider: "groq")
         }

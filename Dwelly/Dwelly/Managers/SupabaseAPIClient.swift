@@ -372,6 +372,15 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    func fetchApprovedJournalEntries(userId: String) async throws -> [JournalEntry] {
+        let endpoint = "/rest/v1/journal_entries?user_id=eq.\(userId)&status=eq.approved&select=*"
+        return try await makeRequest(
+            method: "GET",
+            endpoint: endpoint,
+            responseType: [JournalEntry].self
+        )
+    }
+
     // MARK: - DwellerProfile API (T-274)
 
     func fetchDwellerProfile(userId: String) async throws -> DwellerProfile? {

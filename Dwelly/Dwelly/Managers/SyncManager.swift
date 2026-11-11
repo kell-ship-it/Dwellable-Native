@@ -127,6 +127,7 @@ class SyncManager: ObservableObject {
             updated.status = "approved"
             updated.title = result.title
             updated.body = result.body
+            updated.moods = result.moods
             updated.scriptureQuote = result.scriptureQuote
             updated.scriptureReference = result.scriptureReference
             _ = try? await apiClient.saveJournalEntry(updated)

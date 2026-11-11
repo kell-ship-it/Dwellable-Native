@@ -26,6 +26,13 @@ enum JournalSynthesisManager {
         let body: String
         let scriptureQuote: String
         let scriptureReference: String
+        /// T-151's original scope ("title + body + suggested moods") never actually
+        /// built this part -- moods were only ever user-added via the Edit Moods sheet,
+        /// never suggested. Kell caught the gap live (Nov 11 2026): a real entry had no
+        /// tags at all. 2-3 suggestions, drawn from the same `presetMoods` vocabulary
+        /// `JournalDetailView`'s own picker uses, so these aren't just editable but
+        /// actually match what a user would have picked themselves.
+        let moods: [String]
     }
 
     private struct LLMJSON: Decodable {
@@ -34,9 +41,10 @@ enum JournalSynthesisManager {
         let body: String
         let scriptureQuote: String
         let scriptureReference: String
+        let moods: [String]
 
         enum CodingKeys: String, CodingKey {
-            case title, excerpt, body
+            case title, excerpt, body, moods
             case scriptureQuote = "scripture_quote"
             case scriptureReference = "scripture_reference"
         }
@@ -74,6 +82,11 @@ enum JournalSynthesisManager {
         "scripture_reference" (e.g. "Psalm 46:10" — the real reference for \
         scripture_quote, never null)
 
+        "moods" (an array of 2-3 strings, chosen ONLY from this exact list, that best \
+        describe how I felt in this conversation: \(presetMoods.joined(separator: ", ")). \
+        Pick whichever genuinely fit best, even if the fit is imperfect -- never invent \
+        a word outside this list, never return an empty array.)
+
         Conversation:
         \(transcript)
         """
@@ -90,6 +103,6 @@ enum JournalSynthesisManager {
         }
         let jsonSubstring = response.content[start...end]
         let parsed = try JSONDecoder().decode(LLMJSON.self, from: Data(jsonSubstring.utf8))
-        return Result(title: parsed.title, excerpt: parsed.excerpt, body: parsed.body, scriptureQuote: parsed.scriptureQuote, scriptureReference: parsed.scriptureReference)
+        return Result(title: parsed.title, excerpt: parsed.excerpt, body: parsed.body, scriptureQuote: parsed.scriptureQuote, scriptureReference: parsed.scriptureReference, moods: parsed.moods)
     }
 }
