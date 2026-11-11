@@ -20,8 +20,15 @@ enum DwellerProfileManager {
         // something personal, not a stranger's case notes. Falls back to the Figma
         // reference copy's own voice ("you") when no name is on file, rather than ever
         // inventing one.
+        //
+        // Kell caught this live again the same day: the prompt banned "they/them"
+        // outright, which forced the model to guess a gendered pronoun (he/she) with
+        // nothing in a journal entry to base that guess on -- it got Kell's own entry
+        // wrong. The DwellerProfile doesn't track gender at all right now, so a
+        // gendered pronoun is never safe to use here; "they/them" is explicitly
+        // welcome now, repeating the name is fine too, "he"/"she"/"him"/"her" are not.
         let name = ProfileManager.shared.localProfile(userId: userId).name
-        let subject = name.map { "the person's first name, \($0)," } ?? "\"you\" (second person)"
+        let subject = name.map { "the person's first name, \($0),(or \"they\"/\"them\")" } ?? "\"you\" (second person)"
 
         let prompt: String
         if let priorSummary = existing?.runningSummary, !priorSummary.isEmpty {
@@ -35,11 +42,13 @@ enum DwellerProfileManager {
             \(newEntryBody)
 
             Write an updated running summary -- 2 to 4 sentences, warm and plain (not \
-            clinical), referring to them by \(subject), never "the writer" or "they/them". \
-            Capture who this person is and what they're navigating lately. Fold in anything \
-            from the new entry that's genuinely new or shifts the picture; let anything no \
-            longer relevant quietly drop off. Return ONLY the updated summary text, no \
-            preamble, no quotes, no markdown.
+            clinical), referring to them by \(subject), never "the writer". Nothing here \
+            tracks this person's gender, so never guess a gendered pronoun ("he", "she", \
+            "him", "her") -- use their name or "they"/"them" instead. Capture who this \
+            person is and what they're navigating lately. Fold in anything from the new \
+            entry that's genuinely new or shifts the picture; let anything no longer \
+            relevant quietly drop off. Return ONLY the updated summary text, no preamble, \
+            no quotes, no markdown.
             """
         } else {
             prompt = """
@@ -48,14 +57,16 @@ enum DwellerProfileManager {
             \(newEntryBody)
 
             Write a short running summary -- 2 to 4 sentences, warm and plain (not \
-            clinical), referring to them by \(subject), never "the writer" or "they/them". \
-            Capture who this person is and what they're navigating lately, based only on \
-            this entry. Return ONLY the summary text, no preamble, no quotes, no markdown.
+            clinical), referring to them by \(subject), never "the writer". Nothing here \
+            tracks this person's gender, so never guess a gendered pronoun ("he", "she", \
+            "him", "her") -- use their name or "they"/"them" instead. Capture who this \
+            person is and what they're navigating lately, based only on this entry. \
+            Return ONLY the summary text, no preamble, no quotes, no markdown.
             """
         }
 
         let messages = [
-            LLMMessage(role: .system, content: "You write short, warm, plain summaries. No markdown, no preamble, never \"the writer\"."),
+            LLMMessage(role: .system, content: "You write short, warm, plain summaries. No markdown, no preamble, never \"the writer\", never a gendered pronoun (\"he\"/\"she\"/\"him\"/\"her\") -- use the person's name or \"they\"/\"them\" instead."),
             LLMMessage(role: .user, content: prompt),
         ]
 

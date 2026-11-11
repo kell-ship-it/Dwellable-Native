@@ -18,13 +18,32 @@ import Combine
 struct CaptureView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.scenePhase) var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var audioManager = AudioRecordingManager()
+    // `showConversation` now gates an in-place crossfade to `CaptureConversationView`
+    // within this same screen's ZStack, not a `NavigationStack` push (Kell's approved
+    // prototype, `dwelly-transition.html`, Nov 11 2026: a horizontal page-push read as
+    // a context switch away from "I'm still talking to Dwelly," and briefly showed the
+    // just-finished transcript sitting in this screen's own composer at the same time
+    // the pushed screen was arriving with that same text as its first message bubble —
+    // a visible duplicate during the slide). The message that's about to become the
+    // first turn is held in `pendingConversationMessage`/`pendingConversationIsPrompt`
+    // rather than ever being written into `inputText` — `inputText` now only ever
+    // holds what's live in THIS screen's own composer, so there's nothing left for it
+    // to show twice.
     @State private var showConversation = false
+    @State private var pendingConversationMessage = ""
+    @State private var pendingConversationIsPrompt = false
     @State private var isTranscribingVoice = false
     @State private var voiceErrorMessage: String?
-    @State private var conversationStartedFromPrompt = false
     @State private var inputText = ""
     @FocusState private var inputFocused: Bool
+    // Matches CaptureConversationView's recordingBar exactly (Nov 11 2026) — this
+    // entry screen's own recording state had been left as a bare timer with no
+    // waveform/cancel affordance since before that component existed, so starting a
+    // recording here looked frozen/broken next to the real conversational flow's
+    // polished Recording-Bar. Same per-bar random "character" trick, same reason.
+    @State private var waveformSeeds: [CGFloat] = (0..<24).map { _ in CGFloat.random(in: 0.4...1.0) }
 
     // Model download state
     @State private var isDownloadingModel = false
@@ -84,13 +103,9 @@ struct CaptureView: View {
     }
 
     var body: some View {
-        // Every call site presents `CaptureView` via a plain `.fullScreenCover`, with no
-        // `NavigationStack` ancestor of its own — so the `.navigationDestination(isPresented:)`
-        // calls below need their own `NavigationStack` right here, or they're silent no-ops.
-        // Found Nov 9, 2026 testing T-168 live: tapping Send correctly flipped
-        // `showConversation` to true (confirmed via debug log) but nothing happened — no
-        // crash, no error, just stuck on this screen, because there was no navigation
-        // context to push into.
+        // No `.navigationDestination` left in this screen (see `showConversation`'s
+        // declaration above), but this `NavigationStack` is harmless to keep and
+        // nothing downstream depends on its absence.
         NavigationStack {
             captureContent
         }
@@ -100,6 +115,50 @@ struct CaptureView: View {
         ZStack {
             Theme.background.ignoresSafeArea()
 
+            // In-place crossfade (Kell's approved `dwelly-transition.html`, Nov 11
+            // 2026) in place of the old `.navigationDestination` push — see
+            // `showConversation`'s declaration above for why. `entryScreen` and the
+            // conversation share this one ZStack slot so the composer and the rest of
+            // the layout never visibly slide; only opacity (and a small lift) changes.
+            if showConversation {
+                CaptureConversationView(
+                    userId: userId,
+                    userEmail: userEmail,
+                    syncManager: syncManager,
+                    initialMessage: pendingConversationMessage,
+                    initialMessageIsPrompt: pendingConversationIsPrompt,
+                    isOnboarding: isOnboarding,
+                    onMomentSaved: { onMomentSaved?() }
+                )
+                .transition(reduceMotion ? .identity : .fadeLift)
+            } else {
+                entryScreen
+                    .transition(reduceMotion ? .identity : .opacity)
+            }
+
+            // MARK: - Model Download Overlay
+            if isDownloadingModel {
+                modelDownloadOverlay
+            }
+        }
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.32), value: showConversation)
+        .navigationBarBackButtonHidden(true)
+        .onReceive(
+            Just(scenePhase)
+                .dropFirst()
+                .eraseToAnyPublisher(),
+            perform: { phase in
+                if phase == .background && audioManager.isRecording {
+                    HTMLLogManager.shared.log("App backgrounded during recording — stopping", level: "WARNING")
+                    audioManager.stopRecording {
+                        transcribeAndSubmit()
+                    }
+                }
+            }
+        )
+    }
+
+    private var entryScreen: some View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     // Kell caught this live (Nov 11 2026): post-onboarding, there was
@@ -129,17 +188,25 @@ struct CaptureView: View {
 
                 Spacer().frame(height: 42)
 
-                Text("What's stirring in you today?")
-                    .font(.system(size: 38, design: .serif))
-                    .foregroundColor(Theme.Capture.textPrimary)
-                    .padding(.horizontal, 28)
+                // Opening prompt + hint fade out together once recording stops and
+                // transcription begins (Kell's approved prototype, Nov 11 2026:
+                // `hideIntro()` on `stop()`) — not on record start, where the hint
+                // just swaps to "Listening…" and the heading stays put. Opacity/offset
+                // only, so the layout height underneath (topic cards, the compose
+                // pill) never shifts — same anchoring as the compose pill itself.
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("What's stirring in you today?")
+                        .font(.system(size: 38, design: .serif))
+                        .foregroundColor(Theme.Capture.textPrimary)
 
-                Spacer().frame(height: 10)
-
-                Text(isOnboarding ? "Tap one, or just start talking." : "Just start talking.")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Theme.Payment.textSupporting) // #857d69 — this text is "text/supporting" in the spec, not "text/placeholder" (Theme.Capture.textMuted, #a39e98) — caught by Kell comparing the running app to the real screenshot
-                    .padding(.horizontal, 28)
+                    Text(audioManager.isRecording ? "Listening…" : (isOnboarding ? "Tap one, or just start talking." : "Just start talking."))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Theme.Payment.textSupporting) // #857d69 — this text is "text/supporting" in the spec, not "text/placeholder" (Theme.Capture.textMuted, #a39e98) — caught by Kell comparing the running app to the real screenshot
+                }
+                .padding(.horizontal, 28)
+                .opacity(isIntroHidden ? 0 : 1)
+                .offset(y: isIntroHidden && !reduceMotion ? -8 : 0)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.25), value: isIntroHidden)
 
                 Spacer().frame(height: 36)
 
@@ -152,9 +219,7 @@ struct CaptureView: View {
                         VStack(spacing: 12) {
                             ForEach(topicCards, id: \.title) { card in
                                 Button(action: {
-                                    inputText = card.title
-                                    conversationStartedFromPrompt = true
-                                    submitTypedText()
+                                    beginConversation(message: card.title, isPrompt: true)
                                 }) {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 4) {
@@ -186,15 +251,6 @@ struct CaptureView: View {
                         .padding(.horizontal, 28)
                     }
                 }
-                // Recording duration / warning / error — unchanged behavior, just restyled
-                // to sit under the new layout instead of under the old mic button.
-                if audioManager.isRecording {
-                    Text(audioManager.formattedDuration(audioManager.recordingDuration))
-                        .font(.system(size: 18, weight: .semibold, design: .monospaced))
-                        .foregroundColor(Theme.gold)
-                        .padding(.top, 20)
-                        .transition(.opacity)
-                }
                 if let warningMessage = audioManager.warningMessage {
                     Text(warningMessage)
                         .font(.system(size: 12))
@@ -223,102 +279,60 @@ struct CaptureView: View {
 
                 Spacer()
 
-                // Component/Compose-Text-Pill (node 647:221) — plain pill, no border. Kell
-                // caught two real mismatches against his own reference: the mic button is a
-                // muted dark circle with a gold icon, not a solid gold fill — gold fill is
-                // reserved for the send button, which only appears (highlighted) once
-                // there's text to send. Mic stays available alongside it for voice.
-                HStack(spacing: 8) {
-                    TextField("", text: $inputText, prompt: Text("Share what's on your mind...").foregroundColor(Theme.Capture.textMuted), axis: .vertical)
-                        .font(.system(size: 16))
-                        .foregroundColor(Theme.Capture.textPrimary)
-                        .tint(Theme.gold)
-                        .focused($inputFocused)
-                        .submitLabel(.done)
-                        .onSubmit { submitTypedText() }
-                        .disabled(audioManager.isRecording || isDownloadingModel)
-
-                    Button(action: handleRecordTap) {
-                        Image(systemName: audioManager.isRecording ? "stop.fill" : "mic.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(Theme.gold)
-                            .frame(width: 44, height: 44)
-                            .background(Theme.Capture.cardBorder)
-                            .clipShape(Circle())
-                    }
-                    .disabled(isDownloadingModel)
-                    .opacity(isDownloadingModel ? 0.4 : 1.0)
-
-                    if !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Button(action: submitTypedText) {
-                            Image(systemName: "arrow.up")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Theme.goldDark)
-                                .frame(width: 44, height: 44)
-                                .background(Theme.gold)
-                                .clipShape(Circle())
-                        }
-                        .transition(.scale.combined(with: .opacity))
-                    }
-                }
-                .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
-                .padding(.leading, 20)
-                .padding(.trailing, 8)
-                .frame(height: 60)
-                .background(Theme.Capture.cardBackground)
-                .clipShape(Capsule())
-                .padding(.horizontal, 28)
-                .padding(.bottom, Theme.Spacing.xxl)
-            }
-
-            // MARK: - Model Download Overlay
-            if isDownloadingModel {
-                modelDownloadOverlay
-            }
-
-            // Kell caught this live (Nov 11 2026): a post-onboarding voice capture landed
-            // on the old Phase-1 ReviewView ("Re-record"/"Save", raw sense-of-Lord hint
-            // field) instead of the real conversational experience typed text already
-            // gets -- confirmed in code, voice had unconditionally routed to ReviewView
-            // regardless of isOnboarding since this screen was first built. Folded in
-            // properly now: recorded audio is transcribed here, same TranscriptionManager
-            // pipeline CaptureConversationView's own re-record already uses, then handed
-            // to the exact same `submitTypedText()` path as typed input -- one real
-            // conversational entry point, not two divergent ones.
-            if isTranscribingVoice {
-                TranscribingView()
-            }
-        }
-        .navigationBarBackButtonHidden(true)
-        .navigationDestination(isPresented: $showConversation) {
-            // T-168 wired in Nov 2026 — typed text now opens the real "Dwelly Responds"
-            // conversation (node 38:246) instead of the old single-shot TypeFlowView save
-            // screen. Voice shares this exact same destination now too (Nov 11 2026) --
-            // see the transcribeAndSubmit() comment below for why.
-            CaptureConversationView(userId: userId, userEmail: userEmail, syncManager: syncManager, initialMessage: inputText, initialMessageIsPrompt: conversationStartedFromPrompt, isOnboarding: isOnboarding, onMomentSaved: {
-                onMomentSaved?()
-            })
-        }
-        .onReceive(
-            Just(scenePhase)
-                .dropFirst()
-                .eraseToAnyPublisher(),
-            perform: { phase in
-                if phase == .background && audioManager.isRecording {
-                    HTMLLogManager.shared.log("App backgrounded during recording — stopping", level: "WARNING")
-                    audioManager.stopRecording {
-                        transcribeAndSubmit()
-                    }
+                // Component/Recording-Bar (648:220) / Transcribing-Bar (649:3850) / plain
+                // Compose-Text-Pill (647:221) — the same three-state swap
+                // CaptureConversationView's compose area uses, pulled over exactly (Nov 11
+                // 2026). This entry screen had never gotten that component: starting a
+                // recording here just left the idle "What's stirring in you today?" screen
+                // on with a bare timer ticking in the corner — no waveform, no cancel, no
+                // real sign anything was happening, unlike the in-conversation recording
+                // bar. Same recording/transcribing experience everywhere now, entry screen
+                // included.
+                if audioManager.isRecording {
+                    recordingBar
+                } else if isTranscribingVoice {
+                    transcribingBar
+                } else {
+                    composePill
                 }
             }
-        )
     }
+
+    // Kell caught this live (Nov 11 2026): a post-onboarding voice capture landed
+    // on the old Phase-1 ReviewView ("Re-record"/"Save", raw sense-of-Lord hint
+    // field) instead of the real conversational experience typed text already
+    // gets -- confirmed in code, voice had unconditionally routed to ReviewView
+    // regardless of isOnboarding since this screen was first built. Folded in
+    // properly now: recorded audio is transcribed here, same TranscriptionManager
+    // pipeline CaptureConversationView's own re-record already uses, then handed
+    // to the exact same `beginConversation()` path as typed input -- one real
+    // conversational entry point, not two divergent ones. The transcribing state
+    // itself renders as `transcribingBar` inline (matching CaptureConversationView),
+    // not a separate full-screen overlay.
+
+    // True once recording has stopped and transcription is running, or once the
+    // crossfade to the conversation has started -- the point past which the opening
+    // "What's stirring in you today?" / hint pairing has nothing left to say.
+    private var isIntroHidden: Bool { isTranscribingVoice || showConversation }
 
     // MARK: - Typed Text Handler
 
     private func submitTypedText() {
         guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         inputFocused = false
+        let text = inputText
+        inputText = ""
+        beginConversation(message: text)
+    }
+
+    // Hands a message off to become the conversation's opening turn and crossfades
+    // into `CaptureConversationView` in place (see `showConversation`'s declaration
+    // above) -- the one entry point typed text, topic-card taps, and transcribed
+    // voice all converge on, so none of them can leave a stray copy of the message
+    // sitting in this screen's own composer.
+    private func beginConversation(message: String, isPrompt: Bool = false) {
+        pendingConversationMessage = message
+        pendingConversationIsPrompt = isPrompt
         showConversation = true
     }
 
@@ -330,6 +344,7 @@ struct CaptureView: View {
                 transcribeAndSubmit()
             }
         } else {
+            voiceErrorMessage = nil
             // Check if model is ready — if not, download first
             if TranscriptionManager.shared.isModelReady || UserDefaults.standard.bool(forKey: "whisperModelReady") {
                 audioManager.onRecordingLimitReached = { transcribeAndSubmit() }
@@ -341,13 +356,26 @@ struct CaptureView: View {
         }
     }
 
+    // Discards the in-progress recording entirely — no transcription, nothing lands
+    // in the compose field. Mirrors CaptureConversationView's own cancelRecording.
+    private func cancelRecording() {
+        audioManager.stopRecording {
+            if let url = audioManager.audioURL {
+                try? FileManager.default.removeItem(at: url)
+            }
+            audioManager.audioURL = nil
+        }
+    }
+
     /// Replaces the old unconditional hand-off to `ReviewView` (Kell caught this live,
     /// Nov 11 2026 -- a post-onboarding voice capture landed on the Phase-1 "Re-record"/
     /// "Save" screen instead of the real conversational experience). Transcribes using
     /// the exact same `TranscriptionManager` pipeline `CaptureConversationView`'s own
-    /// re-record flow already uses, then feeds the result through `submitTypedText()` --
-    /// the identical entry point typed input already uses, so voice and text converge on
-    /// one real conversational flow instead of two.
+    /// re-record flow already uses, then feeds the result straight to
+    /// `beginConversation()` -- never through `inputText`/this screen's own composer,
+    /// so there's no frame where the finished transcript is visible here right before
+    /// the crossfade to its real home as the first message bubble (Kell's approved
+    /// prototype, Nov 11 2026 -- see `showConversation`'s declaration above).
     private func transcribeAndSubmit() {
         guard let audioURL = audioManager.audioURL else { return }
         isTranscribingVoice = true
@@ -359,8 +387,7 @@ struct CaptureView: View {
                     voiceErrorMessage = TranscriptionManager.shared.errorMessage ?? "Couldn't make that out — try again, or type it instead."
                     return
                 }
-                inputText = transcript
-                submitTypedText()
+                beginConversation(message: transcript)
             }
         }
     }
@@ -401,6 +428,148 @@ struct CaptureView: View {
                     downloadFailed = true
                 }
             }
+        }
+    }
+
+    // MARK: - Compose / Recording / Transcribing Pill
+    // Pulled over exactly from CaptureConversationView (Nov 11 2026) so this entry
+    // screen's own recording state is no longer a bare timer with nothing else
+    // happening on screen -- same three components, same reasoning, everywhere a
+    // mic button exists in this app.
+
+    // Component/Compose-Text-Pill (node 647:221) — plain pill, no border. Kell
+    // caught two real mismatches against his own reference: the mic button is a
+    // muted dark circle with a gold icon, not a solid gold fill — gold fill is
+    // reserved for the send button, which only appears (highlighted) once
+    // there's text to send. Mic stays available alongside it for voice.
+    private var composePill: some View {
+        HStack(spacing: 8) {
+            TextField("", text: $inputText, prompt: Text("Share what's on your mind...").foregroundColor(Theme.Capture.textMuted), axis: .vertical)
+                .font(.system(size: 16))
+                .foregroundColor(Theme.Capture.textPrimary)
+                .tint(Theme.gold)
+                .focused($inputFocused)
+                .submitLabel(.done)
+                .onSubmit { submitTypedText() }
+                .disabled(isDownloadingModel)
+
+            Button(action: handleRecordTap) {
+                Image(systemName: "mic.fill")
+                    .font(.system(size: 16))
+                    .foregroundColor(Theme.gold)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.Capture.cardBorder)
+                    .clipShape(Circle())
+            }
+            .disabled(isDownloadingModel)
+            .opacity(isDownloadingModel ? 0.4 : 1.0)
+
+            if !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Button(action: submitTypedText) {
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Theme.goldDark)
+                        .frame(width: 44, height: 44)
+                        .background(Theme.gold)
+                        .clipShape(Circle())
+                }
+                .transition(.scale.combined(with: .opacity))
+            }
+        }
+        .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
+        .padding(.leading, 20)
+        .padding(.trailing, 8)
+        .frame(height: 60)
+        .background(Theme.Capture.cardBackground)
+        .clipShape(Capsule())
+        .padding(.horizontal, 28)
+        .padding(.bottom, Theme.Spacing.xxl)
+    }
+
+    // Component/Recording-Bar (node 648:220) — Cancel (✕) + a live, voice-reactive
+    // waveform + timer + Stop (circled gold, the "commits right now" action per this
+    // design system's own Icon-Circle rule).
+    private var recordingBar: some View {
+        HStack(spacing: 0) {
+            Button(action: cancelRecording) {
+                Text("✕")
+                    .font(.system(size: 13))
+                    .foregroundColor(Theme.Capture.textMuted)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.Capture.badgeBackground)
+                    .clipShape(Circle())
+            }
+
+            HStack(spacing: 10) {
+                liveWaveform
+                Text(audioManager.formattedDuration(audioManager.recordingDuration))
+                    .font(.system(size: 14))
+                    .foregroundColor(Theme.Payment.textSupporting)
+            }
+            .frame(maxWidth: .infinity)
+
+            Button(action: handleRecordTap) {
+                Rectangle()
+                    .fill(Theme.Payment.backgroundPrimary)
+                    .frame(width: 10, height: 10)
+                    .cornerRadius(2)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.gold)
+                    .clipShape(Circle())
+            }
+        }
+        .padding(.leading, 20)
+        .padding(.trailing, 10)
+        .frame(height: 64)
+        .background(Theme.Capture.cardBackground)
+        .clipShape(Capsule())
+        .padding(.horizontal, 24)
+        .padding(.bottom, Theme.Spacing.xxl)
+    }
+
+    // Component/Transcribing-Bar (node 649:3850) — a continuously animated wave (no
+    // live audio exists anymore at this point, so this is a self-driven loop, not
+    // audio-reactive) plus a status label, shown while speech-to-text runs.
+    private var transcribingBar: some View {
+        HStack(spacing: 8) {
+            Circle().fill(Theme.Payment.textSupporting).frame(width: 6, height: 6)
+            transcribingWaveform
+            Spacer()
+            Text("Transcribing...")
+                .font(.system(size: 14))
+                .foregroundColor(Theme.Payment.textSupporting)
+        }
+        .padding(.horizontal, 20)
+        .frame(height: 64)
+        .background(Theme.Capture.cardBackground)
+        .clipShape(Capsule())
+        .padding(.horizontal, 24)
+        .padding(.bottom, Theme.Spacing.xxl)
+    }
+
+    private var liveWaveform: some View {
+        HStack(spacing: 3) {
+            ForEach(Array(waveformSeeds.enumerated()), id: \.offset) { _, seed in
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(Theme.gold)
+                    .frame(width: 2.5, height: 4 + seed * audioManager.audioLevel * 20)
+                    .animation(.easeOut(duration: 0.1), value: audioManager.audioLevel)
+            }
+        }
+        .frame(height: 24)
+    }
+
+    private var transcribingWaveform: some View {
+        TimelineView(.animation) { timeline in
+            let phase = timeline.date.timeIntervalSinceReferenceDate
+            HStack(spacing: 3) {
+                ForEach(0..<12, id: \.self) { index in
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Theme.Payment.textSupporting)
+                        .frame(width: 2.5, height: 4 + 10 * abs(sin(phase * 3 + Double(index) * 0.5)))
+                }
+            }
+            .frame(height: 24)
         }
     }
 
@@ -503,6 +672,25 @@ struct CaptureView: View {
                 }
             }
         }
+    }
+}
+
+// A custom transition for the crossfade into `CaptureConversationView` — a plain
+// opacity fade plus a small upward offset ("lift"), per Kell's approved prototype
+// (`dwelly-transition.html`, Nov 11 2026). `AnyTransition` has no built-in offset
+// case to combine with `.opacity`, hence the small `ViewModifier` here.
+private struct FadeLiftModifier: ViewModifier {
+    let hidden: Bool
+    func body(content: Content) -> some View {
+        content
+            .opacity(hidden ? 0 : 1)
+            .offset(y: hidden ? 8 : 0)
+    }
+}
+
+extension AnyTransition {
+    static var fadeLift: AnyTransition {
+        .modifier(active: FadeLiftModifier(hidden: true), identity: FadeLiftModifier(hidden: false))
     }
 }
 
