@@ -7,8 +7,9 @@ import Combine
 /// wrongly rebuilt against earlier the same night). Entry is the one piece of P1 Capture's
 /// real flow (12 scenarios, a conversational "Dwelly Responds" exchange, 8 error states)
 /// that has no infrastructure dependency — everything past this screen needs T-168
-/// (Shared LLM Proxy Service), which doesn't exist yet, so this view still only wires
-/// Entry into the existing voice/type → save path, not the real conversational flow.
+/// (Shared LLM Proxy Service). Both voice and typed entry now open the real
+/// conversational flow (`CaptureConversationView`) -- voice was folded in Nov 11 2026
+/// after Kell caught it still landing on the old Phase-1 `ReviewView` instead.
 /// Topic cards are an onboarding-only affordance (relocked Nov 11 2026, Kell's direct
 /// ask) — personalized to Intent during the mandatory onboarding first capture (see
 /// `topicCards` below), shown nowhere else. Every post-onboarding capture is the plain
@@ -18,8 +19,9 @@ struct CaptureView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.scenePhase) var scenePhase
     @StateObject private var audioManager = AudioRecordingManager()
-    @State private var showVoiceReview = false
     @State private var showConversation = false
+    @State private var isTranscribingVoice = false
+    @State private var voiceErrorMessage: String?
     @State private var conversationStartedFromPrompt = false
     @State private var inputText = ""
     @FocusState private var inputFocused: Bool
@@ -194,6 +196,14 @@ struct CaptureView: View {
                         .padding(.horizontal, Theme.Spacing.sm)
                         .multilineTextAlignment(.center)
                 }
+                if let voiceErrorMessage {
+                    Text(voiceErrorMessage)
+                        .font(.system(size: 12))
+                        .foregroundColor(Theme.error)
+                        .padding(.top, Theme.Spacing.md)
+                        .padding(.horizontal, Theme.Spacing.sm)
+                        .multilineTextAlignment(.center)
+                }
 
                 Spacer()
 
@@ -249,18 +259,26 @@ struct CaptureView: View {
             if isDownloadingModel {
                 modelDownloadOverlay
             }
+
+            // Kell caught this live (Nov 11 2026): a post-onboarding voice capture landed
+            // on the old Phase-1 ReviewView ("Re-record"/"Save", raw sense-of-Lord hint
+            // field) instead of the real conversational experience typed text already
+            // gets -- confirmed in code, voice had unconditionally routed to ReviewView
+            // regardless of isOnboarding since this screen was first built. Folded in
+            // properly now: recorded audio is transcribed here, same TranscriptionManager
+            // pipeline CaptureConversationView's own re-record already uses, then handed
+            // to the exact same `submitTypedText()` path as typed input -- one real
+            // conversational entry point, not two divergent ones.
+            if isTranscribingVoice {
+                TranscribingView()
+            }
         }
         .navigationBarBackButtonHidden(true)
-        .navigationDestination(isPresented: $showVoiceReview) {
-            ReviewView(audioURL: audioManager.audioURL, userId: userId, userEmail: userEmail, syncManager: syncManager, onMomentSaved: {
-                onMomentSaved?()
-            })
-        }
         .navigationDestination(isPresented: $showConversation) {
             // T-168 wired in Nov 2026 — typed text now opens the real "Dwelly Responds"
             // conversation (node 38:246) instead of the old single-shot TypeFlowView save
-            // screen. Voice capture still goes through ReviewView, unchanged — folding
-            // voice into this same conversational flow is separate scope.
+            // screen. Voice shares this exact same destination now too (Nov 11 2026) --
+            // see the transcribeAndSubmit() comment below for why.
             CaptureConversationView(userId: userId, userEmail: userEmail, syncManager: syncManager, initialMessage: inputText, initialMessageIsPrompt: conversationStartedFromPrompt, isOnboarding: isOnboarding, onMomentSaved: {
                 onMomentSaved?()
             })
@@ -273,7 +291,7 @@ struct CaptureView: View {
                 if phase == .background && audioManager.isRecording {
                     HTMLLogManager.shared.log("App backgrounded during recording — stopping", level: "WARNING")
                     audioManager.stopRecording {
-                        showVoiceReview = true
+                        transcribeAndSubmit()
                     }
                 }
             }
@@ -293,16 +311,40 @@ struct CaptureView: View {
     private func handleRecordTap() {
         if audioManager.isRecording {
             audioManager.stopRecording {
-                showVoiceReview = true
+                transcribeAndSubmit()
             }
         } else {
             // Check if model is ready — if not, download first
             if TranscriptionManager.shared.isModelReady || UserDefaults.standard.bool(forKey: "whisperModelReady") {
-                audioManager.onRecordingLimitReached = { showVoiceReview = true }
+                audioManager.onRecordingLimitReached = { transcribeAndSubmit() }
                 audioManager.startRecording()
             } else {
                 // First time — download the model, then auto-start recording
                 startModelDownload()
+            }
+        }
+    }
+
+    /// Replaces the old unconditional hand-off to `ReviewView` (Kell caught this live,
+    /// Nov 11 2026 -- a post-onboarding voice capture landed on the Phase-1 "Re-record"/
+    /// "Save" screen instead of the real conversational experience). Transcribes using
+    /// the exact same `TranscriptionManager` pipeline `CaptureConversationView`'s own
+    /// re-record flow already uses, then feeds the result through `submitTypedText()` --
+    /// the identical entry point typed input already uses, so voice and text converge on
+    /// one real conversational flow instead of two.
+    private func transcribeAndSubmit() {
+        guard let audioURL = audioManager.audioURL else { return }
+        isTranscribingVoice = true
+        voiceErrorMessage = nil
+        TranscriptionManager.shared.transcribeAudio(from: audioURL) { transcript in
+            DispatchQueue.main.async {
+                isTranscribingVoice = false
+                guard let transcript, !transcript.isEmpty else {
+                    voiceErrorMessage = TranscriptionManager.shared.errorMessage ?? "Couldn't make that out — try again, or type it instead."
+                    return
+                }
+                inputText = transcript
+                submitTypedText()
             }
         }
     }
@@ -335,7 +377,7 @@ struct CaptureView: View {
                     // Brief delay to show completion, then start recording
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                         isDownloadingModel = false
-                        audioManager.onRecordingLimitReached = { showVoiceReview = true }
+                        audioManager.onRecordingLimitReached = { transcribeAndSubmit() }
                         audioManager.startRecording()
                     }
                 } else {
