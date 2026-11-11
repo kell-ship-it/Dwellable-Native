@@ -55,7 +55,7 @@ enum JournalSynthesisManager {
     /// real narrative, not just a concatenation of the user's answers. See
     /// `CaptureConversationView.fullTranscript` vs. `combinedBody` (user-only, what
     /// actually gets saved as `moment.body`).
-    static func synthesize(transcript: String, apiClient: APIClient) async throws -> Result {
+    static func synthesize(transcript: String, userWordCount: Int, apiClient: APIClient) async throws -> Result {
         let prompt = """
         Based on this conversation between me and Dwelly, return ONLY a single JSON \
         object (no markdown, no commentary) with these exact keys:
@@ -66,14 +66,16 @@ enum JournalSynthesisManager {
         it myself in my own journal — "I contemplated...", "I felt...", never \
         "they"/"he"/"she", under 160 characters)
 
-        "body" (the actual journal entry: 2-3 paragraphs of FIRST-PERSON reflective \
-        narrative prose, not structured sections, not a Q&A transcript, not bullet \
-        points. Written entirely in my own voice as if I sat down and wrote this in my \
-        journal myself -- mirror my own words, phrasing, and specific details from what \
-        I actually said, but reframe it into reflective prose rather than copying my \
-        answers verbatim or including any of Dwelly's own questions. This should read \
-        like a real, personal journal entry someone would actually want to keep and \
-        reread, not a summary of a conversation.)
+        "body" (a FIRST-PERSON summary of what I actually said, lightly reframed into \
+        reflective prose -- NOT an expanded essay, NOT a Q&A transcript, NOT bullet \
+        points. My own words totaled approximately \(userWordCount) words -- the body \
+        must stay AT OR UNDER that length, never noticeably longer. Do not invent \
+        details, events, imagery, or specifics I never mentioned -- every concrete \
+        detail in the body must trace back to something I actually said. Prefer \
+        reusing my own actual phrases and short excerpts directly over inventing new \
+        descriptive language. If what I said was brief, the body should be brief too -- \
+        a short, honest reflection is correct and complete; it should never be padded \
+        out to sound more substantial than it was. Exclude Dwelly's own questions.)
 
         "scripture_quote" (a short, real Bible verse quote — always include one, even \
         for a brief or minimal reflection; pick whatever verse about God's presence, \

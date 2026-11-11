@@ -121,7 +121,8 @@ class SyncManager: ObservableObject {
             // CaptureConversationView.fullTranscript's own comment) -- a retried
             // synthesis is real, just with less conversational context than the
             // original attempt had.
-            guard let result = try? await JournalSynthesisManager.synthesize(transcript: moment.body, apiClient: apiClient) else { continue }
+            let userWordCount = moment.body.split(whereSeparator: { $0.isWhitespace }).count
+            guard let result = try? await JournalSynthesisManager.synthesize(transcript: moment.body, userWordCount: userWordCount, apiClient: apiClient) else { continue }
 
             var updated = entry
             updated.status = "approved"

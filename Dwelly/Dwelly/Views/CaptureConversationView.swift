@@ -1193,7 +1193,8 @@ struct CaptureConversationView: View {
             // Shares the exact same synthesis call the retry sweep uses (T-159) --
             // a pending entry retried later is synthesized identically to how it
             // would have been the first time.
-            let result = try await JournalSynthesisManager.synthesize(transcript: fullTranscript, apiClient: apiClient)
+            let userWordCount = combinedBody.split(whereSeparator: { $0.isWhitespace }).count
+            let result = try await JournalSynthesisManager.synthesize(transcript: fullTranscript, userWordCount: userWordCount, apiClient: apiClient)
             let meta = JournalMeta(
                 title: result.title,
                 excerpt: result.excerpt,

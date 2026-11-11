@@ -439,11 +439,22 @@ struct JournalDetailView: View {
             .padding(.horizontal, 20)
         } else {
             HStack {
-                Button(action: { dismiss() }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Theme.Capture.textPrimary)
-                        .frame(width: 44, height: 44)
+                // Onboarding has nowhere to go back TO -- this comment already said so,
+                // but the chevron rendered unconditionally anyway until Kell caught the
+                // real consequence live (Nov 11 2026): tapping it instead of Continue
+                // dismissed without ever calling `onDone`, so `completeOnboarding()`
+                // never fired, and the NEXT capture got routed through the mandatory
+                // first-capture flow all over again -- which is why "Continue" kept
+                // showing up on what should have been an ordinary capture.
+                if onDone == nil {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(Theme.Capture.textPrimary)
+                            .frame(width: 44, height: 44)
+                    }
+                } else {
+                    Color.clear.frame(width: 44, height: 44)
                 }
                 Spacer()
                 HStack(spacing: 20) {
