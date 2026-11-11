@@ -73,6 +73,35 @@ class MockAPIClient: APIClient {
         // Simulate network delay
         try await Task.sleep(nanoseconds: 300_000_000) // 0.3 second
 
+        if let index = storedMoments.firstIndex(where: { $0.id == id }) {
+            let moment = storedMoments[index]
+            storedMoments[index] = Moment(
+                id: moment.id, userId: moment.userId, body: moment.body,
+                senseOfLord: moment.senseOfLord, createdAt: moment.createdAt,
+                syncedAt: moment.syncedAt, audioURL: moment.audioURL, deletedAt: Date()
+            )
+        }
+    }
+
+    func fetchDeletedMoments(userId: String) async throws -> [Moment] {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        return storedMoments.filter { $0.userId == userId && $0.deletedAt != nil }
+    }
+
+    func restoreMoment(id: String) async throws {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        if let index = storedMoments.firstIndex(where: { $0.id == id }) {
+            let moment = storedMoments[index]
+            storedMoments[index] = Moment(
+                id: moment.id, userId: moment.userId, body: moment.body,
+                senseOfLord: moment.senseOfLord, createdAt: moment.createdAt,
+                syncedAt: moment.syncedAt, audioURL: moment.audioURL, deletedAt: nil
+            )
+        }
+    }
+
+    func permanentlyDeleteMoment(id: String) async throws {
+        try await Task.sleep(nanoseconds: 300_000_000)
         storedMoments.removeAll { $0.id == id }
     }
 

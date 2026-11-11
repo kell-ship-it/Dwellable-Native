@@ -273,8 +273,13 @@ struct DwellyApp: App {
         // keeps recurring even if this run fails or the app is later killed.
         schedulePendingJournalRetry()
 
+        // Does double duty as of T-176: same periodic wake-up, same reasoning
+        // (needs to run even if the user never reopens the app) -- no reason to
+        // register a second BGAppRefreshTask identifier just to purge expired
+        // Recently Deleted entries on the same schedule.
         let retryTask = Task {
             await syncManager.retryPendingJournalEntries()
+            await syncManager.purgeExpiredDeletedMoments()
             task.setTaskCompleted(success: true)
         }
         task.expirationHandler = {

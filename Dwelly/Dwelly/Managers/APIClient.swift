@@ -6,6 +6,12 @@ protocol APIClient {
     func fetchMoments(userId: String) async throws -> [Moment]
     func fetchMoment(id: String) async throws -> Moment
     func deleteMoment(id: String) async throws
+    // T-176: Recently Deleted screen. restoreMoment clears deleted_at (same soft-delete
+    // mechanism T-158 built); permanentlyDeleteMoment is the one place a real hard
+    // DELETE still belongs -- "Delete Forever" is genuinely, irreversibly permanent.
+    func fetchDeletedMoments(userId: String) async throws -> [Moment]
+    func restoreMoment(id: String) async throws
+    func permanentlyDeleteMoment(id: String) async throws
 
     // Journal entry endpoints (T-152) — the persisted title/moods/scripture/starred
     // layer on top of a moment. `nil` means no entry exists yet for that moment

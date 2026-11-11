@@ -82,6 +82,31 @@ struct SettingsView: View {
                             }
                         }
 
+                        // Data section (T-176)
+                        if let userId = authManager.currentUser?.id {
+                            VStack(spacing: Theme.Spacing.md) {
+                                Text("Data")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(Theme.tertiaryText)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                NavigationLink(destination: RecentlyDeletedView(userId: userId)) {
+                                    HStack {
+                                        Text("Recently Deleted")
+                                            .font(.system(size: 14, weight: .regular))
+                                            .foregroundColor(Theme.text)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 12, weight: .regular))
+                                            .foregroundColor(Theme.tertiaryText)
+                                    }
+                                    .padding(Theme.Spacing.lg)
+                                    .background(Theme.surfaceBackground)
+                                    .cornerRadius(10)
+                                }
+                            }
+                        }
+
                         // Legal section
                         VStack(spacing: Theme.Spacing.md) {
                             Text("Legal")

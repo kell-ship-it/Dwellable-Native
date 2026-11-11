@@ -91,6 +91,8 @@ class SyncManager: ObservableObject {
 
             // T-159 fast path -- see retryPendingJournalEntries' own doc comment.
             await self.retryPendingJournalEntries()
+            // T-176 fast path -- see purgeExpiredDeletedMoments' own doc comment.
+            await self.purgeExpiredDeletedMoments()
 
             DispatchQueue.main.async {
                 self.isSyncing = false
@@ -122,6 +124,23 @@ class SyncManager: ObservableObject {
             updated.scriptureQuote = result.scriptureQuote
             updated.scriptureReference = result.scriptureReference
             _ = try? await apiClient.saveJournalEntry(updated)
+        }
+    }
+
+    /// T-176: the actual 30-day purge the Recently Deleted screen's own copy promises
+    /// ("permanently removed after 30 days"). Soft-deleting (T-158) only ever hid an
+    /// entry from normal browsing -- something still has to make "after 30 days" real,
+    /// since nothing else in the app runs on a calendar. Same two-mechanism pattern as
+    /// `retryPendingJournalEntries` (piggyback here + DwellyApp's BGTaskScheduler job),
+    /// sharing this one sweep rather than a second parallel background system.
+    func purgeExpiredDeletedMoments() async {
+        guard isOnline else { return }
+        guard let deleted = try? await apiClient.fetchDeletedMoments(userId: userId), !deleted.isEmpty else { return }
+
+        let thirtyDaysAgo = Date(timeIntervalSinceNow: -30 * 24 * 60 * 60)
+        for moment in deleted {
+            guard let deletedAt = moment.deletedAt, deletedAt < thirtyDaysAgo else { continue }
+            _ = try? await apiClient.permanentlyDeleteMoment(id: moment.id)
         }
     }
 

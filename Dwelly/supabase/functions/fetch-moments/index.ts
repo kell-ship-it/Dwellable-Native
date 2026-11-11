@@ -53,24 +53,28 @@ Deno.serve(async (req: Request) => {
 
     // Optional ?id=<moment_id> to fetch a single moment (mirrors the old
     // fetchMoment(id:) call site) -- otherwise returns all of this user's moments.
+    // Optional ?deleted=true (T-176) flips the list query the other way: only
+    // soft-deleted rows, for the Recently Deleted screen.
     const url = new URL(req.url)
     const singleId = url.searchParams.get("id")
+    const deletedOnly = url.searchParams.get("deleted") === "true"
 
     const serviceClient = createClient(supabaseUrl, serviceRoleKey)
     let query = serviceClient
       .from("moments")
-      .select("id, user_id, encrypted_content, encryption_iv, created_at, updated_at, audio_url")
+      .select("id, user_id, encrypted_content, encryption_iv, created_at, updated_at, audio_url, deleted_at")
       .eq("user_id", userId)
-      .order("created_at", { ascending: false })
 
     if (singleId) {
       // A single fetch by id is allowed to return a soft-deleted row (T-158) --
       // a future Recently Deleted / restore screen (T-176) needs to be able to
       // load one by id regardless of deleted_at. The list query below is the
       // one that must hide soft-deleted entries from normal browsing.
-      query = query.eq("id", singleId)
+      query = query.eq("id", singleId).order("created_at", { ascending: false })
+    } else if (deletedOnly) {
+      query = query.not("deleted_at", "is", null).order("deleted_at", { ascending: false })
     } else {
-      query = query.is("deleted_at", null)
+      query = query.is("deleted_at", null).order("created_at", { ascending: false })
     }
 
     const { data: rows, error: dbError } = await query
@@ -107,6 +111,7 @@ Deno.serve(async (req: Request) => {
           sense_of_lord: senseOfLord,
           created_at: row.created_at,
           audio_url: row.audio_url,
+          deleted_at: row.deleted_at,
         }
       })
     )

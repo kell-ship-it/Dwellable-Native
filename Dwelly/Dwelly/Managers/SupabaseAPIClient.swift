@@ -285,6 +285,38 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    func fetchDeletedMoments(userId: String) async throws -> [Moment] {
+        // Routed through the same fetch-moments Edge Function (decrypts server-side,
+        // same as every other moments read) -- just its ?deleted=true branch.
+        return try await makeRequest(
+            method: "GET",
+            endpoint: "/functions/v1/fetch-moments?deleted=true",
+            responseType: [Moment].self
+        )
+    }
+
+    func restoreMoment(id: String) async throws {
+        let endpoint = "/rest/v1/moments?id=eq.\(id)"
+        let body: [String: String?] = ["deleted_at": nil]
+        _ = try await makeRequest(
+            method: "PATCH",
+            endpoint: endpoint,
+            body: body,
+            responseType: [EmptyResponse].self
+        )
+    }
+
+    func permanentlyDeleteMoment(id: String) async throws {
+        // The one place a real hard DELETE still belongs -- "Delete Forever" in
+        // Recently Deleted is genuinely, irreversibly permanent (T-176).
+        let endpoint = "/rest/v1/moments?id=eq.\(id)"
+        _ = try await makeRequest(
+            method: "DELETE",
+            endpoint: endpoint,
+            responseType: EmptyResponse.self
+        )
+    }
+
     // MARK: - Journal Entries API (T-152)
 
     func fetchJournalEntry(momentId: String) async throws -> JournalEntry? {
