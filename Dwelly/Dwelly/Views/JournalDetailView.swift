@@ -85,6 +85,14 @@ struct JournalDetailView: View {
     @State private var showDeleteConfirmation = false
     @State private var deleteErrorMessage: String?
 
+    // T-155's own spec: tapping ✕ with unsaved changes shows a confirm-discard
+    // modal rather than discarding silently or blocking navigation (locked Aug 27,
+    // 2026). "Unsaved" is scoped to the two fields edit mode actually lets you
+    // change and keep unsaved: body text and moods -- a picked hero photo has no
+    // saved/unsaved state of its own yet (no persistence at all, see this file's
+    // top-of-file note), so it's not part of this check.
+    @State private var showDiscardConfirmation = false
+
     // Moods (Figma Scenario 7, "Mood Sheet"): persisted for real via `loadedEntry`
     // (T-152). Seeded from `meta` optimistically, overwritten once the real entry loads.
     @State private var selectedMoods: [String]
@@ -117,6 +125,17 @@ struct JournalDetailView: View {
         _editedBody = State(initialValue: moment.body)
         _displayBody = State(initialValue: moment.body)
         _selectedMoods = State(initialValue: meta?.moods ?? [])
+    }
+
+    private var hasUnsavedChanges: Bool {
+        editedBody != displayBody || selectedMoods != (loadedEntry?.moods ?? (meta?.moods ?? []))
+    }
+
+    private func exitEditMode() {
+        isEditing = false
+        editedBody = displayBody
+        selectedMoods = loadedEntry?.moods ?? (meta?.moods ?? [])
+        saveErrorMessage = nil
     }
 
     private var effectiveTitle: String? { loadedEntry?.title ?? meta?.title }
@@ -249,6 +268,12 @@ struct JournalDetailView: View {
         } message: {
             Text("This entry will move to Recently Deleted in Settings and be permanently removed after 30 days. You can restore it before then.")
         }
+        .alert("Discard changes?", isPresented: $showDiscardConfirmation) {
+            Button("Keep Editing", role: .cancel) {}
+            Button("Discard", role: .destructive) { exitEditMode() }
+        } message: {
+            Text("Your edits haven't been saved. If you leave now, they'll be lost.")
+        }
         .sheet(isPresented: $showMoodSheet) {
             moodSheet
         }
@@ -284,10 +309,11 @@ struct JournalDetailView: View {
 
                 HStack {
                     Button(action: {
-                        isEditing = false
-                        editedBody = displayBody
-                        selectedMoods = loadedEntry?.moods ?? (meta?.moods ?? [])
-                        saveErrorMessage = nil
+                        if hasUnsavedChanges {
+                            showDiscardConfirmation = true
+                        } else {
+                            exitEditMode()
+                        }
                     }) {
                         ZStack {
                             Circle().fill(Theme.Capture.cardBorder)
