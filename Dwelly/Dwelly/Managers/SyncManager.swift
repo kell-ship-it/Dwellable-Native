@@ -89,10 +89,39 @@ class SyncManager: ObservableObject {
                 try await UsageTracker.shared.syncEventsToBackend(userId: self.userId, apiClient: self.apiClient)
             } catch { }
 
+            // T-159 fast path -- see retryPendingJournalEntries' own doc comment.
+            await self.retryPendingJournalEntries()
+
             DispatchQueue.main.async {
                 self.isSyncing = false
                 self.updatePendingStatus()
             }
+        }
+    }
+
+    /// T-159, fast-path mechanism: whenever a sync pass runs (new-capture save, or the
+    /// moment-pending retry loop above), also sweep every pending `JournalEntry` for this
+    /// user and retry synthesis. Entries are independent LLM calls against independent
+    /// transcripts -- one completing has no bearing on another -- this is just a
+    /// convenient, frequent hook, not a claim they're related. The other mechanism
+    /// (DwellyApp's BGTaskScheduler job) is the guarantee that runs even if the user
+    /// never triggers a sync; this just tends to be faster in practice for an actively
+    /// journaling user. Best-effort throughout: a single entry failing to re-synthesize
+    /// just leaves it pending for the next sweep, not an error surfaced anywhere.
+    func retryPendingJournalEntries() async {
+        guard isOnline else { return }
+        guard let pending = try? await apiClient.fetchPendingJournalEntries(userId: userId), !pending.isEmpty else { return }
+
+        for entry in pending {
+            guard let moment = try? await apiClient.fetchMoment(id: entry.momentId) else { continue }
+            guard let result = try? await JournalSynthesisManager.synthesize(transcript: moment.body, apiClient: apiClient) else { continue }
+
+            var updated = entry
+            updated.status = "approved"
+            updated.title = result.title
+            updated.scriptureQuote = result.scriptureQuote
+            updated.scriptureReference = result.scriptureReference
+            _ = try? await apiClient.saveJournalEntry(updated)
         }
     }
 

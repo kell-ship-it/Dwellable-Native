@@ -138,6 +138,12 @@ struct JournalDetailView: View {
         saveErrorMessage = nil
     }
 
+    // T-159: real pending/approved split. `loadedEntry` is the only source of truth
+    // for this -- `meta` (optimistic, post-capture) never carries a pending status,
+    // so a brand-new capture briefly shows the approved-looking optimistic view until
+    // `loadEntry()` returns, same as title/scripture already do.
+    private var isPending: Bool { loadedEntry?.status == "pending" }
+
     private var effectiveTitle: String? { loadedEntry?.title ?? meta?.title }
     private var effectiveScriptureQuote: String? { loadedEntry?.scriptureQuote ?? meta?.scriptureQuote }
     private var effectiveScriptureReference: String? { loadedEntry?.scriptureReference ?? meta?.scriptureReference }
@@ -157,6 +163,110 @@ struct JournalDetailView: View {
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(Theme.Payment.textSupporting)
 
+                        if isPending {
+                            pendingContent
+                        } else {
+                            approvedContent
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
+                    .padding(.bottom, isEditing ? 100 : (onDone == nil ? 40 : 100))
+                }
+            }
+        }
+        .background(Theme.background.ignoresSafeArea())
+        .safeAreaInset(edge: .bottom) {
+            if isEditing {
+                editToolbar
+            } else if let onDone {
+                // Onboarding's first-ever journal only -- see `onDone`'s comment.
+                // Same pattern as CaptureConversationView's own onboarding footer:
+                // a real tap the user controls, not a timer.
+                Button(action: onDone) {
+                    Text("Continue")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Theme.Payment.backgroundPrimary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                }
+                .background(Theme.gold)
+                .clipShape(Capsule())
+                .padding(.horizontal, 24)
+                .padding(.bottom, Theme.Spacing.xxl)
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        .alert("Delete this entry?", isPresented: $showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) { Task { await deleteEntry() } }
+        } message: {
+            Text("This entry will move to Recently Deleted in Settings and be permanently removed after 30 days. You can restore it before then.")
+        }
+        .alert("Discard changes?", isPresented: $showDiscardConfirmation) {
+            Button("Keep Editing", role: .cancel) {}
+            Button("Discard", role: .destructive) { exitEditMode() }
+        } message: {
+            Text("Your edits haven't been saved. If you leave now, they'll be lost.")
+        }
+        .sheet(isPresented: $showMoodSheet) {
+            moodSheet
+        }
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraPicker { image in
+                heroImage = image
+            }
+            .ignoresSafeArea()
+        }
+        .onChange(of: photoPickerItem) { newItem in
+            Task {
+                if let data = try? await newItem?.loadTransferable(type: Data.self),
+                   let image = UIImage(data: data) {
+                    heroImage = image
+                }
+            }
+        }
+        .task { await loadEntry() }
+    }
+
+    /// Pending (Aug 27, 2026 locked state, Flow 4b): title/body don't exist yet --
+    /// no title slot at all (date already covers it), raw transcript shown ONLY as a
+    /// temporary placeholder labeled "In your words" so it's never mistaken for
+    /// finished synthesis, and a cause-agnostic "Still working on this" badge --
+    /// never "Offline", never surfacing which of the three possible causes (offline,
+    /// provider outage, exhausted budget) applies. No edit affordance exists here at
+    /// all; the ⋯ menu's Edit Entry item is hidden in `header` for this state.
+    @ViewBuilder
+    private var pendingContent: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "flame.fill")
+                .font(.system(size: 11))
+                .foregroundColor(Theme.gold)
+            Text("Still working on this")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Theme.gold)
+        }
+
+        Text("Your reflection is safe and being formed into a journal entry. This can take a little while -- no need to do anything.")
+            .font(.system(size: 13))
+            .foregroundColor(Theme.Payment.textSupporting)
+
+        Text("IN YOUR WORDS")
+            .font(.system(size: 11, weight: .medium))
+            .foregroundColor(Theme.Payment.textSupporting)
+            .padding(.top, 8)
+
+        Text(moment.body)
+            .font(.system(size: 17, weight: .light))
+            .italic()
+            .foregroundColor(Theme.Capture.textBody)
+            .lineSpacing(1.6)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private var approvedContent: some View {
                         if let effectiveTitle {
                             Text(effectiveTitle)
                                 .font(.system(size: 28, design: .serif))
@@ -232,66 +342,6 @@ struct JournalDetailView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 14))
                             .padding(.top, 8)
                         }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, heroImage == nil ? 20 : 20)
-                    .padding(.bottom, isEditing ? 100 : (onDone == nil ? 40 : 100))
-                }
-            }
-        }
-        .background(Theme.background.ignoresSafeArea())
-        .safeAreaInset(edge: .bottom) {
-            if isEditing {
-                editToolbar
-            } else if let onDone {
-                // Onboarding's first-ever journal only -- see `onDone`'s comment.
-                // Same pattern as CaptureConversationView's own onboarding footer:
-                // a real tap the user controls, not a timer.
-                Button(action: onDone) {
-                    Text("Continue")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Theme.Payment.backgroundPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 60)
-                }
-                .background(Theme.gold)
-                .clipShape(Capsule())
-                .padding(.horizontal, 24)
-                .padding(.bottom, Theme.Spacing.xxl)
-            }
-        }
-        .navigationBarBackButtonHidden(true)
-        .toolbar(.hidden, for: .navigationBar)
-        .alert("Delete this entry?", isPresented: $showDeleteConfirmation) {
-            Button("Cancel", role: .cancel) {}
-            Button("Delete", role: .destructive) { Task { await deleteEntry() } }
-        } message: {
-            Text("This entry will move to Recently Deleted in Settings and be permanently removed after 30 days. You can restore it before then.")
-        }
-        .alert("Discard changes?", isPresented: $showDiscardConfirmation) {
-            Button("Keep Editing", role: .cancel) {}
-            Button("Discard", role: .destructive) { exitEditMode() }
-        } message: {
-            Text("Your edits haven't been saved. If you leave now, they'll be lost.")
-        }
-        .sheet(isPresented: $showMoodSheet) {
-            moodSheet
-        }
-        .fullScreenCover(isPresented: $showCamera) {
-            CameraPicker { image in
-                heroImage = image
-            }
-            .ignoresSafeArea()
-        }
-        .onChange(of: photoPickerItem) { newItem in
-            Task {
-                if let data = try? await newItem?.loadTransferable(type: Data.self),
-                   let image = UIImage(data: data) {
-                    heroImage = image
-                }
-            }
-        }
-        .task { await loadEntry() }
     }
 
     // MARK: - Header
@@ -377,12 +427,16 @@ struct JournalDetailView: View {
                     // than silently dropped, but inert and flagged -- needs its own
                     // ticket to store that link.
                     Menu {
-                        Button(action: {
-                            editedBody = displayBody
-                            saveErrorMessage = nil
-                            isEditing = true
-                        }) {
-                            Label("Edit Entry", systemImage: "pencil")
+                        // Pending (T-159): no edit affordance exists at all here, per
+                        // the locked spec -- there's nothing finished yet to edit.
+                        if !isPending {
+                            Button(action: {
+                                editedBody = displayBody
+                                saveErrorMessage = nil
+                                isEditing = true
+                            }) {
+                                Label("Edit Entry", systemImage: "pencil")
+                            }
                         }
                         Button(action: {}) {
                             Label("View Original Chat", systemImage: "message")

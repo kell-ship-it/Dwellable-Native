@@ -1,6 +1,7 @@
 import SwiftUI
 import Foundation
 import Network
+import BackgroundTasks
 
 // MARK: - HTML Logging Manager
 
@@ -233,10 +234,52 @@ struct DwellyApp: App {
         _authManager = StateObject(wrappedValue: AuthManager(apiClient: resolvedClient))
         // B-013 Fix: Create SyncManager at app startup with placeholder userId
         // It will be used for all users; userId is passed per-view
-        _syncManager = StateObject(wrappedValue: SyncManager(apiClient: resolvedClient, userId: "app-sync"))
+        let resolvedSyncManager = SyncManager(apiClient: resolvedClient, userId: "app-sync")
+        _syncManager = StateObject(wrappedValue: resolvedSyncManager)
 
         // Redirect stderr to a log file in Documents (after properties initialized)
         setupFileLogging()
+
+        // T-159: must register before the app finishes launching (BGTaskScheduler's own
+        // requirement) -- the handler closure captures resolvedSyncManager directly since
+        // `self` isn't fully initialized yet at this point in init().
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.pendingJournalRetryTaskId, using: nil) { task in
+            Self.handlePendingJournalRetryTask(task as! BGAppRefreshTask, syncManager: resolvedSyncManager)
+        }
+    }
+
+    // MARK: - T-159: background retry sweep (primary mechanism)
+    //
+    // Per the locked Aug 27, 2026 decision: a pending journal entry has no manual
+    // Retry anywhere -- it has to complete on its own, via (1) this periodic
+    // BGTaskScheduler sweep (the guarantee -- runs even if the user never reopens
+    // the app, though iOS controls actual fire timing, not a fixed interval) and
+    // (2) SyncManager's own piggyback on new-capture sync (the fast path, see
+    // SyncManager.retryPendingJournalEntries). This file only owns the OS
+    // scheduling side; the actual retry logic lives in SyncManager so both paths
+    // call the exact same code.
+    static let pendingJournalRetryTaskId = "com.kellgolden.Dwell.pendingJournalRetry"
+
+    static func schedulePendingJournalRetry() {
+        let request = BGAppRefreshTaskRequest(identifier: pendingJournalRetryTaskId)
+        // No fixed delay set -- iOS schedules the actual fire time at its own
+        // discretion based on usage patterns and battery state, per the locked
+        // decision's own caveat ("periodic" means "iOS's discretion").
+        try? BGTaskScheduler.shared.submit(request)
+    }
+
+    static func handlePendingJournalRetryTask(_ task: BGAppRefreshTask, syncManager: SyncManager) {
+        // Always schedule the next one before this one finishes, so the sweep
+        // keeps recurring even if this run fails or the app is later killed.
+        schedulePendingJournalRetry()
+
+        let retryTask = Task {
+            await syncManager.retryPendingJournalEntries()
+            task.setTaskCompleted(success: true)
+        }
+        task.expirationHandler = {
+            retryTask.cancel()
+        }
     }
 
     // MARK: - File Logging
@@ -331,6 +374,8 @@ struct DwellyApp: App {
         HTMLLogManager.shared.log(msg, level: level)
     }
 
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some Scene {
         WindowGroup {
             ZStack {
@@ -365,6 +410,15 @@ struct DwellyApp: App {
                 Button("OK", role: .cancel) {}
             } message: {
                 Text(authManager.errorMessage ?? "That confirmation link has expired. Please request a new one.")
+            }
+            .onChange(of: scenePhase) { newPhase in
+                // T-159: BGTaskScheduler only accepts a submission while backgrounding --
+                // this is the one real trigger point for the periodic sweep. Attached to
+                // the content view, not the Scene itself -- Scene's own .onChange needs
+                // iOS 17, past this project's iOS 16 deployment target.
+                if newPhase == .background {
+                    Self.schedulePendingJournalRetry()
+                }
             }
         }
     }

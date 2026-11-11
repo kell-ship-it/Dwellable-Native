@@ -76,6 +76,14 @@ class MockAPIClient: APIClient {
         storedMoments.removeAll { $0.id == id }
     }
 
+    /// Debug/preview-only: seeds state synchronously, unlike the real async API
+    /// methods, so a SwiftUI view's own `.task` (e.g. JournalDetailView's loadEntry)
+    /// can't race it -- the moment/entry already exist by the time the view appears.
+    func debugSeed(moment: Moment, journalEntry: JournalEntry) {
+        storedMoments.append(moment)
+        storedJournalEntries.append(journalEntry)
+    }
+
     // MARK: - Journal Entries API (T-152)
 
     func fetchJournalEntry(momentId: String) async throws -> JournalEntry? {
@@ -91,6 +99,11 @@ class MockAPIClient: APIClient {
             storedJournalEntries.append(entry)
         }
         return entry
+    }
+
+    func fetchPendingJournalEntries(userId: String) async throws -> [JournalEntry] {
+        try await Task.sleep(nanoseconds: 200_000_000)
+        return storedJournalEntries.filter { $0.userId == userId && $0.status == "pending" }
     }
 
     // MARK: - Auth API

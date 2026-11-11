@@ -89,6 +89,14 @@ struct CaptureConversationView: View {
     @State private var errorMessage: String?
     @State private var savedMoment: Moment?
     @State private var journalMeta: JournalMeta?
+    // T-159: tracks whether `journalMeta` above is real synthesis output or the
+    // local display-only fallback -- `journalMeta` itself always has SOMETHING
+    // (Kell's own call: the inline card must never show without a verse), but
+    // only a real success should ever be written to `journal_entries` as
+    // `status: "approved"`. A failure persists as `status: "pending"` instead
+    // (title/scripture left nil, picked up by the real retry sweep later) rather
+    // than writing the fallback copy to the DB as if it were genuine synthesis.
+    @State private var journalSynthesisSucceeded = false
     @State private var showMomentDetail = false
 
     private let maxResponses = 3
@@ -1071,24 +1079,37 @@ struct CaptureConversationView: View {
 
         await metaTask
 
-        // T-152: persist the title/scripture this view already generates, instead of
-        // letting it vanish once this screen closes (the gap that made every saved
-        // moment show up blank -- no title, no moods, no verse -- on reopen). Moods
-        // aren't generated here at all yet (journalMeta has no moods field), so this
-        // entry starts with an empty moods array; JournalDetailView's mood editor is
-        // what actually fills it in, via the same saveJournalEntry call. Best-effort:
-        // if this fails, the capture itself already succeeded above, so don't block
-        // or surface an error over a metadata save.
-        if let journalMeta {
-            let entry = JournalEntry(
+        // T-152/T-159: persist the title/scripture this view already generates, instead
+        // of letting it vanish once this screen closes. Moods aren't generated here at
+        // all yet (journalMeta has no moods field), so this entry starts with an empty
+        // moods array; JournalDetailView's mood editor is what actually fills it in.
+        // Only a REAL synthesis success is ever written as "approved" -- a failure
+        // writes "pending" (no title/scripture) instead of the local display-only
+        // fallback, so the background retry sweep (SyncManager.retryPendingJournalEntries,
+        // the BGTaskScheduler job) has an honest signal to actually retry, rather than a
+        // fake title masquerading as finished synthesis forever. Best-effort either way:
+        // if this fails, the capture itself already succeeded above, so don't block or
+        // surface an error over a metadata save.
+        let entry: JournalEntry
+        if journalSynthesisSucceeded, let journalMeta {
+            entry = JournalEntry(
                 momentId: moment.id,
                 userId: userId,
+                status: "approved",
                 title: journalMeta.title,
                 scriptureQuote: journalMeta.scriptureQuote,
                 scriptureReference: journalMeta.scriptureReference
             )
-            _ = try? await apiClient.saveJournalEntry(entry)
+        } else {
+            entry = JournalEntry(momentId: moment.id, userId: userId, status: "pending")
         }
+        _ = try? await apiClient.saveJournalEntry(entry)
+
+        // T-159 fast path: a new capture is exactly the kind of sync-triggering event
+        // the locked decision means by "piggyback on new-capture sync" -- attempt any
+        // other pending entries' synthesis too, not just this one. Fire-and-forget;
+        // doesn't block finishing this screen.
+        Task { await syncManager.retryPendingJournalEntries() }
     }
 
     /// One extra LLM call, fired in parallel with the save itself — asks for strict JSON
@@ -1097,29 +1118,21 @@ struct CaptureConversationView: View {
     /// return parseable JSON, the card falls back to a plain title/excerpt built locally
     /// and just skips the scripture line, rather than blocking or erroring the save.
     private func generateJournalMeta() async {
-        let prompt = """
-        Based on this reflection, return ONLY a single JSON object (no markdown, no \
-        commentary) with these exact keys: "title" (a short, warm, 2-5 word title for this \
-        journal entry), "excerpt" (a 1-2 sentence FIRST-PERSON summary of what I shared, as \
-        if I wrote it myself in my own journal — "I contemplated...", "I felt...", never \
-        "they"/"he"/"she", under 160 characters), "scripture_quote" (a short, real Bible verse quote — always \
-        include one, even for a brief or minimal reflection; pick whatever verse about God's \
-        presence, patience, or care genuinely fits best, never null), "scripture_reference" \
-        (e.g. "Psalm 46:10" — the real reference for scripture_quote, never null).
-
-        Reflection:
-        \(combinedBody)
-        """
-        let messages = [LLMMessage(role: .system, content: "You return only valid JSON, nothing else."), LLMMessage(role: .user, content: prompt)]
-
         do {
-            let response = try await apiClient.callLLM(messages: messages, feature: "journal_preview_generation")
-            guard let start = response.content.firstIndex(of: "{"), let end = response.content.lastIndex(of: "}") else {
-                throw NSError(domain: "CaptureConversationView", code: 0)
+            // Shares the exact same synthesis call the retry sweep uses (T-159) --
+            // a pending entry retried later is synthesized identically to how it
+            // would have been the first time.
+            let result = try await JournalSynthesisManager.synthesize(transcript: combinedBody, apiClient: apiClient)
+            let meta = JournalMeta(
+                title: result.title,
+                excerpt: result.excerpt,
+                scriptureQuote: result.scriptureQuote,
+                scriptureReference: result.scriptureReference
+            )
+            await MainActor.run {
+                journalMeta = meta
+                journalSynthesisSucceeded = true
             }
-            let jsonSubstring = response.content[start...end]
-            let meta = try JSONDecoder().decode(JournalMeta.self, from: Data(jsonSubstring.utf8))
-            await MainActor.run { journalMeta = meta }
         } catch {
             HTMLLogManager.shared.log("journal meta generation failed, using fallback: \(error.localizedDescription)", level: "WARNING")
             await MainActor.run {

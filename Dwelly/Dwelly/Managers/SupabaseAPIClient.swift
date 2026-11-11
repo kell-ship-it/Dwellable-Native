@@ -330,6 +330,15 @@ class SupabaseAPIClient: APIClient {
         return entry
     }
 
+    func fetchPendingJournalEntries(userId: String) async throws -> [JournalEntry] {
+        let endpoint = "/rest/v1/journal_entries?user_id=eq.\(userId)&status=eq.pending&select=*"
+        return try await makeRequest(
+            method: "GET",
+            endpoint: endpoint,
+            responseType: [JournalEntry].self
+        )
+    }
+
     // MARK: - Auth API
 
     func signUp(email: String, password: String) async throws -> SignUpOutcome {

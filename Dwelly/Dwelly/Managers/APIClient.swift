@@ -12,6 +12,8 @@ protocol APIClient {
     // (e.g. a moment saved before this ticket, or synthesis hasn't run).
     func fetchJournalEntry(momentId: String) async throws -> JournalEntry?
     func saveJournalEntry(_ entry: JournalEntry) async throws -> JournalEntry
+    // T-159: every pending entry for a user, for the background retry sweep to walk.
+    func fetchPendingJournalEntries(userId: String) async throws -> [JournalEntry]
 
     // Auth endpoints
     func signUp(email: String, password: String) async throws -> SignUpOutcome
