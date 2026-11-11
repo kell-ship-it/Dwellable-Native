@@ -1156,6 +1156,13 @@ struct CaptureConversationView: View {
         }
         _ = try? await apiClient.saveJournalEntry(entry)
 
+        // T-274: keep the running summary current, store-and-show only -- fire-and-forget,
+        // never blocks this screen, and only runs on a real synthesized entry (a pending
+        // one has no body yet to summarize).
+        if journalSynthesisSucceeded, let body = entry.body {
+            Task { await DwellerProfileManager.updateRunningSummary(newEntryBody: body, userId: userId, apiClient: apiClient) }
+        }
+
         // T-159 fast path: a new capture is exactly the kind of sync-triggering event
         // the locked decision means by "piggyback on new-capture sync" -- attempt any
         // other pending entries' synthesis too, not just this one. Fire-and-forget;

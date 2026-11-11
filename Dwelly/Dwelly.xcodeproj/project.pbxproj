@@ -45,6 +45,9 @@
 		F00D /* JournalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00E /* JournalDetailView.swift */; };
 		F00F /* JournalEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F010 /* JournalEntry.swift */; };
 		F011 /* JournalSynthesisManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F012 /* JournalSynthesisManager.swift */; };
+		F015 /* DwellerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F016 /* DwellerProfile.swift */; };
+		F017 /* DwellerProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F018 /* DwellerProfileManager.swift */; };
+		F019 /* YourNarrativeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01A /* YourNarrativeCard.swift */; };
 		0144 /* MomentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0145 /* MomentDetailView.swift */; };
 		0146 /* MomentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0147 /* MomentRow.swift */; };
 		0148 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0149 /* SettingsView.swift */; };
@@ -121,6 +124,9 @@
 		F00E /* JournalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalDetailView.swift; sourceTree = "<group>"; };
 		F010 /* JournalEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEntry.swift; sourceTree = "<group>"; };
 		F012 /* JournalSynthesisManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalSynthesisManager.swift; sourceTree = "<group>"; };
+		F016 /* DwellerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DwellerProfile.swift; sourceTree = "<group>"; };
+		F018 /* DwellerProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DwellerProfileManager.swift; sourceTree = "<group>"; };
+		F01A /* YourNarrativeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YourNarrativeCard.swift; sourceTree = "<group>"; };
 		0145 /* MomentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentDetailView.swift; sourceTree = "<group>"; };
 		0147 /* MomentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentRow.swift; sourceTree = "<group>"; };
 		0149 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -223,6 +229,7 @@
 				0147 /* MomentRow.swift */,
 				0149 /* SettingsView.swift */,
 				F014 /* RecentlyDeletedView.swift */,
+				F01A /* YourNarrativeCard.swift */,
 				A000 /* ModelSetupView.swift */,
 				B105 /* PaywallView.swift */,
 				B107 /* TabScreenHeader.swift */,
@@ -263,6 +270,7 @@
 				B101 /* PaymentManager.swift */,
 				F00C /* ProfileManager.swift */,
 				F012 /* JournalSynthesisManager.swift */,
+				F018 /* DwellerProfileManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -274,6 +282,7 @@
 				F010 /* JournalEntry.swift */,
 				12c1 /* UsageTracker.swift */,
 				B103 /* PaywallContext.swift */,
+				F016 /* DwellerProfile.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -451,6 +460,9 @@
 				F00D /* JournalDetailView.swift in Sources */,
 				F00F /* JournalEntry.swift in Sources */,
 				F011 /* JournalSynthesisManager.swift in Sources */,
+				F015 /* DwellerProfile.swift in Sources */,
+				F017 /* DwellerProfileManager.swift in Sources */,
+				F019 /* YourNarrativeCard.swift in Sources */,
 				0144 /* MomentDetailView.swift in Sources */,
 				0146 /* MomentRow.swift in Sources */,
 				0148 /* SettingsView.swift in Sources */,

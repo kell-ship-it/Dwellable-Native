@@ -31,7 +31,7 @@ struct MainTabView: View {
             .tabItem { Label("Entries", systemImage: "book") }
 
             NavigationStack {
-                GrowthPlaceholderView(onSearch: {}, onCapture: attemptCapture)
+                GrowthPlaceholderView(userId: userId, onSearch: {}, onCapture: attemptCapture)
             }
             .tabItem { Label("Growth", systemImage: "leaf") }
 

@@ -135,6 +135,25 @@ class MockAPIClient: APIClient {
         return storedJournalEntries.filter { $0.userId == userId && $0.status == "pending" }
     }
 
+    // MARK: - DwellerProfile API (T-274)
+
+    private var storedDwellerProfiles: [String: DwellerProfile] = [:]
+
+    func fetchDwellerProfile(userId: String) async throws -> DwellerProfile? {
+        try await Task.sleep(nanoseconds: 200_000_000)
+        return storedDwellerProfiles[userId]
+    }
+
+    func saveDwellerProfile(_ profile: DwellerProfile) async throws -> DwellerProfile {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        storedDwellerProfiles[profile.userId] = profile
+        return profile
+    }
+
+    func debugSeedDwellerProfile(_ profile: DwellerProfile) {
+        storedDwellerProfiles[profile.userId] = profile
+    }
+
     // MARK: - Auth API
 
     func login(email: String, password: String) async throws -> AuthToken {

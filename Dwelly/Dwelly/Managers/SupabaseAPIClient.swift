@@ -372,6 +372,37 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    // MARK: - DwellerProfile API (T-274)
+
+    func fetchDwellerProfile(userId: String) async throws -> DwellerProfile? {
+        let endpoint = "/rest/v1/dweller_profiles?user_id=eq.\(userId)&select=*"
+        let profiles = try await makeRequest(
+            method: "GET",
+            endpoint: endpoint,
+            responseType: [DwellerProfile].self
+        )
+        return profiles.first
+    }
+
+    func saveDwellerProfile(_ profile: DwellerProfile) async throws -> DwellerProfile {
+        let payload = DwellerProfilePayload(
+            user_id: profile.userId,
+            running_summary: profile.runningSummary,
+            updated_at: profile.updatedAt.ISO8601Format()
+        )
+        // Upsert on the unique user_id column -- one profile per user.
+        let endpoint = "/rest/v1/dweller_profiles?on_conflict=user_id"
+        let saved = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: [DwellerProfile].self,
+            preferHeader: "resolution=merge-duplicates,return=representation"
+        )
+        guard let profile = saved.first else { throw APIError.notFound }
+        return profile
+    }
+
     // MARK: - Auth API
 
     func signUp(email: String, password: String) async throws -> SignUpOutcome {
@@ -821,6 +852,12 @@ struct JournalEntryPayload: Codable {
     let starred: Bool
     let edited: Bool
     let created_at: String
+    let updated_at: String
+}
+
+struct DwellerProfilePayload: Codable {
+    let user_id: String
+    let running_summary: String?
     let updated_at: String
 }
 

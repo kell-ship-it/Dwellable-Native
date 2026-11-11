@@ -21,6 +21,11 @@ protocol APIClient {
     // T-159: every pending entry for a user, for the background retry sweep to walk.
     func fetchPendingJournalEntries(userId: String) async throws -> [JournalEntry]
 
+    // DwellerProfile endpoints (T-274) — the store-and-show-only running summary.
+    // `nil` means no profile exists yet (a new user with no approved journal entry).
+    func fetchDwellerProfile(userId: String) async throws -> DwellerProfile?
+    func saveDwellerProfile(_ profile: DwellerProfile) async throws -> DwellerProfile
+
     // Auth endpoints
     func signUp(email: String, password: String) async throws -> SignUpOutcome
     func verifySignupOTP(email: String, token: String) async throws -> AuthToken

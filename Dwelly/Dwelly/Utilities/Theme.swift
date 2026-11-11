@@ -139,6 +139,7 @@ struct Theme {
         // a thin enough margin that Digital Cotton's review flagged it on sight, and it's
         // worth a real safety margin rather than defending a bare pass. 7.43:1 here.
         static let textSupportingAA = Color(red: 0xa8 / 255, green: 0x9e / 255, blue: 0x84 / 255) // #a89e84
+        static let textFaint = Color(red: 0x87 / 255, green: 0x80 / 255, blue: 0x6c / 255)       // #87806c — text/faint (Growth P11, Your Narrative card)
         static let textPlaceholder = Color(red: 0xa3 / 255, green: 0x9e / 255, blue: 0x98 / 255) // #a39e98 — text/placeholder
         static let surfaceCard = Color(red: 0x17 / 255, green: 0x16 / 255, blue: 0x13 / 255)    // #171613 — surface/card (input fields)
         static let backgroundPrimary = Color(red: 0x0b / 255, green: 0x0a / 255, blue: 0x08 / 255) // #0b0a08 — background/primary (also CTA text color)
