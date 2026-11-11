@@ -206,6 +206,14 @@ class TranscriptionManager: NSObject, ObservableObject {
                     .replacingOccurrences(of: "[BREATH] ", with: "", options: .caseInsensitive)
                     .replacingOccurrences(of: "[BREATH]", with: "", options: .caseInsensitive)
                     .trimmingCharacters(in: .whitespaces)
+                    // Catch-all for any other WhisperKit non-speech bracket tag not
+                    // explicitly listed above -- Kell hit a real one live (Nov 11 2026):
+                    // "[no audio]" landed verbatim in a real conversation turn because it
+                    // wasn't in the enumerated list. A regex removes any remaining
+                    // [bracketed] segment generically, rather than extending this list
+                    // forever as new Whisper hallucinations surface.
+                    .replacingOccurrences(of: "\\s*\\[[^\\]]*\\]\\s*", with: " ", options: .regularExpression)
+                    .trimmingCharacters(in: .whitespaces)
 
                 let elapsed = self.transcriptionStartTime.map { Date().timeIntervalSince($0) } ?? 0
                 let segmentCount = results.count
