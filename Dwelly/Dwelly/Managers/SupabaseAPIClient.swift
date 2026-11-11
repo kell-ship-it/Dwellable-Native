@@ -265,11 +265,23 @@ class SupabaseAPIClient: APIClient {
     }
 
     func deleteMoment(id: String) async throws {
+        // T-158: soft delete. The confirmation copy shown before this call
+        // promises a 30-day Recently Deleted recovery window (see JournalDetailView),
+        // so this must NOT be a real DELETE -- it sets deleted_at instead, which
+        // fetch-moments' list query (but not its single-id lookup) filters out.
+        // Permanent purge after 30 days + the Recently Deleted restore UI itself
+        // are T-176, not yet built.
         let endpoint = "/rest/v1/moments?id=eq.\(id)"
+        let body = ["deleted_at": ISO8601DateFormatter().string(from: Date())]
+        // PATCH defaults to `Prefer: return=representation` (see makeRequest), so
+        // PostgREST responds with a JSON array of the updated row(s) -- matching
+        // the existing OnboardingProfileRow PATCH call site's pattern, not the
+        // bare object EmptyResponse expects.
         _ = try await makeRequest(
-            method: "DELETE",
+            method: "PATCH",
             endpoint: endpoint,
-            responseType: EmptyResponse.self
+            body: body,
+            responseType: [EmptyResponse].self
         )
     }
 

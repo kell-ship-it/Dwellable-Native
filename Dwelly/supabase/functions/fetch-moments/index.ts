@@ -64,7 +64,13 @@ Deno.serve(async (req: Request) => {
       .order("created_at", { ascending: false })
 
     if (singleId) {
+      // A single fetch by id is allowed to return a soft-deleted row (T-158) --
+      // a future Recently Deleted / restore screen (T-176) needs to be able to
+      // load one by id regardless of deleted_at. The list query below is the
+      // one that must hide soft-deleted entries from normal browsing.
       query = query.eq("id", singleId)
+    } else {
+      query = query.is("deleted_at", null)
     }
 
     const { data: rows, error: dbError } = await query
