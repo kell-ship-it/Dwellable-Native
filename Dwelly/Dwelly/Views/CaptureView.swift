@@ -9,9 +9,11 @@ import Combine
 /// that has no infrastructure dependency — everything past this screen needs T-168
 /// (Shared LLM Proxy Service), which doesn't exist yet, so this view still only wires
 /// Entry into the existing voice/type → save path, not the real conversational flow.
-/// Topic cards are personalized to onboarding Intent, but only during the mandatory
-/// onboarding first capture (see `topicCards` below) — every other capture uses the
-/// original generic 3-card set the design specifies verbatim.
+/// Topic cards are an onboarding-only affordance (relocked Nov 11 2026, Kell's direct
+/// ask) — personalized to Intent during the mandatory onboarding first capture (see
+/// `topicCards` below), shown nowhere else. Every post-onboarding capture is the plain
+/// open compose/voice experience with no prompts at all; prompts post-onboarding belong
+/// only to the Today tab's own separate (not-yet-built) mechanism, not here.
 struct CaptureView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.scenePhase) var scenePhase
@@ -53,14 +55,15 @@ struct CaptureView: View {
     // tied to what the user just said they came here for, not a menu of options.
     // Re-keyed to the 5 intents locked the same session (IntentSelectionView),
     // replacing the earlier 4-option set.
+    // Only ever read when isOnboarding == true (gated at the one call site in `body`) --
+    // the generic fallback below only matters for a user who somehow reached the
+    // mandatory first capture with no recorded intent, not for post-onboarding captures.
     private var topicCards: [(title: String, category: String)] {
         let generic: [(title: String, category: String)] = [
             ("Did God show up in a connection today?", "Relationships"),
             ("Any stillness stand out to you?", "Quiet moments"),
             ("Anything you're wrestling with?", "Doubts"),
         ]
-        guard isOnboarding else { return generic }
-
         let intent = ProfileManager.shared.localProfile(userId: userId).spiritualIntent
         switch intent {
         case "I want to journal my encounters with God":
@@ -115,49 +118,55 @@ struct CaptureView: View {
 
                 Spacer().frame(height: 10)
 
-                Text("Tap one, or just start talking.")
+                Text(isOnboarding ? "Tap one, or just start talking." : "Just start talking.")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(Theme.Payment.textSupporting) // #857d69 — this text is "text/supporting" in the spec, not "text/placeholder" (Theme.Capture.textMuted, #a39e98) — caught by Kell comparing the running app to the real screenshot
                     .padding(.horizontal, 28)
 
                 Spacer().frame(height: 36)
 
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 12) {
-                        ForEach(topicCards, id: \.title) { card in
-                            Button(action: {
-                                inputText = card.title
-                                conversationStartedFromPrompt = true
-                                submitTypedText()
-                            }) {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        // Kell (Nov 10 2026): the prompt text must be fully
-                                        // readable before tapping, not truncated -- the user
-                                        // needs to actually see what they'd be responding to.
-                                        Text(card.title)
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundColor(Theme.Capture.textPrimary)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                        Text(card.category)
+                // Topic cards are an onboarding-only affordance (Kell, Nov 11 2026):
+                // every post-onboarding capture should be the plain open compose/voice
+                // experience, no prompts at all -- prompts belong only to the Today tab's
+                // own (separate, not-yet-built) mechanism, not here.
+                if isOnboarding {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: 12) {
+                            ForEach(topicCards, id: \.title) { card in
+                                Button(action: {
+                                    inputText = card.title
+                                    conversationStartedFromPrompt = true
+                                    submitTypedText()
+                                }) {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            // Kell (Nov 10 2026): the prompt text must be fully
+                                            // readable before tapping, not truncated -- the user
+                                            // needs to actually see what they'd be responding to.
+                                            Text(card.title)
+                                                .font(.system(size: 16, weight: .semibold))
+                                                .foregroundColor(Theme.Capture.textPrimary)
+                                                .fixedSize(horizontal: false, vertical: true)
+                                            Text(card.category)
+                                                .font(.system(size: 13))
+                                                .foregroundColor(Theme.Payment.textSupporting) // #857d69 — same "text/supporting" correction as the subtext above
+                                        }
+                                        .multilineTextAlignment(.leading)
+                                        Spacer()
+                                        Image(systemName: "arrow.right")
                                             .font(.system(size: 13))
-                                            .foregroundColor(Theme.Payment.textSupporting) // #857d69 — same "text/supporting" correction as the subtext above
+                                            .foregroundColor(Theme.gold) // Kell's reference shows this arrow gold, not muted gray
                                     }
-                                    .multilineTextAlignment(.leading)
-                                    Spacer()
-                                    Image(systemName: "arrow.right")
-                                        .font(.system(size: 13))
-                                        .foregroundColor(Theme.gold) // Kell's reference shows this arrow gold, not muted gray
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                    .background(Theme.Capture.cardBackground)
+                                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.Capture.cardBorder, lineWidth: 1))
+                                    .clipShape(RoundedRectangle(cornerRadius: 16))
                                 }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 14)
-                                .background(Theme.Capture.cardBackground)
-                                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.Capture.cardBorder, lineWidth: 1))
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
                             }
                         }
+                        .padding(.horizontal, 28)
                     }
-                    .padding(.horizontal, 28)
                 }
                 // Recording duration / warning / error — unchanged behavior, just restyled
                 // to sit under the new layout instead of under the old mic button.
