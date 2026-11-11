@@ -1070,6 +1070,25 @@ struct CaptureConversationView: View {
         }
 
         await metaTask
+
+        // T-152: persist the title/scripture this view already generates, instead of
+        // letting it vanish once this screen closes (the gap that made every saved
+        // moment show up blank -- no title, no moods, no verse -- on reopen). Moods
+        // aren't generated here at all yet (journalMeta has no moods field), so this
+        // entry starts with an empty moods array; JournalDetailView's mood editor is
+        // what actually fills it in, via the same saveJournalEntry call. Best-effort:
+        // if this fails, the capture itself already succeeded above, so don't block
+        // or surface an error over a metadata save.
+        if let journalMeta {
+            let entry = JournalEntry(
+                momentId: moment.id,
+                userId: userId,
+                title: journalMeta.title,
+                scriptureQuote: journalMeta.scriptureQuote,
+                scriptureReference: journalMeta.scriptureReference
+            )
+            _ = try? await apiClient.saveJournalEntry(entry)
+        }
     }
 
     /// One extra LLM call, fired in parallel with the save itself — asks for strict JSON

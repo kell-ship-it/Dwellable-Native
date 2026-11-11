@@ -285,6 +285,51 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    // MARK: - Journal Entries API (T-152)
+
+    func fetchJournalEntry(momentId: String) async throws -> JournalEntry? {
+        // Direct /rest/v1 read, not an Edge Function -- unlike moments, nothing here
+        // is encrypted (title/moods/scripture are spec'd unencrypted, see
+        // JournalEntry.swift's own comment), so there's nothing to decrypt server-side.
+        let endpoint = "/rest/v1/journal_entries?moment_id=eq.\(momentId)&select=*"
+        let entries = try await makeRequest(
+            method: "GET",
+            endpoint: endpoint,
+            responseType: [JournalEntry].self
+        )
+        return entries.first
+    }
+
+    func saveJournalEntry(_ entry: JournalEntry) async throws -> JournalEntry {
+        let payload = JournalEntryPayload(
+            id: entry.id,
+            moment_id: entry.momentId,
+            user_id: entry.userId,
+            status: entry.status,
+            title: entry.title,
+            moods: entry.moods,
+            scripture_quote: entry.scriptureQuote,
+            scripture_reference: entry.scriptureReference,
+            starred: entry.starred,
+            edited: entry.edited,
+            created_at: entry.createdAt.ISO8601Format(),
+            updated_at: Date().ISO8601Format()
+        )
+        // Upsert on the unique moment_id column -- one entry per moment, so saving
+        // twice (e.g. re-saving moods after a title already exists) updates the
+        // same row instead of erroring on the unique constraint.
+        let endpoint = "/rest/v1/journal_entries?on_conflict=moment_id"
+        let saved = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: [JournalEntry].self,
+            preferHeader: "resolution=merge-duplicates,return=representation"
+        )
+        guard let entry = saved.first else { throw APIError.notFound }
+        return entry
+    }
+
     // MARK: - Auth API
 
     func signUp(email: String, password: String) async throws -> SignUpOutcome {
@@ -714,6 +759,21 @@ struct MomentPayload: Codable {
     let created_at: String
     let updated_at: String
     let audio_url: String?
+}
+
+struct JournalEntryPayload: Codable {
+    let id: String
+    let moment_id: String
+    let user_id: String
+    let status: String
+    let title: String?
+    let moods: [String]
+    let scripture_quote: String?
+    let scripture_reference: String?
+    let starred: Bool
+    let edited: Bool
+    let created_at: String
+    let updated_at: String
 }
 
 struct LoginPayload: Encodable {

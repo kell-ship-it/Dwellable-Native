@@ -7,6 +7,12 @@ protocol APIClient {
     func fetchMoment(id: String) async throws -> Moment
     func deleteMoment(id: String) async throws
 
+    // Journal entry endpoints (T-152) — the persisted title/moods/scripture/starred
+    // layer on top of a moment. `nil` means no entry exists yet for that moment
+    // (e.g. a moment saved before this ticket, or synthesis hasn't run).
+    func fetchJournalEntry(momentId: String) async throws -> JournalEntry?
+    func saveJournalEntry(_ entry: JournalEntry) async throws -> JournalEntry
+
     // Auth endpoints
     func signUp(email: String, password: String) async throws -> SignUpOutcome
     func verifySignupOTP(email: String, token: String) async throws -> AuthToken

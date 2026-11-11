@@ -16,12 +16,10 @@ import UIKit
 /// Scenarios 2-8) rather than improvised -- see each piece's own comment below for what's
 /// real vs. still a visual placeholder.
 ///
-/// Honesty note that applies to the whole file: there is still no `JournalEntry` table
-/// (T-152 not started). `moment.body` is the only field genuinely persisted to Supabase.
-/// Title/moods/scripture (`journalMeta`) are generated once in-memory at capture time and
-/// never saved; a hero photo picked here is likewise local-only for this session. None of
-/// that is faked as saved -- it's real, interactive UI with nowhere real yet to persist to,
-/// flagged at each spot rather than silently dropped or silently pretended to work.
+/// Honesty note that applies to the whole file: title/moods/scripture/starred now persist
+/// for real via `JournalEntry` (T-152) -- loaded in `.task` below and written back on every
+/// mood/star change and after a body edit. The one thing still genuinely local-only is the
+/// hero photo (no Supabase Storage bucket or column exists for it yet).
 struct JournalDisplayMeta {
     let title: String
     let moods: [String]
@@ -61,7 +59,14 @@ struct JournalDetailView: View {
     // dismiss or a silent auto-advance.
     var onDone: (() -> Void)? = nil
 
-    // TODO: real favorite/star state isn't built yet -- its own follow-up, not this ticket.
+    // T-152: the persisted JournalEntry for this moment, loaded in `.task` below.
+    // `meta` (passed straight from a just-finished capture, before the background
+    // save in CaptureConversationView.finishAndSave necessarily completes) is the
+    // optimistic fallback for title/scripture until `loadedEntry` arrives; once it
+    // does, `loadedEntry` wins. `effectiveTitle`/`effectiveScripture*` below do that
+    // merge so the rest of the view doesn't have to think about which source it's
+    // reading from.
+    @State private var loadedEntry: JournalEntry?
     @State private var isFavorited = false
 
     // Editing is scoped to exactly the one thing that's actually real and persisted
@@ -80,8 +85,8 @@ struct JournalDetailView: View {
     @State private var showDeleteConfirmation = false
     @State private var deleteErrorMessage: String?
 
-    // Moods (Figma Scenario 7, "Mood Sheet"): session-local only -- see the struct's own
-    // honesty note at the top of the file. Seeded from `journalMeta` when present.
+    // Moods (Figma Scenario 7, "Mood Sheet"): persisted for real via `loadedEntry`
+    // (T-152). Seeded from `meta` optimistically, overwritten once the real entry loads.
     @State private var selectedMoods: [String]
     @State private var showMoodSheet = false
     @State private var customMoodText = ""
@@ -114,6 +119,10 @@ struct JournalDetailView: View {
         _selectedMoods = State(initialValue: meta?.moods ?? [])
     }
 
+    private var effectiveTitle: String? { loadedEntry?.title ?? meta?.title }
+    private var effectiveScriptureQuote: String? { loadedEntry?.scriptureQuote ?? meta?.scriptureQuote }
+    private var effectiveScriptureReference: String? { loadedEntry?.scriptureReference ?? meta?.scriptureReference }
+
     var body: some View {
         VStack(spacing: 0) {
             header
@@ -129,8 +138,8 @@ struct JournalDetailView: View {
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(Theme.Payment.textSupporting)
 
-                        if let meta {
-                            Text(meta.title)
+                        if let effectiveTitle {
+                            Text(effectiveTitle)
                                 .font(.system(size: 28, design: .serif))
                                 .foregroundColor(Theme.Payment.textHeading)
                         }
@@ -186,7 +195,7 @@ struct JournalDetailView: View {
                         // body is edited down to fully empty, that's effectively a new
                         // entry, so the verse is dropped from display alongside it rather
                         // than persisting orphaned from nothing.
-                        if !isEditing, !displayBody.isEmpty, let meta, let quote = meta.scriptureQuote, let reference = meta.scriptureReference {
+                        if !isEditing, !displayBody.isEmpty, let quote = effectiveScriptureQuote, let reference = effectiveScriptureReference {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("\u{201C}\(quote)\u{201D}")
                                     .font(.system(size: 16, design: .serif))
@@ -257,6 +266,7 @@ struct JournalDetailView: View {
                 }
             }
         }
+        .task { await loadEntry() }
     }
 
     // MARK: - Header
@@ -276,7 +286,7 @@ struct JournalDetailView: View {
                     Button(action: {
                         isEditing = false
                         editedBody = displayBody
-                        selectedMoods = meta?.moods ?? []
+                        selectedMoods = loadedEntry?.moods ?? (meta?.moods ?? [])
                         saveErrorMessage = nil
                     }) {
                         ZStack {
@@ -293,7 +303,7 @@ struct JournalDetailView: View {
                     HStack(spacing: 16) {
                         Button(action: {
                             editedBody = displayBody
-                            selectedMoods = meta?.moods ?? []
+                            selectedMoods = loadedEntry?.moods ?? (meta?.moods ?? [])
                         }) {
                             Image(systemName: "arrow.uturn.backward")
                                 .font(.system(size: 17))
@@ -324,7 +334,10 @@ struct JournalDetailView: View {
                 }
                 Spacer()
                 HStack(spacing: 20) {
-                    Button(action: { isFavorited.toggle() }) {
+                    Button(action: {
+                        isFavorited.toggle()
+                        Task { await persistEntry() }
+                    }) {
                         Image(systemName: isFavorited ? "star.fill" : "star")
                             .font(.system(size: 17))
                             .foregroundColor(Theme.Capture.textPrimary)
@@ -519,6 +532,7 @@ struct JournalDetailView: View {
         } else if selectedMoods.count < maxMoods {
             selectedMoods.append(mood)
         }
+        Task { await persistEntry() }
     }
 
     private func addCustomMood() {
@@ -526,6 +540,7 @@ struct JournalDetailView: View {
         guard !trimmed.isEmpty, selectedMoods.count < maxMoods, !selectedMoods.contains(trimmed) else { return }
         selectedMoods.append(trimmed)
         customMoodText = ""
+        Task { await persistEntry() }
     }
 
     // MARK: - Edit toolbar (photo / camera / mic)
@@ -602,7 +617,38 @@ struct JournalDetailView: View {
             saveErrorMessage = "Saved on this device — will sync once you're back online."
         }
 
+        await persistEntry(edited: true)
         isSaving = false
+    }
+
+    /// T-152: loads the real persisted title/moods/scripture/starred for this moment,
+    /// if an entry exists yet. `meta` (from a just-finished capture) stays the display
+    /// fallback until this returns -- see `effectiveTitle` etc. above.
+    private func loadEntry() async {
+        guard let entry = try? await apiClient.fetchJournalEntry(momentId: moment.id) else { return }
+        loadedEntry = entry
+        if !entry.moods.isEmpty { selectedMoods = entry.moods }
+        isFavorited = entry.starred
+    }
+
+    /// Writes the current moods/starred (+ title/scripture, carried over from whatever
+    /// `effectiveTitle`/`effectiveScripture*` already resolve to) back to `journal_entries`.
+    /// Safe to call from capture time (no `loadedEntry` yet) through to a body edit years
+    /// later (`loadedEntry` already exists) -- upserts on `moment_id` either way.
+    private func persistEntry(edited: Bool = false) async {
+        let entry = JournalEntry(
+            id: loadedEntry?.id ?? UUID().uuidString,
+            momentId: moment.id,
+            userId: moment.userId,
+            title: effectiveTitle,
+            moods: selectedMoods,
+            scriptureQuote: effectiveScriptureQuote,
+            scriptureReference: effectiveScriptureReference,
+            starred: isFavorited,
+            edited: edited || (loadedEntry?.edited ?? false),
+            createdAt: loadedEntry?.createdAt ?? Date()
+        )
+        loadedEntry = try? await apiClient.saveJournalEntry(entry)
     }
 
     private func deleteEntry() async {

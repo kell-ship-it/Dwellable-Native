@@ -2,6 +2,7 @@ import Foundation
 
 class MockAPIClient: APIClient {
     private var storedMoments: [Moment] = []
+    private var storedJournalEntries: [JournalEntry] = []
     private let currentUserId = "user-demo-001"
 
     // Mock test accounts for authentication
@@ -73,6 +74,23 @@ class MockAPIClient: APIClient {
         try await Task.sleep(nanoseconds: 300_000_000) // 0.3 second
 
         storedMoments.removeAll { $0.id == id }
+    }
+
+    // MARK: - Journal Entries API (T-152)
+
+    func fetchJournalEntry(momentId: String) async throws -> JournalEntry? {
+        try await Task.sleep(nanoseconds: 200_000_000)
+        return storedJournalEntries.first(where: { $0.momentId == momentId })
+    }
+
+    func saveJournalEntry(_ entry: JournalEntry) async throws -> JournalEntry {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        if let index = storedJournalEntries.firstIndex(where: { $0.momentId == entry.momentId }) {
+            storedJournalEntries[index] = entry
+        } else {
+            storedJournalEntries.append(entry)
+        }
+        return entry
     }
 
     // MARK: - Auth API
