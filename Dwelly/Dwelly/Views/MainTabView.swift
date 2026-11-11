@@ -63,6 +63,15 @@ struct MainTabView: View {
     /// otherwise (trial already consumed on this Apple ID, any device) go straight
     /// to a non-trial subscribe screen.
     private func attemptCapture() {
+        #if DEBUG
+        // Dev-only paywall bypass (Nov 11 2026) so Kell can run repeated real captures
+        // in the simulator to watch DwellerProfile/Your Narrative populate without
+        // StoreKit friction. Compiles out entirely in Release -- never ships, never
+        // reaches TestFlight or the App Store.
+        showCapture = true
+        return
+        #endif
+
         guard !paymentManager.hasActiveEntitlement else {
             showCapture = true
             return
