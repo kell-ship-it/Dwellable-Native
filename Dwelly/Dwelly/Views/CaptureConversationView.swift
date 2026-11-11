@@ -100,6 +100,23 @@ struct CaptureConversationView: View {
     @State private var showMomentDetail = false
 
     private let maxResponses = 3
+
+    // T-272: a hard per-turn length cap. Nothing upstream (llm-proxy's
+    // DEFAULT_MAX_TOKENS, DAILY_CALL_LIMIT) bounds the size of a single input --
+    // the first only caps the model's OUTPUT, the second only counts calls, not
+    // size -- so a pasted block of arbitrary length went straight to the LLM
+    // uncapped and fully billed. Character count, not a real token count: the
+    // actual tokenizer is model/provider-specific and isn't available client-side,
+    // so ~4 chars/token is used as a cheap, reliable proxy. 2000 chars lands
+    // around ~500 tokens, well under budget with real margin. Figma: E9 --
+    // "Message Too Long (Character Cap)" on both the Capture Onboarding and P1b
+    // Capture Post-Onboarding pages (node 1188:1198 / 1189:1216, file
+    // jBOzv1vO2C2DSMePqRl4c4) -- caption sits below the collapsed compose card,
+    // same placement E6's "Reached 10 min" caption uses, not inside the pill
+    // (that pattern, per E2/E3, is reserved for replacing EMPTY field content --
+    // doesn't apply here since real typed text needs to stay visible/editable).
+    private let maxInputLength = 2000
+    private var isOverCharacterLimit: Bool { inputText.count > maxInputLength }
     // The prompt-card opening question renders as an assistant turn (see
     // `initialMessageIsPrompt` below) but isn't one of Dwelly's 3 real generated
     // responses — it's the question the user is about to answer, so it's excluded
@@ -825,7 +842,8 @@ struct CaptureConversationView: View {
                                 .background(Theme.gold)
                                 .clipShape(Circle())
                         }
-                        .disabled(isWaitingForDwelly)
+                        .disabled(isWaitingForDwelly || isOverCharacterLimit)
+                        .opacity(isOverCharacterLimit ? 0.4 : 1.0)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                     .padding(.trailing, isComposeExpanded ? 20 : 10)
@@ -860,6 +878,22 @@ struct CaptureConversationView: View {
                     y: cardTopY + (isComposeExpanded ? expandedTopInset : 0) + 14 + 16
                 )
                 .ignoresSafeArea()
+
+                // T-272 over-length caption -- Figma E9 ("Message Too Long"),
+                // same placement/style as E6's "Reached 10 min — saved." caption:
+                // plain muted text below the card, not inside the pill (see the
+                // comment on `isOverCharacterLimit` above for why E2/E3's
+                // replace-the-pill pattern doesn't apply here). Collapsed state
+                // only -- expanded fills the screen under the keyboard, no room
+                // for it there, but Send stays disabled either way.
+                if !isComposeExpanded && isOverCharacterLimit {
+                    Text("That's a lot — trim it down to send.")
+                        .font(.system(size: 12))
+                        .foregroundColor(Theme.Payment.textSupporting)
+                        .position(x: fullWidth / 2, y: fullHeight - collapsedBottomMargin + 14)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                }
             }
             .transition(.identity)
         }
@@ -978,7 +1012,7 @@ struct CaptureConversationView: View {
 
     private func sendUserTurn() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty, !isWaitingForDwelly else { return }
+        guard !text.isEmpty, !isWaitingForDwelly, !isOverCharacterLimit else { return }
         inputText = ""
         turns.append(Turn(role: .user, text: text))
         Task { await requestDwellyResponse() }

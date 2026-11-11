@@ -233,6 +233,7 @@ Dwelly/
 - **Team ID:** `38X95M6CUB`
 - **Apple ID:** `kell.golden@outlook.com`
 - **Design prototype:** `file:///Users/kell/dev/dwelly-rn-codex/design-mockups/prototype-v1.html`
+- **Figma design file (CURRENT, authoritative — use this one):** `dwelly-redesign-file-important` — file key `jBOzv1vO2C2DSMePqRl4c4` — https://www.figma.com/design/jBOzv1vO2C2DSMePqRl4c4/dwelly-redesign-file-important — the one actively used for the last two months (confirmed by Kell, Nov 11 2026). **Do NOT use** file key `t5MUGEtpeFcUixobvHiYMc` ("Dwelly — Existing Experience Baseline") — that one is an explicitly frozen reference snapshot from July 31, 2026, still referenced by older docs (e.g. `docs/P0_EDGE_CASE_QA_CHECKLIST.md`), not the live design file. If a doc or past session points you at that key, it's stale — come back to this line instead.
 
 ## Core Features (✅ Complete)
 
