@@ -132,7 +132,15 @@ struct CaptureConversationView: View {
     // same journal-preview UI afterward). Onboarding has no such button and never sets
     // this -- it keeps the existing forced-3 behavior unchanged.
     @State private var manuallyFinished = false
-    private var isConversationComplete: Bool { dwellyResponseCount >= maxResponses || manuallyFinished }
+    // Kell caught this directly (Nov 11 2026): adding the Done button wasn't enough on
+    // its own -- post-onboarding was still silently force-completing at exactly 3
+    // responses underneath it, same as onboarding, which is exactly the fixed-count
+    // behavior post-onboarding was supposed to diverge from (runs until the user says
+    // they're done, not count-capped at all). Onboarding is the ONLY place the 3-count
+    // cap still applies -- post-onboarding completes only via manuallyFinished (Done).
+    private var isConversationComplete: Bool {
+        manuallyFinished || (isOnboarding && dwellyResponseCount >= maxResponses)
+    }
 
     private struct ScrollOffsetKey: PreferenceKey {
         static var defaultValue: CGFloat = 0
@@ -402,7 +410,13 @@ struct CaptureConversationView: View {
                                     .frame(width: 44, height: 44)
                             }
                         }
-                        if !turns.isEmpty {
+                        // Onboarding-only (Kell, Nov 11 2026, confirmed explicitly): the
+                        // "Response N of 3" counter implies a fixed cap post-onboarding
+                        // doesn't have -- showing "of 3" there would be a lie now that
+                        // it isn't limited. Every other part of this header row and the
+                        // conversation itself stays byte-for-byte identical between the
+                        // two flows; this and the logo (below) are the only differences.
+                        if isOnboarding && !turns.isEmpty {
                             // Shown from the moment the screen opens, even before a
                             // real response lands — Kell confirmed (Nov 10 2026) the
                             // opening-prompt screen shouldn't be missing it while
@@ -1113,8 +1127,10 @@ struct CaptureConversationView: View {
         // fixed hand-off bubble — Kell caught (Nov 10 2026) that showing both a real
         // generated reply AND the closing message back to back reads as Dwelly
         // responding twice, and spends tokens on a reply nobody reads before the
-        // hand-off. The fixed closingMessage IS response 3.
-        if dwellyResponseCount == maxResponses - 1 {
+        // hand-off. The fixed closingMessage IS response 3. Onboarding-only (Nov 11
+        // 2026) -- post-onboarding has no fixed 3rd response to special-case; every
+        // reply there is a real generated one, all the way until the user taps Done.
+        if isOnboarding && dwellyResponseCount == maxResponses - 1 {
             await MainActor.run {
                 turns.append(Turn(role: .assistant, text: closingMessage))
                 isWaitingForDwelly = false
