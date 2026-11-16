@@ -228,7 +228,16 @@ class AuthManager: ObservableObject {
                 do {
                     try await apiClient.ensureUserExists(userId: authToken.userId, email: email)
                 } catch {
-                    print("Warning: Could not create user record: \(error.localizedDescription)")
+                    // Nov 16 2026: this used to be a bare `print()` -- invisible outside
+                    // Xcode's own console, so a failure here (e.g. the `users.email`
+                    // UNIQUE constraint conflicting with a stale orphaned row left behind
+                    // by an out-of-app account deletion -- see KEY_LEARNINGS.md) went
+                    // completely unnoticed while every single capture afterward failed
+                    // the `moments_user_id_fkey` constraint, with the UI showing a
+                    // deceptively successful journal card the whole time. Routed through
+                    // the real log dashboard instead so this is traceable on-device, not
+                    // just in a dev's own Xcode console.
+                    HTMLLogManager.shared.log("ensureUserExists failed after signUp: \(error.localizedDescription)", level: "ERROR")
                 }
 
                 _ = keychain.save(authToken.token, forKey: "authToken")
@@ -326,7 +335,7 @@ class AuthManager: ObservableObject {
             do {
                 try await apiClient.ensureUserExists(userId: authToken.userId, email: email)
             } catch {
-                print("Warning: Could not create user record: \(error.localizedDescription)")
+                HTMLLogManager.shared.log("ensureUserExists failed: \(error.localizedDescription)", level: "ERROR")
             }
 
             _ = keychain.save(authToken.token, forKey: "authToken")
@@ -491,7 +500,7 @@ class AuthManager: ObservableObject {
                 try await apiClient.ensureUserExists(userId: authToken.userId, email: email)
             } catch {
                 // Log but don't fail auth if user creation fails
-                print("Warning: Could not create user record: \(error.localizedDescription)")
+                HTMLLogManager.shared.log("ensureUserExists failed: \(error.localizedDescription)", level: "ERROR")
             }
 
             // Store token, userId, and email in Keychain

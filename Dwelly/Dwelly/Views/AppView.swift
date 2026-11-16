@@ -48,6 +48,20 @@ struct AppView: View {
                 // Set real userId on SyncManager (replaces placeholder "app-sync")
                 syncManager.updateUserId(user.id)
                 syncManager.syncPendingMoments()
+                // Nov 16 2026: `syncPendingMoments()` only retries pending journal
+                // entries as its OWN tail call, gated behind "there are locally
+                // pending moments to sync" -- it early-returns otherwise. That left a
+                // real gap: a moment can finish syncing (or have synced moments ago,
+                // in an earlier session) while its journal entry is still stuck
+                // "pending" for a completely unrelated reason (the exact bug this
+                // session found -- `saveJournalEntry` failing silently while
+                // `saveMoment` succeeds). Previously the ONLY other triggers were a
+                // brand-new capture's own fast path, or iOS's own discretionary
+                // BGTaskScheduler timing -- neither fires promptly just from
+                // reopening the app. Calling it here too, unconditionally, means
+                // reopening the app is now a real, reliable way to pick up any
+                // stuck entries, not just a lucky one.
+                Task { await syncManager.retryPendingJournalEntries() }
 
                 // Log app session
                 print("🔍 AppView: Logging app_opened — userId: \(user.id.prefix(8)), email: \(user.email)")
