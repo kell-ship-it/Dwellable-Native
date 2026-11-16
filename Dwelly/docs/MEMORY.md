@@ -2,6 +2,17 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (November 16, 2026 close — T-078/T-223 built earlier, then T-287–T-293: capture polish, the real "entries aren't populating" root cause, journal-editing bugs, waveform/transcribing follow-ups)
+
+**Confirmed Pending Items:**
+1. **Hands-on pass over everything this session's automation couldn't exercise directly**: save/undo button tap reliability in JournalDetailView's edit mode (T-292, now 44x44 targets but never tap-tested live), the transcribing-animation end-fade and long-transcript collapsed-preview fade (T-293, implemented and built but transcription always completed faster than a screenshot could catch it), and the time-aware LLM context's actual wording in a real morning vs. evening conversation (T-287). None of these are in doubt on a code-review level; they just haven't been seen working with real fingers yet.
+2. **Continue T-092 (Phase 2 Launch Readiness, CRITICAL)** — still the first 🔄 In Progress item in the registry and the highest-priority open thread once the above verification pass is done.
+3. **Pick up T-128 (P5 Search — Screen 2)** — the real Entries tab (T-078) now exists with its own magnifying-glass stub (`onSearch: {}`) wired exactly where Search is supposed to hang off it; this is the natural next feature now that its one dependency is actually built, rather than picking a disconnected ticket.
+
+**Rationale:** Tonight's session found and fixed something bigger than any single bug report: `public.users` had no foreign key to `auth.users` at all, so a manually-deleted dev account's orphaned row permanently blocked any resignup with that email, and every capture since had been failing its foreign key silently while the UI kept showing a fake-success journal card (T-291). That's fixed with a real migration, not a workaround. Everything else tonight (T-287–T-290, T-292, T-293) was either a direct consequence of chasing that root cause through the UI, or Kell's own live screen-recording reviews of the capture/journal flow. The three pending items above are deliberately about *finishing the verification loop* before opening new scope — several fixes tonight are code-correct and build-confirmed but have never been touched by a real finger or a real long dictation.
+
+---
+
 ## Next Session Objective (November 11, 2026, continued a seventeenth/eighteenth time — crossfade transition + pronoun fix shipped; Groq/OpenAI fallback re-verified; Formation Intelligence flow talked through)
 
 **Confirmed Pending Items:**
