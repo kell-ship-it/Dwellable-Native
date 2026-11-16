@@ -105,6 +105,13 @@ struct JournalDetailView: View {
     @State private var selectedMoods: [String]
     @State private var showMoodSheet = false
     @State private var customMoodText = ""
+    // Kell caught this live (Nov 16 2026): "View Original Chat" did nothing at
+    // all -- a plain `Button(action: {})`, per the old comment, because there's
+    // no stored link to the real back-and-forth `CaptureConversationView`
+    // transcript. That's still true (real scope, not done here), but
+    // `moment.body` -- the user's own raw words, already loaded, right here --
+    // is a genuine "original" to show instead of leaving the menu item inert.
+    @State private var showOriginalChat = false
 
     // Hero photo (Figma Scenarios 4/5/8): session-local only, same reasoning -- no
     // Supabase Storage bucket or `moments` column for it yet (T-151, not started).
@@ -214,6 +221,9 @@ struct JournalDetailView: View {
         }
         .sheet(isPresented: $showMoodSheet) {
             moodSheet
+        }
+        .sheet(isPresented: $showOriginalChat) {
+            originalChatSheet
         }
         .fullScreenCover(isPresented: $showCamera) {
             CameraPicker { image in
@@ -394,6 +404,20 @@ struct JournalDetailView: View {
                             Image(systemName: "arrow.uturn.backward")
                                 .font(.system(size: 17))
                                 .foregroundColor(hasUnsavedChanges ? Theme.Capture.textPrimary : Theme.Capture.textMuted)
+                                // Kell caught this live (Nov 16 2026): the save
+                                // checkmark next to this button "populates but
+                                // won't let me click it" -- intermittently, not
+                                // every time, which is the signature of a tap
+                                // target smaller than it looks rather than a real
+                                // logic bug. Both this and the save button below
+                                // rendered their icon at its own bare glyph size
+                                // (well under Apple's 44pt minimum); a tap near the
+                                // visible edge of the icon could land outside the
+                                // actual hit area entirely. Explicit 44x44 frame +
+                                // contentShape so the whole square is tappable, not
+                                // just the glyph's own pixels.
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
                         }
                         .disabled(!hasUnsavedChanges)
 
@@ -401,6 +425,8 @@ struct JournalDetailView: View {
                             if isSaving {
                                 ProgressView().tint(Theme.gold)
                                     .frame(width: 32, height: 32)
+                                    .frame(width: 44, height: 44)
+                                    .contentShape(Rectangle())
                             } else if hasUnsavedChanges {
                                 // Gold circle only appears when there's something to
                                 // save -- matches the Stop-button's own "commits right
@@ -412,11 +438,15 @@ struct JournalDetailView: View {
                                         .foregroundColor(Theme.Payment.backgroundPrimary)
                                 }
                                 .frame(width: 32, height: 32)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
                             } else {
                                 Image(systemName: "checkmark")
                                     .font(.system(size: 17, weight: .semibold))
                                     .foregroundColor(Theme.Capture.textMuted)
                                     .frame(width: 32, height: 32)
+                                    .frame(width: 44, height: 44)
+                                    .contentShape(Rectangle())
                             }
                         }
                         .disabled(isSaving || !hasUnsavedChanges || editedBody.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -482,7 +512,7 @@ struct JournalDetailView: View {
                                 Label("Edit Entry", systemImage: "pencil")
                             }
                         }
-                        Button(action: {}) {
+                        Button(action: { showOriginalChat = true }) {
                             Label("View Original Chat", systemImage: "message")
                         }
                         Button(role: .destructive, action: { showDeleteConfirmation = true }) {
@@ -593,9 +623,18 @@ struct JournalDetailView: View {
                 .foregroundColor(Theme.Payment.textSupporting)
                 .padding(.top, 10)
 
+            // Kell caught this live (Nov 16 2026): once 3/3 were already picked, the
+            // un-pickable presets looked IDENTICAL to a tappable one (same fill, same
+            // border) -- nothing signaled "you're capped, remove one first." Figma's
+            // own reference (the screenshot Kell sent) treats every pill the same way
+            // regardless of state -- a thin border always, filled only by the
+            // checkmark -- so the fix is two things at once: match that outlined
+            // look instead of the old heavy-fill-vs-flat-fill split, AND dim the
+            // genuinely-disabled ones so the cap itself is visible, not just felt.
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 8)], alignment: .leading, spacing: 8) {
                 ForEach(presetMoods, id: \.self) { mood in
                     let isSelected = selectedMoods.contains(mood)
+                    let isCappedOut = !isSelected && selectedMoods.count >= maxMoods
                     Button(action: { toggleMood(mood) }) {
                         HStack(spacing: 6) {
                             if isSelected {
@@ -608,21 +647,28 @@ struct JournalDetailView: View {
                         .foregroundColor(isSelected ? Theme.gold : Theme.Capture.textPrimary)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 9)
-                        .background(isSelected ? Theme.gold.opacity(0.1) : Theme.Capture.cardBorder)
+                        .overlay(
+                            Capsule().stroke(isSelected ? Theme.gold : Theme.Capture.cardBorder, lineWidth: 1)
+                        )
                         .clipShape(Capsule())
                     }
-                    .disabled(!isSelected && selectedMoods.count >= maxMoods)
+                    .disabled(isCappedOut)
+                    .opacity(isCappedOut ? 0.35 : 1)
                 }
             }
             .padding(.top, 16)
 
-            HStack(spacing: 8) {
+            // Same outlined-pill treatment as the presets above, instead of the old
+            // big filled card -- Kell's explicit ask to match the Figma reference
+            // rather than inventing a separate style just for the custom-word row.
+            HStack(spacing: 6) {
                 Image(systemName: "plus")
-                    .font(.system(size: 13))
+                    .font(.system(size: 11, weight: .bold))
                     .foregroundColor(Theme.Capture.textPrimary)
                 TextField("Add your own word", text: $customMoodText)
-                    .font(.system(size: 15))
+                    .font(.system(size: 14))
                     .foregroundColor(Theme.Capture.textPrimary)
+                    .tint(Theme.gold)
                     .onSubmit(addCustomMood)
                 if !customMoodText.trimmingCharacters(in: .whitespaces).isEmpty {
                     Button("Add", action: addCustomMood)
@@ -630,13 +676,15 @@ struct JournalDetailView: View {
                         .foregroundColor(Theme.gold)
                 }
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(Theme.Capture.badgeBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .padding(.top, 20)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .overlay(
+                Capsule().stroke(customMoodText.isEmpty ? Theme.Capture.cardBorder : Theme.gold, lineWidth: 1)
+            )
+            .clipShape(Capsule())
+            .padding(.top, 12)
             .disabled(selectedMoods.count >= maxMoods)
-            .opacity(selectedMoods.count >= maxMoods ? 0.4 : 1)
+            .opacity(selectedMoods.count >= maxMoods ? 0.35 : 1)
 
             if !selectedMoods.isEmpty {
                 Text("\(selectedMoods.count) / \(maxMoods) selected")
@@ -648,6 +696,40 @@ struct JournalDetailView: View {
         .padding(20)
         .background(Theme.background)
         .presentationDetents([.medium])
+    }
+
+    /// Not the real back-and-forth conversation (Dwelly's side of it is never
+    /// persisted anywhere -- see `CaptureConversationView.fullTranscript`'s own
+    /// comment), just the raw words the user actually spoke/typed, read-only.
+    /// Genuinely real and already loaded; a stand-in until a real transcript link
+    /// exists, not a second placeholder.
+    private var originalChatSheet: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Original Reflection")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(Theme.Payment.textHeading)
+                Spacer()
+                Button("Done") { showOriginalChat = false }
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Theme.gold)
+            }
+
+            Text("Your own words, exactly as captured -- before Dwelly's reframing turned them into this journal entry.")
+                .font(.system(size: 13))
+                .foregroundColor(Theme.Payment.textSupporting)
+
+            ScrollView {
+                Text(moment.body)
+                    .font(.system(size: 16, weight: .light))
+                    .foregroundColor(Theme.Capture.textBody)
+                    .lineSpacing(1.6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding(20)
+        .background(Theme.background)
+        .presentationDetents([.medium, .large])
     }
 
     private func toggleMood(_ mood: String) {

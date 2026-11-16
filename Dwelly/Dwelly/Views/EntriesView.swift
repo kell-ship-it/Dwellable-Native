@@ -39,7 +39,6 @@ struct EntriesView: View {
     @State private var entries: [Entry] = []
     @State private var isLoading = true
     @State private var loadError: String?
-    @State private var refreshTrigger = UUID()
 
     // Untold-style: anchored to the first of the month currently shown. `selectedDay`
     // is nil by default (shows the whole month's entries below the calendar); tapping
@@ -79,7 +78,7 @@ struct EntriesView: View {
                         .font(.system(size: 13))
                         .foregroundColor(Theme.Payment.textSupporting)
                         .multilineTextAlignment(.center)
-                    Button("Try Again") { refreshTrigger = UUID() }
+                    Button("Try Again") { Task { await loadEntries() } }
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(Theme.gold)
                 }
@@ -98,14 +97,27 @@ struct EntriesView: View {
         .background(Theme.Payment.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
-        .task(id: refreshTrigger) { await loadEntries() }
         // Kell caught this live (Nov 16 2026): a just-saved entry didn't show up
         // here at all -- `TabView` keeps every tab's view alive across switches,
         // so once this screen loaded once (even with zero entries), nothing ever
         // told it to look again. Re-fetching on every appearance (not just the
         // first) is what `MomentsListView` already did before this screen
         // replaced it; this screen had dropped that behavior entirely.
-        .onAppear { refreshTrigger = UUID() }
+        //
+        // REGRESSION FIX (Nov 16 2026, later same day): that first fix paired
+        // `.task(id: refreshTrigger)` with `.onAppear { refreshTrigger = UUID() }`
+        // -- on first appearance both fired, the second immediately invalidating
+        // the first's `id` mid-flight. SwiftUI cancels a `.task(id:)`'s in-flight
+        // work the instant its `id` changes, so that first load's network calls
+        // threw `CancellationError`, which `loadEntries()`'s `catch` treated as a
+        // real failure -- "Couldn't load your entries," every single time, with
+        // "Try Again" only ever working because by then nothing was left to
+        // cancel it. Same shape also explains a deleted entry still showing: the
+        // view never actually re-fetched after popping back, so you were
+        // sometimes looking at the stale success state before this race ran at
+        // all. Collapsed to one plain trigger -- no `id` to race, nothing to
+        // cancel.
+        .onAppear { Task { await loadEntries() } }
     }
 
     // MARK: - Calendar
@@ -306,7 +318,11 @@ struct EntriesView: View {
     }
 
     private func entryRow(_ entry: Entry) -> some View {
-        HStack(alignment: .top, spacing: 12) {
+        // Kell caught this live (Nov 16 2026): `.top` pinned the chevron to the
+        // row's top edge instead of centering it against the title+date block --
+        // every other chevron in the app (the calendar's month-nav arrows
+        // included) is vertically centered, and this was the one exception.
+        HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
                     Text(entry.displayTitle)
