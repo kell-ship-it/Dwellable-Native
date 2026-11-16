@@ -99,6 +99,13 @@ struct EntriesView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .task(id: refreshTrigger) { await loadEntries() }
+        // Kell caught this live (Nov 16 2026): a just-saved entry didn't show up
+        // here at all -- `TabView` keeps every tab's view alive across switches,
+        // so once this screen loaded once (even with zero entries), nothing ever
+        // told it to look again. Re-fetching on every appearance (not just the
+        // first) is what `MomentsListView` already did before this screen
+        // replaced it; this screen had dropped that behavior entirely.
+        .onAppear { refreshTrigger = UUID() }
     }
 
     // MARK: - Calendar

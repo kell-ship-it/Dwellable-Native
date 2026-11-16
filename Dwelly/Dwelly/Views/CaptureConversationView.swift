@@ -60,6 +60,10 @@ struct CaptureConversationView: View {
         let text: String
     }
 
+    // Guards the one-time setup block in `.onAppear` against re-running when this
+    // screen reappears after a pushed destination (JournalDetailView) is popped --
+    // see that modifier's own comment for the bug this caused.
+    @State private var hasInitialized = false
     @State private var turns: [Turn] = []
     @State private var inputText = ""
     @State private var isWaitingForDwelly = false
@@ -569,6 +573,17 @@ struct CaptureConversationView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .onAppear {
+            // Kell caught this live (Nov 16 2026): popping back from JournalDetailView
+            // (pushed via the journal card's "Open" link) re-triggered this whole
+            // block -- `.onAppear` fires again when this screen reappears after a
+            // pushed destination is popped, not just on first mount. With no guard,
+            // that wiped `turns` back down to just the opening message and kicked off
+            // a brand-new `requestDwellyResponse()` call, destroying the just-saved,
+            // already-complete conversation the user was simply trying to look back
+            // at. Runs this initialization exactly once per screen lifetime now.
+            guard !hasInitialized else { return }
+            hasInitialized = true
+
             if let last = UserDefaults.standard.object(forKey: Self.lastReflectionDateKey) as? Date {
                 isFirstReflectionTodayLocally = !Calendar.current.isDateInToday(last)
             }
