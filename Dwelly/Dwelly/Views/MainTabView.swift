@@ -17,13 +17,23 @@ struct MainTabView: View {
     @StateObject private var paymentManager = PaymentManager.shared
     @State private var showCapture = false
     @State private var paywallContext: PaywallContext?
+    // Kell's direct ask (Nov 16 2026): backing out of the journal entry you just
+    // opened from a finished capture should land on Entries, not wherever the tab
+    // bar happened to be sitting before -- needs a real selection binding instead
+    // of the implicit/default one `TabView` used before this.
+    @State private var selectedTab: Tab = .today
+
+    private enum Tab: Hashable {
+        case today, entries, growth, profile
+    }
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             NavigationStack {
                 TodayPlaceholderView(onSearch: {}, onCapture: attemptCapture)
             }
             .tabItem { Label("Today", systemImage: "sun.max") }
+            .tag(Tab.today)
 
             NavigationStack {
                 // T-078: real Entries tab (Untold-style calendar + list), replacing
@@ -31,22 +41,32 @@ struct MainTabView: View {
                 EntriesView(userId: userId, syncManager: syncManager, onSearch: {}, onCapture: attemptCapture)
             }
             .tabItem { Label("Entries", systemImage: "book") }
+            .tag(Tab.entries)
 
             NavigationStack {
                 GrowthPlaceholderView(userId: userId, onSearch: {}, onCapture: attemptCapture)
             }
             .tabItem { Label("Growth", systemImage: "leaf") }
+            .tag(Tab.growth)
 
             NavigationStack {
                 AccountProfileView(onSearch: {}, onCapture: attemptCapture)
             }
             .tabItem { Label("Profile", systemImage: "person.crop.circle") }
+            .tag(Tab.profile)
         }
         .tint(Theme.gold)
         .fullScreenCover(isPresented: $showCapture) {
-            CaptureView(userId: userId, userEmail: userEmail, syncManager: syncManager, onMomentSaved: {
-                showCapture = false
-            })
+            CaptureView(
+                userId: userId,
+                userEmail: userEmail,
+                syncManager: syncManager,
+                onMomentSaved: { showCapture = false },
+                onFinishedViewingJournal: {
+                    selectedTab = .entries
+                    showCapture = false
+                }
+            )
         }
         .fullScreenCover(item: $paywallContext) { context in
             PaywallView(context: context, onDismiss: {

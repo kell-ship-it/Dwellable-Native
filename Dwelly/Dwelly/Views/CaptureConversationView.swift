@@ -30,6 +30,17 @@ struct CaptureConversationView: View {
     // back chevron is correct.
     var isOnboarding: Bool = false
     var onMomentSaved: (() -> Void)?
+    // Kell's direct ask (Nov 16 2026): once you've tapped "Open" on the just-saved
+    // journal card, the back chevron INSIDE that journal entry shouldn't land you
+    // back in the chat you just finished -- you're done with capture at that
+    // point, so it should take you all the way back to the Entries tab instead.
+    // Post-onboarding only (hence a separate param from `onMomentSaved`, not a
+    // repurposing of it) -- onboarding's own first-ever capture still needs its
+    // existing `completeOnboarding()` hand-off untouched, not a tab switch that
+    // doesn't even apply yet (the tab bar isn't reachable until onboarding ends).
+    // Falls back to the old plain-dismiss-into-the-chat behavior when nil (every
+    // call site that hasn't wired this yet, e.g. the legacy MomentsListView push).
+    var onFinishedViewingJournal: (() -> Void)?
     // Fix #1 (prompt-selection -> thread handoff): shares CaptureView's own
     // `promptTransition` namespace so the first assistant bubble (the prompt
     // question itself, when opened from a tapped topic card) can carry the SAME
@@ -749,10 +760,14 @@ struct CaptureConversationView: View {
                     .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
                     // Shared by both the inline "Open" link here and the onboarding
                     // "Continue" button above -- they're the same destination either
-                    // way, just reached differently. `onDone` is non-nil only for
-                    // onboarding's mandatory first capture: that's the one case
-                    // where finishing this screen needs to actually continue
-                    // onward into the main app, not just dismiss back to the chat.
+                    // way, just reached differently. `onDone` always does
+                    // SOMETHING other than a plain pop now: onboarding's mandatory
+                    // first capture continues onward via `completeOnboarding()`
+                    // (unchanged); every other capture uses `onFinishedViewingJournal`
+                    // (Nov 16 2026) so its own back chevron exits straight to the
+                    // Entries tab instead of landing back in the finished chat --
+                    // falls back to the old plain-dismiss-into-the-chat behavior
+                    // only if that callback was never wired for this call site.
                     .navigationDestination(isPresented: $showMomentDetail) {
                         JournalDetailView(
                             moment: savedMoment,
@@ -765,7 +780,7 @@ struct CaptureConversationView: View {
                                     scriptureReference: $0.scriptureReference
                                 )
                             },
-                            onDone: isOnboarding ? { onMomentSaved?() } : nil
+                            onDone: isOnboarding ? { onMomentSaved?() } : onFinishedViewingJournal
                         )
                     }
                 } else {

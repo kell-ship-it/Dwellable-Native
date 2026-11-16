@@ -76,6 +76,9 @@ struct CaptureView: View {
     // go to (Kell, Nov 10 2026).
     var isOnboarding: Bool = false
     var onMomentSaved: (() -> Void)?
+    // Threaded straight through to CaptureConversationView -- see its own
+    // declaration for what this does and why it's separate from `onMomentSaved`.
+    var onFinishedViewingJournal: (() -> Void)?
 
     // Intent-tailored prompts apply ONLY to the mandatory onboarding first-capture
     // screen (isOnboarding == true) — confirmed with Kell (Nov 11 2026): intent can't
@@ -144,6 +147,7 @@ struct CaptureView: View {
                     initialMessageIsPrompt: pendingConversationIsPrompt,
                     isOnboarding: isOnboarding,
                     onMomentSaved: { onMomentSaved?() },
+                    onFinishedViewingJournal: onFinishedViewingJournal,
                     promptTransition: pendingConversationIsPrompt ? promptTransition : nil,
                     promptTransitionId: selectedPromptTitle
                 )
