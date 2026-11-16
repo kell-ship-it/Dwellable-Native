@@ -115,6 +115,15 @@ struct CaptureConversationView: View {
     // actually opened via a tapped card; every other entry path leaves it `true`
     // from the start, same as before this fix.
     @State private var isComposerRevealed = true
+    // Kell's rule (Nov 16 2026): leaving mid-conversation (post-onboarding, before
+    // the moment is saved) must ask Save vs. Discard -- it can't just vanish the
+    // words someone already spoke. "Save" reuses the exact same `manuallyFinished`
+    // path the header's own "Done" button already triggers (same finishAndSave(),
+    // same journal-preview UI after it) rather than a second, separate save
+    // routine -- this is just another way of saying "I'm done," not a new way to
+    // finish. "Discard" is today's old unconditional behavior, now opt-in instead
+    // of the only option.
+    @State private var showLeaveConfirmation = false
 
     private let maxResponses = 3
 
@@ -427,11 +436,23 @@ struct CaptureConversationView: View {
                         // only once complete, logo always shown. Post-onboarding now
                         // gets a real way out at any point (Kell's direct ask, Nov 11
                         // 2026, after finding there was literally no way to leave this
-                        // screen mid-conversation): the conversation hasn't been saved
-                        // as a moment yet at this point, so leaving here means
-                        // discarding it, same as it always implicitly would have.
+                        // screen mid-conversation) -- but Kell's follow-up ask (Nov 16
+                        // 2026) is that leaving mid-conversation can't just silently
+                        // discard the words someone already spoke: tapping back before
+                        // the conversation is complete now asks Save vs. Discard
+                        // instead of leaving unconditionally. Once already complete
+                        // (the moment is saved, the journal card is showing), there's
+                        // nothing left to lose by leaving, so the chevron goes back to
+                        // being a plain, unprompted exit -- same as before.
                         if !isOnboarding {
-                            Button(action: { onMomentSaved?(); dismiss() }) {
+                            Button(action: {
+                                if isConversationComplete {
+                                    onMomentSaved?()
+                                    dismiss()
+                                } else {
+                                    showLeaveConfirmation = true
+                                }
+                            }) {
                                 Image(systemName: "chevron.left")
                                     .font(.system(size: 18, weight: .medium))
                                     .foregroundColor(Theme.Capture.textPrimary)
@@ -611,6 +632,16 @@ struct CaptureConversationView: View {
             // `frame.height` alone, which stays constant throughout the drag.
             let visibleHeight = max(0, screenHeight - frame.origin.y)
             keyboardHeight = visibleHeight
+        }
+        .alert("Save this reflection?", isPresented: $showLeaveConfirmation) {
+            Button("Keep Talking", role: .cancel) {}
+            Button("Save") { manuallyFinished = true }
+            Button("Discard", role: .destructive) {
+                onMomentSaved?()
+                dismiss()
+            }
+        } message: {
+            Text("You haven't saved this yet. Save it to your journal, or discard it and start over.")
         }
     }
 
