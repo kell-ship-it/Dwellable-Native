@@ -57,8 +57,11 @@ struct CaptureView: View {
     // entry screen's own recording state had been left as a bare timer with no
     // waveform/cancel affordance since before that component existed, so starting a
     // recording here looked frozen/broken next to the real conversational flow's
-    // polished Recording-Bar. Same per-bar random "character" trick, same reason.
-    @State private var waveformSeeds: [CGFloat] = (0..<24).map { _ in CGFloat.random(in: 0.4...1.0) }
+    // polished Recording-Bar. Same traveling-history waveform, same reason -- see
+    // CaptureConversationView's own `waveformHistory` comment for why this
+    // replaced a shared-value/per-bar-seed approach.
+    private static let waveformBarCount = 24
+    @State private var waveformHistory: [CGFloat] = Array(repeating: 0, count: 24)
 
     // Model download state
     @State private var isDownloadingModel = false
@@ -396,6 +399,9 @@ struct CaptureView: View {
             voiceErrorMessage = nil
             // Check if model is ready — if not, download first
             if TranscriptionManager.shared.isModelReady || UserDefaults.standard.bool(forKey: "whisperModelReady") {
+                // Fresh timeline for this take -- see CaptureConversationView's
+                // own reset for why.
+                waveformHistory = Array(repeating: 0, count: Self.waveformBarCount)
                 audioManager.onRecordingLimitReached = { transcribeAndSubmit() }
                 audioManager.startRecording()
             } else {
@@ -469,6 +475,7 @@ struct CaptureView: View {
                     // Brief delay to show completion, then start recording
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                         isDownloadingModel = false
+                        waveformHistory = Array(repeating: 0, count: Self.waveformBarCount)
                         audioManager.onRecordingLimitReached = { transcribeAndSubmit() }
                         audioManager.startRecording()
                     }
@@ -599,14 +606,18 @@ struct CaptureView: View {
 
     private var liveWaveform: some View {
         HStack(spacing: 3) {
-            ForEach(Array(waveformSeeds.enumerated()), id: \.offset) { _, seed in
+            ForEach(Array(waveformHistory.enumerated()), id: \.offset) { _, level in
                 RoundedRectangle(cornerRadius: 2)
                     .fill(Theme.gold)
-                    .frame(width: 2.5, height: 4 + seed * audioManager.audioLevel * 20)
-                    .animation(.easeOut(duration: 0.1), value: audioManager.audioLevel)
+                    .frame(width: 2.5, height: 4 + level * 20)
             }
         }
         .frame(height: 24)
+        .animation(.easeOut(duration: 0.12), value: waveformHistory)
+        .onChange(of: audioManager.audioLevel) { level in
+            waveformHistory.removeFirst()
+            waveformHistory.append(level)
+        }
     }
 
     private var transcribingWaveform: some View {
@@ -620,6 +631,20 @@ struct CaptureView: View {
                 }
             }
             .frame(height: 24)
+            // Same end-fade as CaptureConversationView's own transcribingWaveform
+            // -- see its comment for why.
+            .mask(
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0),
+                        .init(color: .black, location: 0.08),
+                        .init(color: .black, location: 0.92),
+                        .init(color: .clear, location: 1),
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
         }
     }
 

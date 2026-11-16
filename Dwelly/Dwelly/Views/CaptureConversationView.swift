@@ -88,10 +88,15 @@ struct CaptureConversationView: View {
     // ChatGPT-style behavior caused repeated real-device bugs and were a departure
     // from this locked spec -- reverted back to it entirely.
     @State private var isComposeExpanded = false
-    // One random "character" per waveform bar, generated once per recording session
-    // so bars don't all pulse in perfect lockstep — real voice waveforms (Wispr Flow,
-    // Voice Memos) have per-bar variation, not a single uniform pulse.
-    @State private var waveformSeeds: [CGFloat] = (0..<24).map { _ in CGFloat.random(in: 0.4...1.0) }
+    // Kell's fix (Nov 16 2026): a single shared `audioLevel` scaled by a fixed
+    // per-bar random multiplier made every bar move in lockstep -- same instant,
+    // just different heights, which reads as "pulsing," not a waveform. Voice
+    // Memos' own timeline instead shows a HISTORY of past mic samples, oldest at
+    // one end, newest at the other, so speech creates visible, traveling shape
+    // as it scrolls through. This ring buffer is that history -- each slot is
+    // one real past sample, not a shared instantaneous value.
+    private static let waveformBarCount = 24
+    @State private var waveformHistory: [CGFloat] = Array(repeating: 0, count: 24)
     // `unifiedComposeSurface` positions itself by hand (`.position()`, not
     // `.safeAreaInset`), so it does NOT get the automatic keyboard-avoidance
     // `.safeAreaInset(edge: .bottom)` gave the old `composePill`/
@@ -640,25 +645,12 @@ struct CaptureConversationView: View {
                 keyboardHeight = 0
             }
         }
-        // Interactive swipe-to-dismiss (dragging the TextEditor down to collapse the
-        // keyboard) fires a continuous stream of `keyboardWillChangeFrame`
-        // notifications as the keyboard's own frame tracks the user's finger --
-        // `keyboardWillShow`/`keyboardWillHide` alone only fire once, at the start
-        // and end, so without this the composer snapped to its final position
-        // instead of riding down with the keyboard mid-gesture. No `withAnimation`
-        // wrapper here on purpose -- UIKit is already driving this frame-by-frame
-        // to match the user's own finger; wrapping it in a SwiftUI animation would
-        // fight that instead of tracking it.
-        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
-            guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-            let screenHeight = deviceScreenSize.height
-            // During an interactive dismiss the reported frame's origin.y moves
-            // toward the bottom of the screen rather than its height shrinking --
-            // derive the effective visible height from that instead of trusting
-            // `frame.height` alone, which stays constant throughout the drag.
-            let visibleHeight = max(0, screenHeight - frame.origin.y)
-            keyboardHeight = visibleHeight
-        }
+        // Kell's follow-up ask (Nov 16 2026): drop the interactive swipe-to-dismiss
+        // tracking this added -- `keyboardWillShow`/`keyboardWillHide` above
+        // already cover opening and closing the keyboard; this extra
+        // `keyboardWillChangeFrame` listener only mattered for riding frame-by-
+        // frame with an in-progress drag-to-dismiss gesture, which isn't wanted
+        // here.
         .alert("Save this reflection?", isPresented: $showLeaveConfirmation) {
             Button("Keep Talking", role: .cancel) {}
             Button("Save") { manuallyFinished = true }
@@ -1009,6 +1001,26 @@ struct CaptureConversationView: View {
                         .frame(height: isComposeExpanded ? nil : 120)
                         .clipped()
 
+                    // Kell's follow-up ask (Nov 16 2026): a long transcript's collapsed
+                    // preview just stopped dead at the 120pt clip -- no signal that
+                    // there's more, just an abrupt cut mid-line. A thin gradient strip
+                    // sitting on top of (not masking) the TextEditor, fading from
+                    // transparent to the card's own background right where the
+                    // controls row starts, reads as "this trails off" instead of "this
+                    // got cut off." Non-interactive and collapsed-only -- expanded mode
+                    // already shows the full text with nothing to fade.
+                    if !isComposeExpanded {
+                        LinearGradient(
+                            colors: [Theme.Capture.cardBackground.opacity(0), Theme.Capture.cardBackground],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: 28)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                        .padding(.bottom, 58)
+                        .allowsHitTesting(false)
+                    }
+
                     // REGRESSION FIX: the previous pass wrapped this in a VStack with
                     // `.frame(maxWidth: .infinity, maxHeight: .infinity, alignment:
                     // .bottom)` to add an expanded-only divider row -- `.bottom`
@@ -1208,21 +1220,28 @@ struct CaptureConversationView: View {
         .padding(.bottom, Theme.Spacing.xxl)
     }
 
-    // Reacts to AudioRecordingManager.audioLevel (real metering, sampled every 0.1s)
-    // — Kell: "it's supposed to be a wave that is dynamic with my voice... the same
-    // way Wispr Flow is," not the static fixed-height bars this had before (Nov 10
-    // 2026). Each bar has its own random "character" (waveformSeeds) so they don't
-    // all move in unison like one uniform pulse.
+    // Reacts to AudioRecordingManager.audioLevel (real metering, sampled every
+    // 0.1s) -- Kell's follow-up ask (Nov 16 2026): the old version scaled every
+    // bar off that one instantaneous value, so the whole thing moved as a single
+    // synchronized block. Each bar here instead renders its OWN slot in
+    // `waveformHistory` -- a real past sample, oldest at the left, newest at the
+    // right -- so speech actually travels across the bar as it's spoken, the way
+    // Voice Memos' own waveform does, rather than the entire shape pulsing
+    // together.
     private var liveWaveform: some View {
         HStack(spacing: 3) {
-            ForEach(Array(waveformSeeds.enumerated()), id: \.offset) { _, seed in
+            ForEach(Array(waveformHistory.enumerated()), id: \.offset) { _, level in
                 RoundedRectangle(cornerRadius: 2)
                     .fill(Theme.gold)
-                    .frame(width: 2.5, height: 4 + seed * audioManager.audioLevel * 20)
-                    .animation(.easeOut(duration: 0.1), value: audioManager.audioLevel)
+                    .frame(width: 2.5, height: 4 + level * 20)
             }
         }
         .frame(height: 24)
+        .animation(.easeOut(duration: 0.12), value: waveformHistory)
+        .onChange(of: audioManager.audioLevel) { level in
+            waveformHistory.removeFirst()
+            waveformHistory.append(level)
+        }
     }
 
     // No real audio signal exists once recording has stopped, so this is a plain
@@ -1245,6 +1264,23 @@ struct CaptureConversationView: View {
                 }
             }
             .frame(height: 24)
+            // Kell's follow-up ask (Nov 16 2026): keep it wide and continuous,
+            // but soften the hard rectangular cutoff at each end -- a plain
+            // opacity-gradient mask over the whole strip, not a change to the
+            // bars themselves, fades the first/last few bars toward transparent
+            // instead of ending abruptly.
+            .mask(
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0),
+                        .init(color: .black, location: 0.08),
+                        .init(color: .black, location: 0.92),
+                        .init(color: .clear, location: 1),
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
         }
     }
 
@@ -1276,6 +1312,9 @@ struct CaptureConversationView: View {
             // 2026: an empty/failed recording's error message was staying on screen
             // through every re-record attempt after it instead of resetting).
             errorMessage = nil
+            // Fresh timeline for this take -- otherwise the first few bars would
+            // briefly show the previous recording's trailing samples.
+            waveformHistory = Array(repeating: 0, count: Self.waveformBarCount)
             audioManager.onRecordingLimitReached = { transcribeIntoTextField() }
             audioManager.startRecording()
         }
