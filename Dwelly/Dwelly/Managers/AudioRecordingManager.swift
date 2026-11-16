@@ -283,8 +283,19 @@ class AudioRecordingManager: NSObject, ObservableObject, AVAudioRecorderDelegate
             let power = self.audioRecorder?.averagePower(forChannel: 0) ?? -160
             let normalized = max(0, min(1, (power + 50) / 50))
 
+            // Light exponential smoothing on top of the raw 0.1s sample -- a bare
+            // sample-to-sample jump reads as flicker, not speech. Fast attack
+            // (follows a rising/loud voice almost immediately) + slower release (lets
+            // a pause or silence settle rather than instantly collapsing to zero) so
+            // the waveform still visibly tracks emphasis and pauses, not just a
+            // mushy average.
+            let attack: CGFloat = 0.6
+            let release: CGFloat = 0.25
+            let rate = CGFloat(normalized) > self.audioLevel ? attack : release
+            let smoothed = self.audioLevel + rate * (CGFloat(normalized) - self.audioLevel)
+
             DispatchQueue.main.async {
-                self.audioLevel = CGFloat(normalized)
+                self.audioLevel = smoothed
                 // Show warning at 9 minutes
                 if elapsed >= Self.WARNING_THRESHOLD && !self.hasShownWarning {
                     self.hasShownWarning = true

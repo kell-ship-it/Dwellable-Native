@@ -30,6 +30,16 @@ struct CaptureConversationView: View {
     // back chevron is correct.
     var isOnboarding: Bool = false
     var onMomentSaved: (() -> Void)?
+    // Fix #1 (prompt-selection -> thread handoff): shares CaptureView's own
+    // `promptTransition` namespace so the first assistant bubble (the prompt
+    // question itself, when opened from a tapped topic card) can carry the SAME
+    // `.matchedGeometryEffect` id the tapped card used -- letting it read as one
+    // continuous element morphing into its thread position, not a card that
+    // vanished while an unrelated bubble faded in underneath. `nil` for every
+    // other entry path (typed text, voice, post-onboarding) -- no card existed to
+    // morph from, so no matched effect is applied there at all.
+    var promptTransition: Namespace.ID? = nil
+    var promptTransitionId: String? = nil
 
     @Environment(\.apiClient) private var apiClient
     @Environment(\.dismiss) private var dismiss
@@ -98,6 +108,13 @@ struct CaptureConversationView: View {
     // than writing the fallback copy to the DB as if it were genuine synthesis.
     @State private var journalSynthesisSucceeded = false
     @State private var showMomentDetail = false
+    // Fix #1, final step: once a prompt card has morphed into its thread bubble,
+    // the composer should appear AFTER that settles, not already be sitting there
+    // the instant this screen mounts (which would make the morph look like it's
+    // racing an already-finished layout). Starts `false` only when this screen was
+    // actually opened via a tapped card; every other entry path leaves it `true`
+    // from the start, same as before this fix.
+    @State private var isComposerRevealed = true
 
     private let maxResponses = 3
 
@@ -186,6 +203,38 @@ struct CaptureConversationView: View {
     unless it truly fits, don't be clinical.
     """
 
+    // Kell's ask (Nov 2026): pass device-local time/time zone, and whether this is the
+    // first reflection of the user's local day (when known), into the existing
+    // `systemPrompt` context -- so an early-morning reflection can orient toward the
+    // day ahead ("...shape the rest of your day?") instead of defaulting to
+    // evening-flavored language, without ever assuming "tonight" or "tomorrow" when
+    // it isn't actually known. This is appended as its own system turn, not folded
+    // into `systemPrompt` itself, so the base persona prompt stays a plain constant.
+    private var timeAwareContext: String {
+        let now = Date()
+        let timeString = now.formatted(.dateTime.hour().minute())
+        let tz = TimeZone.current.identifier
+        let dayLine = isFirstReflectionTodayLocally
+            ? "This is the user's first reflection today."
+            : "The user has already reflected at least once today."
+        return """
+        Context for this conversation only -- never mention these details directly, \
+        just let them quietly shape tone and framing: it is currently \(timeString) \
+        in the user's local time zone (\(tz)). \(dayLine) If it's early morning, feel \
+        free to gently orient a question toward the day ahead when it genuinely fits \
+        (e.g. "How might remembering His faithfulness shape the rest of your day?") -- \
+        but never assume it's evening/"tonight" or guess at "tomorrow" unless the \
+        user's own words say so first.
+        """
+    }
+
+    // `true` until this device has recorded a reflection today; checked once on
+    // `onAppear` (before this conversation's own capture updates it) so the flag
+    // reflects the state BEFORE this conversation, not after. Device-local only --
+    // no server round-trip, matching every other piece of local-time awareness here.
+    @State private var isFirstReflectionTodayLocally = true
+    private static let lastReflectionDateKey = "dwelly.lastLocalReflectionDate"
+
     /// Shown once, right after the 3rd response, before the journal card — a fixed
     /// string, not an LLM call. Earlier this was LLM-generated and once produced a
     /// generic greeting ("Hi there! I'm here for you...") instead of an actual hand-off,
@@ -266,8 +315,12 @@ struct CaptureConversationView: View {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 20) {
                             ForEach(turns) { turn in
-                                turnBubble(turn, isFinal: isConversationComplete && turn.id == turns.last?.id)
-                                    .id(turn.id == turns.last?.id ? "journalPreview" : turn.id.uuidString)
+                                turnBubble(
+                                    turn,
+                                    isFinal: isConversationComplete && turn.id == turns.last?.id,
+                                    isPromptOrigin: openedWithPromptQuestion && turn.id == turns.first?.id
+                                )
+                                .id(turn.id == turns.last?.id ? "journalPreview" : turn.id.uuidString)
                             }
                             if isWaitingForDwelly {
                                 dwellyBadge
@@ -326,39 +379,17 @@ struct CaptureConversationView: View {
                             }
 
                             if isConversationComplete {
-                                // Onboarding has no back chevron (nothing to go back to), but a
-                                // silent timed auto-advance turned out worse — Kell caught it
-                                // pushing him into the next screen before he'd even gotten to
-                                // look at the journal card (Nov 10 2026). A real "Continue" the
-                                // user taps once they're ready replaces that timer.
-                                //
-                                // Nov 10 2026 (continued): this used to call `onMomentSaved?()`
-                                // directly, which skipped straight past the journal into the
-                                // main app -- a brand-new user's very first journal, the thing
-                                // meant to hook them, was entirely skippable. Now it opens the
-                                // real `JournalDetailView` first; THAT screen's own `onDone`
-                                // (set only in this onboarding case) is what finally calls
-                                // `onMomentSaved?()`, once the user has actually read it.
-                                if isOnboarding {
-                                    Button(action: { showMomentDetail = true }) {
-                                        Text("Continue")
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundColor(Theme.Payment.backgroundPrimary)
-                                            .frame(maxWidth: .infinity)
-                                            .frame(height: 60)
-                                    }
-                                    .background(Theme.gold)
-                                    .clipShape(Capsule())
-                                    .padding(.horizontal, 24)
-                                    .padding(.bottom, Theme.Spacing.xxl)
-                                    .disabled(savedMoment == nil)
-                                    .opacity(savedMoment == nil ? 0.5 : 1.0)
-                                    // Single shared `.navigationDestination(isPresented:
-                                    // $showMomentDetail)` lives on the inline "Open" link in
-                                    // `journalPreviewContent` below -- two destinations bound
-                                    // to the same trigger state is undefined behavior, so this
-                                    // button only sets the flag, same as "Open" does.
-                                }
+                                // Kell's direct ask: remove this bottom "Continue" button
+                                // entirely -- "Open" on the journal card itself
+                                // (`journalPreviewContent` below) is now the sole forward
+                                // action out of this screen, onboarding included. Having
+                                // both a bottom CTA AND an inline "Open" doing the same
+                                // thing read as two separate exits for one real action.
+                                // The onboarding hand-off this button used to own (opening
+                                // `JournalDetailView`, whose own `onDone` finally calls
+                                // `onMomentSaved?()`) is unchanged -- it's reached via the
+                                // card's "Open" link instead, and from inside the entry via
+                                // its own back chevron (see JournalDetailView).
                             } else {
                                 if let warningMessage = audioManager.warningMessage {
                                     Text(warningMessage)
@@ -382,6 +413,10 @@ struct CaptureConversationView: View {
                                 }
                             }
                         }
+                        // Fix #1: revealed only after a prompt card's morph settles
+                        // (see `isComposerRevealed`'s declaration) -- `1` from the
+                        // start for every other entry path.
+                        .opacity(isComposerRevealed ? 1 : 0)
                     }
                 }
 
@@ -402,6 +437,10 @@ struct CaptureConversationView: View {
                                     .foregroundColor(Theme.Capture.textPrimary)
                                     .frame(width: 44, height: 44)
                             }
+                            // T-223 sweep: every other back chevron in the app (onboarding's
+                            // 6 step screens) already carries this label -- this one and
+                            // JournalDetailView's were the two left missing it.
+                            .accessibilityLabel("Back")
                         } else if isConversationComplete {
                             Button(action: { onMomentSaved?(); dismiss() }) {
                                 Image(systemName: "chevron.left")
@@ -409,6 +448,7 @@ struct CaptureConversationView: View {
                                     .foregroundColor(Theme.Capture.textPrimary)
                                     .frame(width: 44, height: 44)
                             }
+                            .accessibilityLabel("Back")
                         }
                         // Onboarding-only (Kell, Nov 11 2026, confirmed explicitly): the
                         // "Response N of 3" counter implies a fixed cap post-onboarding
@@ -508,6 +548,9 @@ struct CaptureConversationView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
         .onAppear {
+            if let last = UserDefaults.standard.object(forKey: Self.lastReflectionDateKey) as? Date {
+                isFirstReflectionTodayLocally = !Calendar.current.isDateInToday(last)
+            }
             if initialMessageIsPrompt {
                 // Dwelly is asking this one, not the user — show it as the opening
                 // assistant turn and wait for the user's real answer instead of
@@ -515,6 +558,17 @@ struct CaptureConversationView: View {
                 // its own question (caught live by Kell, Nov 9 2026).
                 turns = [Turn(role: .assistant, text: initialMessage)]
                 openedWithPromptQuestion = true
+                // Fix #1: hold the composer hidden until the card's own morph into
+                // this turn's bubble has had time to finish, then fade it in --
+                // only when this screen was actually reached via a tapped card
+                // (`promptTransition` non-nil); every other prompt-opened path
+                // (there isn't one today, but defensively) reveals immediately.
+                if promptTransition != nil {
+                    isComposerRevealed = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        withAnimation(.easeOut(duration: 0.25)) { isComposerRevealed = true }
+                    }
+                }
             } else {
                 turns = [Turn(role: .user, text: initialMessage)]
                 Task { await requestDwellyResponse() }
@@ -539,6 +593,25 @@ struct CaptureConversationView: View {
                 keyboardHeight = 0
             }
         }
+        // Interactive swipe-to-dismiss (dragging the TextEditor down to collapse the
+        // keyboard) fires a continuous stream of `keyboardWillChangeFrame`
+        // notifications as the keyboard's own frame tracks the user's finger --
+        // `keyboardWillShow`/`keyboardWillHide` alone only fire once, at the start
+        // and end, so without this the composer snapped to its final position
+        // instead of riding down with the keyboard mid-gesture. No `withAnimation`
+        // wrapper here on purpose -- UIKit is already driving this frame-by-frame
+        // to match the user's own finger; wrapping it in a SwiftUI animation would
+        // fight that instead of tracking it.
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
+            guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+            let screenHeight = deviceScreenSize.height
+            // During an interactive dismiss the reported frame's origin.y moves
+            // toward the bottom of the screen rather than its height shrinking --
+            // derive the effective visible height from that instead of trusting
+            // `frame.height` alone, which stays constant throughout the drag.
+            let visibleHeight = max(0, screenHeight - frame.origin.y)
+            keyboardHeight = visibleHeight
+        }
     }
 
     /// Figma's own reference (Kell's screenshots, Nov 9 2026) shows every numbered
@@ -554,7 +627,7 @@ struct CaptureConversationView: View {
     // that a separate card floating right after the closing text read as broken up,
     // and asked for it to live inside the response bubble itself.
     @ViewBuilder
-    private func turnBubble(_ turn: Turn, isFinal: Bool = false) -> some View {
+    private func turnBubble(_ turn: Turn, isFinal: Bool = false, isPromptOrigin: Bool = false) -> some View {
         switch turn.role {
         case .user:
             HStack {
@@ -585,6 +658,13 @@ struct CaptureConversationView: View {
                 .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.Capture.cardBorder.opacity(0.4), lineWidth: 1))
                 .clipShape(RoundedRectangle(cornerRadius: 18))
             }
+            // Fix #1: only this one bubble -- the opening prompt-question turn, and
+            // only when it actually came from a tapped topic card -- shares the
+            // tapped card's matched-geometry id, so it's the one thing SwiftUI
+            // interpolates continuously across the screen switch. Every other
+            // bubble (real generated responses, the journal preview) is unrelated
+            // to any card and gets no such effect.
+            .modifier(PromptOriginMatch(isActive: isPromptOrigin, namespace: promptTransition))
         case .system:
             EmptyView()
         }
@@ -868,40 +948,74 @@ struct CaptureConversationView: View {
                         .frame(height: isComposeExpanded ? nil : 120)
                         .clipped()
 
-                    HStack(spacing: 10) {
-                        // Mic only ever shows collapsed -- Kell's own correction
-                        // after seeing it live (Nov 10 2026): "remove the mic
-                        // because it creates a different experience... the only
-                        // time you can use the mic is if it's in a collapsed view."
-                        // A plain `if` here (not a separate view) because this
-                        // button was never the thing causing the ghosting -- it's a
-                        // small icon, not a second copy of the user's text.
-                        if !isComposeExpanded {
-                            Button(action: handleRecordTap) {
-                                Image(systemName: "mic.fill")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(Theme.gold)
-                                    .frame(width: 44, height: 44)
-                                    .background(Theme.Capture.cardBorder)
-                                    .clipShape(Circle())
+                    // REGRESSION FIX: the previous pass wrapped this in a VStack with
+                    // `.frame(maxWidth: .infinity, maxHeight: .infinity, alignment:
+                    // .bottom)` to add an expanded-only divider row -- `.bottom`
+                    // centers horizontally, and the collapsed HStack (no leading
+                    // Spacer) has no width of its own to push against, so the
+                    // mic/send buttons silently landed dead-center instead of at the
+                    // far-right/trailing edge they've always had (ChatGPT-style,
+                    // ticket/Kell's explicit call). Collapsed is back to a plain
+                    // trailing-aligned HStack, same as every point before this
+                    // regression; only the expanded divider row (genuinely new,
+                    // intentional, from the prior pass) keeps its own full-width
+                    // wrapper, now correctly alignment: .bottomTrailing so IT doesn't
+                    // re-introduce the same centering bug.
+                    Group {
+                        if isComposeExpanded {
+                            VStack(spacing: 0) {
+                                Rectangle()
+                                    .fill(Theme.Capture.cardBorder)
+                                    .frame(height: 1)
+                                HStack(spacing: 10) {
+                                    Spacer()
+                                    Button(action: sendUserTurn) {
+                                        Image(systemName: "arrow.up")
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundColor(Theme.goldDark)
+                                            .frame(width: 44, height: 44)
+                                            .background(Theme.gold)
+                                            .clipShape(Circle())
+                                    }
+                                    .disabled(isWaitingForDwelly || isOverCharacterLimit)
+                                    .opacity(isOverCharacterLimit ? 0.4 : 1.0)
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.top, 12)
                             }
-                            .disabled(isWaitingForDwelly)
-                            .transition(.opacity)
-                        }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                        } else {
+                            HStack(spacing: 10) {
+                                // Mic only ever shows collapsed -- Kell's own correction
+                                // after seeing it live (Nov 10 2026): "remove the mic
+                                // because it creates a different experience... the only
+                                // time you can use the mic is if it's in a collapsed view."
+                                Button(action: handleRecordTap) {
+                                    Image(systemName: "mic.fill")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(Theme.gold)
+                                        .frame(width: 44, height: 44)
+                                        .background(Theme.Capture.cardBorder)
+                                        .clipShape(Circle())
+                                }
+                                .disabled(isWaitingForDwelly)
+                                .transition(.opacity)
 
-                        Button(action: sendUserTurn) {
-                            Image(systemName: "arrow.up")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(Theme.goldDark)
-                                .frame(width: 44, height: 44)
-                                .background(Theme.gold)
-                                .clipShape(Circle())
+                                Button(action: sendUserTurn) {
+                                    Image(systemName: "arrow.up")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(Theme.goldDark)
+                                        .frame(width: 44, height: 44)
+                                        .background(Theme.gold)
+                                        .clipShape(Circle())
+                                }
+                                .disabled(isWaitingForDwelly || isOverCharacterLimit)
+                                .opacity(isOverCharacterLimit ? 0.4 : 1.0)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                            .padding(.trailing, 10)
                         }
-                        .disabled(isWaitingForDwelly || isOverCharacterLimit)
-                        .opacity(isOverCharacterLimit ? 0.4 : 1.0)
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                    .padding(.trailing, isComposeExpanded ? 20 : 10)
                     // Send button needs to clear the keyboard in the expanded case
                     // too -- `.safeAreaInset(edge: .bottom)` used to do this for
                     // free on the old `expandedComposeOverlay`; this floating
@@ -1012,13 +1126,18 @@ struct CaptureConversationView: View {
     // live audio exists anymore at this point, so this is a self-driven loop, not
     // audio-reactive) plus a status label, shown while speech-to-text runs.
     private var transcribingBar: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 10) {
             Circle().fill(Theme.Payment.textSupporting).frame(width: 6, height: 6)
+            // Spans most of the bar's available width between the status dot and the
+            // "Transcribing..." label -- Kell's ask: the old fixed-width 12-bar strip
+            // left most of the capsule empty. `maxWidth: .infinity` lets it fill
+            // whatever room is actually there instead of a hardcoded bar count.
             transcribingWaveform
-            Spacer()
+                .frame(maxWidth: .infinity)
             Text("Transcribing...")
                 .font(.system(size: 14))
                 .foregroundColor(Theme.Payment.textSupporting)
+                .fixedSize()
         }
         .padding(.horizontal, 20)
         .frame(height: 64)
@@ -1048,14 +1167,20 @@ struct CaptureConversationView: View {
     // No real audio signal exists once recording has stopped, so this is a plain
     // self-looping sine wave via TimelineView — still visibly "alive," per Kell's
     // ask that both states animate, just not voice-reactive (nothing to react to).
+    // Distinct, continuous processing animation (not a copy of the live-recording
+    // waveform's look) -- a traveling sine ripple rather than every bar pulsing in
+    // place, so "processing" reads visibly different from "listening." Bar count
+    // is generous (28, up from 12) specifically so it reads as a continuous wave
+    // once stretched across `.frame(maxWidth: .infinity)` in `transcribingBar`,
+    // rather than a few fat, sparse bars.
     private var transcribingWaveform: some View {
         TimelineView(.animation) { timeline in
             let phase = timeline.date.timeIntervalSinceReferenceDate
             HStack(spacing: 3) {
-                ForEach(0..<12, id: \.self) { index in
+                ForEach(0..<28, id: \.self) { index in
                     RoundedRectangle(cornerRadius: 2)
                         .fill(Theme.Payment.textSupporting)
-                        .frame(width: 2.5, height: 4 + 10 * abs(sin(phase * 3 + Double(index) * 0.5)))
+                        .frame(width: 2.5, height: 4 + 10 * abs(sin(phase * 2.2 - Double(index) * 0.4)))
                 }
             }
             .frame(height: 24)
@@ -1112,8 +1237,11 @@ struct CaptureConversationView: View {
                     errorMessage = TranscriptionManager.shared.errorMessage ?? "Couldn't make that out — try again, or type it instead."
                     return
                 }
+                // Keep the keyboard dismissed on initial delivery -- Kell's ask: the
+                // transcript should land for silent review first, not yank the
+                // keyboard open the instant it's ready. The user taps in to edit
+                // (or expand) when they're ready; this used to force-focus here.
                 inputText = inputText.isEmpty ? transcript : inputText + " " + transcript
-                inputFocused = true
             }
         }
     }
@@ -1138,7 +1266,10 @@ struct CaptureConversationView: View {
             return
         }
 
-        var messages = [LLMMessage(role: .system, content: systemPrompt)]
+        var messages = [
+            LLMMessage(role: .system, content: systemPrompt),
+            LLMMessage(role: .system, content: timeAwareContext),
+        ]
         messages.append(contentsOf: turns.map { LLMMessage(role: $0.role, content: $0.text) })
 
         do {
@@ -1169,6 +1300,7 @@ struct CaptureConversationView: View {
     private func finishAndSave() async {
         isSaving = true
         errorMessage = nil
+        UserDefaults.standard.set(Date(), forKey: Self.lastReflectionDateKey)
 
         async let metaTask: Void = generateJournalMeta()
 
@@ -1276,6 +1408,21 @@ struct CaptureConversationView: View {
                     moods: []
                 )
             }
+        }
+    }
+}
+
+// `matchedGeometryEffect` needs a non-optional `Namespace.ID` -- this just guards
+// applying it at all when there's no shared namespace (every entry path besides a
+// tapped topic card) or this isn't the one bubble that should carry it.
+private struct PromptOriginMatch: ViewModifier {
+    let isActive: Bool
+    let namespace: Namespace.ID?
+    func body(content: Content) -> some View {
+        if isActive, let namespace {
+            content.matchedGeometryEffect(id: "promptCard", in: namespace)
+        } else {
+            content
         }
     }
 }

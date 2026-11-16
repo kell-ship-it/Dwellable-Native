@@ -26,7 +26,9 @@ struct MainTabView: View {
             .tabItem { Label("Today", systemImage: "sun.max") }
 
             NavigationStack {
-                MomentsListView(userId: userId, syncManager: syncManager, onAttemptCapture: attemptCapture)
+                // T-078: real Entries tab (Untold-style calendar + list), replacing
+                // the Phase-1 MomentsListView.
+                EntriesView(userId: userId, syncManager: syncManager, onSearch: {}, onCapture: attemptCapture)
             }
             .tabItem { Label("Entries", systemImage: "book") }
 

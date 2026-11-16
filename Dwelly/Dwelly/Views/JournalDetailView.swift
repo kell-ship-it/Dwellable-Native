@@ -185,29 +185,17 @@ struct JournalDetailView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
-                    .padding(.bottom, isEditing ? 100 : (onDone == nil ? 40 : 100))
+                    .padding(.bottom, isEditing ? 100 : 40)
                 }
             }
         }
         .background(Theme.background.ignoresSafeArea())
         .safeAreaInset(edge: .bottom) {
+            // Kell's direct ask: the bottom "Continue" CTA is gone, onboarding
+            // included -- the top-left back chevron (always shown now, see below)
+            // is the sole way out of this entry, returning to the journal list.
             if isEditing {
                 editToolbar
-            } else if let onDone {
-                // Onboarding's first-ever journal only -- see `onDone`'s comment.
-                // Same pattern as CaptureConversationView's own onboarding footer:
-                // a real tap the user controls, not a timer.
-                Button(action: onDone) {
-                    Text("Continue")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Theme.Payment.backgroundPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 60)
-                }
-                .background(Theme.gold)
-                .clipShape(Capsule())
-                .padding(.horizontal, 24)
-                .padding(.bottom, Theme.Spacing.xxl)
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -439,23 +427,31 @@ struct JournalDetailView: View {
             .padding(.horizontal, 20)
         } else {
             HStack {
-                // Onboarding has nowhere to go back TO -- this comment already said so,
-                // but the chevron rendered unconditionally anyway until Kell caught the
-                // real consequence live (Nov 11 2026): tapping it instead of Continue
-                // dismissed without ever calling `onDone`, so `completeOnboarding()`
-                // never fired, and the NEXT capture got routed through the mandatory
-                // first-capture flow all over again -- which is why "Continue" kept
-                // showing up on what should have been an ordinary capture.
-                if onDone == nil {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(Theme.Capture.textPrimary)
-                            .frame(width: 44, height: 44)
-                    }
-                } else {
-                    Color.clear.frame(width: 44, height: 44)
+                // Always the real back action now, onboarding included (Kell's direct
+                // ask) -- the chevron itself IS "return to the journal list," so it has
+                // to be the thing that actually finishes onboarding when there's an
+                // `onDone`, not a second, separate dismiss that bypasses it. Previously
+                // this chevron was hidden entirely during onboarding in favor of a
+                // bottom "Continue" button, specifically because tapping it used to
+                // just `dismiss()` without ever calling `onDone` -- silently skipping
+                // `completeOnboarding()`, which made the very next ordinary capture get
+                // routed through the mandatory first-capture flow all over again. Now
+                // that `onDone` fires here too, that failure mode is gone and the
+                // chevron can safely be the one, universal way back.
+                Button(action: {
+                    if let onDone { onDone() } else { dismiss() }
+                }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(Theme.Capture.textPrimary)
+                        .frame(width: 44, height: 44)
                 }
+                // T-223 sweep -- this was the one Digital Cotton's original review
+                // comment named directly ("the Journal Entry detail screen uses a
+                // chevron inside a filled circular button"); that circular fill is
+                // already gone (bare chevron, matching every onboarding screen), so
+                // the one remaining gap was this missing label.
+                .accessibilityLabel("Back")
                 Spacer()
                 HStack(spacing: 20) {
                     Button(action: {

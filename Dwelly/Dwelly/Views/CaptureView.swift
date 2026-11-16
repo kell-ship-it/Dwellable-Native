@@ -34,6 +34,21 @@ struct CaptureView: View {
     @State private var showConversation = false
     @State private var pendingConversationMessage = ""
     @State private var pendingConversationIsPrompt = false
+    // Kell's fix #1: the prompt-selection handoff is its own, separate motion from
+    // T-285's recording-stop crossfade above -- fading the OTHER (unselected) topic
+    // cards while the tapped one carries straight into its final thread-bubble
+    // position, as one continuous element, rather than the whole screen just fading
+    // out/in underneath it. `promptTransition` is the shared namespace a tapped
+    // card's `.matchedGeometryEffect` and the resulting first assistant bubble's own
+    // (in CaptureConversationView) both key into -- SwiftUI interpolates between the
+    // two across this screen's `if showConversation {...} else {...}` switch because
+    // both are given the same id under one animated transaction when the switch
+    // itself happens inside `withAnimation`. `selectedPromptTitle` is what actually
+    // drives the fade of the *other* cards; it's set first (own short animation),
+    // then `showConversation` flips a beat later so the fade reads as sequenced, not
+    // simultaneous with the morph.
+    @Namespace private var promptTransition
+    @State private var selectedPromptTitle: String?
     @State private var isTranscribingVoice = false
     @State private var voiceErrorMessage: String?
     @State private var inputText = ""
@@ -128,7 +143,9 @@ struct CaptureView: View {
                     initialMessage: pendingConversationMessage,
                     initialMessageIsPrompt: pendingConversationIsPrompt,
                     isOnboarding: isOnboarding,
-                    onMomentSaved: { onMomentSaved?() }
+                    onMomentSaved: { onMomentSaved?() },
+                    promptTransition: pendingConversationIsPrompt ? promptTransition : nil,
+                    promptTransitionId: selectedPromptTitle
                 )
                 .transition(reduceMotion ? .identity : .fadeLift)
             } else {
@@ -218,9 +235,7 @@ struct CaptureView: View {
                     ScrollView(.vertical, showsIndicators: false) {
                         VStack(spacing: 12) {
                             ForEach(topicCards, id: \.title) { card in
-                                Button(action: {
-                                    beginConversation(message: card.title, isPrompt: true)
-                                }) {
+                                Button(action: { selectPromptCard(card.title) }) {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 4) {
                                             // Kell (Nov 10 2026): the prompt text must be fully
@@ -246,6 +261,17 @@ struct CaptureView: View {
                                     .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.Capture.cardBorder, lineWidth: 1))
                                     .clipShape(RoundedRectangle(cornerRadius: 16))
                                 }
+                                // Only the tapped card gets the matched-geometry id --
+                                // that's what lets it (and only it) carry continuously
+                                // into the resulting thread bubble; every other card is
+                                // just fading out underneath, not morphing anywhere.
+                                .matchedGeometryEffect(id: "promptCard", in: promptTransition, isSource: selectedPromptTitle == card.title)
+                                // The other, un-tapped choices fade out once one is
+                                // selected -- the tapped one stays fully opaque so it
+                                // reads as "this is the one continuing," not fading
+                                // itself before it morphs.
+                                .opacity(selectedPromptTitle == nil || selectedPromptTitle == card.title ? 1 : 0)
+                                .disabled(selectedPromptTitle != nil)
                             }
                         }
                         .padding(.horizontal, 28)
@@ -334,6 +360,25 @@ struct CaptureView: View {
         pendingConversationMessage = message
         pendingConversationIsPrompt = isPrompt
         showConversation = true
+    }
+
+    // Sequenced two-phase handoff for a tapped topic card (fix #1): first fade the
+    // *other* cards out and hold the selected one in place (its own short
+    // animation), then -- a beat later, not simultaneously -- flip into the
+    // conversation screen so the selected card's `.matchedGeometryEffect` actually
+    // has time to read as "this card is becoming that bubble," rather than
+    // everything moving at once.
+    private func selectPromptCard(_ title: String) {
+        guard selectedPromptTitle == nil else { return }
+        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.22)) {
+            selectedPromptTitle = title
+        }
+        let delay = reduceMotion ? 0 : 0.22
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.35)) {
+                beginConversation(message: title, isPrompt: true)
+            }
+        }
     }
 
     // MARK: - Record Tap Handler
@@ -531,13 +576,14 @@ struct CaptureView: View {
     // live audio exists anymore at this point, so this is a self-driven loop, not
     // audio-reactive) plus a status label, shown while speech-to-text runs.
     private var transcribingBar: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 10) {
             Circle().fill(Theme.Payment.textSupporting).frame(width: 6, height: 6)
             transcribingWaveform
-            Spacer()
+                .frame(maxWidth: .infinity)
             Text("Transcribing...")
                 .font(.system(size: 14))
                 .foregroundColor(Theme.Payment.textSupporting)
+                .fixedSize()
         }
         .padding(.horizontal, 20)
         .frame(height: 64)
@@ -563,10 +609,10 @@ struct CaptureView: View {
         TimelineView(.animation) { timeline in
             let phase = timeline.date.timeIntervalSinceReferenceDate
             HStack(spacing: 3) {
-                ForEach(0..<12, id: \.self) { index in
+                ForEach(0..<28, id: \.self) { index in
                     RoundedRectangle(cornerRadius: 2)
                         .fill(Theme.Payment.textSupporting)
-                        .frame(width: 2.5, height: 4 + 10 * abs(sin(phase * 3 + Double(index) * 0.5)))
+                        .frame(width: 2.5, height: 4 + 10 * abs(sin(phase * 2.2 - Double(index) * 0.4)))
                 }
             }
             .frame(height: 24)
