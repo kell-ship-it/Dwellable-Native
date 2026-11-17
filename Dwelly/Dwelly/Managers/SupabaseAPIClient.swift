@@ -13,6 +13,20 @@ class SupabaseAPIClient: APIClient {
     private var jwtToken: String?
     private var refreshToken: String?
     private let keychain = KeychainManager.shared
+    // T-295: at cold launch, `MainTabView` mounts all 4 tabs at once (opacity-toggled,
+    // not conditional -- see its own comment) and both `EntriesView.onAppear` and
+    // `TodayView`'s `.task` fire their own authenticated fetches immediately, on top
+    // of whatever `AppView`'s onboarding gate or `SyncManager`'s connectivity monitor
+    // also kick off. If the restored JWT is already expired, every one of those calls
+    // hits a 401 at roughly the same moment and, without this, each one independently
+    // called `refreshJWTToken()` -- but Supabase rotates refresh tokens on every use,
+    // so only the FIRST of those concurrent refresh calls actually succeeds; every
+    // other one sends a refresh token GoTrue already consumed and gets rejected,
+    // surfacing as exactly the silent, intermittent 401 this ticket describes (worse
+    // for whichever caller's request just happens to race behind another). Tracking
+    // the in-flight refresh here means every concurrent 401 awaits the SAME network
+    // call instead of each starting its own.
+    private var inFlightRefresh: Task<Void, Error>?
     private let rateLimiter = RateLimiter()
     private let certificatePinner: CertificatePinner
 
@@ -161,7 +175,17 @@ class SupabaseAPIClient: APIClient {
                 if !isRetry, refreshToken != nil {
                     hlog("JWT expired (401) — refreshing token and retrying...", "WARNING")
                     do {
-                        try await refreshJWTToken()
+                        // T-295: join an already-in-flight refresh instead of starting a
+                        // second one -- see inFlightRefresh's own comment for why a second
+                        // concurrent refresh call is the actual bug, not just redundant.
+                        if let existing = inFlightRefresh {
+                            try await existing.value
+                        } else {
+                            let task = Task { try await self.refreshJWTToken() }
+                            inFlightRefresh = task
+                            defer { inFlightRefresh = nil }
+                            try await task.value
+                        }
                     } catch {
                         // T-113: the refresh token itself was rejected (dead/revoked —
                         // not the same as a transient network blip during the refresh
