@@ -16,6 +16,12 @@ struct MainTabView: View {
 
     @StateObject private var paymentManager = PaymentManager.shared
     @State private var showCapture = false
+    // T-135/T-139 (Nov 17 2026): the Today tab's Hero verse and 3 reflection tiles each
+    // launch straight into a conversation pre-opened with that one prompt, instead of the
+    // plain composer -- CaptureConversationView already had `initialMessage`/
+    // `initialMessageIsPrompt` for exactly this (built for onboarding's topic cards), it
+    // just had no caller outside CaptureView's own onboarding-only grid until now.
+    @State private var presetPrompt: (title: String, category: String)?
     // T-128: Search is reached the same way Capture is -- one shared full-screen
     // presentation off the tab bar's own header button, not a per-tab destination.
     @State private var showSearch = false
@@ -33,7 +39,9 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
-                TodayPlaceholderView(onCapture: attemptCapture)
+                TodayView(userId: userId, onCapture: { attemptCapture() }, onOpenPrompt: { prompt in
+                    attemptCapture(prompt: prompt)
+                })
             }
             .tabItem { Label("Today", systemImage: "sun.max") }
             .tag(Tab.today)
@@ -43,19 +51,19 @@ struct MainTabView: View {
                 // the Phase-1 MomentsListView. T-128 (Kell's call, Nov 16 2026):
                 // Search only lives here, not on Today/Growth/Profile -- it searches
                 // journal entries specifically, not anything those other tabs show.
-                EntriesView(userId: userId, syncManager: syncManager, onSearch: { showSearch = true }, onCapture: attemptCapture)
+                EntriesView(userId: userId, syncManager: syncManager, onSearch: { showSearch = true }, onCapture: { attemptCapture() })
             }
             .tabItem { Label("Entries", systemImage: "book") }
             .tag(Tab.entries)
 
             NavigationStack {
-                GrowthPlaceholderView(userId: userId, onCapture: attemptCapture)
+                GrowthPlaceholderView(userId: userId, onCapture: { attemptCapture() })
             }
             .tabItem { Label("Growth", systemImage: "leaf") }
             .tag(Tab.growth)
 
             NavigationStack {
-                AccountProfileView(onCapture: attemptCapture)
+                AccountProfileView(onCapture: { attemptCapture() })
             }
             .tabItem { Label("Profile", systemImage: "person.crop.circle") }
             .tag(Tab.profile)
@@ -67,16 +75,32 @@ struct MainTabView: View {
             }
         }
         .fullScreenCover(isPresented: $showCapture) {
-            CaptureView(
-                userId: userId,
-                userEmail: userEmail,
-                syncManager: syncManager,
-                onMomentSaved: { showCapture = false },
-                onFinishedViewingJournal: {
-                    selectedTab = .entries
-                    showCapture = false
-                }
-            )
+            if let presetPrompt {
+                CaptureConversationView(
+                    userId: userId,
+                    userEmail: userEmail,
+                    syncManager: syncManager,
+                    initialMessage: presetPrompt.title,
+                    initialMessageIsPrompt: true,
+                    onMomentSaved: { showCapture = false; self.presetPrompt = nil },
+                    onFinishedViewingJournal: {
+                        selectedTab = .entries
+                        showCapture = false
+                        self.presetPrompt = nil
+                    }
+                )
+            } else {
+                CaptureView(
+                    userId: userId,
+                    userEmail: userEmail,
+                    syncManager: syncManager,
+                    onMomentSaved: { showCapture = false },
+                    onFinishedViewingJournal: {
+                        selectedTab = .entries
+                        showCapture = false
+                    }
+                )
+            }
         }
         .fullScreenCover(item: $paywallContext) { context in
             PaywallView(context: context, onDismiss: {
@@ -94,7 +118,9 @@ struct MainTabView: View {
     /// Apple ID has never used its intro offer, show the real trial-start gate;
     /// otherwise (trial already consumed on this Apple ID, any device) go straight
     /// to a non-trial subscribe screen.
-    private func attemptCapture() {
+    private func attemptCapture(prompt: (title: String, category: String)? = nil) {
+        presetPrompt = prompt
+
         #if DEBUG
         // Dev-only paywall bypass (Nov 11 2026) so Kell can run repeated real captures
         // in the simulator to watch DwellerProfile/Your Narrative populate without

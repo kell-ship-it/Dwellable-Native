@@ -18,7 +18,7 @@
 		B104 /* PaywallContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = B103 /* PaywallContext.swift */; };
 		B106 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B105 /* PaywallView.swift */; };
 		B108 /* TabScreenHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B107 /* TabScreenHeader.swift */; };
-		B10A /* TodayPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B109 /* TodayPlaceholderView.swift */; };
+		B10A /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B109 /* TodayView.swift */; };
 		B10C /* GrowthPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B /* GrowthPlaceholderView.swift */; };
 		F01B /* EntriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01C /* EntriesView.swift */; };
 		F01D /* CustomMood.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01E /* CustomMood.swift */; };
@@ -104,7 +104,7 @@
 		B103 /* PaywallContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallContext.swift; sourceTree = "<group>"; };
 		B105 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		B107 /* TabScreenHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabScreenHeader.swift; sourceTree = "<group>"; };
-		B109 /* TodayPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayPlaceholderView.swift; sourceTree = "<group>"; };
+		B109 /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		B10B /* GrowthPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrowthPlaceholderView.swift; sourceTree = "<group>"; };
 		F01C /* EntriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntriesView.swift; sourceTree = "<group>"; };
 		F01E /* CustomMood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMood.swift; sourceTree = "<group>"; };
@@ -258,7 +258,7 @@
 				A000 /* ModelSetupView.swift */,
 				B105 /* PaywallView.swift */,
 				B107 /* TabScreenHeader.swift */,
-				B109 /* TodayPlaceholderView.swift */,
+				B109 /* TodayView.swift */,
 				B10B /* GrowthPlaceholderView.swift */,
 				B10D /* AccountProfileView.swift */,
 				B10F /* MainTabView.swift */,
@@ -523,7 +523,7 @@
 				F02D /* EncryptionInfoView.swift in Sources */,
 				F02F /* NotificationsSettingsView.swift in Sources */,
 				B108 /* TabScreenHeader.swift in Sources */,
-				B10A /* TodayPlaceholderView.swift in Sources */,
+				B10A /* TodayView.swift in Sources */,
 				B10C /* GrowthPlaceholderView.swift in Sources */,
 				B10E /* AccountProfileView.swift in Sources */,
 				B110 /* MainTabView.swift in Sources */,
