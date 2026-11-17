@@ -109,7 +109,12 @@ struct NotificationsSettingsView: View {
     // MARK: - Saved stage (node 727:842)
 
     private var savedStage: some View {
+        // Kell's call (Nov 17 2026): center this vertically on screen rather than pin it
+        // near the top at Figma's own literal y-offset (260pt down an 874pt frame) --
+        // the standard for a confirmation page like this going forward, not just here.
         VStack(spacing: 16) {
+            Spacer()
+
             Image(systemName: "checkmark")
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(Theme.Payment.textHeading)
@@ -135,10 +140,12 @@ struct NotificationsSettingsView: View {
             }
             .background(Theme.gold)
             .clipShape(Capsule())
+
+            Spacer()
         }
         .padding(.horizontal, 28)
-        .padding(.top, 260)
-        .frame(maxWidth: .infinity, alignment: .top)
+        .padding(.bottom, 34)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func save() {
