@@ -108,6 +108,30 @@ struct CaptureConversationView: View {
     @State private var inputText = ""
     @State private var isWaitingForDwelly = false
     @State private var isTranscribingVoice = false
+    // T-300 (Nov 17 2026, keyboard->voice transition): `AudioRecordingManager`
+    // flips its own `isRecording` on its own internal `DispatchQueue.main.async`
+    // hops (often from a background queue first) -- completely detached from
+    // any `withAnimation` transaction this screen's button actions set up, so
+    // wrapping the call to `audioManager.startRecording()`/`stopRecording()`
+    // itself does nothing: the real mutation lands later, outside that
+    // transaction, and `unifiedComposeSurface`'s card just snaps to its new
+    // size/position with no animation at all. Mirroring it into this plain
+    // local `@State` via `.onChange` below -- explicitly re-wrapped in our own
+    // `withAnimation` once the change actually lands -- is what the geometry
+    // below reads instead of `audioManager.isRecording` directly.
+    @State private var isRecordingAnimated = false
+    // Bridges the gap between tapping Stop (`audioManager.isRecording` -> false,
+    // near-instant) and `isTranscribingVoice` actually becoming true, which only
+    // fires once `AVAudioRecorder`'s delegate confirms the file finished writing
+    // to disk -- a second, separate async hop. Without this, the capsule's
+    // driving condition below would briefly go fully false in that gap, snapping
+    // back toward the text editor for a frame or two before immediately
+    // re-expanding into the transcribing capsule -- a flicker, not the one
+    // continuous capsule Kell asked for. Cleared the moment transcription
+    // actually starts (or, failing that, by a short fallback timer -- see
+    // `handleRecordTap`'s stop branch -- so a real recorder failure can't leave
+    // this stuck true forever).
+    @State private var isStoppingToTranscribe = false
     // Component/Typed-Text-Box (node 651:3966) has its own Collapsed/Expanded states
     // once there's typed/transcribed content — Kell caught this missing entirely
     // (Nov 10 2026): no way to grow the compose box for a long reflection. Collapsed
@@ -771,6 +795,20 @@ struct CaptureConversationView: View {
                 keyboardHeight = 0
             }
         }
+        // T-300 (keyboard->voice transition): mirrors `audioManager.isRecording`
+        // into `isRecordingAnimated`, re-wrapping the change in our own
+        // `withAnimation` -- see that `@State` declaration's own comment for why
+        // this indirection exists at all (the manager flips the real property on
+        // its own detached dispatch, so animating the call site does nothing).
+        // Placed alongside the keyboard notification handlers above since this
+        // is the same kind of problem: an external system's own timeline (there,
+        // UIKit's keyboard; here, AVAudioRecorder's start/stop) that this view
+        // has to observe and re-animate, not drive directly.
+        .onChange(of: audioManager.isRecording) { isRecording in
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+                isRecordingAnimated = isRecording
+            }
+        }
         // Kell's follow-up ask (Nov 16 2026): drop the interactive swipe-to-dismiss
         // tracking this added -- `keyboardWillShow`/`keyboardWillHide` above
         // already cover opening and closing the keyboard; this extra
@@ -1130,7 +1168,13 @@ struct CaptureConversationView: View {
                 // leaving `inputText` alone (already true -- see `cancelRecording` and
                 // `transcribeIntoTextField`'s error branch) is enough to "restore" it;
                 // there's nothing to restore, it was never altered.
-                let isVoiceCapturing = audioManager.isRecording || isTranscribingVoice
+                // T-300: drives the card's geometry off the animatable mirrors,
+                // not `audioManager.isRecording` directly -- see those `@State`
+                // declarations above for why. The recording-vs-transcribing
+                // CONTENT switch inside the capsule (just below) still reads the
+                // live manager value directly, since that's a same-size content
+                // crossfade with no frame/position jump to coordinate.
+                let isVoiceCapturing = isRecordingAnimated || isTranscribingVoice || isStoppingToTranscribe
                 let captureBarHeight: CGFloat = 64
                 let cardWidth = isVoiceCapturing ? collapsedWidth : (isComposeExpanded ? fullWidth : collapsedWidth)
                 let cardHeight = isVoiceCapturing ? captureBarHeight : (isComposeExpanded ? fullHeight : collapsedHeight)
@@ -1557,12 +1601,46 @@ struct CaptureConversationView: View {
 
     private func handleRecordTap() {
         if audioManager.isRecording {
+            // T-300: bridges the gap between `audioManager.isRecording` going
+            // false (near-instant) and `isTranscribingVoice` actually becoming
+            // true (only once the recorder's delegate confirms the file
+            // finished writing -- a separate, later async hop). Set inside
+            // `withAnimation` since -- unlike `audioManager.isRecording` -- this
+            // is our own state, mutated directly in our own code, so there's no
+            // detached-dispatch problem to work around here.
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+                isStoppingToTranscribe = true
+            }
+            // Fallback only: if the recorder's delegate never calls back at all
+            // (a genuine write failure -- pre-existing, unhandled even before
+            // this fix), don't leave the capsule stuck in transcribing mode
+            // forever. Harmless no-op once `transcribeIntoTextField` has already
+            // cleared this flag the normal way.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                if isStoppingToTranscribe && !isTranscribingVoice {
+                    withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+                        isStoppingToTranscribe = false
+                    }
+                }
+            }
             audioManager.stopRecording { transcribeIntoTextField() }
         } else {
             // Clear a stale error from a previous take (Kell caught this, Nov 10
             // 2026: an empty/failed recording's error message was staying on screen
             // through every re-record attempt after it instead of resetting).
             errorMessage = nil
+            // T-300: dismiss the keyboard synchronously, right at tap time --
+            // previously nothing explicitly did this, so dismissal only began
+            // incidentally once the TextEditor was removed from the tree a beat
+            // later (once `audioManager.isRecording` actually flipped true).
+            // That left the capsule's Y-position -- which reads live
+            // `keyboardHeight` -- computing against the still-full keyboard
+            // height for that whole gap, landing it mid-screen instead of at
+            // the bottom. Starting the dismiss here means the keyboard is
+            // already animating down by the time the capsule appears, so its
+            // position formula tracks the keyboard's real, current height the
+            // entire way instead of jumping once `keyboardHeight` catches up.
+            inputFocused = false
             // Model-ready check merged in from `CaptureView` (Nov 17 2026) -- this
             // used to only live on the old standalone first-capture screen, since by
             // the time a user reached what's now this screen's "turns already exist"
@@ -1862,19 +1940,30 @@ struct CaptureConversationView: View {
     // correctly, neither auto-sent nor opened a different screen.
     private func transcribeIntoTextField() {
         guard let audioURL = audioManager.audioURL else { return }
-        isTranscribingVoice = true
+        // T-300: both of this function's own mutations are wrapped directly --
+        // `isTranscribingVoice` is this view's own state, mutated right here in
+        // our own code, so (unlike `audioManager.isRecording`) there's no
+        // detached-dispatch problem to work around with a mirror/`.onChange`.
+        // Clearing `isStoppingToTranscribe` in the same transaction hands the
+        // capsule's driving condition off cleanly, with no gap between the two.
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+            isTranscribingVoice = true
+            isStoppingToTranscribe = false
+        }
         TranscriptionManager.shared.transcribeAudio(from: audioURL) { transcript in
             DispatchQueue.main.async {
-                isTranscribingVoice = false
-                guard let transcript, !transcript.isEmpty else {
-                    errorMessage = TranscriptionManager.shared.errorMessage ?? "Couldn't make that out — try again, or type it instead."
-                    return
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+                    isTranscribingVoice = false
+                    guard let transcript, !transcript.isEmpty else {
+                        errorMessage = TranscriptionManager.shared.errorMessage ?? "Couldn't make that out — try again, or type it instead."
+                        return
+                    }
+                    // Keep the keyboard dismissed on initial delivery -- Kell's ask: the
+                    // transcript should land for silent review first, not yank the
+                    // keyboard open the instant it's ready. The user taps in to edit
+                    // (or expand) when they're ready; this used to force-focus here.
+                    inputText = inputText.isEmpty ? transcript : inputText + " " + transcript
                 }
-                // Keep the keyboard dismissed on initial delivery -- Kell's ask: the
-                // transcript should land for silent review first, not yank the
-                // keyboard open the instant it's ready. The user taps in to edit
-                // (or expand) when they're ready; this used to force-focus here.
-                inputText = inputText.isEmpty ? transcript : inputText + " " + transcript
             }
         }
     }
