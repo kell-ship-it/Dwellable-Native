@@ -155,6 +155,21 @@ class MockAPIClient: APIClient {
         return profile
     }
 
+    func confirmDwellerProfile(userId: String) async throws -> DwellerProfile {
+        try await Task.sleep(nanoseconds: 200_000_000)
+        guard var profile = storedDwellerProfiles[userId] else { throw APIError.notFound }
+        profile.confirmedAt = Date()
+        storedDwellerProfiles[userId] = profile
+        return profile
+    }
+
+    private var storedNarrativeFeedback: [(userId: String, text: String)] = []
+
+    func submitNarrativeFeedback(userId: String, feedbackText: String) async throws {
+        try await Task.sleep(nanoseconds: 200_000_000)
+        storedNarrativeFeedback.append((userId: userId, text: feedbackText))
+    }
+
     func debugSeedDwellerProfile(_ profile: DwellerProfile) {
         storedDwellerProfiles[profile.userId] = profile
     }

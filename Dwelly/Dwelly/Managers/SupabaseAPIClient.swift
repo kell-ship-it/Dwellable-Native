@@ -421,6 +421,29 @@ class SupabaseAPIClient: APIClient {
         return profile
     }
 
+    func confirmDwellerProfile(userId: String) async throws -> DwellerProfile {
+        let endpoint = "/rest/v1/dweller_profiles?user_id=eq.\(userId)"
+        let body = ["confirmed_at": ISO8601DateFormatter().string(from: Date())]
+        let saved = try await makeRequest(
+            method: "PATCH",
+            endpoint: endpoint,
+            body: body,
+            responseType: [DwellerProfile].self
+        )
+        guard let profile = saved.first else { throw APIError.notFound }
+        return profile
+    }
+
+    func submitNarrativeFeedback(userId: String, feedbackText: String) async throws {
+        let payload = NarrativeFeedbackPayload(user_id: userId, feedback_text: feedbackText)
+        _ = try await makeRequest(
+            method: "POST",
+            endpoint: "/rest/v1/narrative_feedback",
+            body: payload,
+            responseType: [NarrativeFeedbackRow].self
+        )
+    }
+
     // MARK: - Custom Moods API (T-294)
 
     func fetchCustomMoods(userId: String) async throws -> [CustomMood] {
@@ -932,6 +955,15 @@ struct DwellerProfilePayload: Codable {
 struct CustomMoodPayload: Codable {
     let user_id: String
     let word: String
+}
+
+struct NarrativeFeedbackPayload: Codable {
+    let user_id: String
+    let feedback_text: String
+}
+
+struct NarrativeFeedbackRow: Decodable {
+    let id: String
 }
 
 struct LoginPayload: Encodable {

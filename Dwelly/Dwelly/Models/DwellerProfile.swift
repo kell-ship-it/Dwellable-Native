@@ -14,16 +14,27 @@ struct DwellerProfile: Codable {
     let userId: String
     var runningSummary: String?
     var updatedAt: Date
+    // T-163: when the user confirmed ("Yes, that's me") the narrative currently in
+    // `runningSummary`. A narrative regenerated after this timestamp (updatedAt newer
+    // than confirmedAt) is treated as unconfirmed again -- see `isConfirmed`.
+    var confirmedAt: Date?
 
-    init(userId: String, runningSummary: String? = nil, updatedAt: Date = Date()) {
+    init(userId: String, runningSummary: String? = nil, updatedAt: Date = Date(), confirmedAt: Date? = nil) {
         self.userId = userId
         self.runningSummary = runningSummary
         self.updatedAt = updatedAt
+        self.confirmedAt = confirmedAt
+    }
+
+    var isConfirmed: Bool {
+        guard let confirmedAt else { return false }
+        return confirmedAt >= updatedAt
     }
 
     enum CodingKeys: String, CodingKey {
         case userId = "user_id"
         case runningSummary = "running_summary"
         case updatedAt = "updated_at"
+        case confirmedAt = "confirmed_at"
     }
 }

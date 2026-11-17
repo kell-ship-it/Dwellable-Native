@@ -17,11 +17,17 @@ import SwiftUI
 /// copy never hints how close someone is. The one remaining simplification: T-161's full
 /// design also has a 6+ "deepens" Tier 2, which is explicitly Post-MVP and not built here.
 ///
-/// Confirm/correct here is still visual only -- "Yes, that's me" and "Not quite" match
-/// T-161's locked spec (Yes logs silently with no visible state change; Not quite opens a
-/// free-text field), but there's no reassessment engine yet for "Not quite" to actually
-/// feed into -- submitting it has nowhere real to go until T-162/T-164 are built, so it's
-/// disabled with a short explanation rather than faking a submission that does nothing.
+/// T-163 (Nov 16 2026): confirm/correct is now real, not visual-only. "Yes, that's me"
+/// persists `DwellerProfile.confirmedAt` for real (survives app restart; a narrative
+/// regenerated after that timestamp goes back to unconfirmed -- see `DwellerProfile.
+/// isConfirmed`), matching the locked "Narrative Confirmed" state pulled directly from
+/// Figma (node 606:368). "Not quite" reveals a real free-text field + Submit (node
+/// 606:290/606:298), which writes to a new `narrative_feedback` table -- a genuine
+/// capture, not a fake submission. What's still NOT built: nothing reads this feedback
+/// back into regenerating the narrative (T-164, the internal reassessment engine, and
+/// T-160/161/162 underneath it are all still not started), so there's no "Narrative
+/// Regenerating"/"Narrative Regenerated" state here -- submitting just thanks the user,
+/// same honest line T-163's own history already drew around "nowhere real to go yet."
 struct YourNarrativeCard: View {
     let userId: String
     @Environment(\.apiClient) private var apiClient
@@ -30,7 +36,10 @@ struct YourNarrativeCard: View {
     @State private var qualifyingReflectionCount = 0
     @State private var isLoading = true
     @State private var showNotQuiteField = false
-    @State private var confirmedThisSession = false
+    @State private var feedbackText = ""
+    @State private var isSubmittingFeedback = false
+    @State private var feedbackSubmitted = false
+    @State private var isConfirming = false
 
     private static let unlockThreshold = 3
 
@@ -84,45 +93,106 @@ struct YourNarrativeCard: View {
                 .font(.system(size: 11))
                 .foregroundColor(Theme.Payment.textFaint)
 
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Does this feel true to you?")
+            if profile?.isConfirmed == true {
+                // Figma node 606:359/606:364/606:365/606:366 -- the real "Confirmed" state.
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 15))
+                            .foregroundColor(Theme.success)
+                        Text("Confirmed")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(Theme.success)
+                    }
+                    Text("Thanks for telling us. This helps your Narrative stay accurate.")
+                        .font(.system(size: 12.5))
+                        .foregroundColor(Theme.Payment.textSupporting)
+                        .lineSpacing(2)
+                }
+                .padding(.top, 4)
+            } else if feedbackSubmitted {
+                Text("Thanks for telling us what feels off.")
                     .font(.system(size: 12.5))
                     .foregroundColor(Theme.Payment.textSupporting)
+                    .padding(.top, 4)
+            } else {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Does this feel true to you?")
+                        .font(.system(size: 12.5))
+                        .foregroundColor(Theme.Payment.textSupporting)
 
-                HStack(spacing: 10) {
-                    Button(action: { confirmedThisSession = true }) {
-                        Text("Yes, that's me")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(Theme.Payment.backgroundPrimary)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
+                    HStack(spacing: 10) {
+                        Button(action: { Task { await confirmNarrative() } }) {
+                            if isConfirming {
+                                ProgressView().tint(Theme.Payment.backgroundPrimary)
+                                    .frame(height: 16)
+                            } else {
+                                Text("Yes, that's me")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(Theme.Payment.backgroundPrimary)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Theme.gold)
+                        .clipShape(Capsule())
+                        .disabled(isConfirming)
+
+                        Button(action: { showNotQuiteField = true }) {
+                            Text("Not quite")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(Theme.Payment.textSupporting)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                        }
+                        .background(Theme.Payment.pillBackground)
+                        .clipShape(Capsule())
                     }
-                    .background(Theme.gold)
-                    .clipShape(Capsule())
-                    // Spec: logs silently, no visible confirmation state -- the only
-                    // user-visible feedback is the button becoming inert.
-                    .disabled(confirmedThisSession)
-                    .opacity(confirmedThisSession ? 0.6 : 1.0)
 
-                    Button(action: { showNotQuiteField = true }) {
-                        Text("Not quite")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Theme.Payment.textSupporting)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                    }
-                    .background(Theme.Payment.pillBackground)
-                    .clipShape(Capsule())
-                }
+                    // Figma node 606:290 -- the real "Feedback Open" form.
+                    if showNotQuiteField {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("What feels off, or what's missing?")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(Theme.Payment.textHeading)
 
-                if showNotQuiteField {
-                    Text("Feedback isn't connected to anything yet — this needs the reassessment engine (T-161) before \"Not quite\" can actually do something with what you tell it.")
-                        .font(.system(size: 11))
-                        .foregroundColor(Theme.Payment.textFaint)
+                            TextField("", text: $feedbackText, axis: .vertical)
+                                .font(.system(size: 13))
+                                .foregroundColor(Theme.Payment.textHeading)
+                                .tint(Theme.gold)
+                                .lineLimit(3...6)
+                                .padding(14)
+                                .background(Theme.inputBackground)
+                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.Payment.borderDivider, lineWidth: 1))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                            HStack {
+                                Spacer()
+                                Button(action: { Task { await submitFeedback() } }) {
+                                    if isSubmittingFeedback {
+                                        ProgressView().tint(Theme.Payment.backgroundPrimary)
+                                            .frame(width: 14, height: 14)
+                                            .padding(.horizontal, 18)
+                                            .padding(.vertical, 10)
+                                    } else {
+                                        Text("Submit \u{203a}")
+                                            .font(.system(size: 13, weight: .medium))
+                                            .foregroundColor(Theme.Payment.backgroundPrimary)
+                                            .padding(.horizontal, 18)
+                                            .padding(.vertical, 10)
+                                    }
+                                }
+                                .background(Theme.gold)
+                                .clipShape(Capsule())
+                                .disabled(isSubmittingFeedback || feedbackText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                .opacity(feedbackText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.5 : 1)
+                            }
+                        }
                         .padding(.top, 2)
+                    }
                 }
+                .padding(.top, 4)
             }
-            .padding(.top, 4)
         }
         .padding(.horizontal, 20)
         .padding(.top, 22)
@@ -163,6 +233,26 @@ struct YourNarrativeCard: View {
         let approved = try? await apiClient.fetchApprovedJournalEntries(userId: userId)
         qualifyingReflectionCount = approved?.count ?? 0
         isLoading = false
+    }
+
+    private func confirmNarrative() async {
+        isConfirming = true
+        if let confirmed = try? await apiClient.confirmDwellerProfile(userId: userId) {
+            profile = confirmed
+        }
+        isConfirming = false
+    }
+
+    private func submitFeedback() async {
+        let trimmed = feedbackText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        isSubmittingFeedback = true
+        if (try? await apiClient.submitNarrativeFeedback(userId: userId, feedbackText: trimmed)) != nil {
+            feedbackSubmitted = true
+            showNotQuiteField = false
+            feedbackText = ""
+        }
+        isSubmittingFeedback = false
     }
 }
 

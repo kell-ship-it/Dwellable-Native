@@ -29,6 +29,11 @@ protocol APIClient {
     // `nil` means no profile exists yet (a new user with no approved journal entry).
     func fetchDwellerProfile(userId: String) async throws -> DwellerProfile?
     func saveDwellerProfile(_ profile: DwellerProfile) async throws -> DwellerProfile
+    // T-163: confirm/correct loop for "Your Narrative" -- confirming persists for real
+    // (not a session flag); feedback from "Not quite" is captured for real even though
+    // nothing processes it yet (T-164, not started).
+    func confirmDwellerProfile(userId: String) async throws -> DwellerProfile
+    func submitNarrativeFeedback(userId: String, feedbackText: String) async throws
 
     // Custom mood endpoints (T-294) — a user's own mood vocabulary, shared across every
     // journal entry rather than trapped inside the one entry it was first typed into.
