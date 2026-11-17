@@ -55,15 +55,23 @@ struct ManageCustomMoodsView: View {
                     Spacer()
                 } else {
                     ScrollView {
-                        VStack(spacing: Theme.Spacing.md) {
+                        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
                             if let errorMessage {
                                 Text(errorMessage)
                                     .font(.system(size: 13))
                                     .foregroundColor(Theme.error)
                             }
 
-                            ForEach(customMoods) { mood in
-                                row(for: mood)
+                            // Kell's call (Nov 16 2026): same pill language as the Mood
+                            // Sheet itself (Theme.Payment.pillBackground fill, textHeading
+                            // text), just scaled up -- this is a bigger version of that
+                            // same chip, not a settings list row. The checkmark there
+                            // becomes an "x" here: the action on this screen is remove,
+                            // not select.
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 12)], alignment: .leading, spacing: 12) {
+                                ForEach(customMoods) { mood in
+                                    pill(for: mood)
+                                }
                             }
                         }
                         .padding(.horizontal, Theme.Spacing.xl)
@@ -76,26 +84,26 @@ struct ManageCustomMoodsView: View {
         .task { await load() }
     }
 
-    private func row(for mood: CustomMood) -> some View {
-        HStack {
-            Text(mood.word)
-                .font(.system(size: 14))
-                .foregroundColor(Theme.text)
-            Spacer()
-            Button(action: { Task { await delete(mood) } }) {
+    private func pill(for mood: CustomMood) -> some View {
+        Button(action: { Task { await delete(mood) } }) {
+            HStack(spacing: 10) {
+                Text(mood.word)
+                    .font(.system(size: 17))
+                    .foregroundColor(Theme.Payment.textHeading)
                 if deletingId == mood.id {
-                    ProgressView().tint(Theme.error)
+                    ProgressView().tint(Theme.Payment.textSupporting)
                 } else {
-                    Image(systemName: "trash")
-                        .font(.system(size: 14))
-                        .foregroundColor(Theme.error)
+                    Image(systemName: "xmark")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(Theme.Payment.textSupporting)
                 }
             }
-            .disabled(deletingId != nil)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
+            .background(Theme.Payment.pillBackground)
+            .clipShape(Capsule())
         }
-        .padding(Theme.Spacing.lg)
-        .background(Theme.surfaceBackground)
-        .cornerRadius(10)
+        .disabled(deletingId != nil)
     }
 
     private func load() async {
