@@ -6,6 +6,15 @@ import SwiftUI
 /// user can actually see and act on what's sitting in that 30-day window, plus the one
 /// place "Delete Forever" is genuinely, irreversibly permanent (unlike Delete Entry,
 /// which this screen's own existence is what makes recoverable).
+///
+/// Rebuilt Nov 16 2026 (Kell caught it live -- was still the pre-redesign legacy `Theme.*`
+/// palette and system font, not the real P9/P12 redesign this screen is actually reached
+/// from). No standalone Figma frame exists for this screen specifically -- only the
+/// Settings Card row that pushes to it (node 711:5045) -- so there's no exact mock to
+/// match pixel-for-pixel; instead this now reuses the same real, locked building blocks
+/// every other redesigned screen uses: `Theme.Payment` palette, the chevron.left back
+/// button + serif title header pattern (`JournalDetailView`/`SearchView`), and
+/// `Theme.Payment.surfaceCard` rows matching Account Profile's own cards.
 struct RecentlyDeletedView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.apiClient) private var apiClient
@@ -25,22 +34,27 @@ struct RecentlyDeletedView: View {
 
     var body: some View {
         ZStack {
-            Theme.background.ignoresSafeArea()
+            Theme.Payment.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 HStack(spacing: 4) {
                     Button(action: { dismiss() }) {
-                        Text("‹")
-                            .font(.system(size: 20))
-                            .foregroundColor(Theme.tertiaryText)
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(Theme.Payment.textHeading)
+                            .frame(width: 44, height: 44)
                     }
+                    .accessibilityLabel("Back")
+
                     Text("Recently Deleted")
-                        .font(.system(size: 14, weight: .regular))
-                        .foregroundColor(Theme.tertiaryText)
+                        .font(.system(size: 20, weight: .regular, design: .serif))
+                        .foregroundColor(Theme.Payment.textHeading)
+
                     Spacer()
                 }
-                .padding(.horizontal, Theme.Spacing.xl)
-                .padding(.vertical, Theme.Spacing.md)
+                .padding(.leading, 4)
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
 
                 if isLoading {
                     Spacer()
@@ -50,7 +64,7 @@ struct RecentlyDeletedView: View {
                     Spacer()
                     Text("Nothing here right now.")
                         .font(.system(size: 14))
-                        .foregroundColor(Theme.tertiaryText)
+                        .foregroundColor(Theme.Payment.textSupporting)
                     Spacer()
                 } else {
                     ScrollView {
@@ -58,7 +72,7 @@ struct RecentlyDeletedView: View {
                             if let errorMessage {
                                 Text(errorMessage)
                                     .font(.system(size: 13))
-                                    .foregroundColor(Theme.error)
+                                    .foregroundColor(Theme.Payment.errorRed)
                             }
 
                             ForEach(deletedMoments) { moment in
@@ -92,22 +106,22 @@ struct RecentlyDeletedView: View {
         let daysRemaining = daysRemaining(for: moment)
         return VStack(alignment: .leading, spacing: 8) {
             Text(titles[moment.id] ?? String(moment.body.prefix(60)))
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(Theme.text)
+                .font(.system(size: 15, weight: .semibold, design: .serif))
+                .foregroundColor(Theme.Payment.textHeading)
                 .lineLimit(1)
 
             HStack(spacing: 6) {
                 if let deletedAt = moment.deletedAt {
                     Text("Deleted \(deletedAt.formatted(date: .abbreviated, time: .omitted))")
                         .font(.system(size: 12))
-                        .foregroundColor(Theme.tertiaryText)
+                        .foregroundColor(Theme.Payment.textSupporting)
                 }
                 Text("·")
                     .font(.system(size: 12))
-                    .foregroundColor(Theme.tertiaryText)
+                    .foregroundColor(Theme.Payment.textSupporting)
                 Text(daysRemaining <= 1 ? "1 day left" : "\(daysRemaining) days left")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(daysRemaining <= 3 ? Theme.error : Theme.tertiaryText)
+                    .foregroundColor(daysRemaining <= 3 ? Theme.Payment.errorRed : Theme.Payment.textSupporting)
             }
 
             HStack(spacing: Theme.Spacing.md) {
@@ -125,7 +139,7 @@ struct RecentlyDeletedView: View {
                 Button(action: { momentPendingPermanentDelete = moment }) {
                     Text("Delete Forever")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(Theme.error)
+                        .foregroundColor(Theme.Payment.errorRed)
                 }
                 .disabled(restoringId != nil)
             }
@@ -133,8 +147,8 @@ struct RecentlyDeletedView: View {
         }
         .padding(Theme.Spacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.surfaceBackground)
-        .cornerRadius(10)
+        .background(Theme.Payment.surfaceCard)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     private func daysRemaining(for moment: Moment) -> Int {
