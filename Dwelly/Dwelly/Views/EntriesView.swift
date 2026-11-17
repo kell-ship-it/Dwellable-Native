@@ -38,6 +38,7 @@ struct EntriesView: View {
 
     @State private var entries: [Entry] = []
     @State private var isLoading = true
+    @State private var hasLoadedOnce = false
     @State private var loadError: String?
 
     // Untold-style: anchored to the first of the month currently shown. `selectedDay`
@@ -377,7 +378,16 @@ struct EntriesView: View {
     // MARK: - Data
 
     private func loadEntries() async {
-        isLoading = true
+        // Kell caught this live (Nov 17 2026): `TabView` keeps this screen alive, and
+        // the re-fetch-on-every-appearance fix above (already correct -- a just-saved
+        // entry needs it) was blanking the WHOLE screen back to a bare spinner on every
+        // single tab switch back to Entries, even when it already had real content on
+        // screen a second ago. Only the very first load should hide everything behind
+        // the spinner; every later refresh happens quietly behind the content that's
+        // already there, same as pull-to-refresh anywhere else never hides the list.
+        if !hasLoadedOnce {
+            isLoading = true
+        }
         loadError = nil
         do {
             async let moments = apiClient.fetchMoments(userId: userId)
@@ -397,10 +407,12 @@ struct EntriesView: View {
             await MainActor.run {
                 entries = merged
                 isLoading = false
+                hasLoadedOnce = true
             }
         } catch {
             await MainActor.run {
                 isLoading = false
+                hasLoadedOnce = true
                 loadError = "Couldn't load your entries. Check your connection and try again."
             }
             HTMLLogManager.shared.log("EntriesView load failed: \(error.localizedDescription)", level: "ERROR")
