@@ -107,6 +107,12 @@ struct JournalDetailView: View {
     @State private var selectedMoods: [String]
     @State private var showMoodSheet = false
     @State private var customMoodText = ""
+    // Kell caught this live (Nov 16 2026): tapping/typing inside the sheet mutated
+    // `selectedMoods` immediately, so swiping the sheet away (anywhere but "Done")
+    // still kept the change -- there was no way to back out. `draftMoods` is seeded
+    // from `selectedMoods` when the sheet opens and only written back on "Done";
+    // any other dismissal (swipe, tap outside) just discards the draft.
+    @State private var draftMoods: [String] = []
     // Kell caught this live (Nov 16 2026): "View Original Chat" did nothing at
     // all -- a plain `Button(action: {})`, per the old comment, because there's
     // no stored link to the real back-and-forth `CaptureConversationView`
@@ -620,7 +626,10 @@ struct JournalDetailView: View {
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(Theme.Payment.textHeading)
                 Spacer()
-                Button("Done") { showMoodSheet = false }
+                Button("Done") {
+                    selectedMoods = draftMoods
+                    showMoodSheet = false
+                }
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Theme.gold)
             }
@@ -641,8 +650,8 @@ struct JournalDetailView: View {
             // -- that's what actually signals "you're capped," not a border/fill swap.
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 8)], alignment: .leading, spacing: 8) {
                 ForEach(presetMoods, id: \.self) { mood in
-                    let isSelected = selectedMoods.contains(mood)
-                    let isCappedOut = !isSelected && selectedMoods.count >= maxMoods
+                    let isSelected = draftMoods.contains(mood)
+                    let isCappedOut = !isSelected && draftMoods.count >= maxMoods
                     Button(action: { toggleMood(mood) }) {
                         HStack(spacing: 6) {
                             if isSelected {
@@ -707,11 +716,11 @@ struct JournalDetailView: View {
                 }
             }
             .padding(.top, 12)
-            .disabled(selectedMoods.count >= maxMoods)
-            .opacity(selectedMoods.count >= maxMoods ? 0.4 : 1)
+            .disabled(draftMoods.count >= maxMoods)
+            .opacity(draftMoods.count >= maxMoods ? 0.4 : 1)
 
-            if !selectedMoods.isEmpty {
-                Text("\(selectedMoods.count) / \(maxMoods) selected")
+            if !draftMoods.isEmpty {
+                Text("\(draftMoods.count) / \(maxMoods) selected")
                     .font(.system(size: 11))
                     .foregroundColor(Theme.Payment.textSupporting)
                     .padding(.top, 10)
@@ -722,6 +731,7 @@ struct JournalDetailView: View {
         .background(Theme.background.ignoresSafeArea())
         .applyMoodSheetPresentationBackground()
         .presentationDetents([.medium])
+        .onAppear { draftMoods = selectedMoods }
     }
 
     /// Not the real back-and-forth conversation (Dwelly's side of it is never
@@ -758,21 +768,26 @@ struct JournalDetailView: View {
         .presentationDetents([.medium, .large])
     }
 
+    // Kell caught this live (Nov 16 2026): these used to mutate `selectedMoods`
+    // and fire `persistEntry()` on every tap/submit, so a mood change was already
+    // saved to Supabase before "Done" was ever pressed -- swiping the sheet away
+    // instead of hitting Done didn't undo anything. They now only touch the sheet's
+    // own `draftMoods`; "Done" (above) is the one place that copies the draft back
+    // into `selectedMoods`, and persisting still goes through the normal edit-mode
+    // Save button, same as the body text.
     private func toggleMood(_ mood: String) {
-        if let index = selectedMoods.firstIndex(of: mood) {
-            selectedMoods.remove(at: index)
-        } else if selectedMoods.count < maxMoods {
-            selectedMoods.append(mood)
+        if let index = draftMoods.firstIndex(of: mood) {
+            draftMoods.remove(at: index)
+        } else if draftMoods.count < maxMoods {
+            draftMoods.append(mood)
         }
-        Task { await persistEntry() }
     }
 
     private func addCustomMood() {
         let trimmed = customMoodText.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty, selectedMoods.count < maxMoods, !selectedMoods.contains(trimmed) else { return }
-        selectedMoods.append(trimmed)
+        guard !trimmed.isEmpty, draftMoods.count < maxMoods, !draftMoods.contains(trimmed) else { return }
+        draftMoods.append(trimmed)
         customMoodText = ""
-        Task { await persistEntry() }
     }
 
     // MARK: - Edit toolbar (photo / camera / mic)
