@@ -70,7 +70,13 @@ struct NotificationsSettingsView: View {
             modePicker
 
             Spacer()
-
+        }
+        .padding(.horizontal, 28)
+        .padding(.top, 64)
+        // Kell's call (Nov 17 2026): every big gold CTA (Save/Done/Next/etc.) pins to the
+        // bottom of the screen, same `.safeAreaInset` pattern ForgotPasswordView already
+        // uses -- never just the next thing after the content in the VStack's flow.
+        .safeAreaInset(edge: .bottom) {
             Button(action: save) {
                 Text("Save Notifications")
                     .font(.system(size: 16, weight: .semibold))
@@ -80,10 +86,11 @@ struct NotificationsSettingsView: View {
             }
             .background(Theme.gold)
             .clipShape(Capsule())
+            .padding(.horizontal, 28)
+            .padding(.top, 16)
+            .padding(.bottom, 24)
+            .background(Theme.Payment.backgroundPrimary)
         }
-        .padding(.horizontal, 28)
-        .padding(.top, 64)
-        .padding(.bottom, 34)
     }
 
     private var modePicker: some View {
@@ -109,9 +116,10 @@ struct NotificationsSettingsView: View {
     // MARK: - Saved stage (node 727:842)
 
     private var savedStage: some View {
-        // Kell's call (Nov 17 2026): center this vertically on screen rather than pin it
-        // near the top at Figma's own literal y-offset (260pt down an 874pt frame) --
-        // the standard for a confirmation page like this going forward, not just here.
+        // Kell's call (Nov 17 2026): the text content centers vertically on screen (the
+        // real convention for a confirmation page, not Figma's own literal y-offset) while
+        // the CTA stays pinned to the bottom regardless -- the two are separate rules, not
+        // one "center everything" rule.
         VStack(spacing: 16) {
             Spacer()
 
@@ -129,8 +137,11 @@ struct NotificationsSettingsView: View {
                 .foregroundColor(Theme.Payment.textSupporting)
                 .multilineTextAlignment(.center)
 
-            Spacer().frame(height: 8)
-
+            Spacer()
+        }
+        .padding(.horizontal, 28)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .safeAreaInset(edge: .bottom) {
             Button(action: { dismiss() }) {
                 Text("Done")
                     .font(.system(size: 16, weight: .semibold))
@@ -140,12 +151,11 @@ struct NotificationsSettingsView: View {
             }
             .background(Theme.gold)
             .clipShape(Capsule())
-
-            Spacer()
+            .padding(.horizontal, 28)
+            .padding(.top, 16)
+            .padding(.bottom, 24)
+            .background(Theme.Payment.backgroundPrimary)
         }
-        .padding(.horizontal, 28)
-        .padding(.bottom, 34)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func save() {

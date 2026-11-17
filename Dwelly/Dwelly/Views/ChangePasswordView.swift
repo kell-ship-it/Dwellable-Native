@@ -79,6 +79,22 @@ struct ChangePasswordView: View {
             header
         }
         .navigationBarBackButtonHidden(true)
+        // Kell's call (Nov 17 2026): every big gold CTA pins to the bottom of the screen,
+        // same `.safeAreaInset` pattern ForgotPasswordView already uses -- never just the
+        // next thing after the fields/content in the scroll flow.
+        .safeAreaInset(edge: .bottom) { bottomCTA }
+    }
+
+    @ViewBuilder
+    private var bottomCTA: some View {
+        switch stage {
+        case .enterNewPassword:
+            primaryButton(title: "Send Confirmation Code", disabled: !isNewPasswordValid, action: sendCode)
+        case .enterCode:
+            primaryButton(title: "Confirm", disabled: !isCodeValid, action: confirmCode)
+        case .success:
+            primaryButton(title: "Done", disabled: false, action: { dismiss() })
+        }
     }
 
     // MARK: - Stages
@@ -97,10 +113,6 @@ struct ChangePasswordView: View {
                     .font(.system(size: 13))
                     .foregroundColor(Theme.Payment.errorRed)
             }
-
-            Spacer().frame(height: 24)
-
-            primaryButton(title: "Send Confirmation Code", disabled: !isNewPasswordValid, action: sendCode)
         }
     }
 
@@ -151,10 +163,6 @@ struct ChangePasswordView: View {
                     .foregroundColor(resendSent ? Theme.Payment.textSupporting : Theme.gold)
             }
             .disabled(resendSent)
-
-            Spacer().frame(height: 24)
-
-            primaryButton(title: "Confirm", disabled: !isCodeValid, action: confirmCode)
         }
     }
 
@@ -272,6 +280,10 @@ struct ChangePasswordView: View {
         .clipShape(Capsule())
         .disabled(isSubmitting || disabled)
         .opacity(disabled ? 0.5 : 1)
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 24)
+        .background(Theme.Payment.background)
     }
 
     // MARK: - Actions
