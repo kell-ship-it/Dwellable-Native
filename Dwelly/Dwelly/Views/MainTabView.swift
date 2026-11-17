@@ -68,6 +68,15 @@ struct MainTabView: View {
             .tabItem { Label("Profile", systemImage: "person.crop.circle") }
             .tag(Tab.profile)
         }
+        // Kell caught a real, on-device color-fringe glitch on the tab bar's own
+        // selection pill mid-slide, not a simulator rendering artifact -- a known
+        // SwiftUI/iOS issue where the system tab bar's selected-icon tint
+        // interpolates through intermediate colors while animating. Turning off the
+        // implicit animation on `selectedTab` makes the pill jump instantly instead
+        // of sliding, trading a slightly less fluid switch for removing the artifact
+        // entirely, since there's no direct control over the system chrome's own
+        // interpolation.
+        .animation(nil, value: selectedTab)
         .tint(Theme.gold)
         .fullScreenCover(isPresented: $showSearch) {
             NavigationStack {

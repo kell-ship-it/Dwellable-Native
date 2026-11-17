@@ -743,13 +743,18 @@ struct CaptureConversationView: View {
                     .foregroundColor(Theme.Payment.textSupporting)
                 Spacer()
                 if let savedMoment {
+                    // Kell's call (Nov 17 2026): a gold-outline ghost button read as a
+                    // quiet link, not the one real CTA this card has -- filled solid gold
+                    // (same Gold CTA Heuristic every other primary action in the app uses)
+                    // instead of just an outline + gold text.
                     Button(action: { showMomentDetail = true }) {
                         Text("Open")
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(Theme.Capture.goldBright)
+                            .foregroundColor(Theme.Payment.backgroundPrimary)
                             .frame(width: 60, height: 24)
                     }
-                    .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
+                    .background(Theme.gold)
+                    .clipShape(Capsule())
                     // Shared by both the inline "Open" link here and the onboarding
                     // "Continue" button above -- they're the same destination either
                     // way, just reached differently. `onDone` always does
