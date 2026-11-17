@@ -34,6 +34,10 @@ protocol APIClient {
     // nothing processes it yet (T-164, not started).
     func confirmDwellerProfile(userId: String) async throws -> DwellerProfile
     func submitNarrativeFeedback(userId: String, feedbackText: String) async throws
+    // T-161/T-164 (Nov 16 2026, Kell's direct call): "Not quite" feedback carries the
+    // SAME weight as a captured moment toward both the qualifying-reflection threshold
+    // and the narrative's own generated content -- not just stored, actually read back.
+    func fetchNarrativeFeedback(userId: String) async throws -> [NarrativeFeedback]
 
     // Custom mood endpoints (T-294) — a user's own mood vocabulary, shared across every
     // journal entry rather than trapped inside the one entry it was first typed into.

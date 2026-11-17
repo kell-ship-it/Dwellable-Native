@@ -230,8 +230,21 @@ struct YourNarrativeCard: View {
     private func load() async {
         isLoading = true
         profile = try? await apiClient.fetchDwellerProfile(userId: userId)
-        let approved = try? await apiClient.fetchApprovedJournalEntries(userId: userId)
-        qualifyingReflectionCount = approved?.count ?? 0
+        let approved = (try? await apiClient.fetchApprovedJournalEntries(userId: userId)) ?? []
+        let feedback = (try? await apiClient.fetchNarrativeFeedback(userId: userId)) ?? []
+        // T-161/T-164: "Not quite" feedback counts toward the threshold exactly like a
+        // captured moment -- same list, same weight, not a separate lesser category.
+        qualifyingReflectionCount = approved.count + feedback.count
+
+        if let regenerated = await DwellerProfileManager.regenerateIfNeeded(
+            userId: userId,
+            currentProfile: profile,
+            approvedEntries: approved,
+            feedback: feedback,
+            apiClient: apiClient
+        ) {
+            profile = regenerated
+        }
         isLoading = false
     }
 

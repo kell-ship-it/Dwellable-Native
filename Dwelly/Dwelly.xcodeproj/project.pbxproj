@@ -24,6 +24,7 @@
 		F01D /* CustomMood.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01E /* CustomMood.swift */; };
 		F01F /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F020 /* SearchView.swift */; };
 		F021 /* PlainStatsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F022 /* PlainStatsSection.swift */; };
+		F023 /* NarrativeFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = F024 /* NarrativeFeedback.swift */; };
 		B10E /* AccountProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D /* AccountProfileView.swift */; };
 		B110 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10F /* MainTabView.swift */; };
 		B112 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B111 /* WelcomeView.swift */; };
@@ -105,6 +106,7 @@
 		F01E /* CustomMood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMood.swift; sourceTree = "<group>"; };
 		F020 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		F022 /* PlainStatsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlainStatsSection.swift; sourceTree = "<group>"; };
+		F024 /* NarrativeFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NarrativeFeedback.swift; sourceTree = "<group>"; };
 		B10D /* AccountProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountProfileView.swift; sourceTree = "<group>"; };
 		B10F /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		B111 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
@@ -295,6 +297,7 @@
 				B103 /* PaywallContext.swift */,
 				F016 /* DwellerProfile.swift */,
 				F01E /* CustomMood.swift */,
+				F024 /* NarrativeFeedback.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -502,6 +505,7 @@
 				F01D /* CustomMood.swift in Sources */,
 				F01F /* SearchView.swift in Sources */,
 				F021 /* PlainStatsSection.swift in Sources */,
+				F023 /* NarrativeFeedback.swift in Sources */,
 				B108 /* TabScreenHeader.swift in Sources */,
 				B10A /* TodayPlaceholderView.swift in Sources */,
 				B10C /* GrowthPlaceholderView.swift in Sources */,

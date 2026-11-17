@@ -440,7 +440,16 @@ class SupabaseAPIClient: APIClient {
             method: "POST",
             endpoint: "/rest/v1/narrative_feedback",
             body: payload,
-            responseType: [NarrativeFeedbackRow].self
+            responseType: [NarrativeFeedback].self
+        )
+    }
+
+    func fetchNarrativeFeedback(userId: String) async throws -> [NarrativeFeedback] {
+        let endpoint = "/rest/v1/narrative_feedback?user_id=eq.\(userId)&select=*&order=created_at.asc"
+        return try await makeRequest(
+            method: "GET",
+            endpoint: endpoint,
+            responseType: [NarrativeFeedback].self
         )
     }
 
@@ -960,10 +969,6 @@ struct CustomMoodPayload: Codable {
 struct NarrativeFeedbackPayload: Codable {
     let user_id: String
     let feedback_text: String
-}
-
-struct NarrativeFeedbackRow: Decodable {
-    let id: String
 }
 
 struct LoginPayload: Encodable {
