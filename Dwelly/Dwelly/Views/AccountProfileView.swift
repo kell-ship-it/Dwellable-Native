@@ -8,16 +8,37 @@ import SwiftUI
 /// tappable-looking but not yet wired to real destinations.
 struct AccountProfileView: View {
     @EnvironmentObject var authManager: AuthManager
+    @ObservedObject private var paymentManager = PaymentManager.shared
+    @Environment(\.apiClient) private var apiClient
     var onCapture: () -> Void
 
     @State private var showSignOutConfirmation = false
     @State private var showDeleteAccountConfirmation = false
     @State private var isDeletingAccount = false
     @State private var deleteAccountError: String?
+    // T-130: "Member Since" was a hardcoded "—" placeholder; this is the real value.
+    @State private var memberSince: Date?
 
     private var initials: String {
         guard let email = authManager.currentUser?.email, let first = email.first else { return "?" }
         return String(first).uppercased()
+    }
+
+    // T-130 (Kell's call, Nov 16 2026): the ticket text's "Intent Statement" row and
+    // weekly Intent Check prompt (Yes/Not Yet/Need Help) don't exist anywhere in the
+    // actual locked Figma design (node 711:4986, "Account Profile — Base") -- checked
+    // live via Figma MCP before building rather than building from the stale ticket
+    // text. The real design's Info Card is just Member Since + Subscription, plus a
+    // Name row in Identity that the code never actually rendered (avatar + email
+    // only) -- that's the real gap this ticket closes. See T-299 for the
+    // superseded-from-design parts.
+    private var memberSinceDisplay: String {
+        guard let memberSince else { return "—" }
+        return memberSince.formatted(date: .abbreviated, time: .omitted)
+    }
+
+    private var subscriptionDisplay: String {
+        paymentManager.hasActiveEntitlement ? "Premium" : "Free"
     }
 
     var body: some View {
@@ -35,6 +56,10 @@ struct AccountProfileView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Payment.background.ignoresSafeArea())
+        .task {
+            guard let userId = authManager.currentUser?.id else { return }
+            memberSince = try? await apiClient.fetchAccountCreatedAt(userId: userId)
+        }
         .confirmationDialog("Sign out of Dwelly?", isPresented: $showSignOutConfirmation, titleVisibility: .visible) {
             Button("Sign Out", role: .destructive) {
                 Task { await authManager.signOut() }
@@ -71,6 +96,16 @@ struct AccountProfileView: View {
         }
     }
 
+    // T-130: the real locked design (node 711:4996) shows a name line between the
+    // avatar and email -- the code never rendered one at all. Reuses the same local
+    // cache T-111 already populates from onboarding's Name Entry screen; no new
+    // storage needed.
+    private var displayName: String? {
+        guard let userId = authManager.currentUser?.id else { return nil }
+        let name = ProfileManager.shared.localProfile(userId: userId).name
+        return (name?.isEmpty ?? true) ? nil : name
+    }
+
     private var identity: some View {
         VStack(spacing: 6) {
             Circle()
@@ -82,6 +117,12 @@ struct AccountProfileView: View {
                         .foregroundColor(Theme.gold)
                 )
 
+            if let displayName {
+                Text(displayName)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(Theme.Payment.textHeading)
+            }
+
             Text(authManager.currentUser?.email ?? "")
                 .font(.system(size: 13))
                 .foregroundColor(Theme.Payment.textSupporting)
@@ -92,11 +133,15 @@ struct AccountProfileView: View {
 
     private var infoCard: some View {
         VStack(spacing: 0) {
-            profileRow(label: "Member Since", value: "—")
-            Divider().background(Theme.Payment.timelineRail)
-            profileRow(label: "Subscription", value: "Free")
+            profileRow(label: "Member Since", value: memberSinceDisplay)
+            Divider().background(Theme.Payment.background)
+            // Figma's value color for this row specifically is accent gold, distinct
+            // from Member Since's plain heading color (node 711:5005) -- the only
+            // gold text in this card, same "one confirmed thing stands out" logic as
+            // everywhere else gold is used in this app.
+            profileRow(label: "Subscription", value: subscriptionDisplay, valueColor: Theme.gold)
         }
-        .background(Theme.Payment.pillBackground)
+        .background(Theme.Payment.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .padding(.horizontal, 24)
         .padding(.bottom, 16)
@@ -133,18 +178,19 @@ struct AccountProfileView: View {
         .padding(.bottom, 32)
     }
 
-    private func profileRow(label: String, value: String) -> some View {
+    private func profileRow(label: String, value: String, valueColor: Color = Theme.Payment.textHeading) -> some View {
         HStack {
             Text(label)
-                .font(.system(size: 13))
-                .foregroundColor(Theme.Payment.textHeading)
+                .font(.system(size: 12, weight: .medium))
+                .tracking(0.3)
+                .foregroundColor(Theme.Payment.textSupporting)
             Spacer()
             Text(value)
-                .font(.system(size: 13))
-                .foregroundColor(Theme.Payment.textSupporting)
+                .font(.system(size: 16))
+                .foregroundColor(valueColor)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 18)
+        .frame(height: 56)
     }
 
     private func settingsRow(icon: String, title: String) -> some View {

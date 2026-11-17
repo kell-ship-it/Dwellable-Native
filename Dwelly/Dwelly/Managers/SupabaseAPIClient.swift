@@ -753,6 +753,14 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    // T-130: real "Member Since" on Account Profile -- previously just a "—" placeholder.
+    func fetchAccountCreatedAt(userId: String) async throws -> Date? {
+        struct AccountCreatedAtRow: Decodable { let created_at: Date }
+        let endpoint = "/rest/v1/users?id=eq.\(userId)&select=created_at"
+        let rows = try await makeRequest(method: "GET", endpoint: endpoint, responseType: [AccountCreatedAtRow].self)
+        return rows.first?.created_at
+    }
+
     // MARK: - Onboarding Profile API (T-111)
 
     func fetchOnboardingProfile(userId: String) async throws -> OnboardingProfileRow {

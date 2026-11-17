@@ -282,6 +282,11 @@ class MockAPIClient: APIClient {
         // Mock implementation - just succeeds (in real app, this creates user in DB)
     }
 
+    func fetchAccountCreatedAt(userId: String) async throws -> Date? {
+        try await Task.sleep(nanoseconds: 200_000_000)
+        return Date(timeIntervalSinceNow: -86400 * 30)
+    }
+
     func logLoginAttempt(email: String, success: Bool) async {
         // Mock implementation - just logs locally
         print("Mock: Login attempt logged — email: \(email), success: \(success)")

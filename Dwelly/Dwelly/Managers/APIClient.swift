@@ -56,6 +56,8 @@ protocol APIClient {
     func requestPasswordReset(email: String) async throws
     func updatePassword(newPassword: String) async throws
     func ensureUserExists(userId: String, email: String) async throws
+    // T-130: real "Member Since" on Account Profile.
+    func fetchAccountCreatedAt(userId: String) async throws -> Date?
     func logLoginAttempt(email: String, success: Bool) async
 
     // Onboarding profile endpoints (T-111)
