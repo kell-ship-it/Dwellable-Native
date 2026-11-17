@@ -47,6 +47,9 @@ let presetMoods = ["Peaceful", "Grateful", "Reflective", "Hopeful", "Conflicted"
 private let maxMoods = 3
 // Figma's custom-mood-word row (Mood Sheet, Scenario 7) caps input at 20 characters.
 private let customMoodMaxLength = 20
+// T-294 (Nov 16 2026, Kell's call): how many distinct custom mood words a user can
+// accumulate in their shared vocabulary -- keeps the grid from growing unbounded.
+let maxCustomMoods = 10
 
 struct JournalDetailView: View {
     @Environment(\.dismiss) var dismiss
@@ -113,6 +116,16 @@ struct JournalDetailView: View {
     // from `selectedMoods` when the sheet opens and only written back on "Done";
     // any other dismissal (swipe, tap outside) just discards the draft.
     @State private var draftMoods: [String] = []
+    // T-294 (Nov 16 2026): the user's own mood vocabulary, shared across every entry --
+    // loaded fresh every time the sheet opens so a word added on another entry (or
+    // another device) shows up here too. New words typed into "Add your own word" are
+    // held here as drafts and only actually written to `custom_moods` on "Done", same
+    // draft/commit split as `draftMoods` itself -- swiping the sheet away without Done
+    // shouldn't pollute the user's permanent mood vocabulary any more than it should
+    // change this entry's own moods.
+    @State private var customMoodsLibrary: [CustomMood] = []
+    @State private var pendingNewCustomWords: [String] = []
+    @State private var customMoodLimitMessage: String?
     // Kell caught this live (Nov 16 2026): "View Original Chat" did nothing at
     // all -- a plain `Button(action: {})`, per the old comment, because there's
     // no stored link to the real back-and-forth `CaptureConversationView`
@@ -629,6 +642,7 @@ struct JournalDetailView: View {
                 Button("Done") {
                     selectedMoods = draftMoods
                     showMoodSheet = false
+                    Task { await commitPendingCustomMoods() }
                 }
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Theme.gold)
@@ -653,9 +667,11 @@ struct JournalDetailView: View {
                 // your own word" got added to draftMoods and counted toward the 3/3
                 // cap, but never showed up as a chip anywhere in the grid -- there was
                 // no way to see it was selected, or to tap it off again. Preset moods
-                // stay first (matches Figma's fixed grid order); any selected mood not
-                // in that preset list is a custom one and is appended after them.
-                ForEach(presetMoods + draftMoods.filter { !presetMoods.contains($0) }, id: \.self) { mood in
+                // stay first (matches Figma's fixed grid order), then the user's saved
+                // custom vocabulary (T-294, shared across every entry), then any
+                // selected mood that's in neither list yet (a brand-new word still only
+                // in this sheet's own draft).
+                ForEach(allSelectableMoods, id: \.self) { mood in
                     let isSelected = draftMoods.contains(mood)
                     let isCappedOut = !isSelected && draftMoods.count >= maxMoods
                     Button(action: { toggleMood(mood) }) {
@@ -725,6 +741,13 @@ struct JournalDetailView: View {
             .disabled(draftMoods.count >= maxMoods)
             .opacity(draftMoods.count >= maxMoods ? 0.4 : 1)
 
+            if let customMoodLimitMessage {
+                Text(customMoodLimitMessage)
+                    .font(.system(size: 11))
+                    .foregroundColor(Theme.error)
+                    .padding(.top, 6)
+            }
+
             if !draftMoods.isEmpty {
                 Text("\(draftMoods.count) / \(maxMoods) selected")
                     .font(.system(size: 11))
@@ -737,7 +760,22 @@ struct JournalDetailView: View {
         .background(Theme.background.ignoresSafeArea())
         .applyMoodSheetPresentationBackground()
         .presentationDetents([.medium])
-        .onAppear { draftMoods = selectedMoods }
+        .onAppear {
+            draftMoods = selectedMoods
+            pendingNewCustomWords = []
+            customMoodLimitMessage = nil
+            Task { await loadCustomMoodsLibrary() }
+        }
+    }
+
+    // T-294: the full set of chips the sheet can show -- presets, then the user's saved
+    // custom vocabulary, then (rare) a word already selected on this entry that's in
+    // neither list yet, e.g. a brand-new word still only in this sheet's own draft.
+    private var allSelectableMoods: [String] {
+        let savedCustomWords = customMoodsLibrary.map(\.word)
+        let known = Set(presetMoods).union(savedCustomWords)
+        let stillUnknown = draftMoods.filter { !known.contains($0) }
+        return presetMoods + savedCustomWords + stillUnknown
     }
 
     /// Not the real back-and-forth conversation (Dwelly's side of it is never
@@ -792,8 +830,40 @@ struct JournalDetailView: View {
     private func addCustomMood() {
         let trimmed = customMoodText.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty, draftMoods.count < maxMoods, !draftMoods.contains(trimmed) else { return }
+        // T-294: a word already in presetMoods or the user's saved library is just
+        // being re-selected, not a new addition -- only a genuinely new word counts
+        // against the 10-word cap, and only genuinely new words need to be queued for
+        // `custom_moods` on Done.
+        let isNewWord = !presetMoods.contains(trimmed) && !customMoodsLibrary.contains { $0.word == trimmed }
+        if isNewWord && customMoodsLibrary.count + pendingNewCustomWords.count >= maxCustomMoods {
+            customMoodLimitMessage = "You've reached your limit of \(maxCustomMoods) custom moods. Delete one in Settings to add another."
+            return
+        }
+        customMoodLimitMessage = nil
         draftMoods.append(trimmed)
+        if isNewWord {
+            pendingNewCustomWords.append(trimmed)
+        }
         customMoodText = ""
+    }
+
+    // T-294: fetches the user's shared mood vocabulary fresh every time the sheet
+    // opens, so a word added from another entry (or another device) shows up here too.
+    private func loadCustomMoodsLibrary() async {
+        guard let moods = try? await apiClient.fetchCustomMoods(userId: moment.userId) else { return }
+        customMoodsLibrary = moods
+    }
+
+    // Only runs on "Done" -- writes any brand-new words typed into this sheet back to
+    // `custom_moods` so every future entry (this user's, on any device) can offer them
+    // too. Swiping the sheet away without Done never reaches this, same as `draftMoods`.
+    private func commitPendingCustomMoods() async {
+        for word in pendingNewCustomWords {
+            if let saved = try? await apiClient.addCustomMood(userId: moment.userId, word: word) {
+                customMoodsLibrary.append(saved)
+            }
+        }
+        pendingNewCustomWords = []
     }
 
     // MARK: - Edit toolbar (photo / camera / mic)

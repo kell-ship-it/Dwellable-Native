@@ -159,6 +159,30 @@ class MockAPIClient: APIClient {
         storedDwellerProfiles[profile.userId] = profile
     }
 
+    // MARK: - Custom Moods API (T-294)
+
+    private var storedCustomMoods: [CustomMood] = []
+
+    func fetchCustomMoods(userId: String) async throws -> [CustomMood] {
+        try await Task.sleep(nanoseconds: 200_000_000)
+        return storedCustomMoods.filter { $0.userId == userId }
+    }
+
+    func addCustomMood(userId: String, word: String) async throws -> CustomMood {
+        try await Task.sleep(nanoseconds: 200_000_000)
+        if let existing = storedCustomMoods.first(where: { $0.userId == userId && $0.word == word }) {
+            return existing
+        }
+        let mood = CustomMood(id: UUID().uuidString, userId: userId, word: word, createdAt: Date())
+        storedCustomMoods.append(mood)
+        return mood
+    }
+
+    func deleteCustomMood(id: String) async throws {
+        try await Task.sleep(nanoseconds: 200_000_000)
+        storedCustomMoods.removeAll { $0.id == id }
+    }
+
     // MARK: - Auth API
 
     func login(email: String, password: String) async throws -> AuthToken {

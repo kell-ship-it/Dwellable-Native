@@ -30,6 +30,12 @@ protocol APIClient {
     func fetchDwellerProfile(userId: String) async throws -> DwellerProfile?
     func saveDwellerProfile(_ profile: DwellerProfile) async throws -> DwellerProfile
 
+    // Custom mood endpoints (T-294) — a user's own mood vocabulary, shared across every
+    // journal entry rather than trapped inside the one entry it was first typed into.
+    func fetchCustomMoods(userId: String) async throws -> [CustomMood]
+    func addCustomMood(userId: String, word: String) async throws -> CustomMood
+    func deleteCustomMood(id: String) async throws
+
     // Auth endpoints
     func signUp(email: String, password: String) async throws -> SignUpOutcome
     func verifySignupOTP(email: String, token: String) async throws -> AuthToken

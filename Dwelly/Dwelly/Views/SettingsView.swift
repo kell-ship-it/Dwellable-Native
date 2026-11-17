@@ -104,6 +104,23 @@ struct SettingsView: View {
                                     .background(Theme.surfaceBackground)
                                     .cornerRadius(10)
                                 }
+
+                                // T-294: manage/delete the custom mood words saved from
+                                // the Journal Mood Sheet, shared across every entry.
+                                NavigationLink(destination: ManageCustomMoodsView(userId: userId)) {
+                                    HStack {
+                                        Text("Custom Moods")
+                                            .font(.system(size: 14, weight: .regular))
+                                            .foregroundColor(Theme.text)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 12, weight: .regular))
+                                            .foregroundColor(Theme.tertiaryText)
+                                    }
+                                    .padding(Theme.Spacing.lg)
+                                    .background(Theme.surfaceBackground)
+                                    .cornerRadius(10)
+                                }
                             }
                         }
 

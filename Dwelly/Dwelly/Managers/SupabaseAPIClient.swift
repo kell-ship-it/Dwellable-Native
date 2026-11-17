@@ -134,6 +134,15 @@ class SupabaseAPIClient: APIClient {
 
             switch httpResponse.statusCode {
             case 200...299:
+                // T-294: caught live -- a DELETE with no Prefer header (every DELETE
+                // call site here) gets PostgREST's default "return=minimal", a genuine
+                // 204 with an empty body. JSONDecoder can't decode ANY type, EmptyResponse
+                // included, from zero bytes, so every DELETE call expecting EmptyResponse
+                // threw and surfaced as a false "couldn't delete" even though the row was
+                // really gone (confirmed via direct SQL). Short-circuit before decoding.
+                if data.isEmpty, let empty = EmptyResponse() as? T {
+                    return empty
+                }
                 let decoder = JSONDecoder()
                 let formatter = DateFormatter()
                 formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZZZZZ"
@@ -410,6 +419,43 @@ class SupabaseAPIClient: APIClient {
         )
         guard let profile = saved.first else { throw APIError.notFound }
         return profile
+    }
+
+    // MARK: - Custom Moods API (T-294)
+
+    func fetchCustomMoods(userId: String) async throws -> [CustomMood] {
+        let endpoint = "/rest/v1/custom_moods?user_id=eq.\(userId)&select=*&order=created_at.asc"
+        return try await makeRequest(
+            method: "GET",
+            endpoint: endpoint,
+            responseType: [CustomMood].self
+        )
+    }
+
+    func addCustomMood(userId: String, word: String) async throws -> CustomMood {
+        let payload = CustomMoodPayload(user_id: userId, word: word)
+        // Upsert on the (user_id, word) unique constraint -- re-adding a word the user
+        // already has (e.g. retyped on another device) just returns the existing row
+        // instead of erroring or duplicating.
+        let endpoint = "/rest/v1/custom_moods?on_conflict=user_id,word"
+        let saved = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: [CustomMood].self,
+            preferHeader: "resolution=merge-duplicates,return=representation"
+        )
+        guard let mood = saved.first else { throw APIError.notFound }
+        return mood
+    }
+
+    func deleteCustomMood(id: String) async throws {
+        let endpoint = "/rest/v1/custom_moods?id=eq.\(id)"
+        _ = try await makeRequest(
+            method: "DELETE",
+            endpoint: endpoint,
+            responseType: EmptyResponse.self
+        )
     }
 
     // MARK: - Auth API
@@ -881,6 +927,11 @@ struct DwellerProfilePayload: Codable {
     let user_id: String
     let running_summary: String?
     let updated_at: String
+}
+
+struct CustomMoodPayload: Codable {
+    let user_id: String
+    let word: String
 }
 
 struct LoginPayload: Encodable {
