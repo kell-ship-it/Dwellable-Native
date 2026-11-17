@@ -111,12 +111,38 @@ enum DwellerProfileManager {
 
         guard qualifyingCount >= 3, !(newEntries.isEmpty && newFeedback.isEmpty) else { return nil }
 
-        // Every approved entry body counts as a reflection; every piece of feedback
-        // counts exactly the same way -- literally interleaved into the same list the
-        // prompt below reads from, not a separate lesser-weighted category.
-        var reflections = approvedEntries.compactMap(\.body)
-        reflections.append(contentsOf: feedback.map(\.feedbackText))
-        guard !reflections.isEmpty else { return nil }
+        // Kell caught this live (Nov 16 2026): feeding feedback text as a bare,
+        // context-free fragment gives the model a complaint with no idea what it's
+        // objecting to -- three "it feels off"s with nothing else is noise, not
+        // signal. Every feedback row now carries the exact narrative it was reacting
+        // to (`narrativeAtTime`, captured at submission time), so this pairs each one
+        // with what it's actually correcting, and the whole timeline is real
+        // chronological order (journal entries and feedback interleaved by when they
+        // actually happened), not two separate buckets concatenated together.
+        struct TimelineItem {
+            let date: Date
+            let text: String
+        }
+        let dateFormatter: DateFormatter = {
+            let f = DateFormatter()
+            f.dateStyle = .medium
+            return f
+        }()
+        var timeline: [TimelineItem] = approvedEntries.compactMap { entry in
+            guard let body = entry.body, !body.isEmpty else { return nil }
+            return TimelineItem(date: entry.createdAt, text: "On \(dateFormatter.string(from: entry.createdAt)), they wrote in their journal: \"\(body)\"")
+        }
+        timeline.append(contentsOf: feedback.map { item in
+            let text: String
+            if let priorNarrative = item.narrativeAtTime, !priorNarrative.isEmpty {
+                text = "On \(dateFormatter.string(from: item.createdAt)), they were shown this narrative about themselves: \"\(priorNarrative)\" -- and responded: \"\(item.feedbackText)\""
+            } else {
+                text = "On \(dateFormatter.string(from: item.createdAt)), they said: \"\(item.feedbackText)\""
+            }
+            return TimelineItem(date: item.createdAt, text: text)
+        })
+        timeline.sort { $0.date < $1.date }
+        guard !timeline.isEmpty else { return nil }
 
         // Same name/pronoun-safety rule as `updateRunningSummary` above -- nothing here
         // tracks gender, so a gendered pronoun is never safe to guess.
@@ -124,19 +150,24 @@ enum DwellerProfileManager {
         let subject = name.map { "the person's first name, \($0), (or \"they\"/\"them\")" } ?? "\"they\"/\"them\""
 
         let prompt = """
-        Here are reflections from someone's spiritual journal, in their own words (some \
-        are full journal entries, others are short corrections they gave about an \
-        earlier summary -- treat both exactly the same way, as real material about who \
-        they are):
+        Here is a real chronological timeline of someone's spiritual journal entries and \
+        their own responses to earlier narratives written about them, in their own \
+        words:
 
-        \(reflections.enumerated().map { "\($0.offset + 1). \($0.element)" }.joined(separator: "\n\n"))
+        \(timeline.map(\.text).joined(separator: "\n\n"))
+
+        A "responded" line is them correcting or reacting to a narrative they were \
+        shown at that point -- weigh what they said exactly as seriously as a journal \
+        entry, and let a correction override whatever it contradicts from before it.
 
         Write a short (2-4 sentence) running narrative about this person's spiritual \
         journey so far -- warm, specific, grounded only in what's actually above, never \
-        inventing events or feelings not present in the material. Refer to them by \
-        \(subject), never "the writer." Nothing here tracks this person's gender, so \
-        never guess a gendered pronoun ("he", "she", "him", "her"). Return ONLY the \
-        narrative text, no preamble, no quotation marks, no markdown.
+        inventing events or feelings not present in the material. If a correction said \
+        something was off without saying what should replace it, don't guess at \
+        specifics it didn't give you -- just don't repeat the part it rejected. Refer to \
+        them by \(subject), never "the writer." Nothing here tracks this person's \
+        gender, so never guess a gendered pronoun ("he", "she", "him", "her"). Return \
+        ONLY the narrative text, no preamble, no quotation marks, no markdown.
         """
         let messages = [
             LLMMessage(role: .system, content: "You write only the requested narrative text, nothing else. Never a gendered pronoun (\"he\"/\"she\"/\"him\"/\"her\") -- use the person's name or \"they\"/\"them\" instead."),

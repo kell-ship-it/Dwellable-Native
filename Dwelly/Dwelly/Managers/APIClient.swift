@@ -33,7 +33,7 @@ protocol APIClient {
     // (not a session flag); feedback from "Not quite" is captured for real even though
     // nothing processes it yet (T-164, not started).
     func confirmDwellerProfile(userId: String) async throws -> DwellerProfile
-    func submitNarrativeFeedback(userId: String, feedbackText: String) async throws
+    func submitNarrativeFeedback(userId: String, feedbackText: String, narrativeAtTime: String?) async throws
     // T-161/T-164 (Nov 16 2026, Kell's direct call): "Not quite" feedback carries the
     // SAME weight as a captured moment toward both the qualifying-reflection threshold
     // and the narrative's own generated content -- not just stored, actually read back.

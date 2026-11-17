@@ -260,7 +260,7 @@ struct YourNarrativeCard: View {
         let trimmed = feedbackText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         isSubmittingFeedback = true
-        if (try? await apiClient.submitNarrativeFeedback(userId: userId, feedbackText: trimmed)) != nil {
+        if (try? await apiClient.submitNarrativeFeedback(userId: userId, feedbackText: trimmed, narrativeAtTime: profile?.runningSummary)) != nil {
             feedbackSubmitted = true
             showNotQuiteField = false
             feedbackText = ""

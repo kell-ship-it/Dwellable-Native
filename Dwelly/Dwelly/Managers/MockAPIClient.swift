@@ -165,9 +165,9 @@ class MockAPIClient: APIClient {
 
     private var storedNarrativeFeedback: [NarrativeFeedback] = []
 
-    func submitNarrativeFeedback(userId: String, feedbackText: String) async throws {
+    func submitNarrativeFeedback(userId: String, feedbackText: String, narrativeAtTime: String?) async throws {
         try await Task.sleep(nanoseconds: 200_000_000)
-        storedNarrativeFeedback.append(NarrativeFeedback(id: UUID().uuidString, userId: userId, feedbackText: feedbackText, createdAt: Date()))
+        storedNarrativeFeedback.append(NarrativeFeedback(id: UUID().uuidString, userId: userId, feedbackText: feedbackText, createdAt: Date(), narrativeAtTime: narrativeAtTime))
     }
 
     func fetchNarrativeFeedback(userId: String) async throws -> [NarrativeFeedback] {

@@ -434,8 +434,8 @@ class SupabaseAPIClient: APIClient {
         return profile
     }
 
-    func submitNarrativeFeedback(userId: String, feedbackText: String) async throws {
-        let payload = NarrativeFeedbackPayload(user_id: userId, feedback_text: feedbackText)
+    func submitNarrativeFeedback(userId: String, feedbackText: String, narrativeAtTime: String?) async throws {
+        let payload = NarrativeFeedbackPayload(user_id: userId, feedback_text: feedbackText, narrative_at_time: narrativeAtTime)
         _ = try await makeRequest(
             method: "POST",
             endpoint: "/rest/v1/narrative_feedback",
@@ -969,6 +969,7 @@ struct CustomMoodPayload: Codable {
 struct NarrativeFeedbackPayload: Codable {
     let user_id: String
     let feedback_text: String
+    let narrative_at_time: String?
 }
 
 struct LoginPayload: Encodable {
