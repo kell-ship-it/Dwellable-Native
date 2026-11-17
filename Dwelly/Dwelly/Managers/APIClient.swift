@@ -36,6 +36,8 @@ protocol APIClient {
     func resendSignupConfirmation(email: String) async throws
     func login(email: String, password: String) async throws -> AuthToken
     func logout() async throws
+    // T-095: in-app account deletion (Apple App Store Guideline 5.1.1(v))
+    func deleteAccount() async throws
     func requestPasswordReset(email: String) async throws
     func updatePassword(newPassword: String) async throws
     func ensureUserExists(userId: String, email: String) async throws

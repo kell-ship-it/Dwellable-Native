@@ -576,6 +576,19 @@ class SupabaseAPIClient: APIClient {
         // Could call /auth/v1/logout if needed
     }
 
+    // T-095: in-app account deletion (Apple App Store Guideline 5.1.1(v)).
+    // Routed through the delete-account Edge Function, not a direct REST
+    // call — only the service-role key can call GoTrue's admin.deleteUser,
+    // and the function derives the user to delete from the verified JWT
+    // rather than trusting a client-supplied id.
+    func deleteAccount() async throws {
+        _ = try await makeRequest(
+            method: "POST",
+            endpoint: "/functions/v1/delete-account",
+            responseType: EmptyResponse.self
+        )
+    }
+
     func requestPasswordReset(email: String) async throws {
         try checkRateLimit()
 

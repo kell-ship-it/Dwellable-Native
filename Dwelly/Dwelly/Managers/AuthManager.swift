@@ -596,6 +596,28 @@ class AuthManager: ObservableObject {
             self.errorMessage = nil
         }
     }
+
+    // T-095: in-app account deletion (Apple App Store Guideline 5.1.1(v)).
+    // Unlike signOut(), a failure here must NOT clear local session state --
+    // if the server-side delete didn't actually happen, silently signing the
+    // user out would hide that it failed while leaving their account intact.
+    func deleteAccount() async throws {
+        try await apiClient.deleteAccount()
+
+        keychain.delete(forKey: "authToken")
+        keychain.delete(forKey: "refreshToken")
+        keychain.delete(forKey: "userId")
+        keychain.delete(forKey: "userEmail")
+        keychain.delete(forKey: faceIDEmailKey)
+        keychain.delete(forKey: faceIDPasswordKey)
+
+        DispatchQueue.main.async {
+            self.currentUser = nil
+            self.isAuthenticated = false
+            self.isFreshlyAuthenticated = false
+            self.errorMessage = nil
+        }
+    }
 }
 
 struct AuthUser: Identifiable {

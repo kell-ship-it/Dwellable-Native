@@ -12,6 +12,9 @@ struct AccountProfileView: View {
     var onCapture: () -> Void
 
     @State private var showSignOutConfirmation = false
+    @State private var showDeleteAccountConfirmation = false
+    @State private var isDeletingAccount = false
+    @State private var deleteAccountError: String?
 
     private var initials: String {
         guard let email = authManager.currentUser?.email, let first = email.first else { return "?" }
@@ -36,6 +39,34 @@ struct AccountProfileView: View {
                 Task { await authManager.signOut() }
             }
             Button("Cancel", role: .cancel) {}
+        }
+        .confirmationDialog(
+            "Permanently delete your account?",
+            isPresented: $showDeleteAccountConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete Account", role: .destructive) {
+                Task { await deleteAccount() }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This permanently deletes your account and every moment, journal entry, and prayer you've captured. This cannot be undone.")
+        }
+        .alert("Couldn't Delete Account", isPresented: .constant(deleteAccountError != nil), actions: {
+            Button("OK") { deleteAccountError = nil }
+        }, message: {
+            Text(deleteAccountError ?? "")
+        })
+        .disabled(isDeletingAccount)
+    }
+
+    private func deleteAccount() async {
+        isDeletingAccount = true
+        defer { isDeletingAccount = false }
+        do {
+            try await authManager.deleteAccount()
+        } catch {
+            deleteAccountError = error.localizedDescription
         }
     }
 
@@ -94,7 +125,7 @@ struct AccountProfileView: View {
                 .font(.system(size: 13))
                 .foregroundColor(Theme.Payment.textSupporting)
 
-            Button("Delete Account") {}
+            Button("Delete Account") { showDeleteAccountConfirmation = true }
                 .font(.system(size: 13))
                 .foregroundColor(Theme.Payment.errorRed)
         }
