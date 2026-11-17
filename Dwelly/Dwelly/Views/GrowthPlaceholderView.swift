@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Placeholder for the Growth tab's remaining content (Plain Stats, Rhythm & Intent —
-/// locked in Figma P11, frame 667:2215) -- building those is T-141/T-143, not this one.
-/// The "Your Narrative" card itself (T-275) is real now, pulled directly from Figma
-/// (nodes 595:200 "Tier 1" / 603:224 "Pre-Threshold") -- see `YourNarrativeCard`.
+/// Placeholder for the Growth tab's remaining content (Rhythm & Intent —
+/// locked in Figma P11, frame 667:2215) -- building that is T-143, not this one.
+/// The "Your Narrative" card (T-275) and "Your Plain Stats" section (T-140/T-141) are
+/// both real now -- see `YourNarrativeCard` / `PlainStatsSection`.
 struct GrowthPlaceholderView: View {
     let userId: String
     var onCapture: () -> Void
@@ -17,12 +17,13 @@ struct GrowthPlaceholderView: View {
             ScrollView {
                 VStack(spacing: Theme.Spacing.lg) {
                     YourNarrativeCard(userId: userId)
+                    PlainStatsSection(userId: userId)
 
                     VStack(spacing: 8) {
                         Image(systemName: "leaf")
                             .font(.system(size: 32))
                             .foregroundColor(Theme.Payment.textSupporting)
-                        Text("Plain Stats, Rhythm, and Intent are coming soon.")
+                        Text("Rhythm and Intent are coming soon.")
                             .font(.system(size: 13))
                             .foregroundColor(Theme.Payment.textSupporting)
                             .multilineTextAlignment(.center)
