@@ -45,6 +45,8 @@ struct JournalDisplayMeta {
 // LLM-suggested moods match the manual picker's vocabulary instead of drifting from it.
 let presetMoods = ["Peaceful", "Grateful", "Reflective", "Hopeful", "Conflicted", "Exhausted", "Prayerful", "Loved"]
 private let maxMoods = 3
+// Figma's custom-mood-word row (Mood Sheet, Scenario 7) caps input at 20 characters.
+private let customMoodMaxLength = 20
 
 struct JournalDetailView: View {
     @Environment(\.dismiss) var dismiss
@@ -575,20 +577,26 @@ struct JournalDetailView: View {
     }
 
     private var editableMoodRow: some View {
-        // Figma mood pills in "Edit Entry" use the gold/accent treatment (border +
-        // 8%-opacity fill), distinct from the read-only screen's neutral pill -- plus a
-        // dashed "+ Add mood" pill that opens the Mood Sheet below.
+        // Re-pulled directly from the Figma "Edit Entry (Neutral)" frame (node 280:1378,
+        // pills 280:1420/280:1422/280:1424) on Nov 16 2026 -- the gold border+fill treatment
+        // this previously had was never actually in the design: selected pills there are
+        // the SAME filled dark chip as the read-only row (Theme.Payment.pillBackground +
+        // textSupporting, no border at all), and only "+ Add mood" gets gold -- in its
+        // text, not its border, which is the neutral moodChipBorder dash instead.
         HStack(spacing: 8) {
+            // Tappable even once at the 3-mood cap (no "+ Add mood" pill is shown then) --
+            // otherwise there was no way back into the sheet to swap a mood out once full.
             ForEach(selectedMoods, id: \.self) { mood in
                 Text(mood)
                     .font(.system(size: 13))
-                    .foregroundColor(Theme.gold)
+                    .foregroundColor(Theme.Payment.textSupporting)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)
-                    .background(Theme.gold.opacity(0.08))
-                    .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
+                    .background(Theme.Payment.pillBackground)
                     .clipShape(Capsule())
+                    .onTapGesture { showMoodSheet = true }
             }
+
             if selectedMoods.count < maxMoods {
                 Button(action: { showMoodSheet = true }) {
                     Text("+ Add mood")
@@ -596,7 +604,7 @@ struct JournalDetailView: View {
                         .foregroundColor(Theme.gold)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
-                        .overlay(Capsule().stroke(Theme.gold.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+                        .overlay(Capsule().stroke(Theme.Payment.moodChipBorder, style: StrokeStyle(lineWidth: 1, dash: [3, 3])))
                 }
             }
         }
@@ -623,14 +631,14 @@ struct JournalDetailView: View {
                 .foregroundColor(Theme.Payment.textSupporting)
                 .padding(.top, 10)
 
-            // Kell caught this live (Nov 16 2026): once 3/3 were already picked, the
-            // un-pickable presets looked IDENTICAL to a tappable one (same fill, same
-            // border) -- nothing signaled "you're capped, remove one first." Figma's
-            // own reference (the screenshot Kell sent) treats every pill the same way
-            // regardless of state -- a thin border always, filled only by the
-            // checkmark -- so the fix is two things at once: match that outlined
-            // look instead of the old heavy-fill-vs-flat-fill split, AND dim the
-            // genuinely-disabled ones so the cap itself is visible, not just felt.
+            // Re-pulled directly from Figma (nodes 284:166 "Mood Sheet (Base)" and
+            // 286:1590 "Mood Sheet (Limit Reached)") on Nov 16 2026 -- the previous
+            // "thin outline always, filled only by checkmark" read of the design was
+            // wrong. The real design fills a SELECTED chip solid (Theme.Payment.
+            // pillBackground, textHeading text, gold checkmark); only unselected chips
+            // use the thin moodChipBorder outline. Disabled/capped-out chips stay that
+            // same outline, just dimmed to 0.4 opacity (pixel-matched from node 286:1647)
+            // -- that's what actually signals "you're capped," not a border/fill swap.
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 8)], alignment: .leading, spacing: 8) {
                 ForEach(presetMoods, id: \.self) { mood in
                     let isSelected = selectedMoods.contains(mood)
@@ -640,51 +648,67 @@ struct JournalDetailView: View {
                             if isSelected {
                                 Image(systemName: "checkmark")
                                     .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(Theme.gold)
                             }
                             Text(mood)
                                 .font(.system(size: 14))
                         }
-                        .foregroundColor(isSelected ? Theme.gold : Theme.Capture.textPrimary)
+                        .foregroundColor(isSelected ? Theme.Payment.textHeading : Theme.Payment.textSupporting)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 9)
+                        .background(isSelected ? Theme.Payment.pillBackground : Color.clear)
                         .overlay(
-                            Capsule().stroke(isSelected ? Theme.gold : Theme.Capture.cardBorder, lineWidth: 1)
+                            isSelected ? nil : Capsule().stroke(Theme.Payment.moodChipBorder, lineWidth: 1)
                         )
                         .clipShape(Capsule())
                     }
                     .disabled(isCappedOut)
-                    .opacity(isCappedOut ? 0.35 : 1)
+                    .opacity(isCappedOut ? 0.4 : 1)
                 }
             }
             .padding(.top, 16)
 
-            // Same outlined-pill treatment as the presets above, instead of the old
-            // big filled card -- Kell's explicit ask to match the Figma reference
-            // rather than inventing a separate style just for the custom-word row.
-            HStack(spacing: 6) {
-                Image(systemName: "plus")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(Theme.Capture.textPrimary)
-                TextField("Add your own word", text: $customMoodText)
-                    .font(.system(size: 14))
-                    .foregroundColor(Theme.Capture.textPrimary)
-                    .tint(Theme.gold)
-                    .onSubmit(addCustomMood)
-                if !customMoodText.trimmingCharacters(in: .whitespaces).isEmpty {
-                    Button("Add", action: addCustomMood)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(Theme.gold)
+            // Figma's custom-word row (same two nodes above) caps input at 20
+            // characters with a live "X / 20" counter underneath -- there was no
+            // limit or counter here before.
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 6) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(Theme.Payment.textSupporting)
+                    TextField("Add your own word", text: $customMoodText)
+                        .font(.system(size: 14))
+                        .foregroundColor(Theme.Capture.textPrimary)
+                        .tint(Theme.gold)
+                        .onChange(of: customMoodText) { newValue in
+                            if newValue.count > customMoodMaxLength {
+                                customMoodText = String(newValue.prefix(customMoodMaxLength))
+                            }
+                        }
+                        .onSubmit(addCustomMood)
+                    if !customMoodText.trimmingCharacters(in: .whitespaces).isEmpty {
+                        Button("Add", action: addCustomMood)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(Theme.gold)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
+                .overlay(
+                    Capsule().stroke(customMoodText.isEmpty ? Theme.Payment.moodChipBorder : Theme.gold, lineWidth: 1)
+                )
+                .clipShape(Capsule())
+
+                if !customMoodText.isEmpty {
+                    Text("\(customMoodText.count) / \(customMoodMaxLength)")
+                        .font(.system(size: 11))
+                        .foregroundColor(Theme.Payment.textSupporting)
+                        .padding(.leading, 4)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 9)
-            .overlay(
-                Capsule().stroke(customMoodText.isEmpty ? Theme.Capture.cardBorder : Theme.gold, lineWidth: 1)
-            )
-            .clipShape(Capsule())
             .padding(.top, 12)
             .disabled(selectedMoods.count >= maxMoods)
-            .opacity(selectedMoods.count >= maxMoods ? 0.35 : 1)
+            .opacity(selectedMoods.count >= maxMoods ? 0.4 : 1)
 
             if !selectedMoods.isEmpty {
                 Text("\(selectedMoods.count) / \(maxMoods) selected")

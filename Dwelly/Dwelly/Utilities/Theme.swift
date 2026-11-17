@@ -145,6 +145,11 @@ struct Theme {
         static let backgroundPrimary = Color(red: 0x0b / 255, green: 0x0a / 255, blue: 0x08 / 255) // #0b0a08 — background/primary (also CTA text color)
         static let timelineRail = Color(red: 0x59 / 255, green: 0x52 / 255, blue: 0x42 / 255)  // #595242
         static let errorRed = Color(red: 0xe0 / 255, green: 0x7a / 255, blue: 0x5f / 255)      // state/error (warm coral)
+        // Pulled directly from the Moods bottom sheet's unselected mood-chip stroke
+        // (dwelly-redesign file, "P4 — Journal Synthesis" page, node 285:187) — a
+        // neutral gray-blue, deliberately not gold, since gold there is reserved for
+        // the selected checkmark and the "+ Add mood" label text, not borders.
+        static let moodChipBorder = Color(red: 0x67 / 255, green: 0x67 / 255, blue: 0x7b / 255) // #67677b
     }
 
     // MARK: - Onboarding (T-238 7-Screen Redesign)
