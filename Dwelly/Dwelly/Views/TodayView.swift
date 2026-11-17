@@ -1,5 +1,14 @@
 import SwiftUI
 
+/// Today tab's "journal ready" card data -- the most recent approved entry the user
+/// hasn't opened yet (`JournalEntry.viewedAt == nil`), paired with its `Moment` since
+/// `JournalDetailView` needs the moment, not just the entry.
+private struct JournalReadyEntry: Identifiable {
+    let moment: Moment
+    let entry: JournalEntry
+    var id: String { entry.id }
+}
+
 /// T-135/T-136: the real Today tab, pulled directly from Figma's locked "Today (MVP)"
 /// frame (dwelly-redesign jBOzv1vO2C2DSMePqRl4c4, P10, node 570:508). This frame is the
 /// real scope -- it has no "Unprayed Moment" card anywhere on it, so T-137 (hasPrayed
@@ -18,9 +27,15 @@ import SwiftUI
 /// outside CaptureView's own grid until now) -- `onOpenPrompt` is threaded up to
 /// `MainTabView`, which owns the actual `fullScreenCover` + paywall gate.
 struct TodayView: View {
+    @Environment(\.apiClient) private var apiClient
     let userId: String
     var onCapture: () -> Void
     var onOpenPrompt: (_ prompt: (title: String, category: String)) -> Void
+
+    // T-188: nil until loadJournalReady() finds an unviewed approved entry. Fetched
+    // fresh every appearance (not cached) since the whole point is reacting to a
+    // journal that just finished synthesizing since the last time this tab was shown.
+    @State private var journalReady: JournalReadyEntry?
 
     private var firstName: String? {
         let name = ProfileManager.shared.localProfile(userId: userId).name
@@ -52,6 +67,12 @@ struct TodayView: View {
                 VStack(spacing: Theme.Spacing.lg) {
                     heroCard
 
+                    // T-188: a 4th card above the 3-tile stack, per the locked Oct 22
+                    // 2026 design -- an added slot, not a replacement of any of the 3.
+                    if let journalReady {
+                        journalReadyCard(journalReady)
+                    }
+
                     ForEach(tiles, id: \.title) { tile in
                         tileRow(tile)
                     }
@@ -65,6 +86,22 @@ struct TodayView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Payment.background.ignoresSafeArea())
+        .task { await loadJournalReady() }
+    }
+
+    /// T-188: the most recent approved entry this user hasn't opened yet, if any.
+    /// Re-fetched on every appearance rather than cached -- the whole point of this
+    /// card is reacting to a journal that finished synthesizing since Today was last
+    /// shown (e.g. the background retry sweep in SyncManager finishing after the
+    /// user already backed out of a capture).
+    private func loadJournalReady() async {
+        guard let entries = try? await apiClient.fetchApprovedJournalEntries(userId: userId) else { return }
+        guard let latest = entries.filter({ $0.viewedAt == nil }).max(by: { $0.createdAt < $1.createdAt }) else {
+            journalReady = nil
+            return
+        }
+        guard let moment = try? await apiClient.fetchMoment(id: latest.momentId) else { return }
+        journalReady = JournalReadyEntry(moment: moment, entry: latest)
     }
 
     private var heroCard: some View {
@@ -113,6 +150,56 @@ struct TodayView: View {
                 .stroke(Theme.Payment.borderDivider, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+
+    /// T-188: same card shape/background as `tileRow` (T-233's one-accent rule) and
+    /// the same pressed state (T-234's `PressableCardStyle`), but a `NavigationLink`
+    /// to the real finished entry instead of a `Button` opening a new capture --
+    /// tapping this should land on what's already written, not start something new.
+    private func journalReadyCard(_ ready: JournalReadyEntry) -> some View {
+        NavigationLink(destination: JournalDetailView(moment: ready.moment)) {
+            HStack(spacing: 16) {
+                Circle()
+                    .fill(Theme.Payment.pillBackground)
+                    .frame(width: 44, height: 44)
+                    .overlay(
+                        Image(systemName: "book.closed")
+                            .font(.system(size: 17))
+                            .foregroundColor(Theme.gold)
+                    )
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("JOURNAL READY")
+                        .font(.system(size: 10, weight: .semibold))
+                        .tracking(1.2)
+                        .foregroundColor(Theme.gold)
+                    Text(ready.entry.title ?? "Your Reflection")
+                        .font(.system(size: 16, design: .serif))
+                        .foregroundColor(Theme.Payment.textHeading)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    Text("Ready to read.")
+                        .font(.system(size: 11))
+                        .foregroundColor(Theme.Payment.textSupporting)
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 4)
+
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 13))
+                    .foregroundColor(Theme.Payment.textSupporting)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 18)
+            .background(Theme.Payment.surfaceCard)
+            .overlay(
+                RoundedRectangle(cornerRadius: 15)
+                    .stroke(Theme.Payment.borderDivider, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 15))
+        }
+        .buttonStyle(.pressableCard)
     }
 
     private func tileRow(_ tile: (icon: String, category: String, title: String, subtitle: String)) -> some View {

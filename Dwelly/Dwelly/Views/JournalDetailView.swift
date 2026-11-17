@@ -987,6 +987,14 @@ struct JournalDetailView: View {
             editedBody = body
         }
         isFavorited = entry.starred
+
+        // T-188: the Today tab's "Journal Ready" tile's only signal for "already
+        // seen" -- stamp it the first time this screen actually loads the entry.
+        // Best-effort/fire-and-forget: a missed stamp just means the tile shows up
+        // one extra time, never worth surfacing as an error on a detail screen.
+        if entry.viewedAt == nil {
+            Task { try? await apiClient.markJournalEntryViewed(id: entry.id) }
+        }
     }
 
     /// Writes the current body/moods/starred (+ title/scripture, carried over from

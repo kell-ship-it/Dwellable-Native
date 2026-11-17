@@ -24,6 +24,12 @@ protocol APIClient {
     // qualifying reflections against the Growth narrative's unlock threshold. A pending
     // entry has no real content yet, so it doesn't count.
     func fetchApprovedJournalEntries(userId: String) async throws -> [JournalEntry]
+    // T-188: stamps journal_entries.viewed_at the first time this entry is opened --
+    // the "Journal Ready" Today-tab tile's only signal for when to stop showing
+    // itself. Idempotent by design (every call site only calls this when viewedAt
+    // was nil, but a second call just re-stamps a slightly later time -- never
+    // treated as an error either way).
+    func markJournalEntryViewed(id: String) async throws
 
     // DwellerProfile endpoints (T-274) — the store-and-show-only running summary.
     // `nil` means no profile exists yet (a new user with no approved journal entry).

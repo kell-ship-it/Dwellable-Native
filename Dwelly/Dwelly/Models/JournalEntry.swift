@@ -32,6 +32,10 @@ struct JournalEntry: Identifiable, Codable {
     var edited: Bool
     let createdAt: Date
     var updatedAt: Date
+    // T-188: NULL until JournalDetailView's loadEntry() stamps it the first time this
+    // entry is actually opened -- the "Journal Ready" Today-tab tile reads this to
+    // know when to stop showing itself, instead of guessing off a recency timer.
+    var viewedAt: Date?
 
     init(
         id: String = UUID().uuidString,
@@ -46,7 +50,8 @@ struct JournalEntry: Identifiable, Codable {
         starred: Bool = false,
         edited: Bool = false,
         createdAt: Date = Date(),
-        updatedAt: Date = Date()
+        updatedAt: Date = Date(),
+        viewedAt: Date? = nil
     ) {
         self.id = id
         self.momentId = momentId
@@ -61,6 +66,7 @@ struct JournalEntry: Identifiable, Codable {
         self.edited = edited
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.viewedAt = viewedAt
     }
 
     enum CodingKeys: String, CodingKey {
@@ -77,5 +83,6 @@ struct JournalEntry: Identifiable, Codable {
         case edited
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+        case viewedAt = "viewed_at"
     }
 }

@@ -398,6 +398,17 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    func markJournalEntryViewed(id: String) async throws {
+        let endpoint = "/rest/v1/journal_entries?id=eq.\(id)"
+        let body = ["viewed_at": ISO8601DateFormatter().string(from: Date())]
+        _ = try await makeRequest(
+            method: "PATCH",
+            endpoint: endpoint,
+            body: body,
+            responseType: [EmptyResponse].self
+        )
+    }
+
     // MARK: - DwellerProfile API (T-274)
 
     func fetchDwellerProfile(userId: String) async throws -> DwellerProfile? {

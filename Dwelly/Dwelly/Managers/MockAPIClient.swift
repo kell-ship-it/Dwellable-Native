@@ -140,6 +140,11 @@ class MockAPIClient: APIClient {
         return storedJournalEntries.filter { $0.userId == userId && $0.status == "approved" }
     }
 
+    func markJournalEntryViewed(id: String) async throws {
+        guard let index = storedJournalEntries.firstIndex(where: { $0.id == id }) else { return }
+        storedJournalEntries[index].viewedAt = Date()
+    }
+
     // MARK: - DwellerProfile API (T-274)
 
     private var storedDwellerProfiles: [String: DwellerProfile] = [:]
