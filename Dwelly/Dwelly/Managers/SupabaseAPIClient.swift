@@ -801,6 +801,21 @@ class SupabaseAPIClient: APIClient {
         return rows.first?.created_at
     }
 
+    // T-251: updates the dormancy clock's single source of truth. Sends now() from
+    // the device rather than a database-side `now()` default so a device with a
+    // wrong clock doesn't silently desync from what the user actually experienced --
+    // matches how every other client-stamped timestamp in this app already works.
+    func touchLastSynced(userId: String) async throws {
+        let endpoint = "/rest/v1/users?id=eq.\(userId)"
+        let body = ["last_synced_at": ISO8601DateFormatter().string(from: Date())]
+        _ = try await makeRequest(
+            method: "PATCH",
+            endpoint: endpoint,
+            body: body,
+            responseType: [EmptyResponse].self
+        )
+    }
+
     // MARK: - Onboarding Profile API (T-111)
 
     func fetchOnboardingProfile(userId: String) async throws -> OnboardingProfileRow {

@@ -93,6 +93,12 @@ class SyncManager: ObservableObject {
             await self.retryPendingJournalEntries()
             // T-176 fast path -- see purgeExpiredDeletedMoments' own doc comment.
             await self.purgeExpiredDeletedMoments()
+            // T-251: this pending-moments pass reaching here at all means every
+            // queued moment made it to the server -- exactly what "a confirmed
+            // server sync" means for the dormancy clock. Best-effort: a failed touch
+            // just leaves last_synced_at slightly stale, not worth surfacing as a
+            // sync error to the user.
+            try? await self.apiClient.touchLastSynced(userId: self.userId)
 
             DispatchQueue.main.async {
                 self.isSyncing = false

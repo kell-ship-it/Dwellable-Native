@@ -301,6 +301,10 @@ class MockAPIClient: APIClient {
         return Date(timeIntervalSinceNow: -86400 * 30)
     }
 
+    func touchLastSynced(userId: String) async throws {
+        // No dormancy clock to simulate for previews/tests -- a no-op is the whole mock.
+    }
+
     func logLoginAttempt(email: String, success: Bool) async {
         // Mock implementation - just logs locally
         print("Mock: Login attempt logged — email: \(email), success: \(success)")

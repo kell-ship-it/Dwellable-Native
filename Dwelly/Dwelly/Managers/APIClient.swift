@@ -58,6 +58,12 @@ protocol APIClient {
     func ensureUserExists(userId: String, email: String) async throws
     // T-130: real "Member Since" on Account Profile.
     func fetchAccountCreatedAt(userId: String) async throws -> Date?
+    // T-251: the dormancy clock's single source of truth -- SyncManager calls this
+    // after every successful sync pass. Best-effort by every caller (never blocks or
+    // surfaces an error): a missed touch just leaves the dormancy clock a little
+    // stale, not materially different from the user having synced a few minutes
+    // later than they actually did.
+    func touchLastSynced(userId: String) async throws
     // T-131 (Kell's call, Nov 16 2026): changing your password confirms via a real email
     // OTP instead of re-typing the current password -- same NIST 800-63B "re-authenticate
     // before a sensitive change" idea, just proven via a second channel (the account's
