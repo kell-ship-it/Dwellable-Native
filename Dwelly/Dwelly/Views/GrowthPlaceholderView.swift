@@ -8,15 +8,6 @@ struct GrowthPlaceholderView: View {
     let userId: String
     var onCapture: () -> Void
 
-    #if DEBUG
-    // Dev-only (Nov 16 2026): lets Kell preview DwellerProfileManager's output for any
-    // hand-picked subset of real entries/feedback without writing anything anywhere --
-    // see NarrativeExperimentView's own comment for why this exists (a live-testing
-    // mishap that came from manipulating real data directly instead). Compiles out
-    // entirely in Release.
-    @State private var showNarrativeExperiment = false
-    #endif
-
     var body: some View {
         VStack(spacing: 0) {
             // T-128: no onSearch here -- search only exists on Entries (see
@@ -25,14 +16,6 @@ struct GrowthPlaceholderView: View {
 
             ScrollView {
                 VStack(spacing: Theme.Spacing.lg) {
-                    #if DEBUG
-                    Button(action: { showNarrativeExperiment = true }) {
-                        Text("🧪 Narrative Experiment (dev only)")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Theme.Payment.textSupporting)
-                    }
-                    #endif
-
                     YourNarrativeCard(userId: userId)
                     PlainStatsSection(userId: userId)
 
@@ -54,10 +37,5 @@ struct GrowthPlaceholderView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Payment.background.ignoresSafeArea())
-        #if DEBUG
-        .sheet(isPresented: $showNarrativeExperiment) {
-            NarrativeExperimentView(userId: userId)
-        }
-        #endif
     }
 }
