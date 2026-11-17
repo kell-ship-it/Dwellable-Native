@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dwelly LLM Usage</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; background: #0b0a08; color: #f5f5f7; padding: 28px; min-height: 100vh; }
+  h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { color: #857d69; font-size: 13px; margin-bottom: 28px; }
+  .grand { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .grand .stat { background: #161618; border: 1px solid #2c2c2e; border-radius: 14px; padding: 18px 22px; flex: 1; min-width: 160px; }
+  .grand .stat .label { color: #857d69; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .grand .stat .value { font-size: 30px; font-weight: 700; margin-top: 6px; color: #aa925c; }
+  .cards { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  .card { background: #161618; border: 1px solid #2c2c2e; border-radius: 14px; padding: 22px; min-width: 260px; flex: 1; }
+  .card-header { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .big { font-size: 34px; font-weight: 700; }
+  .sub { color: #857d69; font-size: 12px; margin-bottom: 18px; }
+  .row { display: flex; justify-content: space-between; font-size: 13px; color: #b4ac9b; padding: 6px 0; border-top: 1px solid #2c2c2e; }
+  .refresh-note { color: #555; font-size: 11px; margin-top: 20px; }
+  .err { color: #f48771; font-size: 13px; margin-top: 16px; }
+  .budget { background: #161618; border: 1px solid #2c2c2e; border-radius: 14px; padding: 22px; margin-bottom: 20px; }
+  .budget-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .budget-header .title { font-size: 14px; font-weight: 600; }
+  .budget-header .resets { font-size: 12px; color: #857d69; }
+  .bar-track { height: 12px; background: #2c2c2e; border-radius: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(90deg, #4ec9b0, #aa925c); transition: width 0.3s; }
+  .budget-foot { display: flex; justify-content: space-between; font-size: 13px; color: #b4ac9b; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <h1>Dwelly LLM Usage</h1>
+  <div class="subtitle">Live token counts from public.llm_usage &mdash; auto-refreshes every 10s</div>
+  <div class="budget" id="budget"></div>
+  <div class="grand" id="grand"></div>
+  <div class="cards" id="cards"></div>
+  <div class="refresh-note" id="note">Loading&hellip;</div>
+  <div class="err" id="err"></div>
+
+<script>
+const ENDPOINT = "https://lhcjobrtmbawlhjyodxz.supabase.co/functions/v1/usage-dashboard?format=json";
+const fmt = n => (n || 0).toLocaleString("en-US");
+
+const providers = [
+  { key: "groq", label: "Groq (gpt-oss-120b)", color: "#4ec9b0" },
+  { key: "openai", label: "OpenAI (GPT-4o mini)", color: "#aa925c" },
+];
+
+function render(data) {
+  const b = data.freeTierBudget;
+  if (b) {
+    const hrs = Math.floor(b.resetsInSeconds / 3600);
+    const mins = Math.floor((b.resetsInSeconds % 3600) / 60);
+    document.getElementById("budget").innerHTML =
+      '<div class="budget-header"><span class="title">Groq free tier &mdash; resets daily</span>' +
+      '<span class="resets">resets in ' + hrs + 'h ' + mins + 'm</span></div>' +
+      '<div class="bar-track"><div class="bar-fill" style="width:' + b.percentUsed + '%"></div></div>' +
+      '<div class="budget-foot"><span>' + fmt(b.usedToday) + ' / ' + fmt(b.dailyBudget) + ' tokens used today</span>' +
+      '<span>' + fmt(b.remainingToday) + ' left before OpenAI billing kicks in</span></div>';
+  }
+
+  const grand = document.getElementById("grand");
+  grand.innerHTML =
+    '<div class="stat"><div class="label">Total tokens (all time)</div><div class="value">' + fmt(data.grandTotalTokens) + '</div></div>' +
+    '<div class="stat"><div class="label">Total calls (all time)</div><div class="value">' + fmt(data.grandTotalCalls) + '</div></div>';
+
+  const cards = document.getElementById("cards");
+  cards.innerHTML = providers.map(function(p) {
+    const t = data.totals[p.key] || { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+    const today = data.today[p.key] || { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+    return '<div class="card">' +
+      '<div class="card-header"><span class="dot" style="background:' + p.color + '"></span>' + p.label + '</div>' +
+      '<div class="big">' + fmt(t.totalTokens) + '</div>' +
+      '<div class="sub">total tokens &mdash; ' + fmt(t.calls) + ' calls</div>' +
+      '<div class="row"><span>Today</span><span>' + fmt(today.totalTokens) + ' tok / ' + fmt(today.calls) + ' calls</span></div>' +
+      '<div class="row"><span>Prompt tokens</span><span>' + fmt(t.promptTokens) + '</span></div>' +
+      '<div class="row"><span>Completion tokens</span><span>' + fmt(t.completionTokens) + '</span></div>' +
+    '</div>';
+  }).join("");
+}
+
+async function load() {
+  try {
+    const res = await fetch(ENDPOINT);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    render(data);
+    document.getElementById("note").textContent = "Last updated: " + new Date().toLocaleTimeString();
+    document.getElementById("err").textContent = "";
+  } catch (e) {
+    document.getElementById("err").textContent = "Couldn't load usage data: " + e.message;
+  }
+}
+
+load();
+setInterval(load, 10000);
+</script>
+</body>
+</html>
