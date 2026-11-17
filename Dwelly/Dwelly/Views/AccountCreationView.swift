@@ -84,11 +84,24 @@ struct AccountCreationView: View {
             // the keyboard is itself implemented as a safe-area inset.
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Spacer().frame(height: 130)
+                    Spacer().frame(height: 52)
 
-                    Text("Create your account")
-                        .font(.system(size: 28, design: .serif))
-                        .foregroundColor(Theme.Payment.textHeading)
+                    // Kell's call (Nov 17 2026): chevron inline beside the title, one
+                    // standard across the whole app, instead of this screen's old
+                    // floating-corner chevron + a fixed spacer just to clear it.
+                    HStack(spacing: 4) {
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(Theme.Payment.textHeading)
+                                .frame(width: 44, height: 44)
+                        }
+                        .accessibilityLabel("Back")
+
+                        Text("Create your account")
+                            .font(.system(size: 22, design: .serif))
+                            .foregroundColor(Theme.Payment.textHeading)
+                    }
 
                     Spacer().frame(height: 16)
 
@@ -161,24 +174,6 @@ struct AccountCreationView: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .safeAreaInset(edge: .bottom) { footer }
-
-            // `.ignoresSafeArea(.keyboard)` goes HERE, on the back button alone — not on
-            // the whole ZStack. Scoping it to the ZStack (an earlier attempt) also broke
-            // the ScrollView's own keyboard-avoidance, which is why Confirm Password
-            // became unreachable: the ScrollView no longer knew to reserve room for the
-            // keyboard at all. Scoped to just this button, it stays fixed in place while
-            // the ScrollView keeps scrolling correctly underneath it.
-            Button(action: { dismiss() }) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(Theme.Payment.textHeading)
-                    .frame(width: 44, height: 44)
-            }
-            .accessibilityLabel("Back")
-            .padding(.leading, 20)
-            .padding(.top, 52)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .ignoresSafeArea(.keyboard, edges: .bottom)
         }
         .sheet(isPresented: $showTermsPlaceholder) {
             placeholderLegalSheet

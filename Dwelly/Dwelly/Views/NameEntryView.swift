@@ -21,11 +21,24 @@ struct NameEntryView: View {
             Theme.Payment.backgroundPrimary.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
-                Spacer().frame(height: 130)
+                Spacer().frame(height: 52)
 
-                Text("What's your name?")
-                    .font(.system(size: 28, design: .serif))
-                    .foregroundColor(Theme.Payment.textHeading)
+                // Kell's call (Nov 17 2026): chevron inline beside the title, one
+                // standard across the whole app, instead of this screen's old
+                // floating-corner chevron + a fixed spacer just to clear it.
+                HStack(spacing: 4) {
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(Theme.Payment.textHeading)
+                            .frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel("Back")
+
+                    Text("What's your name?")
+                        .font(.system(size: 22, design: .serif))
+                        .foregroundColor(Theme.Payment.textHeading)
+                }
 
                 Spacer().frame(height: 16)
 
@@ -55,17 +68,6 @@ struct NameEntryView: View {
                 Spacer(minLength: 24)
             }
             .padding(.horizontal, 28)
-
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(Theme.Payment.textHeading)
-                    .frame(width: 44, height: 44)
-            }
-            .accessibilityLabel("Back")
-            .padding(.leading, 20)
-            .padding(.top, 52)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .safeAreaInset(edge: .bottom) { footer }
         .onAppear { isFocused = true }

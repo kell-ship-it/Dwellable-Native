@@ -26,11 +26,24 @@ struct ForgotPasswordView: View {
             // `footer` (same fix as AccountCreationView/LoginView, Nov 3 2026).
             ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                Spacer().frame(height: 130)
+                Spacer().frame(height: 52)
 
-                Text(didSend ? "Check your email" : "Reset your password")
-                    .font(.system(size: 28, design: .serif))
-                    .foregroundColor(Theme.Payment.textHeading)
+                // Kell's call (Nov 17 2026): chevron inline beside the title, one
+                // standard across the whole app, instead of this screen's old
+                // floating-corner chevron + a fixed spacer just to clear it.
+                HStack(spacing: 4) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(Theme.Payment.textHeading)
+                            .frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel("Back")
+
+                    Text(didSend ? "Check your email" : "Reset your password")
+                        .font(.system(size: 22, design: .serif))
+                        .foregroundColor(Theme.Payment.textHeading)
+                }
 
                 Spacer().frame(height: 16)
 
@@ -77,19 +90,6 @@ struct ForgotPasswordView: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .safeAreaInset(edge: .bottom) { footer }
-
-            // Scoped to just this button — see AccountCreationView's identical comment.
-            Button(action: { dismiss() }) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(Theme.Payment.textHeading)
-                    .frame(width: 44, height: 44)
-            }
-            .accessibilityLabel("Back")
-            .padding(.leading, 20)
-            .padding(.top, 52)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .ignoresSafeArea(.keyboard, edges: .bottom)
         }
     }
 

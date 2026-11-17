@@ -42,17 +42,22 @@ struct IntentSelectionView: View {
             // in the same testing. Root cause not fully understood — see WelcomeView's
             // comment for the fuller account.
             VStack(alignment: .leading, spacing: 0) {
-                // Fixed, not flexible — a flexible Spacer() here competed with the two
-                // below it for space, so growing from 4 to 5 options (Nov 11 2026,
-                // T-273) shrank this one disproportionately and pushed the heading up
-                // underneath the back chevron (which sits at a fixed .padding(.top, 52)
-                // + 44pt tall, independent of how much content is below it). 100pt
-                // clears that with room to spare, regardless of option count.
-                Spacer().frame(height: 100)
+                // Kell's call (Nov 17 2026): chevron inline beside the title, one
+                // standard across the whole app, instead of this screen's old
+                // floating-corner chevron + a fixed spacer just to clear it.
+                HStack(spacing: 4) {
+                    Button(action: onBack) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(Theme.Onboarding.textPrimary)
+                            .frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel("Back")
 
-                Text("How can dwelly help you?")
-                    .font(.system(size: 28, design: .serif))
-                    .foregroundColor(Theme.Onboarding.textPrimary)
+                    Text("How can dwelly help you?")
+                        .font(.system(size: 22, design: .serif))
+                        .foregroundColor(Theme.Onboarding.textPrimary)
+                }
 
                 Spacer().frame(height: 16)
 
@@ -75,17 +80,7 @@ struct IntentSelectionView: View {
                 footer
             }
             .padding(.horizontal, 28)
-
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(Theme.Onboarding.textPrimary)
-                    .frame(width: 44, height: 44)
-            }
-            .accessibilityLabel("Back")
-            .padding(.leading, 20)
             .padding(.top, 52)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
