@@ -68,6 +68,12 @@ struct MainTabView: View {
             .tabItem { Label("Profile", systemImage: "person.crop.circle") }
             .tag(Tab.profile)
         }
+        // Still glitching on-device after disabling the selection animation (Kell,
+        // Nov 17 2026) -- so the fringe isn't the pill's slide after all. Forcing
+        // monochrome symbol rendering rules out the other usual cause: an SF Symbol
+        // rendering in multicolor/hierarchical mode interpolating through intermediate
+        // colors as the tab bar's own tint recomputes on selection.
+        .environment(\.symbolRenderingMode, .monochrome)
         // Kell caught a real, on-device color-fringe glitch on the tab bar's own
         // selection pill mid-slide, not a simulator rendering artifact -- a known
         // SwiftUI/iOS issue where the system tab bar's selected-icon tint
