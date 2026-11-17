@@ -649,7 +649,13 @@ struct JournalDetailView: View {
             // same outline, just dimmed to 0.4 opacity (pixel-matched from node 286:1647)
             // -- that's what actually signals "you're capped," not a border/fill swap.
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 8)], alignment: .leading, spacing: 8) {
-                ForEach(presetMoods, id: \.self) { mood in
+                // Kell caught this live (Nov 16 2026): a custom word typed into "Add
+                // your own word" got added to draftMoods and counted toward the 3/3
+                // cap, but never showed up as a chip anywhere in the grid -- there was
+                // no way to see it was selected, or to tap it off again. Preset moods
+                // stay first (matches Figma's fixed grid order); any selected mood not
+                // in that preset list is a custom one and is appended after them.
+                ForEach(presetMoods + draftMoods.filter { !presetMoods.contains($0) }, id: \.self) { mood in
                     let isSelected = draftMoods.contains(mood)
                     let isCappedOut = !isSelected && draftMoods.count >= maxMoods
                     Button(action: { toggleMood(mood) }) {
