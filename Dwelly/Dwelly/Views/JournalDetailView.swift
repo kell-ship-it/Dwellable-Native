@@ -718,7 +718,9 @@ struct JournalDetailView: View {
             }
         }
         .padding(20)
-        .background(Theme.background)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Theme.background.ignoresSafeArea())
+        .applyMoodSheetPresentationBackground()
         .presentationDetents([.medium])
     }
 
@@ -948,6 +950,24 @@ private struct CameraPicker: UIViewControllerRepresentable {
 
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             picker.dismiss(animated: true)
+        }
+    }
+}
+
+private extension View {
+    /// The Moods sheet's own `.background(...).ignoresSafeArea()` paints the content
+    /// area, but the system sheet chrome itself -- behind the top grabber capsule and
+    /// the bottom home-indicator strip -- is a separate layer underneath that, and
+    /// stayed the default translucent gray material no matter what the content's own
+    /// background was set to (Kell caught this live, Nov 16 2026). `presentationBackground`
+    /// is the only API that actually recolors that underlying sheet layer; it's iOS
+    /// 16.4+, so below that this intentionally falls back to just the content fix.
+    @ViewBuilder
+    func applyMoodSheetPresentationBackground() -> some View {
+        if #available(iOS 16.4, *) {
+            self.presentationBackground(Theme.background)
+        } else {
+            self
         }
     }
 }
