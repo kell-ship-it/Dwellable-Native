@@ -111,6 +111,32 @@ enum DwellerProfileManager {
 
         guard qualifyingCount >= 3, !(newEntries.isEmpty && newFeedback.isEmpty) else { return nil }
 
+        guard let summary = await generateNarrative(userId: userId, approvedEntries: approvedEntries, feedback: feedback, apiClient: apiClient) else {
+            return nil
+        }
+
+        // A fresh narrative is unconfirmed again -- DwellerProfile.isConfirmed compares
+        // confirmedAt against updatedAt, and saveDwellerProfile's upsert naturally
+        // leaves confirmedAt at whatever it already was in the row (the payload never
+        // includes it); since this write bumps updatedAt forward past any prior
+        // confirmedAt, isConfirmed resolves to false on the next read without needing
+        // to touch confirmedAt here at all.
+        let profile = DwellerProfile(userId: userId, runningSummary: summary, updatedAt: Date())
+        return try? await apiClient.saveDwellerProfile(profile)
+    }
+
+    /// T-294-pattern debug tool (Nov 16 2026, Kell's direct call after a live-testing
+    /// mishap -- see `NarrativeExperimentView`'s own comment): the pure half of
+    /// `regenerateIfNeeded`, split out so a caller can preview the model's output for
+    /// an arbitrary hand-picked subset of entries/feedback WITHOUT writing anything
+    /// anywhere -- no status flips, no `saveDwellerProfile`, no side effects at all.
+    /// `regenerateIfNeeded` above is the only real caller that persists a result.
+    static func generateNarrative(
+        userId: String,
+        approvedEntries: [JournalEntry],
+        feedback: [NarrativeFeedback],
+        apiClient: APIClient
+    ) async -> String? {
         // Kell caught this live (Nov 16 2026): feeding feedback text as a bare,
         // context-free fragment gives the model a complaint with no idea what it's
         // objecting to -- three "it feels off"s with nothing else is noise, not
@@ -178,15 +204,6 @@ enum DwellerProfileManager {
             return nil
         }
         let summary = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !summary.isEmpty else { return nil }
-
-        // A fresh narrative is unconfirmed again -- DwellerProfile.isConfirmed compares
-        // confirmedAt against updatedAt, and saveDwellerProfile's upsert naturally
-        // leaves confirmedAt at whatever it already was in the row (the payload never
-        // includes it); since this write bumps updatedAt forward past any prior
-        // confirmedAt, isConfirmed resolves to false on the next read without needing
-        // to touch confirmedAt here at all.
-        let profile = DwellerProfile(userId: userId, runningSummary: summary, updatedAt: Date())
-        return try? await apiClient.saveDwellerProfile(profile)
+        return summary.isEmpty ? nil : summary
     }
 }

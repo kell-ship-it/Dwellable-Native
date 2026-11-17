@@ -382,7 +382,15 @@ class SupabaseAPIClient: APIClient {
     }
 
     func fetchApprovedJournalEntries(userId: String) async throws -> [JournalEntry] {
-        let endpoint = "/rest/v1/journal_entries?user_id=eq.\(userId)&status=eq.approved&select=*"
+        // Kell caught this live (Nov 16 2026): this never excluded a soft-deleted
+        // moment's own journal_entries row -- T-158's soft delete only ever filtered
+        // moments.deleted_at in fetch-moments' list query (see its own comment), so a
+        // deleted entry's title/moods/body kept counting as a real qualifying
+        // reflection and kept feeding YourNarrativeCard/DwellerProfileManager forever.
+        // PostgREST embedded-resource filter: join moments, require its deleted_at IS
+        // NULL. The extra embedded "moments" object each row carries back is silently
+        // dropped by JournalEntry's own explicit CodingKeys.
+        let endpoint = "/rest/v1/journal_entries?user_id=eq.\(userId)&status=eq.approved&moments.deleted_at=is.null&select=*,moments!inner(deleted_at)"
         return try await makeRequest(
             method: "GET",
             endpoint: endpoint,
