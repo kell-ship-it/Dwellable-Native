@@ -249,7 +249,16 @@ struct EntriesView: View {
         let isFuture = isFutureDay(date)
 
         return Button(action: {
-            withAnimation(.easeOut(duration: 0.15)) {
+            // Kell caught this live (Nov 17 2026): tapping a day with a different
+            // entry count than the currently-selected one (e.g. 16th -> 17th, where
+            // the 17th has no entries) made the list below visibly jump/snap instead
+            // of transitioning -- the old `.easeOut(duration: 0.15)` only animated
+            // the calendar's own selection highlight; the `entryList` content below
+            // had no `.transition` of its own, so SwiftUI swapped it instantly
+            // mid-animation. Unified to the same easeInOut curve "Show all" already
+            // used, and `entryList` now carries an explicit crossfade (see below) so
+            // both the highlight move and the content swap read as one motion.
+            withAnimation(.easeInOut(duration: 0.25)) {
                 selectedDay = isSelected ? nil : date
             }
         }) {
@@ -286,7 +295,7 @@ struct EntriesView: View {
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Theme.Payment.textSupporting)
                     Spacer()
-                    Button(action: { withAnimation { self.selectedDay = nil } }) {
+                    Button(action: { withAnimation(.easeInOut(duration: 0.25)) { self.selectedDay = nil } }) {
                         Text("Show all")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(Theme.gold)
@@ -295,25 +304,33 @@ struct EntriesView: View {
                 .padding(.horizontal, 20)
             }
 
-            if visibleEntries.isEmpty {
-                VStack(spacing: 8) {
-                    Text(selectedDay == nil ? "No entries this month yet." : "Nothing captured this day.")
-                        .font(.system(size: 13))
-                        .foregroundColor(Theme.Payment.textSupporting)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 32)
-            } else {
-                LazyVStack(spacing: 10) {
-                    ForEach(visibleEntries) { entry in
-                        NavigationLink(destination: JournalDetailView(moment: entry.moment, syncManager: syncManager)) {
-                            entryRow(entry)
-                        }
-                        .buttonStyle(.plain)
+            // Keyed to `selectedDay` so switching from one day to another with a
+            // different entry count (e.g. the 16th -> a day with zero entries)
+            // crossfades instead of the old list snapping/jumping to the new
+            // content mid-animation -- see the dayCell tap handler's comment.
+            Group {
+                if visibleEntries.isEmpty {
+                    VStack(spacing: 8) {
+                        Text(selectedDay == nil ? "No entries this month yet." : "Nothing captured this day.")
+                            .font(.system(size: 13))
+                            .foregroundColor(Theme.Payment.textSupporting)
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 32)
+                } else {
+                    LazyVStack(spacing: 10) {
+                        ForEach(visibleEntries) { entry in
+                            NavigationLink(destination: JournalDetailView(moment: entry.moment, syncManager: syncManager)) {
+                                entryRow(entry)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 20)
             }
+            .id(selectedDay)
+            .transition(.opacity)
         }
         .padding(.bottom, 32)
     }
