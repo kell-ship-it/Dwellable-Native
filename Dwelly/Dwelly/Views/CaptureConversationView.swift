@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import Combine
 
 /// The real "Dwelly Responds" conversation (Figma `jBOzv1vO2C2DSMePqRl4c4`, node 38:246,
 /// "Scenario 2: Dwelly Responds") — the piece of P1 Capture that was blocked on T-168
@@ -14,13 +15,27 @@ struct CaptureConversationView: View {
     let userId: String
     let userEmail: String?
     let syncManager: SyncManager
-    let initialMessage: String
-    // When the conversation is opened from one of CaptureView's suggested prompt cards,
-    // `initialMessage` is a question Dwelly is posing TO the user ("Any stillness stand
-    // out to you?"), not something the user is saying to Dwelly — sending it as a user
-    // turn made the model answer its own question in the first person instead of
-    // inviting a real answer (caught by Kell live, Nov 9 2026). Defaults to false for
-    // the free-typed-text path, which is unchanged.
+    // Nov 17 2026 merge (Kell's direct call): this screen used to only ever be reached
+    // AFTER a separate screen, `CaptureView`, had already collected the opening
+    // message -- two different SwiftUI views, two separate composers/mic handlers,
+    // crossfaded to look like one continuous conversation. That split is exactly why
+    // the same "voice should preview before sending" bug had to be fixed twice in one
+    // session (once here, once there) before anyone noticed the two screens had
+    // drifted apart. `CaptureView` is deleted; this is now the one real screen for
+    // the whole capture flow, start to finish. Empty (the default) means there's no
+    // preset opening message yet -- the idle "What's stirring in you today?" /
+    // topic-card state renders instead (see `turns.isEmpty` branches in `body`) until
+    // the user's own first message (typed, recorded, or a tapped topic card) becomes
+    // `turns`' first entry via the same `sendUserTurn()`/`selectPromptCard()` every
+    // later turn already uses. Non-empty is unchanged: the Today tab's preset-prompt
+    // tiles (MainTabView) still open straight into a question, skipping the idle state.
+    var initialMessage: String = ""
+    // When the conversation is opened already carrying a preset question (MainTabView's
+    // Today-tab tiles) or via a tapped topic card, `initialMessage`/the card's title is
+    // a question Dwelly is posing TO the user ("Any stillness stand out to you?"), not
+    // something the user is saying to Dwelly — sending it as a user turn made the model
+    // answer its own question in the first person instead of inviting a real answer
+    // (caught by Kell live, Nov 9 2026). Defaults to false for the free-typed-text path.
     var initialMessageIsPrompt: Bool = false
     // The mandatory onboarding first-capture (OnboardingCoordinatorView, presented
     // with .interactiveDismissDisabled()) has nowhere to go "back" TO — there's no
@@ -41,18 +56,26 @@ struct CaptureConversationView: View {
     // Falls back to the old plain-dismiss-into-the-chat behavior when nil (every
     // call site that hasn't wired this yet, e.g. the legacy MomentsListView push).
     var onFinishedViewingJournal: (() -> Void)?
-    // Fix #1 (prompt-selection -> thread handoff): shares CaptureView's own
-    // `promptTransition` namespace so the first assistant bubble (the prompt
-    // question itself, when opened from a tapped topic card) can carry the SAME
-    // `.matchedGeometryEffect` id the tapped card used -- letting it read as one
-    // continuous element morphing into its thread position, not a card that
-    // vanished while an unrelated bubble faded in underneath. `nil` for every
-    // other entry path (typed text, voice, post-onboarding) -- no card existed to
-    // morph from, so no matched effect is applied there at all.
-    var promptTransition: Namespace.ID? = nil
-    var promptTransitionId: String? = nil
 
     @Environment(\.apiClient) private var apiClient
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    // Fix #1 (prompt-selection -> thread handoff), now owned directly by this screen
+    // since the Nov 17 2026 merge folded the topic-card grid in from the deleted
+    // `CaptureView` -- the tapped card's `.matchedGeometryEffect` and the resulting
+    // first assistant bubble's own both key into this ONE namespace, letting
+    // SwiftUI interpolate between them continuously within this same view, not
+    // synced across two separate screens via passed-in params like before.
+    // `selectedPromptTitle` drives the fade of the OTHER (untapped) cards.
+    @Namespace private var promptTransition
+    @State private var selectedPromptTitle: String?
+    // Model-download + idle-state fields merged in from `CaptureView` (Nov 17 2026) --
+    // see `modelDownloadOverlay`/`startModelDownload`/`topicCards` below.
+    @State private var isDownloadingModel = false
+    @State private var downloadProgress: Double = 0.0
+    @State private var downloadFailed = false
+    @State private var progressTimer: Timer?
+    @State private var spinnerRotation: Double = 0
     @Environment(\.dismiss) private var dismiss
     @FocusState private var inputFocused: Bool
     // Voice was scoped out of this screen entirely when it was first built ("Voice
@@ -199,7 +222,7 @@ struct CaptureConversationView: View {
     /// what was typed). Ephemeral: `Moment` has no title/scripture columns of its own yet
     /// (that's real P4/Journal schema scope), so this is generated fresh for display here
     /// and not persisted — reopening a saved moment later just shows its plain body.
-    private struct JournalMeta: Decodable {
+    private struct JournalMeta {
         let title: String
         let excerpt: String
         // The real synthesized narrative (Nov 11 2026) -- nil only on the
@@ -210,12 +233,14 @@ struct CaptureConversationView: View {
         // LLM-suggested moods (Nov 11 2026) -- empty on the hard-failure fallback,
         // same as `body`.
         let moods: [String]
-
-        enum CodingKeys: String, CodingKey {
-            case title, excerpt, body, moods
-            case scriptureQuote = "scripture_quote"
-            case scriptureReference = "scripture_reference"
-        }
+        // T-127 (rebuilt Nov 17 2026): independent of whether synthesis ran -- gates
+        // whether this capture ever reaches DwellerProfileManager/Growth eligibility.
+        // Defaults true/nil for the two pre-existing call sites (a real synthesis
+        // success, and the hard-LLM-failure fallback, which still has genuine user
+        // words behind it even though the model call itself errored) -- only the new
+        // below-floor-replacement path below sets this false.
+        var formationEligible: Bool = true
+        var extractedFacts: String? = nil
     }
 
     /// Kept short and narrow on purpose — this is a first real wiring of T-168 into a
@@ -343,6 +368,17 @@ struct CaptureConversationView: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         VStack(alignment: .leading, spacing: 20) {
+                            // Nov 17 2026 merge: nothing sent yet -- the idle "What's
+                            // stirring in you today?" headline + (onboarding-only)
+                            // topic cards, folded in from the deleted `CaptureView`.
+                            // Once the first turn lands (typed, recorded, or a tapped
+                            // card via `selectPromptCard`), this screen falls through
+                            // to the normal thread below -- same screen, no transition
+                            // to a different one.
+                            if turns.isEmpty {
+                                idlePrelude
+                                    .transition(.opacity)
+                            }
                             ForEach(turns) { turn in
                                 turnBubble(
                                     turn,
@@ -350,13 +386,17 @@ struct CaptureConversationView: View {
                                     isPromptOrigin: openedWithPromptQuestion && turn.id == turns.first?.id
                                 )
                                 .id(turn.id == turns.last?.id ? "journalPreview" : turn.id.uuidString)
+                                .transition(.opacity)
                             }
                             if isWaitingForDwelly {
-                                dwellyBadge
-                                ProgressView()
-                                    .tint(Theme.gold)
-                                    .padding(.leading, 24)
-                                    .id("spinner")
+                                Group {
+                                    dwellyBadge
+                                    ProgressView()
+                                        .tint(Theme.gold)
+                                        .padding(.leading, 24)
+                                        .id("spinner")
+                                }
+                                .transition(.opacity)
                             }
                         }
                         .padding(.horizontal, 24)
@@ -376,15 +416,30 @@ struct CaptureConversationView: View {
                         scrollSettleWorkItem = workItem
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: workItem)
                     }
+                    // Nov 17 2026: matched to the same `.easeInOut(duration: 0.3)`
+                    // curve `sendUserTurn()`/`requestDwellyResponse()` now wrap their
+                    // own state changes in, rather than the implicit default spring
+                    // `withAnimation {}` used here before -- two different curves
+                    // firing at once (content crossfade vs. scroll position) on the
+                    // same send was part of why that moment read as disjointed/a
+                    // screen swap rather than one continuous motion.
                     .onChange(of: turns.count) { _ in
-                        withAnimation { proxy.scrollTo(turns.last?.id, anchor: .bottom) }
+                        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+                            proxy.scrollTo(turns.last?.id, anchor: .bottom)
+                        }
                     }
                     .onChange(of: isWaitingForDwelly) { waiting in
-                        if waiting { withAnimation { proxy.scrollTo("spinner", anchor: .bottom) } }
+                        if waiting {
+                            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+                                proxy.scrollTo("spinner", anchor: .bottom)
+                            }
+                        }
                     }
                     .onChange(of: isConversationComplete) { complete in
                         if complete {
-                            withAnimation { proxy.scrollTo("journalPreview", anchor: .bottom) }
+                            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+                                proxy.scrollTo("journalPreview", anchor: .bottom)
+                            }
                             Task { await finishAndSave() }
                         }
                     }
@@ -433,7 +488,19 @@ struct CaptureConversationView: View {
                                 // missing stages (Nov 10 2026): record → live waveform/timer with
                                 // Cancel+Stop → transcribing → transcript lands in the compose field for
                                 // review, not sent automatically.
-                                if audioManager.isRecording {
+                                //
+                                // Found live Nov 17 2026, building the repeat-recording fix: this switch
+                                // had no `inputText` guard, so once a draft existed and `isRecording`
+                                // flipped true from a SECOND/THIRD clip, this drew its OWN full-width
+                                // `recordingBar` on top of `unifiedComposeSurface`'s own (now also
+                                // recording-aware) capsule -- two overlapping recording UIs landing in
+                                // the same spot, not the single one either state meant to show. This
+                                // whole switch is the pre-draft idle row; once there's a draft,
+                                // `unifiedComposeSurface` owns every state (empty/typing/recording/
+                                // transcribing) by itself, so this renders nothing at all then.
+                                if !inputText.isEmpty {
+                                    EmptyView()
+                                } else if audioManager.isRecording {
                                     recordingBar
                                 } else if isTranscribingVoice {
                                     transcribingBar
@@ -465,23 +532,39 @@ struct CaptureConversationView: View {
                         // nothing left to lose by leaving, so the chevron goes back to
                         // being a plain, unprompted exit -- same as before.
                         if !isOnboarding {
-                            Button(action: {
-                                if isConversationComplete {
-                                    onMomentSaved?()
-                                    dismiss()
-                                } else {
-                                    showLeaveConfirmation = true
+                            // Nov 17 2026 merge: before anything's been said, this is
+                            // a plain dismiss (nothing to lose, no confirmation needed)
+                            // with the same "X" CaptureView's own idle screen used --
+                            // not a "Back" out of a conversation, since no conversation
+                            // has started yet. Once the first turn lands, this becomes
+                            // the existing chevron-left/leave-confirmation behavior.
+                            if turns.isEmpty {
+                                Button(action: { dismiss() }) {
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(Theme.Capture.textPrimary)
+                                        .frame(width: 44, height: 44)
                                 }
-                            }) {
-                                Image(systemName: "chevron.left")
-                                    .font(.system(size: 18, weight: .medium))
-                                    .foregroundColor(Theme.Capture.textPrimary)
-                                    .frame(width: 44, height: 44)
+                                .accessibilityLabel("Close")
+                            } else {
+                                Button(action: {
+                                    if isConversationComplete {
+                                        onMomentSaved?()
+                                        dismiss()
+                                    } else {
+                                        showLeaveConfirmation = true
+                                    }
+                                }) {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 18, weight: .medium))
+                                        .foregroundColor(Theme.Capture.textPrimary)
+                                        .frame(width: 44, height: 44)
+                                }
+                                // T-223 sweep: every other back chevron in the app (onboarding's
+                                // 6 step screens) already carries this label -- this one and
+                                // JournalDetailView's were the two left missing it.
+                                .accessibilityLabel("Back")
                             }
-                            // T-223 sweep: every other back chevron in the app (onboarding's
-                            // 6 step screens) already carries this label -- this one and
-                            // JournalDetailView's were the two left missing it.
-                            .accessibilityLabel("Back")
                         } else if isConversationComplete {
                             Button(action: { onMomentSaved?(); dismiss() }) {
                                 Image(systemName: "chevron.left")
@@ -574,6 +657,12 @@ struct CaptureConversationView: View {
                 // reason the old overlay was: so it renders in front of the header
                 // and scroll content once it grows past the collapsed card's bounds.
                 unifiedComposeSurface
+
+                // Merged in from `CaptureView` (Nov 17 2026) -- declared last so it
+                // covers everything else, same as that screen's own placement.
+                if isDownloadingModel {
+                    modelDownloadOverlay
+                }
             }
         .background(Theme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
@@ -603,27 +692,24 @@ struct CaptureConversationView: View {
             if let last = UserDefaults.standard.object(forKey: Self.lastReflectionDateKey) as? Date {
                 isFirstReflectionTodayLocally = !Calendar.current.isDateInToday(last)
             }
-            if initialMessageIsPrompt {
-                // Dwelly is asking this one, not the user — show it as the opening
-                // assistant turn and wait for the user's real answer instead of
-                // calling the LLM immediately, which previously made Dwelly answer
-                // its own question (caught live by Kell, Nov 9 2026).
-                turns = [Turn(role: .assistant, text: initialMessage)]
-                openedWithPromptQuestion = true
-                // Fix #1: hold the composer hidden until the card's own morph into
-                // this turn's bubble has had time to finish, then fade it in --
-                // only when this screen was actually reached via a tapped card
-                // (`promptTransition` non-nil); every other prompt-opened path
-                // (there isn't one today, but defensively) reveals immediately.
-                if promptTransition != nil {
-                    isComposerRevealed = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                        withAnimation(.easeOut(duration: 0.25)) { isComposerRevealed = true }
-                    }
+            // Nov 17 2026 merge: empty means no preset opening message was handed in
+            // (the plain capture entry point) -- leave `turns` empty and let the idle
+            // "What's stirring in you today?" / topic-card state render instead (see
+            // `body`'s `turns.isEmpty` branches). A tapped topic card seeds `turns`
+            // directly via `selectPromptCard()`, not through this `initialMessage`
+            // path at all, now that the card and this screen are the same view.
+            if !initialMessage.isEmpty {
+                if initialMessageIsPrompt {
+                    // Dwelly is asking this one, not the user — show it as the opening
+                    // assistant turn and wait for the user's real answer instead of
+                    // calling the LLM immediately, which previously made Dwelly answer
+                    // its own question (caught live by Kell, Nov 9 2026).
+                    turns = [Turn(role: .assistant, text: initialMessage)]
+                    openedWithPromptQuestion = true
+                } else {
+                    turns = [Turn(role: .user, text: initialMessage)]
+                    Task { await requestDwellyResponse() }
                 }
-            } else {
-                turns = [Turn(role: .user, text: initialMessage)]
-                Task { await requestDwellyResponse() }
             }
         }
         // `unifiedComposeSurface` needs the REAL, live keyboard height (see
@@ -661,6 +747,21 @@ struct CaptureConversationView: View {
         } message: {
             Text("You haven't saved this yet. Save it to your journal, or discard it and start over.")
         }
+        // Merged in from `CaptureView` (Nov 17 2026) -- backgrounding mid-recording
+        // used to only be handled on the old separate first-capture screen; this
+        // applies regardless of whether `turns` is empty or not now that it's one
+        // screen for the whole flow.
+        .onReceive(
+            Just(scenePhase)
+                .dropFirst()
+                .eraseToAnyPublisher(),
+            perform: { phase in
+                if phase == .background && audioManager.isRecording {
+                    HTMLLogManager.shared.log("App backgrounded during recording — stopping", level: "WARNING")
+                    audioManager.stopRecording { transcribeIntoTextField() }
+                }
+            }
+        )
     }
 
     /// Figma's own reference (Kell's screenshots, Nov 9 2026) shows every numbered
@@ -871,7 +972,17 @@ struct CaptureConversationView: View {
                         .tint(Theme.gold)
                         .focused($inputFocused)
                         .submitLabel(.done)
-                        .onSubmit { sendUserTurn() }
+                        // Dismiss only -- never send. Found live Nov 17 2026: this
+                        // used to call sendUserTurn() directly, which meant a voice
+                        // transcript landing while this field was focused (box still
+                        // empty) could get auto-sent as a side effect of THIS field
+                        // being torn down when `inputText` flips non-empty (SwiftUI
+                        // can synthesize a submit on a focused TextField's removal),
+                        // not a real Done-key press -- directly contradicting the
+                        // "lands for review, never auto-sends" rule `transcribeIntoTextField`
+                        // already documents. Sending stays exclusively the explicit
+                        // send-button tap; Done here only matches its own label.
+                        .onSubmit { inputFocused = false }
                         .disabled(isWaitingForDwelly)
 
                     Button(action: handleRecordTap) {
@@ -968,11 +1079,26 @@ struct CaptureConversationView: View {
                 // `deviceScreenSize` (NOT the old, contaminated `proxy.size`), is
                 // the one placement approach actually measured pixel-correct
                 // across this entire session.
-                let cardWidth = isComposeExpanded ? fullWidth : collapsedWidth
-                let cardHeight = isComposeExpanded ? fullHeight : collapsedHeight
-                let cardCenterY = isComposeExpanded
-                    ? fullHeight / 2
-                    : fullHeight - collapsedBottomMargin - collapsedHeight / 2
+                // Kell's explicit ChatGPT-style spec (Nov 17 2026): tapping mic from
+                // inside an existing draft collapses the WHOLE editor -- text and all
+                // -- down into the same compact capsule the idle composer's own
+                // `recordingBar`/`transcribingBar` use, not just a button row stuck to
+                // the bottom of a still-full-size editor (that was the prior, wrong
+                // pass -- see the now-removed isRecording/isTranscribingVoice branches
+                // below). The draft text itself is never touched by this -- only this
+                // card's geometry/contents swap while capturing, so cancel/error simply
+                // leaving `inputText` alone (already true -- see `cancelRecording` and
+                // `transcribeIntoTextField`'s error branch) is enough to "restore" it;
+                // there's nothing to restore, it was never altered.
+                let isVoiceCapturing = audioManager.isRecording || isTranscribingVoice
+                let captureBarHeight: CGFloat = 64
+                let cardWidth = isVoiceCapturing ? collapsedWidth : (isComposeExpanded ? fullWidth : collapsedWidth)
+                let cardHeight = isVoiceCapturing ? captureBarHeight : (isComposeExpanded ? fullHeight : collapsedHeight)
+                let cardCenterY = isVoiceCapturing
+                    ? fullHeight - collapsedBottomMargin - captureBarHeight / 2
+                    : (isComposeExpanded
+                        ? fullHeight / 2
+                        : fullHeight - collapsedBottomMargin - collapsedHeight / 2)
                 // Giving the chevron its OWN `.position()`, nested INSIDE the same
                 // ZStack as the TextEditor/mic/send (which use normal alignment-
                 // flow, not `.position()`), measured (via recording + frame
@@ -991,6 +1117,58 @@ struct CaptureConversationView: View {
 
                 ZStack(alignment: .topLeading) {
                 ZStack(alignment: .topLeading) {
+                    if isVoiceCapturing {
+                        // Kell's explicit spec (Nov 17 2026): mic from inside an
+                        // existing draft collapses the WHOLE editor into this same
+                        // compact capsule -- the TextEditor isn't just covered by a
+                        // control row, it's not rendered at all while capturing. The
+                        // draft text underneath is never mutated here, so there's
+                        // nothing to "restore" on cancel/error -- it reappears as-is
+                        // the moment `isVoiceCapturing` goes false and this branch
+                        // stops being drawn.
+                        if audioManager.isRecording {
+                            HStack(spacing: 0) {
+                                Button(action: cancelRecording) {
+                                    Text("✕")
+                                        .font(.system(size: 13))
+                                        .foregroundColor(Theme.Capture.textMuted)
+                                        .frame(width: 44, height: 44)
+                                        .background(Theme.Capture.badgeBackground)
+                                        .clipShape(Circle())
+                                }
+
+                                HStack(spacing: 10) {
+                                    liveWaveform
+                                    Text(audioManager.formattedDuration(audioManager.recordingDuration))
+                                        .font(.system(size: 14))
+                                        .foregroundColor(Theme.Payment.textSupporting)
+                                }
+                                .frame(maxWidth: .infinity)
+
+                                Button(action: handleRecordTap) {
+                                    Rectangle()
+                                        .fill(Theme.Payment.backgroundPrimary)
+                                        .frame(width: 10, height: 10)
+                                        .cornerRadius(2)
+                                        .frame(width: 44, height: 44)
+                                        .background(Theme.gold)
+                                        .clipShape(Circle())
+                                }
+                            }
+                            .padding(.leading, 20)
+                            .padding(.trailing, 10)
+                        } else {
+                            HStack(spacing: 10) {
+                                Circle().fill(Theme.Payment.textSupporting).frame(width: 5, height: 5)
+                                transcribingWaveform
+                                Text("Transcribing...")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Theme.Payment.textSupporting)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 20)
+                        }
+                    } else {
                     TextEditor(text: $inputText)
                         .font(.system(size: 13))
                         .foregroundColor(Theme.Payment.textHeading)
@@ -1068,6 +1246,8 @@ struct CaptureConversationView: View {
                                 // after seeing it live (Nov 10 2026): "remove the mic
                                 // because it creates a different experience... the only
                                 // time you can use the mic is if it's in a collapsed view."
+                                // Tapping it collapses this whole card into the capture
+                                // capsule above instead of living inline here (Nov 17 2026).
                                 Button(action: handleRecordTap) {
                                     Image(systemName: "mic.fill")
                                         .font(.system(size: 16))
@@ -1099,13 +1279,15 @@ struct CaptureConversationView: View {
                     // free on the old `expandedComposeOverlay`; this floating
                     // surface has to track it by hand via `keyboardHeight`.
                     .padding(.bottom, isComposeExpanded ? keyboardHeight + 16 : 10)
+                    }
                 }
-                .frame(
-                    width: isComposeExpanded ? fullWidth : collapsedWidth,
-                    height: isComposeExpanded ? fullHeight : collapsedHeight
-                )
+                .frame(width: cardWidth, height: cardHeight)
                 .background(Theme.Capture.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: isComposeExpanded ? 0 : 20))
+                // A capsule is just a rounded rect whose radius is half its own
+                // height -- using that instead of a real `Capsule()` shape means no
+                // `AnyShape` (iOS 17+) is needed to pick between the two at runtime,
+                // and this target sits on iOS 16.
+                .clipShape(RoundedRectangle(cornerRadius: isVoiceCapturing ? captureBarHeight / 2 : (isComposeExpanded ? 0 : 20)))
                 .position(x: fullWidth / 2, y: cardCenterY)
                 .ignoresSafeArea()
 
@@ -1113,18 +1295,23 @@ struct CaptureConversationView: View {
                 // above on why that matters. Same absolute screen coordinates the
                 // card's own `.position()` uses, so there is exactly one shared
                 // coordinate system for both, and nothing for them to disagree on
-                // mid-animation.
-                Button(action: toggleComposeExpanded) {
-                    Image(systemName: isComposeExpanded ? "chevron.down.circle" : "chevron.up.circle")
-                        .font(.system(size: 18))
-                        .foregroundColor(Theme.Payment.textSupporting)
-                        .frame(width: 32, height: 32)
+                // mid-animation. Hidden while capturing -- there's nothing to
+                // expand/collapse mid-recording, and `recordingBar`/`transcribingBar`
+                // (the idle-composer equivalents this capsule now matches) have no
+                // chevron either.
+                if !isVoiceCapturing {
+                    Button(action: toggleComposeExpanded) {
+                        Image(systemName: isComposeExpanded ? "chevron.down.circle" : "chevron.up.circle")
+                            .font(.system(size: 18))
+                            .foregroundColor(Theme.Payment.textSupporting)
+                            .frame(width: 32, height: 32)
+                    }
+                    .position(
+                        x: cardRightX - (isComposeExpanded ? 20 : 14) - 16,
+                        y: cardTopY + (isComposeExpanded ? expandedTopInset : 0) + 14 + 16
+                    )
+                    .ignoresSafeArea()
                 }
-                .position(
-                    x: cardRightX - (isComposeExpanded ? 20 : 14) - 16,
-                    y: cardTopY + (isComposeExpanded ? expandedTopInset : 0) + 14 + 16
-                )
-                .ignoresSafeArea()
 
                 // T-272 over-length caption -- Figma E9 ("Message Too Long"),
                 // same placement/style as E6's "Reached 10 min — saved." caption:
@@ -1133,7 +1320,7 @@ struct CaptureConversationView: View {
                 // replace-the-pill pattern doesn't apply here). Collapsed state
                 // only -- expanded fills the screen under the keyboard, no room
                 // for it there, but Send stays disabled either way.
-                if !isComposeExpanded && isOverCharacterLimit {
+                if !isComposeExpanded && !isVoiceCapturing && isOverCharacterLimit {
                     Text("That's a lot — trim it down to send.")
                         .font(.system(size: 12))
                         .foregroundColor(Theme.Payment.textSupporting)
@@ -1301,11 +1488,30 @@ struct CaptureConversationView: View {
         }
     }
 
+
+
     private func sendUserTurn() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !isWaitingForDwelly, !isOverCharacterLimit else { return }
-        inputText = ""
-        turns.append(Turn(role: .user, text: text))
+        // Kell's direct ask (Nov 17 2026, after watching the real send): the idle
+        // "What's stirring in you today?" headline and the first user bubble used
+        // to swap in one unanimated frame -- `turns.append` flipping `turns.isEmpty`
+        // with no `withAnimation` around it at all, so SwiftUI had no transaction to
+        // animate even though `idlePrelude`/`turnBubble` both get a plain `.opacity`
+        // transition by default. Wrapping the actual state change is what was
+        // missing; the scroll-to-bottom animation a few lines below (`onChange(of:
+        // turns)`) was already smooth on its own; only this entry point wasn't.
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+            inputText = ""
+            // Found live Nov 17 2026 (Kell: box stayed oversized on a 2nd recording):
+            // isComposeExpanded was never reset on send, so if it was ever left `true`,
+            // the NEXT time content appeared it rendered straight into the fullscreen/
+            // expanded layout instead of the normal 120pt collapsed box. Every send now
+            // returns the compose surface to its slim empty state, every time.
+            isComposeExpanded = false
+            inputFocused = false
+            turns.append(Turn(role: .user, text: text))
+        }
         Task { await requestDwellyResponse() }
     }
 
@@ -1317,11 +1523,283 @@ struct CaptureConversationView: View {
             // 2026: an empty/failed recording's error message was staying on screen
             // through every re-record attempt after it instead of resetting).
             errorMessage = nil
+            // Model-ready check merged in from `CaptureView` (Nov 17 2026) -- this
+            // used to only live on the old standalone first-capture screen, since by
+            // the time a user reached what's now this screen's "turns already exist"
+            // state, the model had already been downloaded during that earlier
+            // first recording. Now that there's one screen, the very first recording
+            // of this capture (whether turns is empty or not) still needs this check.
+            guard TranscriptionManager.shared.isModelReady || UserDefaults.standard.bool(forKey: "whisperModelReady") else {
+                startModelDownload()
+                return
+            }
             // Fresh timeline for this take -- otherwise the first few bars would
             // briefly show the previous recording's trailing samples.
             waveformHistory = Array(repeating: 0, count: Self.waveformBarCount)
             audioManager.onRecordingLimitReached = { transcribeIntoTextField() }
             audioManager.startRecording()
+        }
+    }
+
+    // MARK: - Model Download (merged in from CaptureView, Nov 17 2026)
+
+    private func startModelDownload() {
+        isDownloadingModel = true
+        downloadFailed = false
+        downloadProgress = 0.0
+        HTMLLogManager.shared.log("First capture — downloading WhisperKit model", level: "INFO")
+
+        progressTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
+            let target = 0.92 * (1 - exp(-downloadProgress / 0.85))
+            DispatchQueue.main.async { downloadProgress += 0.001 }
+            _ = target // suppress warning
+        }
+
+        Task {
+            await TranscriptionManager.shared.setupWhisperKit()
+
+            progressTimer?.invalidate()
+            progressTimer = nil
+
+            await MainActor.run {
+                if TranscriptionManager.shared.isModelReady {
+                    HTMLLogManager.shared.log("Model ready — starting first recording", level: "SUCCESS")
+                    downloadProgress = 1.0
+                    UserDefaults.standard.set(true, forKey: "whisperModelReady")
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                        isDownloadingModel = false
+                        waveformHistory = Array(repeating: 0, count: Self.waveformBarCount)
+                        audioManager.onRecordingLimitReached = { transcribeIntoTextField() }
+                        audioManager.startRecording()
+                    }
+                } else {
+                    HTMLLogManager.shared.log("Model download failed", level: "ERROR")
+                    downloadFailed = true
+                }
+            }
+        }
+    }
+
+    private var modelDownloadOverlay: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            if downloadFailed {
+                VStack(spacing: 20) {
+                    ZStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(.orange)
+                    }
+                    .frame(width: 280, height: 80)
+
+                    Text("Download failed.")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.orange)
+
+                    ZStack {
+                        VStack(spacing: 8) {
+                            Text("Check your connection and try again.")
+                                .font(.system(size: 13))
+                                .foregroundColor(Theme.tertiaryText)
+                                .multilineTextAlignment(.center)
+
+                            HStack(spacing: 12) {
+                                Button("Try Again") {
+                                    startModelDownload()
+                                }
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(Theme.background)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 8)
+                                .background(Theme.gold)
+                                .cornerRadius(8)
+
+                                Button("Cancel") {
+                                    isDownloadingModel = false
+                                    downloadFailed = false
+                                }
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Theme.tertiaryText)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                    .frame(width: 280, height: 90)
+                }
+            } else {
+                VStack(spacing: 16) {
+                    Circle()
+                        .trim(from: 0, to: 0.75)
+                        .stroke(Theme.gold, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                        .frame(width: 36, height: 36)
+                        .rotationEffect(.degrees(spinnerRotation))
+                        .onAppear {
+                            withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+                                spinnerRotation = 360
+                            }
+                        }
+                        .frame(width: 280, height: 80)
+
+                    Text("Setting up voice capture...")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(Theme.text)
+
+                    ZStack {
+                        VStack(spacing: 12) {
+                            Text("This only happens once.\nYour recording is safe.")
+                                .font(.system(size: 13))
+                                .foregroundColor(Theme.tertiaryText)
+                                .multilineTextAlignment(.center)
+                                .lineSpacing(3)
+
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .fill(Color.white.opacity(0.08))
+                                        .frame(height: 3)
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .fill(Theme.gold)
+                                        .frame(width: geo.size.width * CGFloat(min(downloadProgress, 1.0)), height: 3)
+                                        .animation(.linear(duration: 0.05), value: downloadProgress)
+                                }
+                            }
+                            .frame(height: 3)
+                        }
+                        .padding(.horizontal, 24)
+                    }
+                    .frame(width: 280, height: 90)
+                }
+            }
+        }
+    }
+
+    // MARK: - Idle state (merged in from CaptureView, Nov 17 2026)
+
+    // Intent-tailored prompts apply ONLY to the mandatory onboarding first-capture
+    // (isOnboarding == true) -- confirmed with Kell (Nov 11 2026): intent can't even
+    // be changed until a user is subscribed (well past onboarding), and by that point
+    // the one-time personalization moment has already happened. Every capture after
+    // onboarding uses the generic set below, unconditionally.
+    private var topicCards: [(title: String, category: String)] {
+        let generic: [(title: String, category: String)] = [
+            ("Did God show up in a connection today?", "Relationships"),
+            ("Any stillness stand out to you?", "Quiet moments"),
+            ("Anything you're wrestling with?", "Doubts"),
+        ]
+        let intent = ProfileManager.shared.localProfile(userId: userId).spiritualIntent
+        switch intent {
+        case "I want to journal my encounters with God":
+            return [("What's a moment with God you want to remember from today?", "Encounter")]
+        case "A place to process my thoughts and feelings":
+            return [("What's weighing on your mind right now?", "Weighing on you")]
+        case "I want to work through my doubts":
+            return [("What's a doubt you've been sitting with?", "Doubts")]
+        case "I want to see my patterns in my spiritual journey":
+            return [("What's something you keep coming back to lately?", "Patterns")]
+        case "I want to remember what God's done for me":
+            return [("What's something God's done that you don't want to forget?", "Remembering")]
+        default:
+            return generic
+        }
+    }
+
+    // Idle headline + (onboarding-only) topic cards, shown while `turns.isEmpty` --
+    // folded in from `CaptureView`'s own `entryScreen` (Nov 17 2026 merge).
+    private var idlePrelude: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("What's stirring in you today?")
+                .font(.system(size: 38, design: .serif))
+                .foregroundColor(Theme.Capture.textPrimary)
+
+            // Kell's direct ask (Nov 17 2026, after watching a recording of a
+            // real second/third-clip session): this line used to swap to
+            // "Listening…" while `audioManager.isRecording` and back the instant
+            // it flips false -- including mid-transcribe, so it visibly snapped
+            // back to "Just start talking." while audio was still being
+            // processed, which read as the headline itself flickering/resetting.
+            // The capture capsule below already carries the real recording/
+            // transcribing state (waveform+timer, then "Transcribing..."), so
+            // this headline has nothing useful left to add by also changing —
+            // it now stays put through every recording, no matter how many
+            // clips go into the same draft.
+            Text(isOnboarding ? "Tap one, or just start talking." : "Just start talking.")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Theme.Payment.textSupporting)
+
+            if isOnboarding {
+                VStack(spacing: 12) {
+                    ForEach(topicCards, id: \.title) { card in
+                        Button(action: { selectPromptCard(card.title) }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(card.title)
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(Theme.Capture.textPrimary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                    Text(card.category)
+                                        .font(.system(size: 13))
+                                        .foregroundColor(Theme.Payment.textSupporting)
+                                }
+                                .multilineTextAlignment(.leading)
+                                Spacer()
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(Theme.gold)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                            .background(Theme.Capture.cardBackground)
+                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.Capture.cardBorder, lineWidth: 1))
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                        }
+                        .matchedGeometryEffect(id: "promptCard", in: promptTransition, isSource: selectedPromptTitle == card.title)
+                        .opacity(selectedPromptTitle == nil || selectedPromptTitle == card.title ? 1 : 0)
+                        .disabled(selectedPromptTitle != nil)
+                    }
+                }
+                .padding(.top, 26)
+            }
+        }
+        // Found auditing Kell's "feels like switching screens" report (Nov 17 2026):
+        // this whole block -- headline AND subtitle -- used to fade to invisible
+        // while `isTranscribingVoice`, inherited faithfully from the original
+        // `CaptureView`'s own `isIntroHidden` ("the headline/hint pairing has
+        // nothing left to say" once transcribing starts). That rationale held back
+        // when a recording could only ever happen once, from a screen with nothing
+        // else on it. It stopped holding the moment repeat recording into an
+        // existing draft became a real, supported flow: fading the ENTIRE headline
+        // out and back on every single clip, even the 2nd/3rd into an already-
+        // started draft, is exactly the "switching screens" sensation Kell flagged
+        // on review -- confirmed against his screen recording, where the headline
+        // visibly blinks out each time a clip stops. Kell's explicit current
+        // instruction overrides that old rationale: this headline now stays fully
+        // present, same opacity, same position, through every stage -- idle,
+        // recording, transcribing, draft populated -- right up until Send actually
+        // moves `turns` past empty and this view stops being rendered at all.
+    }
+
+    // Sequenced two-phase handoff for a tapped topic card: first fade the OTHER
+    // (untapped) cards and hold the selected one in place, then -- a beat later --
+    // seed `turns` with it as the opening assistant question, same as
+    // `initialMessageIsPrompt`'s own `onAppear` handling, just triggered directly
+    // here now that the card and the resulting bubble live in the same screen.
+    private func selectPromptCard(_ title: String) {
+        guard selectedPromptTitle == nil else { return }
+        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.22)) {
+            selectedPromptTitle = title
+        }
+        let delay = reduceMotion ? 0 : 0.22
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.35)) {
+                turns = [Turn(role: .assistant, text: title)]
+                openedWithPromptQuestion = true
+            }
+            isComposerRevealed = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                withAnimation(.easeOut(duration: 0.25)) { isComposerRevealed = true }
+            }
         }
     }
 
@@ -1332,6 +1810,16 @@ struct CaptureConversationView: View {
     // every other message here, not a voice-specific shortcut that skips review.
     // Appends to any text already there rather than overwriting it — recording again
     // is meant to add more, same as picking a conversation back up, not starting over.
+    // Lands the transcript in the compose field for the user to read, edit, or
+    // discard — does NOT send it. Kell caught this sending straight to the
+    // conversation (Nov 10 2026): the design's own flow is record → transcribe →
+    // review/edit in the text box → the user decides when to actually send, same as
+    // every other message here, not a voice-specific shortcut that skips review.
+    // Appends to any text already there rather than overwriting it — recording again
+    // is meant to add more, same as picking a conversation back up, not starting over.
+    // Re-verified Nov 17 2026 after the CaptureView merge, with real mic audio on
+    // both the first AND second recording in the same session -- both landed here
+    // correctly, neither auto-sent nor opened a different screen.
     private func transcribeIntoTextField() {
         guard let audioURL = audioManager.audioURL else { return }
         isTranscribingVoice = true
@@ -1353,8 +1841,19 @@ struct CaptureConversationView: View {
 
     private func requestDwellyResponse() async {
         guard !isConversationComplete else { return }
-        isWaitingForDwelly = true
-        errorMessage = nil
+        // Found auditing Kell's "still feels like changing screens" follow-up
+        // (Nov 17 2026): the PREVIOUS pass only wrapped `sendUserTurn()`'s own
+        // mutation in `withAnimation` -- it never touched this function at all,
+        // even though this is the other half of "send, then see Dwelly respond."
+        // Every state change below (badge+spinner appearing, then being replaced
+        // by the real reply) was flipping with zero animation, so even a perfectly
+        // smooth send crossfade still led into a hard, instant spinner-to-response
+        // swap right after -- which reads as a second screen replacement, not a
+        // continuation of the first. All three mutation points below now animate.
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+            isWaitingForDwelly = true
+            errorMessage = nil
+        }
 
         // The 3rd/final response doesn't need its own LLM call followed by a separate
         // fixed hand-off bubble — Kell caught (Nov 10 2026) that showing both a real
@@ -1365,8 +1864,10 @@ struct CaptureConversationView: View {
         // reply there is a real generated one, all the way until the user taps Done.
         if isOnboarding && dwellyResponseCount == maxResponses - 1 {
             await MainActor.run {
-                turns.append(Turn(role: .assistant, text: closingMessage))
-                isWaitingForDwelly = false
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+                    turns.append(Turn(role: .assistant, text: closingMessage))
+                    isWaitingForDwelly = false
+                }
             }
             return
         }
@@ -1380,12 +1881,16 @@ struct CaptureConversationView: View {
         do {
             let response = try await apiClient.callLLM(messages: messages, feature: "capture_conversation")
             await MainActor.run {
-                turns.append(Turn(role: .assistant, text: response.content))
-                isWaitingForDwelly = false
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+                    turns.append(Turn(role: .assistant, text: response.content))
+                    isWaitingForDwelly = false
+                }
             }
         } catch {
             await MainActor.run {
-                isWaitingForDwelly = false
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+                    isWaitingForDwelly = false
+                }
                 errorMessage = "Dwelly couldn't respond just now. You can keep writing, or save what you have."
             }
             HTMLLogManager.shared.log("llm-proxy call failed: \(error.localizedDescription)", level: "ERROR")
@@ -1453,18 +1958,26 @@ struct CaptureConversationView: View {
                 body: journalMeta.body,
                 moods: journalMeta.moods,
                 scriptureQuote: journalMeta.scriptureQuote,
-                scriptureReference: journalMeta.scriptureReference
+                scriptureReference: journalMeta.scriptureReference,
+                formationEligible: journalMeta.formationEligible,
+                extractedFacts: journalMeta.extractedFacts
             )
         } else {
             entry = JournalEntry(momentId: moment.id, userId: userId, status: "pending")
         }
         _ = try? await apiClient.saveJournalEntry(entry)
 
-        // T-274: keep the running summary current, store-and-show only -- fire-and-forget,
-        // never blocks this screen, and only runs on a real synthesized entry (a pending
-        // one has no body yet to summarize).
-        if journalSynthesisSucceeded, let body = entry.body {
-            Task { await DwellerProfileManager.updateRunningSummary(newEntryBody: body, userId: userId, apiClient: apiClient) }
+        // T-274/T-127 (rebuilt Nov 17 2026): gated on formationEligible specifically,
+        // not on "did synthesis not error" -- a genuinely illegible capture (a mic
+        // test, keyboard noise) must never reach the running profile summary just
+        // because nothing technically failed. Confirmed live before this fix: a real
+        // "testing testing testing" capture had already been woven into this user's
+        // actual DwellerProfile summary ("Your playful 'testing testing' note shows
+        // you're present and moving forward..."). Feeds extractedFacts (the supported-
+        // only content), never the full body, so a mixed entry's filler portions can't
+        // leak in even when the real portion qualifies.
+        if journalSynthesisSucceeded, let journalMeta, journalMeta.formationEligible, let facts = journalMeta.extractedFacts {
+            Task { await DwellerProfileManager.updateRunningSummary(newEntryBody: facts, userId: userId, apiClient: apiClient) }
         }
 
         // T-159 fast path: a new capture is exactly the kind of sync-triggering event
@@ -1480,20 +1993,20 @@ struct CaptureConversationView: View {
     /// return parseable JSON, the card falls back to a plain title/excerpt built locally
     /// and just skips the scripture line, rather than blocking or erroring the save.
     private func generateJournalMeta() async {
-        // T-127: below the validity floor (spam/repeated junk, never about length --
-        // see JournalSynthesisManager.isGenuineReflection's own comment), skip the LLM
-        // call entirely rather than asking it to reframe nothing into something. No
-        // scripture, no mood tags invented over nothing -- just the raw words, honestly
-        // labeled, never reflective language.
-        guard JournalSynthesisManager.isGenuineReflection(combinedBody) else {
+        // Genuinely empty input (shouldn't happen in practice -- the composer requires
+        // at least one sent message -- but defensive rather than sending a blank prompt
+        // to the model for nothing): no LLM call needed to know there's nothing here.
+        guard !combinedBody.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             await MainActor.run {
                 journalMeta = JournalMeta(
                     title: "A Moment Captured",
-                    excerpt: String(combinedBody.prefix(140)),
+                    excerpt: "",
                     body: combinedBody,
                     scriptureQuote: nil,
                     scriptureReference: nil,
-                    moods: []
+                    moods: [],
+                    formationEligible: false,
+                    extractedFacts: nil
                 )
                 journalSynthesisSucceeded = true
             }
@@ -1501,17 +2014,21 @@ struct CaptureConversationView: View {
         }
         do {
             // Shares the exact same synthesis call the retry sweep uses (T-159) --
-            // a pending entry retried later is synthesized identically to how it
-            // would have been the first time.
-            let userWordCount = combinedBody.split(whereSeparator: { $0.isWhitespace }).count
-            let result = try await JournalSynthesisManager.synthesize(transcript: fullTranscript, userWordCount: userWordCount, apiClient: apiClient)
+            // a pending entry retried later is decided identically to how it would
+            // have been the first time. T-127 (rebuilt Nov 17 2026): one call decides
+            // everything now -- preserve-vs-synthesize, title, formation eligibility,
+            // extracted facts, and scripture/moods -- no deterministic pre-check runs
+            // before it.
+            let result = try await JournalSynthesisManager.synthesize(transcript: fullTranscript, userOnlyText: combinedBody, apiClient: apiClient)
             let meta = JournalMeta(
                 title: result.title,
-                excerpt: result.excerpt,
+                excerpt: String(result.body.prefix(140)),
                 body: result.body,
                 scriptureQuote: result.scriptureQuote,
                 scriptureReference: result.scriptureReference,
-                moods: result.moods
+                moods: result.moods,
+                formationEligible: result.formationEligible,
+                extractedFacts: result.extractedFacts
             )
             await MainActor.run {
                 journalMeta = meta
