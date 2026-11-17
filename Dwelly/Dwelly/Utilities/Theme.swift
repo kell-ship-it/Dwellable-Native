@@ -182,3 +182,21 @@ struct Theme {
         static let previewBody = Color(red: 0xd1 / 255, green: 0xd1 / 255, blue: 0xd6 / 255)           // #d1d1d6
     }
 }
+
+/// T-234: Digital Cotton's review flagged tappable cards with no pressed/dimmed state --
+/// a trailing chevron alone doesn't confirm a tap landed. Dims + slightly scales the whole
+/// card (background and border included, not just the label) on press, since these cards'
+/// `Button` content fills an opaque background rather than leaving room for the system's
+/// own default highlight to show through.
+struct PressableCardStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
+extension ButtonStyle where Self == PressableCardStyle {
+    static var pressableCard: PressableCardStyle { PressableCardStyle() }
+}

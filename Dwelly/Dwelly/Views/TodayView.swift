@@ -103,6 +103,7 @@ struct TodayView: View {
                 .background(Theme.gold)
                 .clipShape(Capsule())
             }
+            .buttonStyle(.pressableCard)
         }
         .padding(19)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -152,13 +153,18 @@ struct TodayView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 18)
+            // Background/border live inside the button's own content, not chained
+            // after it -- PressableCardStyle's dim+scale wraps whatever Button()
+            // was given as its label, so the whole card (not just the text/icons)
+            // needs to be part of that content to visibly press as one piece.
+            .background(Theme.Payment.surfaceCard)
+            .overlay(
+                RoundedRectangle(cornerRadius: 15)
+                    .stroke(Theme.Payment.borderDivider, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 15))
         }
-        .background(Theme.Payment.surfaceCard)
-        .overlay(
-            RoundedRectangle(cornerRadius: 15)
-                .stroke(Theme.Payment.borderDivider, lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 15))
+        .buttonStyle(.pressableCard)
     }
 
     private var interlude: some View {
