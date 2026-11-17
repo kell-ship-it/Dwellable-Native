@@ -804,7 +804,7 @@ class SupabaseAPIClient: APIClient {
     // MARK: - Onboarding Profile API (T-111)
 
     func fetchOnboardingProfile(userId: String) async throws -> OnboardingProfileRow {
-        let endpoint = "/rest/v1/users?id=eq.\(userId)&select=id,name,spiritual_intent,notification_opt_in,onboarding_completed_at,current_onboarding_screen"
+        let endpoint = "/rest/v1/users?id=eq.\(userId)&select=id,name,spiritual_intent,notification_opt_in,onboarding_completed_at,current_onboarding_screen,notification_mode"
         let rows = try await makeRequest(method: "GET", endpoint: endpoint, responseType: [OnboardingProfileRow].self)
         guard let row = rows.first else { throw APIError.notFound }
         return row

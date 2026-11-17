@@ -12,6 +12,11 @@ struct OnboardingProfileRow: Decodable {
     let notification_opt_in: Bool?
     let onboarding_completed_at: String?
     let current_onboarding_screen: String?
+    // T-086: Default/Sparse/Off from the real Notifications settings screen (Figma node
+    // 686:259). Distinct from `notification_opt_in` above, which is onboarding's one-time
+    // permission-request answer, not an ongoing preference -- a user can opt in at
+    // onboarding and still later dial the mode down to Sparse or Off.
+    let notification_mode: String?
 }
 
 /// Partial PATCH body for `public.users`. Manual `encode(to:)` with `encodeIfPresent` so an
@@ -24,6 +29,7 @@ struct OnboardingProfileUpdate: Encodable {
     var notificationOptIn: Bool?
     var onboardingCompletedAt: String?
     var currentOnboardingScreen: String?
+    var notificationMode: String?
 
     enum CodingKeys: String, CodingKey {
         case name
@@ -31,6 +37,7 @@ struct OnboardingProfileUpdate: Encodable {
         case notificationOptIn = "notification_opt_in"
         case onboardingCompletedAt = "onboarding_completed_at"
         case currentOnboardingScreen = "current_onboarding_screen"
+        case notificationMode = "notification_mode"
     }
 
     func encode(to encoder: Encoder) throws {
@@ -40,6 +47,26 @@ struct OnboardingProfileUpdate: Encodable {
         try container.encodeIfPresent(notificationOptIn, forKey: .notificationOptIn)
         try container.encodeIfPresent(onboardingCompletedAt, forKey: .onboardingCompletedAt)
         try container.encodeIfPresent(currentOnboardingScreen, forKey: .currentOnboardingScreen)
+        try container.encodeIfPresent(notificationMode, forKey: .notificationMode)
+    }
+}
+
+/// T-086's 3 real modes -- matches the `notification_mode` column's check constraint
+/// exactly, so an invalid raw value can never be constructed client-side. No "Sabbath/Quiet
+/// Days" case: the ticket's written spec mentioned one, but the actual locked Figma design
+/// (node 686:259) only ever shows this 3-way picker -- same drift-from-ticket-text pattern
+/// as T-130/T-181/etc. this session, resolved the same way (trust the real design).
+enum NotificationMode: String, Codable, CaseIterable {
+    case defaultMode = "default"
+    case sparse
+    case off
+
+    var displayName: String {
+        switch self {
+        case .defaultMode: return "Default"
+        case .sparse: return "Sparse"
+        case .off: return "Off"
+        }
     }
 }
 
@@ -64,6 +91,10 @@ struct OnboardingProfile: Codable {
     var notificationOptIn: Bool?
     var onboardingCompletedAt: Date?
     var currentScreen: OnboardingScreen
+    // Defaults to `.defaultMode` (not nil) since that's this column's own real server
+    // default -- a user who's never touched Notifications settings is on Default already,
+    // not in some unset third state.
+    var notificationMode: NotificationMode = .defaultMode
 
     static let empty = OnboardingProfile(name: nil, spiritualIntent: nil, notificationOptIn: nil, onboardingCompletedAt: nil, currentScreen: .name)
 }
@@ -74,9 +105,22 @@ struct OnboardingProfile: Codable {
 final class ProfileManager {
     static let shared = ProfileManager()
 
-    private let apiClient: APIClient
+    private var apiClient: APIClient
 
     init(apiClient: APIClient = SupabaseAPIClient()) {
+        self.apiClient = apiClient
+    }
+
+    /// Caught live, Nov 17 2026 (Kell): `.shared`'s default `SupabaseAPIClient()` above is
+    /// its OWN, separate instance -- never the one `DwellyApp` authenticates via
+    /// `setTokens`/`setJWTToken` after login. Every `syncInBackground` write since T-111
+    /// (setName, setIntent, setNotificationOptIn, completeOnboarding, setCurrentScreen, and
+    /// the new setNotificationMode below) has been sending its PATCH under the anon key
+    /// instead of the real user's JWT -- which doesn't 401, it just gets silently filtered
+    /// to zero rows by RLS, so nothing ever threw and nothing ever looked broken locally.
+    /// `DwellyApp.init()` calls this once with the exact same `apiClient` instance it hands
+    /// everything else, so `.shared` is finally working with a real, authenticated session.
+    func configure(apiClient: APIClient) {
         self.apiClient = apiClient
     }
 
@@ -148,6 +192,9 @@ final class ProfileManager {
         if let screenRaw = row.current_onboarding_screen, let screen = OnboardingScreen(rawValue: screenRaw) {
             profile.currentScreen = screen
         }
+        if let modeRaw = row.notification_mode, let mode = NotificationMode(rawValue: modeRaw) {
+            profile.notificationMode = mode
+        }
         saveLocal(profile, userId: userId)
     }
 
@@ -170,6 +217,13 @@ final class ProfileManager {
         profile.notificationOptIn = optIn
         saveLocal(profile, userId: userId)
         syncInBackground(userId: userId, update: OnboardingProfileUpdate(notificationOptIn: optIn))
+    }
+
+    func setNotificationMode(_ mode: NotificationMode, userId: String) {
+        var profile = localProfile(userId: userId)
+        profile.notificationMode = mode
+        saveLocal(profile, userId: userId)
+        syncInBackground(userId: userId, update: OnboardingProfileUpdate(notificationMode: mode.rawValue))
     }
 
     func setCurrentScreen(_ screen: OnboardingScreen, userId: String) {

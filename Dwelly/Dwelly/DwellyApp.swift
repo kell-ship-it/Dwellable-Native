@@ -231,6 +231,13 @@ struct DwellyApp: App {
         }
 
         self.apiClient = resolvedClient
+        // Fixes a real, silent bug Kell caught live Nov 17 2026: ProfileManager.shared's
+        // own default-constructed APIClient never received the real session's JWT, so
+        // every onboarding-profile sync (name, intent, notification mode, etc.) has been
+        // silently writing under the anon key and getting filtered to zero rows by RLS,
+        // with no error ever surfaced. This makes `.shared` use the exact same,
+        // already-authenticated instance as everything else in the app.
+        ProfileManager.shared.configure(apiClient: resolvedClient)
         _authManager = StateObject(wrappedValue: AuthManager(apiClient: resolvedClient))
         // B-013 Fix: Create SyncManager at app startup with placeholder userId
         // It will be used for all users; userId is passed per-view

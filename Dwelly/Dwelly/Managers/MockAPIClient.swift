@@ -311,7 +311,7 @@ class MockAPIClient: APIClient {
     func fetchOnboardingProfile(userId: String) async throws -> OnboardingProfileRow {
         mockOnboardingProfiles[userId] ?? OnboardingProfileRow(
             id: userId, name: nil, spiritual_intent: nil, notification_opt_in: nil,
-            onboarding_completed_at: nil, current_onboarding_screen: nil
+            onboarding_completed_at: nil, current_onboarding_screen: nil, notification_mode: "default"
         )
     }
 
@@ -323,7 +323,8 @@ class MockAPIClient: APIClient {
             spiritual_intent: update.spiritualIntent ?? existing.spiritual_intent,
             notification_opt_in: update.notificationOptIn ?? existing.notification_opt_in,
             onboarding_completed_at: update.onboardingCompletedAt ?? existing.onboarding_completed_at,
-            current_onboarding_screen: update.currentOnboardingScreen ?? existing.current_onboarding_screen
+            current_onboarding_screen: update.currentOnboardingScreen ?? existing.current_onboarding_screen,
+            notification_mode: update.notificationMode ?? existing.notification_mode
         )
         mockOnboardingProfiles[userId] = existing
     }
