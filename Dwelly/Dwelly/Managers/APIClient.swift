@@ -58,6 +58,14 @@ protocol APIClient {
     func ensureUserExists(userId: String, email: String) async throws
     // T-130: real "Member Since" on Account Profile.
     func fetchAccountCreatedAt(userId: String) async throws -> Date?
+    // T-131 (Kell's call, Nov 16 2026): changing your password confirms via a real email
+    // OTP instead of re-typing the current password -- same NIST 800-63B "re-authenticate
+    // before a sensitive change" idea, just proven via a second channel (the account's
+    // email inbox) rather than a memorized secret. Reuses GoTrue's existing email-OTP
+    // mechanism (`type: "email"`, distinct from `verifySignupOTP`'s `type: "signup"`) --
+    // this is for an already-existing, already-signed-in user, not a new signup.
+    func sendPasswordChangeOTP(email: String) async throws
+    func verifyPasswordChangeOTP(email: String, token: String) async throws -> AuthToken
     func logLoginAttempt(email: String, success: Bool) async
 
     // Onboarding profile endpoints (T-111)

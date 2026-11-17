@@ -264,6 +264,20 @@ class MockAPIClient: APIClient {
         guard !newPassword.isEmpty else { throw APIError.invalidRequest }
     }
 
+    func sendPasswordChangeOTP(email: String) async throws {
+        try await Task.sleep(nanoseconds: 300_000_000)
+    }
+
+    func verifyPasswordChangeOTP(email: String, token: String) async throws -> AuthToken {
+        try await Task.sleep(nanoseconds: 500_000_000)
+        guard token == "123456" else { throw APIError.message("Invalid or expired code.") }
+        return AuthToken(
+            token: "mock-token-\(UUID().uuidString)",
+            userId: "user-\(UUID().uuidString.prefix(8))",
+            expiresAt: Date(timeIntervalSinceNow: 86400 * 30)
+        )
+    }
+
     func logout() async throws {
         // Simulate network delay
         try await Task.sleep(nanoseconds: 200_000_000) // 0.2 second

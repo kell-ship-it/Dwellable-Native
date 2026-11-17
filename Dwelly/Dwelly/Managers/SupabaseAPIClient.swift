@@ -621,6 +621,46 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    /// T-131: sends a real email OTP to confirm a password change for the current,
+    /// already-signed-in user. `create_user: false` is the important bit -- without it
+    /// GoTrue's `/otp` endpoint will silently create a brand-new account for the email if
+    /// it somehow didn't match an existing one, which is never correct here.
+    func sendPasswordChangeOTP(email: String) async throws {
+        try checkRateLimit()
+        let endpoint = "/auth/v1/otp"
+        let payload = SendOTPPayload(email: email, create_user: false)
+        _ = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: EmptyResponse.self,
+            requiresAuth: false
+        )
+    }
+
+    /// `type: "email"` -- GoTrue's generic email-OTP verification, distinct from
+    /// `verifySignupOTP`'s `type: "signup"` (that one only works for an unconfirmed
+    /// signup's own code). A correct code refreshes the session exactly like `login`
+    /// does; `ChangePasswordView` only calls `updatePassword` after this succeeds.
+    func verifyPasswordChangeOTP(email: String, token: String) async throws -> AuthToken {
+        try checkRateLimit()
+        let endpoint = "/auth/v1/verify"
+        let payload = VerifyOTPPayload(type: "email", email: email, token: token)
+        let authResponse = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payload,
+            responseType: AuthResponse.self,
+            requiresAuth: false
+        )
+        setTokens(authResponse.access_token, refresh: authResponse.refresh_token)
+        return AuthToken(
+            token: authResponse.access_token,
+            userId: authResponse.user.id,
+            expiresAt: Date(timeIntervalSinceNow: TimeInterval(authResponse.expires_in))
+        )
+    }
+
     func updatePassword(newPassword: String) async throws {
         try checkRateLimit()
         struct UpdatePasswordPayload: Encodable { let password: String }
@@ -1001,6 +1041,11 @@ struct VerifyOTPPayload: Encodable {
     let type: String
     let email: String
     let token: String
+}
+
+struct SendOTPPayload: Encodable {
+    let email: String
+    let create_user: Bool
 }
 
 struct ResendPayload: Encodable {

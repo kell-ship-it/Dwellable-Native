@@ -6,9 +6,9 @@ import SwiftUI
 /// Nov 2026) the way this ticket originally was when raised July 20, 2026.
 ///
 /// Scoped to what's real today, per the ticket's own written spec:
-/// - Change Password: real, using AuthManager's existing `updatePassword` (built for the
-///   recovery-link flow, reused here) plus a current-password re-auth check via
-///   `apiClient.login` before allowing the change.
+/// - Change Password: real, confirmed via a real email OTP rather than re-typing the
+///   current password (Kell's call, Nov 16 2026) -- see `ChangePasswordView`'s own header
+///   comment for the full reasoning.
 /// - Encryption: a real "how your data is protected" explainer — written to describe
 ///   what T-062 actually built (server-side encryption-at-rest via a Supabase Edge
 ///   Function secret), not the zero-knowledge/client-side-key architecture
