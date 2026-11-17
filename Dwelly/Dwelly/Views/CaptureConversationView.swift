@@ -1480,6 +1480,25 @@ struct CaptureConversationView: View {
     /// return parseable JSON, the card falls back to a plain title/excerpt built locally
     /// and just skips the scripture line, rather than blocking or erroring the save.
     private func generateJournalMeta() async {
+        // T-127: below the validity floor (spam/repeated junk, never about length --
+        // see JournalSynthesisManager.isGenuineReflection's own comment), skip the LLM
+        // call entirely rather than asking it to reframe nothing into something. No
+        // scripture, no mood tags invented over nothing -- just the raw words, honestly
+        // labeled, never reflective language.
+        guard JournalSynthesisManager.isGenuineReflection(combinedBody) else {
+            await MainActor.run {
+                journalMeta = JournalMeta(
+                    title: "A Moment Captured",
+                    excerpt: String(combinedBody.prefix(140)),
+                    body: combinedBody,
+                    scriptureQuote: nil,
+                    scriptureReference: nil,
+                    moods: []
+                )
+                journalSynthesisSucceeded = true
+            }
+            return
+        }
         do {
             // Shares the exact same synthesis call the retry sweep uses (T-159) --
             // a pending entry retried later is synthesized identically to how it

@@ -107,4 +107,35 @@ enum JournalSynthesisManager {
         let parsed = try JSONDecoder().decode(LLMJSON.self, from: Data(jsonSubstring.utf8))
         return Result(title: parsed.title, excerpt: parsed.excerpt, body: parsed.body, scriptureQuote: parsed.scriptureQuote, scriptureReference: parsed.scriptureReference, moods: parsed.moods)
     }
+
+    /// T-127 (rescoped Nov 17 2026, Kell's direct call): a "bare minimum" gate decided
+    /// alongside T-161's own "validity floor" concept (locked Aug 31 2026, Growth design
+    /// session) -- same idea, reused here rather than invented twice. The gate is never
+    /// about LENGTH: "Today I went to the store and I felt sad" (9 words, genuine) must
+    /// pass, while "testing testing testing testing" or a long run of one repeated
+    /// character must fail even though it can be arbitrarily long. Below this floor,
+    /// callers skip the LLM entirely -- no reflective reframing, no scripture, no mood
+    /// tags invented over nothing. T-161's own qualifying-reflection count was supposed
+    /// to apply this exact floor but never actually did (confirmed live Nov 17 2026:
+    /// `YourNarrativeCard` counted every approved entry, no spam filter at all) -- this
+    /// is the first real implementation, and callers on both sides now share it.
+    static func isGenuineReflection(_ text: String) -> Bool {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= 2 else { return false }
+
+        // Character-level repetition ("aaaaaaaaaaaaaaaa") -- not caught by word
+        // splitting below since it's a single "word." Only applies once there's
+        // enough length for repetition to be the explanation rather than coincidence.
+        let letters = trimmed.lowercased().filter { $0.isLetter || $0.isNumber }
+        if letters.count >= 10, Set(letters).count <= 2 { return false }
+
+        // Word/phrase-level repetition ("testing testing testing testing") -- a
+        // handful of distinct words repeated many times over isn't genuine content
+        // no matter how long it runs.
+        let words = trimmed.lowercased().split(whereSeparator: { !$0.isLetter && !$0.isNumber })
+        guard !words.isEmpty else { return false }
+        if words.count >= 4, Set(words).count <= 2 { return false }
+
+        return true
+    }
 }

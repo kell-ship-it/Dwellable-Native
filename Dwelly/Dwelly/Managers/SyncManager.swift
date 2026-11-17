@@ -127,6 +127,21 @@ class SyncManager: ObservableObject {
             // CaptureConversationView.fullTranscript's own comment) -- a retried
             // synthesis is real, just with less conversational context than the
             // original attempt had.
+            // T-127: same validity-floor gate CaptureConversationView.generateJournalMeta
+            // applies on the first attempt -- a retry must treat below-floor content the
+            // same way, not run it through the LLM just because it waited for a sweep.
+            guard JournalSynthesisManager.isGenuineReflection(moment.body) else {
+                var updated = entry
+                updated.status = "approved"
+                updated.title = "A Moment Captured"
+                updated.body = moment.body
+                updated.moods = []
+                updated.scriptureQuote = nil
+                updated.scriptureReference = nil
+                _ = try? await apiClient.saveJournalEntry(updated)
+                continue
+            }
+
             let userWordCount = moment.body.split(whereSeparator: { $0.isWhitespace }).count
             guard let result = try? await JournalSynthesisManager.synthesize(transcript: moment.body, userWordCount: userWordCount, apiClient: apiClient) else { continue }
 
