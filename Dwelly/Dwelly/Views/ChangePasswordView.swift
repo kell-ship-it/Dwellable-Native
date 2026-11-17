@@ -30,13 +30,20 @@ struct ChangePasswordView: View {
     @State private var stage: Stage = .enterNewPassword
     @State private var newPassword = ""
     @State private var confirmPassword = ""
+    @State private var showNewPassword = false
+    @State private var showConfirmPassword = false
     @State private var otpCode = ""
     @State private var isSubmitting = false
     @State private var errorMessage: String?
     @State private var resendSent = false
 
+    // T-248's shared rule (8+ chars, upper & lower case, a number) -- same
+    // `PasswordStrength` struct Account Creation already uses, so this doesn't enforce a
+    // second, different definition of "valid password" anywhere in the app.
+    private var strength: PasswordStrength { PasswordStrength(password: newPassword) }
+
     private var isNewPasswordValid: Bool {
-        newPassword.count >= 8 && newPassword == confirmPassword
+        strength.isValid && newPassword == confirmPassword
     }
 
     private var isCodeValid: Bool {
@@ -73,9 +80,11 @@ struct ChangePasswordView: View {
 
     private var newPasswordStage: some View {
         VStack(alignment: .leading, spacing: 0) {
-            field(label: "New Password", text: $newPassword)
+            field(label: "New Password", text: $newPassword, show: $showNewPassword)
+            Spacer().frame(height: 10)
+            strengthChecklist
             Spacer().frame(height: 20)
-            field(label: "Confirm New Password", text: $confirmPassword)
+            field(label: "Confirm New Password", text: $confirmPassword, show: $showConfirmPassword)
 
             if let errorMessage {
                 Spacer().frame(height: 12)
@@ -178,24 +187,66 @@ struct ChangePasswordView: View {
         .background(Theme.Payment.background)
     }
 
-    private func field(label: String, text: Binding<String>) -> some View {
+    private func field(label: String, text: Binding<String>, show: Binding<Bool>) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(label)
                 .font(.system(size: 12, weight: .medium))
                 .tracking(0.3)
                 .foregroundColor(Theme.Payment.textSupporting)
 
-            SecureField("", text: text)
+            // Same show/hide pattern as AccountCreationView's password field -- Kell's
+            // call (Nov 16 2026): a new password deserves the same ability to check what
+            // you typed as account creation already gives you.
+            HStack(spacing: 0) {
+                Group {
+                    if show.wrappedValue {
+                        TextField("", text: text)
+                    } else {
+                        SecureField("", text: text)
+                    }
+                }
                 .font(.system(size: 16))
                 .foregroundColor(Theme.Payment.textHeading)
                 .tint(Theme.gold)
                 .textContentType(.newPassword)
-                .padding(.horizontal, 20)
-                .frame(height: 56)
-                .background(Theme.Payment.surfaceCard)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .accessibilityLabel(label)
+
+                Button(action: { show.wrappedValue.toggle() }) {
+                    Image(systemName: show.wrappedValue ? "eye.slash" : "eye")
+                        .font(.system(size: 16))
+                        .foregroundColor(Theme.Payment.textSupporting)
+                        .frame(width: 44, height: 44)
+                }
+                .accessibilityLabel(show.wrappedValue ? "Hide password" : "Show password")
+            }
+            .padding(.leading, 20)
+            .padding(.trailing, 8)
+            .frame(height: 56)
+            .background(Theme.Payment.surfaceCard)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
         }
-        .accessibilityLabel(label)
+    }
+
+    // Same checklist as AccountCreationView's own `strengthChecklist` -- one definition
+    // of "valid password" (`PasswordStrength`, T-248), shown the same way everywhere it's
+    // enforced.
+    private var strengthChecklist: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            checklistItem("8+ characters", strength.hasMinLength)
+            checklistItem("Upper & lower case", strength.hasUpperAndLower)
+            checklistItem("A number", strength.hasNumber)
+        }
+    }
+
+    private func checklistItem(_ text: String, _ satisfied: Bool) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: satisfied ? "checkmark.circle.fill" : "circle")
+                .font(.system(size: 12))
+                .foregroundColor(satisfied ? Theme.gold : Theme.Payment.textSupporting)
+            Text(text)
+                .font(.system(size: 12))
+                .foregroundColor(satisfied ? Theme.Payment.textHeading : Theme.Payment.textSupporting)
+        }
     }
 
     private func primaryButton(title: String, disabled: Bool, action: @escaping () -> Void) -> some View {
