@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// The real 4-tab shell (T-076): Today | Entries | Growth | Profile, standard native
 /// iOS tab bar (material blur), always visible on these 4 screens, never hides on
@@ -68,22 +69,17 @@ struct MainTabView: View {
             .tabItem { Label("Profile", systemImage: "person.crop.circle") }
             .tag(Tab.profile)
         }
-        // Still glitching on-device after disabling the selection animation (Kell,
-        // Nov 17 2026) -- so the fringe isn't the pill's slide after all. Forcing
-        // monochrome symbol rendering rules out the other usual cause: an SF Symbol
-        // rendering in multicolor/hierarchical mode interpolating through intermediate
-        // colors as the tab bar's own tint recomputes on selection.
-        .environment(\.symbolRenderingMode, .monochrome)
-        // Kell caught a real, on-device color-fringe glitch on the tab bar's own
-        // selection pill mid-slide, not a simulator rendering artifact -- a known
-        // SwiftUI/iOS issue where the system tab bar's selected-icon tint
-        // interpolates through intermediate colors while animating. Turning off the
-        // implicit animation on `selectedTab` makes the pill jump instantly instead
-        // of sliding, trading a slightly less fluid switch for removing the artifact
-        // entirely, since there's no direct control over the system chrome's own
-        // interpolation.
-        .animation(nil, value: selectedTab)
-        .tint(Theme.gold)
+        // Reproduced directly, Nov 17 2026: a real color-fringe artifact on the tab
+        // bar's own icons mid-switch, confirmed with both `.animation(nil, value:)` on
+        // `selectedTab` and `.environment(\.symbolRenderingMode, .monochrome)` already
+        // in place -- neither touched it, so it isn't the selection pill's slide or a
+        // multicolor-symbol interpolation. What's left: SwiftUI's own `.tint()` modifier
+        // on a `TabView` routes the accent color through the same animated
+        // materials-recomposition pass the Liquid Glass tab bar uses for its blur, which
+        // is the actual thing glitching. Setting the tint once via UIKit's
+        // `UITabBarAppearance` instead (in `.onAppear`, no SwiftUI tint on the TabView
+        // itself) applies the color statically, bypassing that pass entirely.
+        .onAppear(perform: configureTabBarAppearance)
         .fullScreenCover(isPresented: $showSearch) {
             NavigationStack {
                 SearchView(userId: userId, syncManager: syncManager, onDismiss: { showSearch = false })
@@ -126,6 +122,26 @@ struct MainTabView: View {
                 }
             })
         }
+    }
+
+    /// Applies the gold tint via `UITabBarAppearance` once, instead of SwiftUI's
+    /// `.tint()` on the `TabView` -- see the `.onAppear` call site's comment for why.
+    /// Both normal and selected icon/title colors are set explicitly so nothing falls
+    /// back to the system default blue on either state.
+    private func configureTabBarAppearance() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(Theme.Payment.backgroundPrimary)
+
+        let goldColor = UIColor(Theme.gold)
+        appearance.stackedLayoutAppearance.selected.iconColor = goldColor
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: goldColor]
+        let supportingColor = UIColor(Theme.Payment.textSupporting)
+        appearance.stackedLayoutAppearance.normal.iconColor = supportingColor
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: supportingColor]
+
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 
     /// T-255 — the trial-eligibility gate. First capture is always free, no card needed.
