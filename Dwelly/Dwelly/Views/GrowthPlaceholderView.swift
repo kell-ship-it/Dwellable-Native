@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Placeholder for the Growth tab's remaining content (Rhythm & Intent —
-/// locked in Figma P11, frame 667:2215) -- building that is T-143, not this one.
-/// The "Your Narrative" card (T-275) and "Your Plain Stats" section (T-140/T-141) are
-/// both real now -- see `YourNarrativeCard` / `PlainStatsSection`.
+/// Placeholder for the Growth tab's remaining content (Rhythm & Intent, designed in
+/// Figma P11 but deliberately deferred to Post-MVP by Kell's direct call, Nov 16 2026
+/// -- see T-181). The "Your Narrative" card (T-275) and "Your Plain Stats" section
+/// (T-140/T-141) are both real now -- see `YourNarrativeCard` / `PlainStatsSection`.
 struct GrowthPlaceholderView: View {
     let userId: String
     var onCapture: () -> Void
