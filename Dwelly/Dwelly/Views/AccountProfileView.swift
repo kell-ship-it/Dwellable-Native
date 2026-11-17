@@ -112,15 +112,6 @@ struct AccountProfileView: View {
             settingsRow(icon: "doc.text", title: "Legal & About")
             Divider().background(Theme.Payment.timelineRail)
             settingsRow(icon: "trash", title: "Recently Deleted")
-            // T-294: the one settings row here actually wired to a real destination --
-            // manage/delete the custom mood words saved from the Journal Mood Sheet.
-            if let userId = authManager.currentUser?.id {
-                Divider().background(Theme.Payment.timelineRail)
-                NavigationLink(destination: ManageCustomMoodsView(userId: userId)) {
-                    settingsRow(icon: "face.smiling", title: "Custom Moods")
-                }
-                .buttonStyle(.plain)
-            }
         }
         .background(Theme.Payment.pillBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16))

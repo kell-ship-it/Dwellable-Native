@@ -49,7 +49,7 @@ private let maxMoods = 3
 private let customMoodMaxLength = 20
 // T-294 (Nov 16 2026, Kell's call): how many distinct custom mood words a user can
 // accumulate in their shared vocabulary -- keeps the grid from growing unbounded.
-let maxCustomMoods = 10
+let maxCustomMoods = 4
 
 struct JournalDetailView: View {
     @Environment(\.dismiss) var dismiss
@@ -126,6 +126,10 @@ struct JournalDetailView: View {
     @State private var customMoodsLibrary: [CustomMood] = []
     @State private var pendingNewCustomWords: [String] = []
     @State private var customMoodLimitMessage: String?
+    // T-294: the custom mood pending the delete-confirm alert below (Kell's call,
+    // Nov 16 2026 -- deleting is permanent for future entries, so it gets a confirm
+    // step, same as Delete Entry / Delete Account elsewhere in this file).
+    @State private var customMoodPendingDelete: CustomMood?
     // Kell caught this live (Nov 16 2026): "View Original Chat" did nothing at
     // all -- a plain `Button(action: {})`, per the old comment, because there's
     // no stored link to the real back-and-forth `CaptureConversationView`
@@ -674,27 +678,45 @@ struct JournalDetailView: View {
                 ForEach(allSelectableMoods, id: \.self) { mood in
                     let isSelected = draftMoods.contains(mood)
                     let isCappedOut = !isSelected && draftMoods.count >= maxMoods
-                    Button(action: { toggleMood(mood) }) {
-                        HStack(spacing: 6) {
-                            if isSelected {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(Theme.gold)
+                    // T-294 (Kell's call, Nov 16 2026): deleting a custom word now
+                    // happens right here instead of a separate Settings screen -- an
+                    // always-visible "x" on custom (non-preset) chips only. It's a
+                    // second, independent tap target from the toggle button so it still
+                    // works even when the chip itself is capped-out/disabled -- deleting
+                    // one is exactly how you free a slot to add another.
+                    let matchingCustomMood = customMoodsLibrary.first { $0.word == mood }
+                    HStack(spacing: 6) {
+                        Button(action: { toggleMood(mood) }) {
+                            HStack(spacing: 6) {
+                                if isSelected {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .foregroundColor(Theme.gold)
+                                }
+                                Text(mood)
+                                    .font(.system(size: 14))
                             }
-                            Text(mood)
-                                .font(.system(size: 14))
                         }
-                        .foregroundColor(isSelected ? Theme.Payment.textHeading : Theme.Payment.textSupporting)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 9)
-                        .background(isSelected ? Theme.Payment.pillBackground : Color.clear)
-                        .overlay(
-                            isSelected ? nil : Capsule().stroke(Theme.Payment.moodChipBorder, lineWidth: 1)
-                        )
-                        .clipShape(Capsule())
+                        .buttonStyle(.plain)
+                        .disabled(isCappedOut)
+                        .opacity(isCappedOut ? 0.4 : 1)
+
+                        if let matchingCustomMood {
+                            Button(action: { customMoodPendingDelete = matchingCustomMood }) {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 10, weight: .bold))
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
-                    .disabled(isCappedOut)
-                    .opacity(isCappedOut ? 0.4 : 1)
+                    .foregroundColor(isSelected ? Theme.Payment.textHeading : Theme.Payment.textSupporting)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 9)
+                    .background(isSelected ? Theme.Payment.pillBackground : Color.clear)
+                    .overlay(
+                        isSelected ? nil : Capsule().stroke(Theme.Payment.moodChipBorder, lineWidth: 1)
+                    )
+                    .clipShape(Capsule())
                 }
             }
             .padding(.top, 16)
@@ -766,6 +788,19 @@ struct JournalDetailView: View {
             customMoodLimitMessage = nil
             Task { await loadCustomMoodsLibrary() }
         }
+        .alert("Delete \"\(customMoodPendingDelete?.word ?? "")\"?", isPresented: Binding(
+            get: { customMoodPendingDelete != nil },
+            set: { if !$0 { customMoodPendingDelete = nil } }
+        )) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                if let customMoodPendingDelete {
+                    Task { await deleteCustomMood(customMoodPendingDelete) }
+                }
+            }
+        } message: {
+            Text("It stays on any entry that already used it, but won't be offered again.")
+        }
     }
 
     // T-294: the full set of chips the sheet can show -- presets, then the user's saved
@@ -836,7 +871,7 @@ struct JournalDetailView: View {
         // `custom_moods` on Done.
         let isNewWord = !presetMoods.contains(trimmed) && !customMoodsLibrary.contains { $0.word == trimmed }
         if isNewWord && customMoodsLibrary.count + pendingNewCustomWords.count >= maxCustomMoods {
-            customMoodLimitMessage = "You've reached your limit of \(maxCustomMoods) custom moods. Delete one in Settings to add another."
+            customMoodLimitMessage = "You've reached your limit of \(maxCustomMoods) custom moods. Tap the ✕ on one below to delete it and add another."
             return
         }
         customMoodLimitMessage = nil
@@ -864,6 +899,19 @@ struct JournalDetailView: View {
             }
         }
         pendingNewCustomWords = []
+    }
+
+    // T-294: deletes a custom mood from the user's shared library, confirmed first
+    // (see the moodSheet alert above). Runs immediately on confirm -- unlike adding a
+    // word, this isn't gated behind "Done", since removing one is exactly how a user
+    // frees a slot to add another while still in the sheet. Left in draftMoods/
+    // selectedMoods untouched if it was already selected on this entry; the delete
+    // only affects whether it's offered to pick again in the future.
+    private func deleteCustomMood(_ mood: CustomMood) async {
+        if (try? await apiClient.deleteCustomMood(id: mood.id)) != nil {
+            customMoodsLibrary.removeAll { $0.id == mood.id }
+        }
+        customMoodPendingDelete = nil
     }
 
     // MARK: - Edit toolbar (photo / camera / mic)

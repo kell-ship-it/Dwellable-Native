@@ -22,7 +22,6 @@
 		B10C /* GrowthPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10B /* GrowthPlaceholderView.swift */; };
 		F01B /* EntriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01C /* EntriesView.swift */; };
 		F01D /* CustomMood.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01E /* CustomMood.swift */; };
-		F01F /* ManageCustomMoodsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F020 /* ManageCustomMoodsView.swift */; };
 		B10E /* AccountProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D /* AccountProfileView.swift */; };
 		B110 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10F /* MainTabView.swift */; };
 		B112 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B111 /* WelcomeView.swift */; };
@@ -102,7 +101,6 @@
 		B10B /* GrowthPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrowthPlaceholderView.swift; sourceTree = "<group>"; };
 		F01C /* EntriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntriesView.swift; sourceTree = "<group>"; };
 		F01E /* CustomMood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMood.swift; sourceTree = "<group>"; };
-		F020 /* ManageCustomMoodsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageCustomMoodsView.swift; sourceTree = "<group>"; };
 		B10D /* AccountProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountProfileView.swift; sourceTree = "<group>"; };
 		B10F /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		B111 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
@@ -237,7 +235,6 @@
 				F014 /* RecentlyDeletedView.swift */,
 				F01A /* YourNarrativeCard.swift */,
 				F01C /* EntriesView.swift */,
-				F020 /* ManageCustomMoodsView.swift */,
 				A000 /* ModelSetupView.swift */,
 				B105 /* PaywallView.swift */,
 				B107 /* TabScreenHeader.swift */,
@@ -497,7 +494,6 @@
 				B106 /* PaywallView.swift in Sources */,
 				F01B /* EntriesView.swift in Sources */,
 				F01D /* CustomMood.swift in Sources */,
-				F01F /* ManageCustomMoodsView.swift in Sources */,
 				B108 /* TabScreenHeader.swift in Sources */,
 				B10A /* TodayPlaceholderView.swift in Sources */,
 				B10C /* GrowthPlaceholderView.swift in Sources */,
