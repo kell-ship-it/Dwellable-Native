@@ -69,6 +69,12 @@ struct CaptureConversationView: View {
     // `selectedPromptTitle` drives the fade of the OTHER (untapped) cards.
     @Namespace private var promptTransition
     @State private var selectedPromptTitle: String?
+    // T-271 (Nov 17 2026): the journal-preview card's own namespace for its
+    // "Open" morph -- same technique as `promptTransition` above, just for the
+    // opposite end of this screen's life. Kell's explicit call when this ticket
+    // was raised: the card itself should expand to BECOME the full journal
+    // entry, not just push a new screen on top of it.
+    @Namespace private var journalMorph
     // Model-download + idle-state fields merged in from `CaptureView` (Nov 17 2026) --
     // see `modelDownloadOverlay`/`startModelDownload`/`topicCards` below.
     @State private var isDownloadingModel = false
@@ -150,7 +156,14 @@ struct CaptureConversationView: View {
     // (title/scripture left nil, picked up by the real retry sweep later) rather
     // than writing the fallback copy to the DB as if it were genuine synthesis.
     @State private var journalSynthesisSucceeded = false
-    @State private var showMomentDetail = false
+    // T-271 (Nov 17 2026): replaces the old `showMomentDetail` +
+    // `.navigationDestination` push -- this screen is shown via `fullScreenCover`
+    // from MainTabView with no ancestor `NavigationStack` of its own, so that
+    // push was a silent no-op in the real app (only ever worked in this file's
+    // own `#Preview`, which wraps itself in one). Driving JournalDetailView as a
+    // plain overlay sharing `journalMorph`'s namespace with the card both fixes
+    // that and gives Kell the morph he asked for.
+    @State private var showJournalMorph = false
     // Fix #1, final step: once a prompt card has morphed into its thread bubble,
     // the composer should appear AFTER that settles, not already be sitting there
     // the instant this screen mounts (which would make the morph look like it's
@@ -663,6 +676,33 @@ struct CaptureConversationView: View {
                 if isDownloadingModel {
                     modelDownloadOverlay
                 }
+
+                // T-271: the morph destination -- declared last so it covers
+                // everything else once `showJournalMorph` flips. Shares
+                // `journalMorph`'s "journalMorphCard" id with the preview card
+                // above, so SwiftUI interpolates its frame from the small card's
+                // bounds out to full screen instead of swapping in a plain
+                // push/cover. `savedMoment` is guaranteed non-nil here -- the
+                // "Open" button that sets `showJournalMorph` only exists once
+                // `savedMoment` has already landed (see `journalPreviewContent`).
+                if showJournalMorph, let savedMoment {
+                    JournalDetailView(
+                        moment: savedMoment,
+                        syncManager: syncManager,
+                        meta: journalMeta.map {
+                            JournalDisplayMeta(
+                                title: $0.title,
+                                body: $0.body,
+                                scriptureQuote: $0.scriptureQuote,
+                                scriptureReference: $0.scriptureReference
+                            )
+                        },
+                        onDone: isOnboarding ? { onMomentSaved?() } : onFinishedViewingJournal
+                    )
+                    .matchedGeometryEffect(id: "journalMorphCard", in: journalMorph)
+                    .transition(.identity)
+                    .zIndex(3)
+                }
             }
         .background(Theme.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
@@ -797,7 +837,13 @@ struct CaptureConversationView: View {
                     Text(turn.text)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Theme.Capture.textBody)
-                    if isFinal {
+                    // Hidden once the morph starts (T-271) -- `showJournalMorph`
+                    // flips inside the same `withAnimation` block the "Open" tap
+                    // uses, so removing the card here and mounting the full-screen
+                    // overlay elsewhere happen in the same transaction, which is
+                    // what lets `matchedGeometryEffect` interpolate between them
+                    // instead of just cross-fading two unrelated views.
+                    if isFinal && !showJournalMorph {
                         journalPreviewContent
                     }
                 }
@@ -848,7 +894,16 @@ struct CaptureConversationView: View {
                     // quiet link, not the one real CTA this card has -- filled solid gold
                     // (same Gold CTA Heuristic every other primary action in the app uses)
                     // instead of just an outline + gold text.
-                    Button(action: { showMomentDetail = true }) {
+                    Button(action: {
+                        // T-271: Kell's call -- the card itself should expand to
+                        // BECOME the full entry, not have a new screen pushed on
+                        // top of it. Matches the 0.3s-ish easeInOut this screen's
+                        // other transitions use, just slightly longer since this
+                        // one is covering much more distance (card -> full screen).
+                        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.45)) {
+                            showJournalMorph = true
+                        }
+                    }) {
                         Text("Open")
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(Theme.Payment.backgroundPrimary)
@@ -856,31 +911,12 @@ struct CaptureConversationView: View {
                     }
                     .background(Theme.gold)
                     .clipShape(Capsule())
-                    // Shared by both the inline "Open" link here and the onboarding
-                    // "Continue" button above -- they're the same destination either
-                    // way, just reached differently. `onDone` always does
-                    // SOMETHING other than a plain pop now: onboarding's mandatory
-                    // first capture continues onward via `completeOnboarding()`
-                    // (unchanged); every other capture uses `onFinishedViewingJournal`
-                    // (Nov 16 2026) so its own back chevron exits straight to the
-                    // Entries tab instead of landing back in the finished chat --
-                    // falls back to the old plain-dismiss-into-the-chat behavior
-                    // only if that callback was never wired for this call site.
-                    .navigationDestination(isPresented: $showMomentDetail) {
-                        JournalDetailView(
-                            moment: savedMoment,
-                            syncManager: syncManager,
-                            meta: journalMeta.map {
-                                JournalDisplayMeta(
-                                    title: $0.title,
-                                    body: $0.body,
-                                    scriptureQuote: $0.scriptureQuote,
-                                    scriptureReference: $0.scriptureReference
-                                )
-                            },
-                            onDone: isOnboarding ? { onMomentSaved?() } : onFinishedViewingJournal
-                        )
-                    }
+                    // `.matchedGeometryEffect` below (on the card's own clipped
+                    // frame) is this button's actual morph source -- the
+                    // destination half lives in `body`'s outer `ZStack` as a
+                    // full-screen `JournalDetailView` sharing the same
+                    // `journalMorph` namespace/id, same `PromptOriginMatch`
+                    // pattern this file already uses for the prompt-card handoff.
                 } else {
                     ProgressView().tint(Theme.gold)
                 }
@@ -921,6 +957,10 @@ struct CaptureConversationView: View {
         .background(Theme.Capture.badgeBackground)
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.Capture.journalCardBorder, lineWidth: 1))
         .clipShape(RoundedRectangle(cornerRadius: 14))
+        // T-271: tags this card's own clipped frame (not the top padding below,
+        // which isn't part of the card itself) as the morph source. The matching
+        // id is applied to `JournalDetailView`'s full-screen overlay below.
+        .matchedGeometryEffect(id: "journalMorphCard", in: journalMorph)
         .padding(.top, 16)
         .padding(.top, 16)
     }
