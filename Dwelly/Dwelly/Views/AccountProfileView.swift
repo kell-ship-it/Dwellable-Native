@@ -2,10 +2,10 @@ import SwiftUI
 
 /// The real P9 Account Profile base screen (Figma node 711:4986), wired as a tab-bar
 /// root per T-253 — no modal close, reached only via the tab bar. Identity + Info Card
-/// + Settings Card rows match the locked design; the sub-screens each row would push to
-/// (Security & Privacy, Notifications, Support & Feedback, Legal & About, Recently
-/// Deleted) are separate tickets (T-130/T-131/T-133/T-134/T-176) — rows are present and
-/// tappable-looking but not yet wired to real destinations.
+/// + Settings Card rows match the locked design; the sub-screens each row pushes to
+/// are separate tickets (T-131/T-133/T-134/T-176/T-086) — Security & Privacy (T-131) and
+/// Recently Deleted (T-176) are wired to real screens; Notifications, Support & Feedback,
+/// and Legal & About still have no destination built yet.
 struct AccountProfileView: View {
     @EnvironmentObject var authManager: AuthManager
     @ObservedObject private var paymentManager = PaymentManager.shared
@@ -149,7 +149,10 @@ struct AccountProfileView: View {
 
     private var settingsCard: some View {
         VStack(spacing: 0) {
-            settingsRow(icon: "shield.checkerboard", title: "Security & Privacy")
+            NavigationLink(destination: SecurityPrivacyView()) {
+                settingsRow(icon: "shield.checkerboard", title: "Security & Privacy")
+            }
+            .buttonStyle(.plain)
             Divider().background(Theme.Payment.timelineRail)
             settingsRow(icon: "bell", title: "Notifications")
             Divider().background(Theme.Payment.timelineRail)
