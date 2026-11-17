@@ -136,12 +136,15 @@ struct TodayView: View {
                     Text(tile.title)
                         .font(.system(size: 16, design: .serif))
                         .foregroundColor(Theme.Payment.textHeading)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                     Text(tile.subtitle)
                         .font(.system(size: 11))
                         .foregroundColor(Theme.Payment.textSupporting)
+                        .lineLimit(1)
                 }
 
-                Spacer(minLength: 8)
+                Spacer(minLength: 4)
 
                 Image(systemName: "arrow.right")
                     .font(.system(size: 13))
