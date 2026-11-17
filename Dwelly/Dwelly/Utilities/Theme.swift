@@ -150,6 +150,10 @@ struct Theme {
         // neutral gray-blue, deliberately not gold, since gold there is reserved for
         // the selected checkmark and the "+ Add mood" label text, not borders.
         static let moodChipBorder = Color(red: 0x67 / 255, green: 0x67 / 255, blue: 0x7b / 255) // #67677b
+        // T-128 (Search): pulled directly from the Search screens (dwelly-redesign,
+        // "P5 — Search & Discovery", node 436:238 and siblings).
+        static let borderDivider = Color(red: 0x33 / 255, green: 0x33 / 255, blue: 0x33 / 255)   // #333333 — border/divider
+        static let backgroundSurface = Color(red: 0x1a / 255, green: 0x1a / 255, blue: 0x1c / 255) // #1a1a1c — background/surface (result card)
     }
 
     // MARK: - Onboarding (T-238 7-Screen Redesign)

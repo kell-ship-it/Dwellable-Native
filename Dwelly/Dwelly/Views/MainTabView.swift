@@ -16,6 +16,9 @@ struct MainTabView: View {
 
     @StateObject private var paymentManager = PaymentManager.shared
     @State private var showCapture = false
+    // T-128: Search is reached the same way Capture is -- one shared full-screen
+    // presentation off the tab bar's own header button, not a per-tab destination.
+    @State private var showSearch = false
     @State private var paywallContext: PaywallContext?
     // Kell's direct ask (Nov 16 2026): backing out of the journal entry you just
     // opened from a finished capture should land on Entries, not wherever the tab
@@ -30,7 +33,7 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
-                TodayPlaceholderView(onSearch: {}, onCapture: attemptCapture)
+                TodayPlaceholderView(onSearch: { showSearch = true }, onCapture: attemptCapture)
             }
             .tabItem { Label("Today", systemImage: "sun.max") }
             .tag(Tab.today)
@@ -38,24 +41,29 @@ struct MainTabView: View {
             NavigationStack {
                 // T-078: real Entries tab (Untold-style calendar + list), replacing
                 // the Phase-1 MomentsListView.
-                EntriesView(userId: userId, syncManager: syncManager, onSearch: {}, onCapture: attemptCapture)
+                EntriesView(userId: userId, syncManager: syncManager, onSearch: { showSearch = true }, onCapture: attemptCapture)
             }
             .tabItem { Label("Entries", systemImage: "book") }
             .tag(Tab.entries)
 
             NavigationStack {
-                GrowthPlaceholderView(userId: userId, onSearch: {}, onCapture: attemptCapture)
+                GrowthPlaceholderView(userId: userId, onSearch: { showSearch = true }, onCapture: attemptCapture)
             }
             .tabItem { Label("Growth", systemImage: "leaf") }
             .tag(Tab.growth)
 
             NavigationStack {
-                AccountProfileView(onSearch: {}, onCapture: attemptCapture)
+                AccountProfileView(onSearch: { showSearch = true }, onCapture: attemptCapture)
             }
             .tabItem { Label("Profile", systemImage: "person.crop.circle") }
             .tag(Tab.profile)
         }
         .tint(Theme.gold)
+        .fullScreenCover(isPresented: $showSearch) {
+            NavigationStack {
+                SearchView(userId: userId, syncManager: syncManager, onDismiss: { showSearch = false })
+            }
+        }
         .fullScreenCover(isPresented: $showCapture) {
             CaptureView(
                 userId: userId,
