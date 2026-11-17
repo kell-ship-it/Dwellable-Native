@@ -5,12 +5,13 @@ import SwiftUI
 /// tiles). Building that full content is T-135/T-136/T-137/T-138/T-139, not this
 /// ticket (T-076) — this view exists only so the TabView has a real 4th destination.
 struct TodayPlaceholderView: View {
-    var onSearch: () -> Void
     var onCapture: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
-            TabScreenHeader(title: "Today", onSearch: onSearch, onCapture: onCapture)
+            // T-128: no onSearch here -- search only exists on Entries (see
+            // TabScreenHeader's own comment).
+            TabScreenHeader(title: "Today", onCapture: onCapture)
 
             Spacer()
 

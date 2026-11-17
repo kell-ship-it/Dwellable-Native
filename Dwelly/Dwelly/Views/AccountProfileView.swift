@@ -8,7 +8,6 @@ import SwiftUI
 /// tappable-looking but not yet wired to real destinations.
 struct AccountProfileView: View {
     @EnvironmentObject var authManager: AuthManager
-    var onSearch: () -> Void
     var onCapture: () -> Void
 
     @State private var showSignOutConfirmation = false
@@ -24,7 +23,9 @@ struct AccountProfileView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                TabScreenHeader(title: "Account Profile", onSearch: onSearch, onCapture: onCapture)
+                // T-128: no onSearch here -- search only exists on Entries (see
+                // TabScreenHeader's own comment).
+                TabScreenHeader(title: "Account Profile", onCapture: onCapture)
 
                 identity
                 infoCard

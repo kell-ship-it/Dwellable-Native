@@ -33,27 +33,29 @@ struct MainTabView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
-                TodayPlaceholderView(onSearch: { showSearch = true }, onCapture: attemptCapture)
+                TodayPlaceholderView(onCapture: attemptCapture)
             }
             .tabItem { Label("Today", systemImage: "sun.max") }
             .tag(Tab.today)
 
             NavigationStack {
                 // T-078: real Entries tab (Untold-style calendar + list), replacing
-                // the Phase-1 MomentsListView.
+                // the Phase-1 MomentsListView. T-128 (Kell's call, Nov 16 2026):
+                // Search only lives here, not on Today/Growth/Profile -- it searches
+                // journal entries specifically, not anything those other tabs show.
                 EntriesView(userId: userId, syncManager: syncManager, onSearch: { showSearch = true }, onCapture: attemptCapture)
             }
             .tabItem { Label("Entries", systemImage: "book") }
             .tag(Tab.entries)
 
             NavigationStack {
-                GrowthPlaceholderView(userId: userId, onSearch: { showSearch = true }, onCapture: attemptCapture)
+                GrowthPlaceholderView(userId: userId, onCapture: attemptCapture)
             }
             .tabItem { Label("Growth", systemImage: "leaf") }
             .tag(Tab.growth)
 
             NavigationStack {
-                AccountProfileView(onSearch: { showSearch = true }, onCapture: attemptCapture)
+                AccountProfileView(onCapture: attemptCapture)
             }
             .tabItem { Label("Profile", systemImage: "person.crop.circle") }
             .tag(Tab.profile)

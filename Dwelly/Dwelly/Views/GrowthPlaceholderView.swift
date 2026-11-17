@@ -6,12 +6,13 @@ import SwiftUI
 /// (nodes 595:200 "Tier 1" / 603:224 "Pre-Threshold") -- see `YourNarrativeCard`.
 struct GrowthPlaceholderView: View {
     let userId: String
-    var onSearch: () -> Void
     var onCapture: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
-            TabScreenHeader(title: "Growth", onSearch: onSearch, onCapture: onCapture)
+            // T-128: no onSearch here -- search only exists on Entries (see
+            // TabScreenHeader's own comment).
+            TabScreenHeader(title: "Growth", onCapture: onCapture)
 
             ScrollView {
                 VStack(spacing: Theme.Spacing.lg) {
