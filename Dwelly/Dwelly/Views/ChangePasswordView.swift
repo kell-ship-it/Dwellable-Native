@@ -25,7 +25,12 @@ struct ChangePasswordView: View {
         case success
     }
 
-    private static let otpCodeLength = 6
+    // Kell caught this live: the email actually sends 8 characters, not 6. This project's
+    // GoTrue OTP length is a single project-wide setting (Auth > Providers > Email > OTP
+    // Length), not per-template -- AccountCreationView's own `otpCodeLength` is already 8
+    // for the same reason, confirmed the hard way when it was first built (see that file's
+    // own comment). Matching it here instead of guessing a "standard" 6.
+    private static let otpCodeLength = 8
 
     @State private var stage: Stage = .enterNewPassword
     @State private var newPassword = ""
