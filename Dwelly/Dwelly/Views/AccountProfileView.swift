@@ -157,7 +157,20 @@ struct AccountProfileView: View {
             Divider().background(Theme.Payment.timelineRail)
             settingsRow(icon: "doc.text", title: "Legal & About")
             Divider().background(Theme.Payment.timelineRail)
-            settingsRow(icon: "trash", title: "Recently Deleted")
+            // Kell caught this live (Nov 16 2026): every row here looked tappable but
+            // none of them actually went anywhere -- this is the one real exception.
+            // RecentlyDeletedView (T-176) already exists and works; it just never got
+            // wired to this row. The other four still have nowhere real to push to
+            // yet (T-131/T-133/T-134, and Notifications has no ticket at all) -- see
+            // this file's own top comment.
+            if let userId = authManager.currentUser?.id {
+                NavigationLink(destination: RecentlyDeletedView(userId: userId)) {
+                    settingsRow(icon: "trash", title: "Recently Deleted")
+                }
+                .buttonStyle(.plain)
+            } else {
+                settingsRow(icon: "trash", title: "Recently Deleted")
+            }
         }
         .background(Theme.Payment.pillBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16))
