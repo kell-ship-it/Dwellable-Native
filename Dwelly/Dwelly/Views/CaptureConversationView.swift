@@ -515,12 +515,20 @@ struct CaptureConversationView: View {
     }
 
     private let composeCollapsedLeadingPadding: CGFloat = 16
-    // Reserves room for mic (44pt) + an 8pt gap + send (44pt) + a 12pt
-    // margin before the pill's own edge, so inline text never runs under
-    // the buttons -- this SAME value is what the TextEditor's own trailing
-    // padding uses below when slim, so the measured wrap width and the real
-    // rendered wrap width can't disagree.
-    private let composeSlimTrailingPadding: CGFloat = 108
+    // Nov 18 2026, FOURTH pass: growing the pill's own height (the prior
+    // pass's `composeSlimHeight = 96`) was the wrong way to clear the
+    // chevron -- Kell rejected it outright, correctly: it undid his own
+    // explicit 58pt slim requirement from earlier the same day, and height
+    // was never the only axis available. The chevron's column lives
+    // entirely to the RIGHT of this text reserve now (see
+    // `composeChevronSize`'s own comment below for the exact numbers), so
+    // this is mic (44pt) + an 8pt gap + send (44pt) + the SAME
+    // `composeControlsTrailingPadding` the controls row itself uses --
+    // whatever that reserves for the chevron's column, text has to clear
+    // too. Still the SAME value the TextEditor's own trailing padding uses
+    // below, so the measured wrap width and the real rendered wrap width
+    // can't disagree.
+    private var composeSlimTrailingPadding: CGFloat { 96 + composeControlsTrailingPadding }
     // The ORIGINAL stacked-mode trailing inset (unchanged from before this
     // pass) -- controls move below the text once stacked, so this no longer
     // needs to clear them horizontally.
@@ -529,10 +537,49 @@ struct CaptureConversationView: View {
     // Reserves room for the stacked mic/send row living below the text area
     // -- unchanged from before this pass.
     private let composeStackedBottomPadding: CGFloat = 58
+    // Nov 18 2026, THIRD pass: the expand chevron used to live as a sibling
+    // of the card, hand-positioned per state (`.position()` math keyed off
+    // `isSlim`/`isComposeExpanded`) -- every tweak to make it clear one
+    // overlap moved it somewhere new, which is exactly what Kell flagged
+    // ("it keeps moving the chevron to different places of the
+    // experience"). Replaced that whole approach with ONE formula: the
+    // chevron is now a plain `.overlay(alignment: .topTrailing)` on the
+    // card's own content, using these two fixed insets -- unconditionally,
+    // in every state (slim/stacked/expanded alike). Its position is never
+    // branched on `isSlim` again; it moves only because its PARENT (the
+    // card) moves/resizes, which is the one thing Kell actually asked for.
+    //
+    // FOURTH pass: sized to a real 44pt hit target (matching mic/send's own
+    // circular buttons, not a smaller 24pt icon) per Kell's explicit ask,
+    // with a 7pt inset on both the top and trailing edge -- symmetric on
+    // purpose, so a 44pt circle in a 58pt-tall slim pill (7 + 44 + 7 = 58)
+    // lands PERFECTLY vertically centered with no extra tuning.
+    private let composeChevronSize: CGFloat = 44
+    private let composeChevronTopInset: CGFloat = 7
+    private let composeChevronTrailingInset: CGFloat = 7
+    private let composeControlsBottomPadding: CGFloat = 10
+    // Nov 18 2026, FOURTH pass: collision fix for the SAME chevron-overlap
+    // bug, but on the horizontal axis instead of growing the pill's height
+    // (which Kell rejected -- see `composeSlimTrailingPadding`'s own
+    // comment). The chevron's corner slot occupies a column
+    // `composeChevronTrailingInset + composeChevronSize` (7 + 44 = 51pt)
+    // wide along the card's trailing edge, in EVERY state, top-anchored.
+    // Reserving that same column's width again here, plus a clear 16pt
+    // gap (51 + 16 = 67), as the mic/send row's own trailing inset means
+    // that row's rightmost edge (Send) never enters the chevron's column
+    // no matter how the two rows' own vertical alignment differs between
+    // slim (centered) and stacked (bottom-pinned) -- the two controls are
+    // separated by X position, not by height, so neither state needs its
+    // own branch to stay collision-free, and neither needs to grow the
+    // pill to do it.
+    private let composeControlsTrailingPadding: CGFloat = 67
+
     // Target total height for the slim pill -- big enough for a 44pt button
-    // to render with real vertical margin (not the full-height stacked
-    // allocation the old fixed-120pt/measured-stacked height gave every
-    // empty draft).
+    // to render with real vertical margin. Nov 18 2026, FOURTH pass:
+    // restored to the original 58pt (a deliberately tight ChatGPT-style
+    // pill) now that the chevron is cleared horizontally, by its own
+    // reserved column, rather than by growing this height -- see
+    // `composeControlsTrailingPadding`'s own comment for the actual fix.
     private let composeSlimHeight: CGFloat = 58
 
     // Shared by `composePill` (the ScrollView-clearance spacer) and
@@ -1334,22 +1381,23 @@ struct CaptureConversationView: View {
                     : (isComposeExpanded
                         ? fullHeight / 2
                         : fullHeight - collapsedBottomMargin - collapsedHeight / 2)
-                // Giving the chevron its OWN `.position()`, nested INSIDE the same
-                // ZStack as the TextEditor/mic/send (which use normal alignment-
-                // flow, not `.position()`), measured (via recording + frame
-                // capture) as landing hundreds of points off target: mixing a
-                // `.position()`-ed child with alignment-flow siblings inside one
-                // ZStack resolves that child's coordinate space against the
-                // stack's UNCONSTRAINED proposed size (inflated by the
-                // TextEditor's own unbounded-height demand when expanded), not
-                // the final size the outer `.frame()` clamps it to. Pulling the
-                // chevron OUT as a true sibling of the card -- both positioned in
-                // the SAME absolute screen coordinates the card's own
-                // `.position()` already uses -- sidesteps that entirely: there is
-                // no shared local coordinate space to get contaminated.
-                let cardTopY = cardCenterY - cardHeight / 2
-                let cardRightX = fullWidth / 2 + cardWidth / 2
-
+                // Nov 18 2026, THIRD pass: the chevron used to be pulled OUT as a
+                // true sibling of the card, hand-positioned via its own
+                // `.position()` in the SAME absolute screen coordinates as the
+                // card -- because an EARLIER attempt at nesting a `.position()`-ed
+                // child inside this ZStack alongside the TextEditor/mic/send's
+                // normal alignment-flow landed hundreds of points off target
+                // (mixing a `.position()`-ed child with alignment-flow siblings
+                // resolves that child's coordinate space against the stack's
+                // unconstrained proposed size, not the final clamped size). That
+                // failure was specifically about `.position()`, not about being
+                // inside this ZStack at all -- mic/send already live in here using
+                // plain alignment (`.frame(..., alignment:)`), never `.position()`,
+                // and have never had that problem. The chevron now follows the
+                // exact same alignment-based pattern (see the `.overlay` below,
+                // after this ZStack's own `.frame()`), so it never needs its own
+                // sibling `.position()` or separate per-state coordinates again --
+                // it moves and resizes only because the card itself does.
                 ZStack(alignment: .topLeading) {
                 ZStack(alignment: .topLeading) {
                     if isVoiceCapturing {
@@ -1529,17 +1577,20 @@ struct CaptureConversationView: View {
                             .padding(.top, 12)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                         } else {
-                            // Nov 18 2026 (Kell's sizing refinement): the SAME two
-                            // buttons, same actions, same identity either way --
-                            // only their row's own alignment changes between slim
-                            // (vertically centered beside the single line of text,
-                            // via plain `.trailing`) and stacked (pinned below the
-                            // text, via `.bottomTrailing`, unchanged from before).
-                            // Never two separate button instances -- that would
-                            // reintroduce exactly the kind of identity-swap this
-                            // whole screen's history has already fought through
-                            // once (see `unifiedComposeSurface`'s own header
-                            // comment).
+                            // Nov 18 2026 (Kell's sizing refinement, then THIRD-pass
+                            // unification): the SAME two buttons, same actions, same
+                            // identity in every state -- never two separate button
+                            // instances, which would reintroduce exactly the kind of
+                            // identity-swap this whole screen's history has already
+                            // fought through once (see `unifiedComposeSurface`'s own
+                            // header comment). Slim used to vertically CENTER this row
+                            // across the whole pill (`.trailing` alignment) while
+                            // stacked pinned it to the bottom (`.bottomTrailing`) --
+                            // that split was the direct cause of the chevron-overlap
+                            // bug Kell found (centering ate the entire pill's height,
+                            // leaving no top corner free). Both now use the identical
+                            // `.bottomTrailing` alignment and the same fixed bottom/
+                            // trailing insets -- one formula, not a per-state branch.
                             HStack(spacing: 8) {
                                 // Mic only ever shows collapsed -- Kell's own correction
                                 // after seeing it live (Nov 10 2026): "remove the mic
@@ -1575,8 +1626,20 @@ struct CaptureConversationView: View {
                                 .disabled(isWaitingForDwelly || isOverCharacterLimit || !hasDraft)
                                 .opacity(isOverCharacterLimit || !hasDraft ? 0.4 : 1.0)
                             }
+                            // Nov 18 2026, FOURTH pass: slim centers this row
+                            // across the pill's full height (`.trailing`),
+                            // stacked pins it to the bottom (`.bottomTrailing`)
+                            // -- a real, intentional visual difference (inline
+                            // beside one line of text vs. below several), not a
+                            // special case for the chevron. The chevron collision
+                            // that USED to force these into one shared alignment
+                            // is gone now that the two controls are separated by
+                            // a reserved horizontal column instead (see
+                            // `composeControlsTrailingPadding`'s own comment) --
+                            // so this is free to go back to being a plain design
+                            // choice again, unrelated to where the chevron lives.
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: isSlim ? .trailing : .bottomTrailing)
-                            .padding(.trailing, isSlim ? 12 : 10)
+                            .padding(.trailing, composeControlsTrailingPadding)
                         }
                     }
                     // Send button needs to clear the keyboard in the expanded case
@@ -1586,10 +1649,82 @@ struct CaptureConversationView: View {
                     // needs none of this -- `.trailing` alignment above already
                     // centers the row vertically within the pill, a bottom
                     // padding here would just push it off-center.
-                    .padding(.bottom, isComposeExpanded ? keyboardHeight + 16 : (isSlim ? 0 : 10))
+                    .padding(.bottom, isComposeExpanded ? keyboardHeight + 16 : (isSlim ? 0 : composeControlsBottomPadding))
                     }
                 }
                 .frame(width: cardWidth, height: cardHeight)
+                // Nov 18 2026, THIRD pass: the chevron is now a plain `.overlay`
+                // on the card's own sized frame, not a hand-positioned sibling --
+                // see the big comment above this ZStack for why that's safe here
+                // (the earlier `.position()`-inside-ZStack failure was about
+                // `.position()` specifically, not about living inside this tree).
+                // `alignment: .topTrailing` + fixed `composeChevronTopInset`/
+                // `composeChevronTrailingInset` is the ENTIRE position story now,
+                // identical in slim, stacked, and expanded -- no `isSlim`/
+                // `isComposeExpanded` branch decides WHERE it sits, only whether
+                // it's shown at all (hidden while capturing, same as before).
+                // Because it's part of the card's own content, it moves and
+                // resizes purely as a side effect of the card's `.frame()` and
+                // `.position()` below -- never needs its own coordinates, and
+                // the drag offset applied to the card's `.position()` carries it
+                // along for free too.
+                .overlay(alignment: .topTrailing) {
+                    if !isVoiceCapturing {
+                        Button(action: toggleComposeExpanded) {
+                            Image(systemName: isComposeExpanded ? "chevron.down.circle" : "chevron.up.circle")
+                                .font(.system(size: 18))
+                                .foregroundColor(Theme.Payment.textSupporting)
+                                .frame(width: composeChevronSize, height: composeChevronSize)
+                        }
+                        // Nov 18 2026 (Kell's explicit ask): `.contentShape` +
+                        // `.simultaneousGesture` stay pinned to this exact small
+                        // frame, same reasoning as before -- just no longer
+                        // followed by `.position()`/`.ignoresSafeArea()` at all,
+                        // which removes the specific hit-testing risk this
+                        // ordering used to guard against (there's no safe-area-
+                        // ignoring wrapper here for the gesture to inherit a
+                        // larger region from).
+                        .contentShape(Rectangle())
+                        .simultaneousGesture(
+                            DragGesture(minimumDistance: 8)
+                                .onChanged { value in
+                                    // Downward only, clamped -- dragging UP here isn't a
+                                    // gesture this control owns (that's the chevron's own
+                                    // tap, i.e. the explicit expand action).
+                                    composeDragOffset = min(max(0, value.translation.height), 220)
+                                }
+                                .onEnded { value in
+                                    // Distance OR velocity commits -- a short, fast flick
+                                    // should collapse/dismiss just as reliably as a slow
+                                    // drag past the distance threshold, matching the
+                                    // "fluid" feel Kell asked for rather than a hard stop.
+                                    let committed = value.translation.height > 70 || value.predictedEndTranslation.height > 160
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.86)) {
+                                        if committed {
+                                            if isComposeExpanded {
+                                                // Collapse the expanded editor back to the
+                                                // compact card -- draft text (`inputText`)
+                                                // is never touched by any of this.
+                                                isComposeExpanded = false
+                                            } else {
+                                                // Already compact -- nothing left to
+                                                // collapse, so this dismisses the keyboard
+                                                // instead, same "swipe down to put it away"
+                                                // gesture ChatGPT's own composer supports.
+                                                // Draft stays exactly as typed; tapping the
+                                                // field again (see its own tap-to-focus
+                                                // handling) refocuses and reopens it.
+                                                inputFocused = false
+                                            }
+                                        }
+                                        composeDragOffset = 0
+                                    }
+                                }
+                        )
+                        .padding(.top, composeChevronTopInset + (isComposeExpanded ? expandedTopInset : 0))
+                        .padding(.trailing, composeChevronTrailingInset)
+                    }
+                }
                 .background(Theme.Capture.cardBackground)
                 // A capsule is just a rounded rect whose radius is half its own
                 // height -- using that instead of a real `Capsule()` shape means no
@@ -1598,99 +1733,6 @@ struct CaptureConversationView: View {
                 .clipShape(RoundedRectangle(cornerRadius: isVoiceCapturing ? captureBarHeight / 2 : (isComposeExpanded ? 0 : 20)))
                 .position(x: fullWidth / 2, y: cardCenterY + composeDragOffset)
                 .ignoresSafeArea()
-
-                // Sibling of the card (not nested inside it) -- see the comment
-                // above on why that matters. Same absolute screen coordinates the
-                // card's own `.position()` uses, so there is exactly one shared
-                // coordinate system for both, and nothing for them to disagree on
-                // mid-animation. Hidden while capturing -- there's nothing to
-                // expand/collapse mid-recording, and `recordingBar`/`transcribingBar`
-                // (the idle-composer equivalents this capsule now matches) have no
-                // chevron either.
-                if !isVoiceCapturing {
-                    Button(action: toggleComposeExpanded) {
-                        Image(systemName: isComposeExpanded ? "chevron.down.circle" : "chevron.up.circle")
-                            .font(.system(size: 18))
-                            .foregroundColor(Theme.Payment.textSupporting)
-                            .frame(width: 32, height: 32)
-                    }
-                    // Nov 18 2026 (Kell's explicit ask, and his own direct code
-                    // review flagged this ordering as a real risk): `.contentShape`
-                    // + `.simultaneousGesture` are attached HERE, to the plain
-                    // 32x32-framed button, BEFORE `.position()`/`.ignoresSafeArea()`
-                    // run -- not after. `.ignoresSafeArea()` wraps its input in a
-                    // safe-area-ignoring container; attaching the gesture to THAT
-                    // wrapper instead of the small button underneath it risks the
-                    // gesture's (and the tap's) hit-testing region silently
-                    // inheriting that wrapper's larger proposed size rather than
-                    // staying pinned to the visible 32x32 circle, which could
-                    // intercept touches meant for the TextEditor/keyboard beneath
-                    // it. Pinning `.contentShape(Rectangle())` to the exact frame
-                    // before either modifier runs removes that ambiguity entirely.
-                    .contentShape(Rectangle())
-                    .simultaneousGesture(
-                        DragGesture(minimumDistance: 8)
-                            .onChanged { value in
-                                // Downward only, clamped -- dragging UP here isn't a
-                                // gesture this control owns (that's the chevron's own
-                                // tap, i.e. the explicit expand action).
-                                composeDragOffset = min(max(0, value.translation.height), 220)
-                            }
-                            .onEnded { value in
-                                // Distance OR velocity commits -- a short, fast flick
-                                // should collapse/dismiss just as reliably as a slow
-                                // drag past the distance threshold, matching the
-                                // "fluid" feel Kell asked for rather than a hard stop.
-                                let committed = value.translation.height > 70 || value.predictedEndTranslation.height > 160
-                                withAnimation(.spring(response: 0.35, dampingFraction: 0.86)) {
-                                    if committed {
-                                        if isComposeExpanded {
-                                            // Collapse the expanded editor back to the
-                                            // compact card -- draft text (`inputText`)
-                                            // is never touched by any of this.
-                                            isComposeExpanded = false
-                                        } else {
-                                            // Already compact -- nothing left to
-                                            // collapse, so this dismisses the keyboard
-                                            // instead, same "swipe down to put it away"
-                                            // gesture ChatGPT's own composer supports.
-                                            // Draft stays exactly as typed; tapping the
-                                            // field again (see its own tap-to-focus
-                                            // handling) refocuses and reopens it.
-                                            inputFocused = false
-                                        }
-                                    }
-                                    composeDragOffset = 0
-                                }
-                            }
-                    )
-                    .position(
-                        // Nov 18 2026, second pass: lifting the handle clear of the
-                        // pill's top edge (below) fixed the literal overlap, but Kell
-                        // (relaying ChatGPT's review of that result) flagged what was
-                        // left -- parked directly above the circular Send button, it
-                        // read as crowded/ambiguous, like a second button in the same
-                        // cluster rather than its own control. Horizontally, give it
-                        // its own clearly separate spot when slim: centered over the
-                        // pill as a whole, away from the mic/send cluster hugging the
-                        // trailing edge -- the same "handle floating above a sheet"
-                        // placement this fix already uses vertically, just carried
-                        // through on the x-axis too. Stacked/expanded keep the
-                        // original trailing-corner position; that case was never
-                        // reported as crowded (mic/send live at the bottom there,
-                        // nowhere near this top corner).
-                        x: isSlim ? fullWidth / 2 : cardRightX - (isComposeExpanded ? 20 : 14) - 16,
-                        // The +14+16 top offset below was tuned for the stacked/
-                        // expanded card, where the mic/send row lives at the BOTTOM,
-                        // leaving the top corner free for this handle. The 58pt slim
-                        // pill has no such split -- its mic/send row is vertically
-                        // centered across the whole pill (see `composeIsSlim` branch
-                        // above) -- so the handle is lifted above the pill's own top
-                        // edge when slim instead, clear of the centered controls.
-                        y: cardTopY + (isComposeExpanded ? expandedTopInset : 0) + (isSlim ? -8 : 14 + 16) + composeDragOffset
-                    )
-                    .ignoresSafeArea()
-                }
 
                 // T-272 over-length caption -- Figma E9 ("Message Too Long"),
                 // same placement/style as E6's "Reached 10 min — saved." caption:
