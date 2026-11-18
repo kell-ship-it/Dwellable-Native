@@ -1665,15 +1665,28 @@ struct CaptureConversationView: View {
                             }
                     )
                     .position(
-                        x: cardRightX - (isComposeExpanded ? 20 : 14) - 16,
-                        // Nov 18 2026: the +14+16 top offset below was tuned for the
-                        // stacked/expanded card, where the mic/send row lives at the
-                        // BOTTOM, leaving the top corner free for this handle. The new
-                        // 58pt slim pill has no such split -- its mic/send row is
-                        // vertically centered across the whole pill (see `composeIsSlim`
-                        // branch above), so that same offset lands right on top of it.
-                        // Lift the handle above the pill's own top edge when slim
-                        // instead, clear of the centered controls entirely.
+                        // Nov 18 2026, second pass: lifting the handle clear of the
+                        // pill's top edge (below) fixed the literal overlap, but Kell
+                        // (relaying ChatGPT's review of that result) flagged what was
+                        // left -- parked directly above the circular Send button, it
+                        // read as crowded/ambiguous, like a second button in the same
+                        // cluster rather than its own control. Horizontally, give it
+                        // its own clearly separate spot when slim: centered over the
+                        // pill as a whole, away from the mic/send cluster hugging the
+                        // trailing edge -- the same "handle floating above a sheet"
+                        // placement this fix already uses vertically, just carried
+                        // through on the x-axis too. Stacked/expanded keep the
+                        // original trailing-corner position; that case was never
+                        // reported as crowded (mic/send live at the bottom there,
+                        // nowhere near this top corner).
+                        x: isSlim ? fullWidth / 2 : cardRightX - (isComposeExpanded ? 20 : 14) - 16,
+                        // The +14+16 top offset below was tuned for the stacked/
+                        // expanded card, where the mic/send row lives at the BOTTOM,
+                        // leaving the top corner free for this handle. The 58pt slim
+                        // pill has no such split -- its mic/send row is vertically
+                        // centered across the whole pill (see `composeIsSlim` branch
+                        // above) -- so the handle is lifted above the pill's own top
+                        // edge when slim instead, clear of the centered controls.
                         y: cardTopY + (isComposeExpanded ? expandedTopInset : 0) + (isSlim ? -8 : 14 + 16) + composeDragOffset
                     )
                     .ignoresSafeArea()
