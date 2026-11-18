@@ -33,13 +33,23 @@ struct MainTabView: View {
     let syncManager: SyncManager
 
     @StateObject private var paymentManager = PaymentManager.shared
-    @State private var showCapture = false
-    // T-135/T-139 (Nov 17 2026): the Today tab's Hero verse and 3 reflection tiles each
-    // launch straight into a conversation pre-opened with that one prompt, instead of the
-    // plain composer -- CaptureConversationView already had `initialMessage`/
-    // `initialMessageIsPrompt` for exactly this (built for onboarding's topic cards), it
-    // just had no caller outside CaptureView's own onboarding-only grid until now.
-    @State private var presetPrompt: (title: String, category: String)?
+    // T-301 (Nov 17 2026): was two separate `@State` vars (`showCapture: Bool` +
+    // `presetPrompt: (title:category:)?`), presented via `.fullScreenCover(isPresented:)`.
+    // Caught live with a debug print at each step: `attemptCapture(prompt:)` set
+    // `presetPrompt` correctly (confirmed non-nil immediately after the assignment), but
+    // by the time the cover's own content closure ran, it read `presetPrompt` back as
+    // `nil` -- `.fullScreenCover(isPresented:)` doesn't reliably re-snapshot every other
+    // `@State` property against the SAME render pass that flips its own boolean true, so
+    // the prompt and the "show now" signal could land in different renders. Folding both
+    // into one `Identifiable` payload, presented via `.fullScreenCover(item:)`, is the
+    // same fix `paywallContext` below already uses for exactly this class of problem --
+    // the trigger and its data become the same atomic value, so there's nothing for two
+    // separate state changes to race on.
+    private struct CaptureRequest: Identifiable {
+        let id = UUID()
+        let prompt: (title: String, category: String)?
+    }
+    @State private var captureRequest: CaptureRequest?
     // T-128: Search is reached the same way Capture is -- one shared full-screen
     // presentation off the tab bar's own header button, not a per-tab destination.
     @State private var showSearch = false
@@ -106,30 +116,32 @@ struct MainTabView: View {
                 SearchView(userId: userId, syncManager: syncManager, onDismiss: { showSearch = false })
             }
         }
-        .fullScreenCover(isPresented: $showCapture) {
-            if let presetPrompt {
+        .fullScreenCover(item: $captureRequest) { request in
+            if let prompt = request.prompt {
                 CaptureConversationView(
                     userId: userId,
                     userEmail: userEmail,
                     syncManager: syncManager,
-                    initialMessage: presetPrompt.title,
+                    initialMessage: prompt.title,
                     initialMessageIsPrompt: true,
-                    onMomentSaved: { showCapture = false; self.presetPrompt = nil },
+                    onMomentSaved: { captureRequest = nil },
                     onFinishedViewingJournal: {
                         selectedTab = .entries
-                        showCapture = false
-                        self.presetPrompt = nil
+                        captureRequest = nil
                     }
                 )
             } else {
-                CaptureView(
+                // CaptureView merged into CaptureConversationView (Nov 17 2026) --
+                // no preset initialMessage means this opens straight into the idle
+                // "What's stirring in you today?" state instead of a new screen.
+                CaptureConversationView(
                     userId: userId,
                     userEmail: userEmail,
                     syncManager: syncManager,
-                    onMomentSaved: { showCapture = false },
+                    onMomentSaved: { captureRequest = nil },
                     onFinishedViewingJournal: {
                         selectedTab = .entries
-                        showCapture = false
+                        captureRequest = nil
                     }
                 )
             }
@@ -138,8 +150,13 @@ struct MainTabView: View {
             PaywallView(context: context, onDismiss: {
                 paywallContext = nil
                 if context != .onboardingSkippable {
-                    // A successful purchase on a gate screen should let the capture through.
-                    showCapture = true
+                    // A successful purchase on a gate screen should let the capture
+                    // through -- doesn't restore whatever prompt (if any) triggered the
+                    // gate in the first place, same gap that existed before this fix
+                    // (out of scope for T-301, which is specifically about the
+                    // always-free first capture never pre-seeding; raise separately if
+                    // that round-trip needs its own fix).
+                    captureRequest = CaptureRequest(prompt: nil)
                 }
             })
         }
@@ -163,25 +180,23 @@ struct MainTabView: View {
     /// otherwise (trial already consumed on this Apple ID, any device) go straight
     /// to a non-trial subscribe screen.
     private func attemptCapture(prompt: (title: String, category: String)? = nil) {
-        presetPrompt = prompt
-
         #if DEBUG
         // Dev-only paywall bypass (Nov 11 2026) so Kell can run repeated real captures
         // in the simulator to watch DwellerProfile/Your Narrative populate without
         // StoreKit friction. Compiles out entirely in Release -- never ships, never
         // reaches TestFlight or the App Store.
-        showCapture = true
+        captureRequest = CaptureRequest(prompt: prompt)
         return
         #endif
 
         guard !paymentManager.hasActiveEntitlement else {
-            showCapture = true
+            captureRequest = CaptureRequest(prompt: prompt)
             return
         }
 
         let hasCapturedBefore = !LocalStorageManager.shared.getAllLocalMoments(userId: userId).isEmpty
         guard hasCapturedBefore else {
-            showCapture = true
+            captureRequest = CaptureRequest(prompt: prompt)
             return
         }
 
