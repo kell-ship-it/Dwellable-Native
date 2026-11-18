@@ -138,14 +138,27 @@ struct JournalDetailView: View {
     // is a genuine "original" to show instead of leaving the menu item inert.
     @State private var showOriginalChat = false
 
-    // Hero photo (Figma Scenarios 4/5/8): session-local only, same reasoning -- no
-    // Supabase Storage bucket or `moments` column for it yet (T-151, not started).
-    // Uses the system photo picker and system camera rather than hand-rolling either,
-    // which is both less work and more correct than recreating OS chrome Figma could
-    // only mock up as static frames.
+    // Hero photo (Figma Scenarios 4/5/8). T-156: now genuinely persisted -- a private
+    // Supabase Storage bucket ("journal-photos") + `journal_entries.photo_path`, same
+    // pattern as `Moment.audioURL`/moments-audio. Uses the system photo picker and
+    // system camera rather than hand-rolling either, which is both less work and more
+    // correct than recreating OS chrome Figma could only mock up as static frames.
+    // `heroImage` is the single source of truth for what's actually displayed,
+    // however it got there -- freshly picked, or downloaded from a signed URL after
+    // `loadEntry()` resolves an existing `photoPath`.
     @State private var heroImage: UIImage?
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var showCamera = false
+    // The currently-persisted storage path (nil = no photo saved yet). Diverges from
+    // what's on screen while editing -- see `photoChanged` below -- and is only
+    // written back to `journal_entries` on Save.
+    @State private var photoPath: String?
+    // Set the moment the user picks/takes/removes a photo in edit mode; `saveEdit()`
+    // uploads/clears accordingly and `exitEditMode()` reverts to `photoPath`'s last
+    // saved state on Discard, same draft/commit split `draftMoods` already uses.
+    @State private var photoChanged = false
+    @State private var isUploadingPhoto = false
+    @State private var photoErrorMessage: String?
 
     // Voice note re-record (Figma Scenario 6): this one IS real end-to-end -- reuses
     // the same `AudioRecordingManager` + `TranscriptionManager.shared` (WhisperKit)
@@ -174,7 +187,7 @@ struct JournalDetailView: View {
     }
 
     private var hasUnsavedChanges: Bool {
-        editedBody != displayBody || selectedMoods != (loadedEntry?.moods ?? (meta?.moods ?? []))
+        editedBody != displayBody || selectedMoods != (loadedEntry?.moods ?? (meta?.moods ?? [])) || photoChanged
     }
 
     private func exitEditMode() {
@@ -182,6 +195,11 @@ struct JournalDetailView: View {
         editedBody = displayBody
         selectedMoods = loadedEntry?.moods ?? (meta?.moods ?? [])
         saveErrorMessage = nil
+        if photoChanged {
+            photoChanged = false
+            heroImage = nil
+            Task { await loadHeroPhotoIfNeeded() }
+        }
     }
 
     // T-159: real pending/approved split. `loadedEntry` is the only source of truth
@@ -253,6 +271,7 @@ struct JournalDetailView: View {
         .fullScreenCover(isPresented: $showCamera) {
             CameraPicker { image in
                 heroImage = image
+                photoChanged = true
             }
             .ignoresSafeArea()
         }
@@ -261,6 +280,7 @@ struct JournalDetailView: View {
                 if let data = try? await newItem?.loadTransferable(type: Data.self),
                    let image = UIImage(data: data) {
                     heroImage = image
+                    photoChanged = true
                 }
             }
         }
@@ -353,6 +373,12 @@ struct JournalDetailView: View {
 
                         if let voiceNoteErrorMessage {
                             Text(voiceNoteErrorMessage)
+                                .font(.system(size: 13))
+                                .foregroundColor(Theme.error)
+                        }
+
+                        if let photoErrorMessage {
+                            Text(photoErrorMessage)
                                 .font(.system(size: 13))
                                 .foregroundColor(Theme.error)
                         }
@@ -569,8 +595,18 @@ struct JournalDetailView: View {
                 .frame(height: 240)
                 .clipped()
 
-            if isEditing {
-                Button(action: { heroImage = nil }) {
+            if isUploadingPhoto {
+                ProgressView()
+                    .tint(.white)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black.opacity(0.25))
+            }
+
+            if isEditing && !isUploadingPhoto {
+                Button(action: {
+                    heroImage = nil
+                    photoChanged = true
+                }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.white)
@@ -963,7 +999,9 @@ struct JournalDetailView: View {
     private func saveEdit() async {
         let trimmed = editedBody.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        guard trimmed != displayBody else {
+        // T-156: a photo-only change (body untouched) still needs to persist, so this
+        // can no longer bail out purely on `trimmed == displayBody` the way it used to.
+        guard trimmed != displayBody || photoChanged else {
             isEditing = false
             return
         }
@@ -971,8 +1009,55 @@ struct JournalDetailView: View {
         saveErrorMessage = nil
         displayBody = editedBody
         isEditing = false
+        if photoChanged {
+            await uploadHeroPhotoIfNeeded()
+        }
         await persistEntry(edited: true)
+        photoChanged = false
         isSaving = false
+    }
+
+    /// T-156: uploads a freshly picked/captured `heroImage` to the private
+    /// "journal-photos" bucket and records the resulting storage path, or clears
+    /// `photoPath` if the user removed the photo instead. Only ever called when
+    /// `photoChanged` is true. On upload failure, leaves `photoPath` untouched (the
+    /// previously-saved photo, if any, stays attached) and surfaces an error inline,
+    /// same treatment `saveErrorMessage`/`deleteErrorMessage` already get.
+    private func uploadHeroPhotoIfNeeded() async {
+        photoErrorMessage = nil
+        guard let heroImage, let imageData = heroImage.jpegData(compressionQuality: 0.7) else {
+            // Nil heroImage with photoChanged = true means the user removed the photo.
+            if heroImage == nil {
+                photoPath = nil
+            }
+            return
+        }
+        isUploadingPhoto = true
+        let fileName = "\(UUID().uuidString).jpg"
+        do {
+            photoPath = try await apiClient.uploadJournalPhoto(imageData, fileName: fileName, userId: moment.userId)
+        } catch {
+            photoErrorMessage = "Couldn't upload that photo — check your connection and try again."
+        }
+        isUploadingPhoto = false
+    }
+
+    /// T-156: resolves `photoPath` to a viewable image via a short-lived signed URL
+    /// (the bucket is private, same as moments-audio) and downloads it. Only runs
+    /// when there's a saved path and nothing is already showing on screen -- never
+    /// overwrites a photo the user just picked/took in this session.
+    private func loadHeroPhotoIfNeeded() async {
+        guard heroImage == nil, let photoPath else { return }
+        do {
+            let signedURL = try await apiClient.fetchJournalPhotoSignedURL(storagePath: photoPath)
+            let (data, _) = try await URLSession.shared.data(from: signedURL)
+            if let image = UIImage(data: data) {
+                heroImage = image
+            }
+        } catch {
+            // Best-effort: a failed photo load isn't worth surfacing as an error on
+            // an otherwise-successful entry read, same reasoning as `markJournalEntryViewed`.
+        }
     }
 
     /// T-152: loads the real persisted title/body/moods/scripture/starred for this
@@ -987,6 +1072,8 @@ struct JournalDetailView: View {
             editedBody = body
         }
         isFavorited = entry.starred
+        photoPath = entry.photoPath
+        await loadHeroPhotoIfNeeded()
 
         // T-188: the Today tab's "Journal Ready" tile's only signal for "already
         // seen" -- stamp it the first time this screen actually loads the entry.
@@ -1025,7 +1112,11 @@ struct JournalDetailView: View {
             // eligibility to false and wipe extractedFacts on every save, breaking
             // Growth eligibility retroactively for an already-eligible entry.
             formationEligible: loadedEntry?.formationEligible ?? false,
-            extractedFacts: loadedEntry?.extractedFacts
+            extractedFacts: loadedEntry?.extractedFacts,
+            // T-156: `photoPath` (not `loadedEntry?.photoPath`) is the live value --
+            // already updated by `uploadHeroPhotoIfNeeded()`/the remove button before
+            // this runs, same as `displayBody`/`selectedMoods` above.
+            photoPath: photoPath
         )
         loadedEntry = try? await apiClient.saveJournalEntry(entry)
     }

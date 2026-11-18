@@ -351,6 +351,18 @@ class MockAPIClient: APIClient {
         return mockSignedURL
     }
 
+    func uploadJournalPhoto(_ imageData: Data, fileName: String, userId: String) async throws -> String {
+        try await Task.sleep(nanoseconds: 300_000_000)
+        print("Mock: Uploaded journal photo \(fileName)")
+        return "\(userId)/\(fileName)"
+    }
+
+    func fetchJournalPhotoSignedURL(storagePath: String) async throws -> URL {
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let token = UUID().uuidString.replacingOccurrences(of: "-", with: "")
+        return URL(string: "https://lhcjobrtmbawlhjyodxz.supabase.co/storage/v1/object/sign/journal-photos/\(storagePath)?token=\(token)")!
+    }
+
     // MARK: - Analytics API
 
     func sendUsageEvents(_ events: [UsageEventData], userId: String) async throws {
