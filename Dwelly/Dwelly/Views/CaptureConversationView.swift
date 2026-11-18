@@ -1666,7 +1666,15 @@ struct CaptureConversationView: View {
                     )
                     .position(
                         x: cardRightX - (isComposeExpanded ? 20 : 14) - 16,
-                        y: cardTopY + (isComposeExpanded ? expandedTopInset : 0) + 14 + 16 + composeDragOffset
+                        // Nov 18 2026: the +14+16 top offset below was tuned for the
+                        // stacked/expanded card, where the mic/send row lives at the
+                        // BOTTOM, leaving the top corner free for this handle. The new
+                        // 58pt slim pill has no such split -- its mic/send row is
+                        // vertically centered across the whole pill (see `composeIsSlim`
+                        // branch above), so that same offset lands right on top of it.
+                        // Lift the handle above the pill's own top edge when slim
+                        // instead, clear of the centered controls entirely.
+                        y: cardTopY + (isComposeExpanded ? expandedTopInset : 0) + (isSlim ? -8 : 14 + 16) + composeDragOffset
                     )
                     .ignoresSafeArea()
                 }
