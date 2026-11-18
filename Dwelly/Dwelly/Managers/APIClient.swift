@@ -84,6 +84,12 @@ protocol APIClient {
     func fetchOnboardingProfile(userId: String) async throws -> OnboardingProfileRow
     func updateOnboardingProfile(userId: String, update: OnboardingProfileUpdate) async throws
 
+    // T-133: Support & Feedback -- "Send Feedback" and "Report a Bug" both write here,
+    // distinguished by `type`. Best-effort notify (Resend/Notion, both stubbed pending
+    // ops credentials) happens separately after this succeeds; see FeedbackView's own
+    // comment and the feedback-notify Edge Function.
+    func submitFeedback(userId: String, type: FeedbackType, message: String, appVersion: String?) async throws -> FeedbackSubmission
+
     // Storage endpoints
     func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String
 

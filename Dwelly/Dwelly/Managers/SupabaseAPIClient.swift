@@ -498,6 +498,34 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    // MARK: - Support & Feedback (T-133)
+
+    func submitFeedback(userId: String, type: FeedbackType, message: String, appVersion: String?) async throws -> FeedbackSubmission {
+        let payload = FeedbackSubmissionPayload(user_id: userId, feedback_type: type.rawValue, message: message, app_version: appVersion, platform: "ios")
+        let saved = try await makeRequest(
+            method: "POST",
+            endpoint: "/rest/v1/feedback_submissions",
+            body: payload,
+            responseType: [FeedbackSubmission].self
+        )
+        guard let submission = saved.first else { throw APIError.notFound }
+
+        // Best-effort notify -- feedback-notify currently only logs (Resend/Notion are
+        // stubbed pending ops credentials, see that function's own header comment), but
+        // even once it's live, a notify failure must never undo or block a submission
+        // that already landed in the table above.
+        Task {
+            _ = try? await self.makeRequest(
+                method: "POST",
+                endpoint: "/functions/v1/feedback-notify",
+                body: FeedbackNotifyPayload(submission_id: submission.id, feedback_type: submission.type.rawValue, message: submission.message, user_id: submission.userId),
+                responseType: FeedbackNotifyResponse.self
+            )
+        }
+
+        return submission
+    }
+
     // MARK: - Custom Moods API (T-294)
 
     func fetchCustomMoods(userId: String) async throws -> [CustomMood] {
@@ -1109,6 +1137,25 @@ struct NarrativeFeedbackPayload: Codable {
     let user_id: String
     let feedback_text: String
     let narrative_at_time: String?
+}
+
+struct FeedbackSubmissionPayload: Codable {
+    let user_id: String
+    let feedback_type: String
+    let message: String
+    let app_version: String?
+    let platform: String
+}
+
+struct FeedbackNotifyPayload: Codable {
+    let submission_id: String
+    let feedback_type: String
+    let message: String
+    let user_id: String
+}
+
+struct FeedbackNotifyResponse: Codable {
+    let ok: Bool
 }
 
 struct LoginPayload: Encodable {
