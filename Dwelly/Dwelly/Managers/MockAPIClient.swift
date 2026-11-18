@@ -361,6 +361,11 @@ class MockAPIClient: APIClient {
         print("Mock: Synced \(events.count) usage events for user \(userId)")
     }
 
+    func sendAnonymousUsageEvents(_ events: [AnonymousUsageEventData]) async throws {
+        try await Task.sleep(nanoseconds: 300_000_000) // 0.3 second
+        print("Mock: Synced \(events.count) anonymous usage events")
+    }
+
     func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int? = nil) async throws -> LLMResponse {
         try await Task.sleep(nanoseconds: 400_000_000)
         if feature == "journal_synthesis" {

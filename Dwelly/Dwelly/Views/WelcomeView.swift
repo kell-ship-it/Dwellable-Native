@@ -128,5 +128,10 @@ struct WelcomeView: View {
         .onChange(of: authManager.authSheetDismissTrigger) { _ in
             destination = nil
         }
+        // T-116: first pre-signup funnel event — see UsageTracker.logAnonymousOnboardingScreenReached.
+        .onAppear {
+            UsageTracker.shared.logAnonymousOnboardingScreenReached(screen: "welcome")
+            Task { try? await UsageTracker.shared.syncAnonymousEventsToBackend(apiClient: SupabaseAPIClient()) }
+        }
     }
 }

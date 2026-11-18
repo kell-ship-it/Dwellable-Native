@@ -14,6 +14,35 @@ class UsageTracker {
         let timestamp: Date
     }
 
+    /// T-116: pre-signup funnel event (Welcome, Account Creation) — there is no `userId`
+    /// yet at this point in the flow, only `anonymousDeviceId`.
+    struct AnonymousUsageEvent: Codable {
+        let id: String
+        let anonymousId: String
+        let eventType: String
+        let momentType: String? // screen name, e.g. "welcome", "account_creation"
+        let timestamp: Date
+    }
+
+    // MARK: - Anonymous Device ID
+
+    /// T-116: Keychain, not UserDefaults — this ID has to survive app delete/reinstall so a
+    /// user who deletes the app mid-onboarding and reinstalls doesn't get counted as a brand
+    /// new "Welcome reached" the second time, which would inflate the pre-signup funnel's
+    /// denominator and understate drop-off. UserDefaults is cleared on uninstall; Keychain
+    /// (with the default, non-biometric access class `KeychainManager` already uses
+    /// elsewhere) is not.
+    private static let anonymousIdKeychainKey = "anonymousDeviceId"
+
+    lazy var anonymousDeviceId: String = {
+        if let existing = KeychainManager.shared.retrieve(forKey: Self.anonymousIdKeychainKey) {
+            return existing
+        }
+        let fresh = UUID().uuidString
+        _ = KeychainManager.shared.save(fresh, forKey: Self.anonymousIdKeychainKey)
+        return fresh
+    }()
+
     // MARK: - Event Logging
 
     func logMomentCreated(userId: String, userEmail: String?, type: String) {
@@ -94,6 +123,20 @@ class UsageTracker {
         saveEvent(event, userId: userId)
     }
 
+    /// T-116: Welcome/Account Creation happen before a real `userId` exists, so this is
+    /// keyed by `anonymousDeviceId` instead — the only way to see pre-signup drop-off
+    /// (how many devices reach Welcome vs. actually reach/complete Account Creation).
+    func logAnonymousOnboardingScreenReached(screen: String) {
+        let event = AnonymousUsageEvent(
+            id: UUID().uuidString,
+            anonymousId: anonymousDeviceId,
+            eventType: "onboarding_screen_reached",
+            momentType: screen,
+            timestamp: Date()
+        )
+        saveAnonymousEvent(event)
+    }
+
     func logAppClosed(userId: String, userEmail: String?) {
         let event = UsageEvent(
             id: UUID().uuidString,
@@ -119,6 +162,28 @@ class UsageTracker {
 
     private func eventsKey(userId: String) -> String {
         "usage_events_\(userId)"
+    }
+
+    private func saveAnonymousEvent(_ event: AnonymousUsageEvent) {
+        var events = getAnonymousEvents()
+        events.append(event)
+
+        if let encoded = try? JSONEncoder().encode(events) {
+            UserDefaults.standard.set(encoded, forKey: anonymousEventsKey)
+        }
+    }
+
+    private var anonymousEventsKey: String { "usage_events_anonymous" }
+
+    private func getAnonymousEvents() -> [AnonymousUsageEvent] {
+        guard let data = UserDefaults.standard.data(forKey: anonymousEventsKey) else {
+            return []
+        }
+        return (try? JSONDecoder().decode([AnonymousUsageEvent].self, from: data)) ?? []
+    }
+
+    private func clearAnonymousEvents() {
+        UserDefaults.standard.removeObject(forKey: anonymousEventsKey)
     }
 
     // MARK: - Public Access
@@ -194,6 +259,32 @@ class UsageTracker {
             print("⚠️ Full error: \(error)")
             print("⚠️ Events remain locally for retry")
             // Keep events locally if sync fails; will retry next time
+            throw error
+        }
+    }
+
+    /// T-116: syncs pre-signup events over the `apiClient`'s anon-key auth (no JWT exists
+    /// yet) — called right after Welcome/Account Creation are reached, not batched with the
+    /// per-user sync cycle, since there may never be a later authenticated session to piggy
+    /// back on if the person drops off before signing up at all.
+    func syncAnonymousEventsToBackend(apiClient: APIClient) async throws {
+        let events = getAnonymousEvents()
+        guard !events.isEmpty else { return }
+
+        let eventData = events.map { event in
+            AnonymousUsageEventData(
+                id: event.id,
+                anonymousId: event.anonymousId,
+                eventType: event.eventType,
+                momentType: event.momentType,
+                timestamp: event.timestamp
+            )
+        }
+        do {
+            try await apiClient.sendAnonymousUsageEvents(eventData)
+            clearAnonymousEvents()
+        } catch {
+            // Keep events locally if sync fails; will retry next time this fires.
             throw error
         }
     }

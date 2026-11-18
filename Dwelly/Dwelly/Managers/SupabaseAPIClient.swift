@@ -1012,6 +1012,35 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    /// T-116: anon-key insert (no JWT exists yet) — matches the `usage_events` RLS policy's
+    /// `anonymous_id IS NOT NULL AND user_id IS NULL` allowance. Uses `return=minimal`
+    /// (not `return=representation`, unlike `sendUsageEvents`): there is no SELECT policy
+    /// that lets an unauthenticated anon-key request read back an anonymous row it just
+    /// inserted, so asking Postgres to RETURN it turns into its own RLS violation. Also
+    /// skips `sendUsageEvents`'s `on_conflict=id` upsert — PostgREST's ON CONFLICT path
+    /// evaluates the SELECT policy too (to check for an existing row), hitting the exact
+    /// same RLS wall; a plain insert is fine since these IDs are freshly generated UUIDs.
+    func sendAnonymousUsageEvents(_ events: [AnonymousUsageEventData]) async throws {
+        let payloads = events.map { event in
+            AnonymousUsageEventPayload(
+                id: event.id,
+                anonymous_id: event.anonymousId,
+                event_type: event.eventType,
+                moment_type: event.momentType,
+                timestamp: event.timestamp.ISO8601Format()
+            )
+        }
+
+        let endpoint = "/rest/v1/usage_events"
+        _ = try await makeRequest(
+            method: "POST",
+            endpoint: endpoint,
+            body: payloads,
+            responseType: EmptyResponse.self,
+            preferHeader: "return=minimal"
+        )
+    }
+
     // MARK: - LLM API (T-168)
 
     func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int? = nil) async throws -> LLMResponse {
@@ -1165,6 +1194,14 @@ extension UsageEventPayload: Encodable {
     private enum CodingKeys: String, CodingKey {
         case id, user_id, user_email, event_type, moment_type, timestamp
     }
+}
+
+struct AnonymousUsageEventPayload: Codable {
+    let id: String
+    let anonymous_id: String
+    let event_type: String
+    let moment_type: String?
+    let timestamp: String
 }
 
 struct SignedURLRequest: Encodable {
