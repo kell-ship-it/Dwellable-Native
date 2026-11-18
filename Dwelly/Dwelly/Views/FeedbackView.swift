@@ -11,10 +11,10 @@ import SwiftUI
 ///   `SupabaseAPIClient.submitFeedback` and the `feedback-notify` Edge Function) but are
 ///   currently stubbed pending real ops credentials -- see that function's header
 ///   comment for exactly what's real vs. stubbed.
-/// - Contact Support: a real `mailto:` link (opens the device's Mail app, same as the
-///   design's own caption describes) -- but per this ticket's own notes, nothing yet
-///   guarantees hello@dwellable.com is a real, monitored inbox; wiring that up is an
-///   explicit ops task, not this ticket's.
+/// - Contact Support: a real `mailto:` link to kells@kellgolden.com (opens the device's
+///   Mail app, same as the design's own caption describes) -- Kell's own real, confirmed
+///   inbox, not a dwellable.com alias (no forwarding alias exists yet; setting one up is
+///   a separate DNS/email-host task for him later, not something to build around now).
 /// - FAQ & Help Center: no FAQ content exists anywhere yet (not in this ticket, not
 ///   elsewhere in the app) -- shown disabled with "Coming soon" rather than linking
 ///   somewhere fake, same honest-disabled-state pattern `SecurityPrivacyView` already
@@ -66,7 +66,7 @@ struct FeedbackView: View {
         .alert("No Mail Account", isPresented: $showMailUnavailableAlert) {
             Button("OK") {}
         } message: {
-            Text("Set up a Mail account on this device to email hello@dwellable.com, or reach out from another device.")
+            Text("Set up a Mail account on this device to email kells@kellgolden.com, or reach out from another device.")
         }
     }
 
@@ -137,7 +137,7 @@ struct FeedbackView: View {
 
             Button(action: openMail) {
                 HStack {
-                    Text("hello@dwellable.com")
+                    Text("kells@kellgolden.com")
                         .font(.system(size: 16))
                         .foregroundColor(Theme.gold)
                     Spacer()
@@ -162,7 +162,7 @@ struct FeedbackView: View {
     }
 
     private func openMail() {
-        guard let url = URL(string: "mailto:hello@dwellable.com") else { return }
+        guard let url = URL(string: "mailto:kells@kellgolden.com") else { return }
         if UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
         } else {
