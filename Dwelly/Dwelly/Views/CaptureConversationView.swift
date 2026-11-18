@@ -1508,11 +1508,28 @@ struct CaptureConversationView: View {
                         // TextField's `prompt:`.
                         .overlay(alignment: .topLeading) {
                             if inputText.isEmpty {
+                                // Nov 18 2026: this used to have no trailing
+                                // constraint at all, so the placeholder's full
+                                // string drew at its natural width -- in the slim
+                                // pill that ran straight under the mic circle
+                                // (and now the chevron's own reserved column
+                                // too), since nothing here ever adopted the real
+                                // `TextEditor`'s own trailing reserve just above.
+                                // `.lineLimit(1)` + `.truncationMode(.tail)` +
+                                // the SAME trailing inset the real text uses
+                                // keeps this confined to the identical column,
+                                // collapsed only -- expanded has no mic/send
+                                // beside it to run under, so it's left free to
+                                // wrap normally there, same as before.
                                 Text("Share what's on your mind...")
                                     .font(.system(size: 13))
                                     .foregroundColor(Theme.Capture.textMuted)
+                                    .lineLimit(isComposeExpanded ? nil : 1)
+                                    .truncationMode(.tail)
                                     .padding(.leading, isComposeExpanded ? 25 : composeCollapsedLeadingPadding + 5)
                                     .padding(.top, isComposeExpanded ? expandedTopInset + 52 : (isSlim ? composeSlimVerticalPadding + 8 : composeStackedTopPadding + 8))
+                                    .padding(.trailing, isComposeExpanded ? 20 : (isSlim ? composeSlimTrailingPadding : composeStackedTrailingPadding))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                                     .allowsHitTesting(false)
                             }
                         }
