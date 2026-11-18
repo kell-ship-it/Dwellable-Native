@@ -520,30 +520,20 @@ struct CaptureConversationView: View {
                                         .padding(.horizontal, 24)
                                 }
 
-                                // Component/Recording-Bar (Figma node 648:220) / Component/Transcribing-Bar
-                                // (649:3850), pulled exactly rather than approximated — Kell flagged the
-                                // missing stages (Nov 10 2026): record → live waveform/timer with
-                                // Cancel+Stop → transcribing → transcript lands in the compose field for
-                                // review, not sent automatically.
-                                //
-                                // Found live Nov 17 2026, building the repeat-recording fix: this switch
-                                // had no `inputText` guard, so once a draft existed and `isRecording`
-                                // flipped true from a SECOND/THIRD clip, this drew its OWN full-width
-                                // `recordingBar` on top of `unifiedComposeSurface`'s own (now also
-                                // recording-aware) capsule -- two overlapping recording UIs landing in
-                                // the same spot, not the single one either state meant to show. This
-                                // whole switch is the pre-draft idle row; once there's a draft,
-                                // `unifiedComposeSurface` owns every state (empty/typing/recording/
-                                // transcribing) by itself, so this renders nothing at all then.
-                                if !inputText.isEmpty {
-                                    EmptyView()
-                                } else if audioManager.isRecording {
-                                    recordingBar
-                                } else if isTranscribingVoice {
-                                    transcribingBar
-                                } else {
-                                    composePill
-                                }
+                                // `unifiedComposeSurface` (see its own header comment, Nov 18
+                                // 2026 update) now mounts unconditionally and owns EVERY state
+                                // of this row by itself -- empty, typing, recording,
+                                // transcribing, expanded -- via its own `isVoiceCapturing`
+                                // branch, which already doesn't care whether `inputText` is
+                                // empty. `recordingBar`/`transcribingBar` were the pre-draft-only
+                                // versions of that exact same UI (Figma 648:220 / 649:3850);
+                                // keeping both live risked the real double-recording-UI bug Kell
+                                // caught Nov 17 2026, where this row and the floating surface
+                                // drew two overlapping recording bars in the same spot. This row
+                                // is now purely a scroll-clearance spacer matching the floating
+                                // card's footprint, same as `composePill` always was for the
+                                // non-empty case.
+                                composePill
                             }
                         }
                         // Fix #1: revealed only after a prompt card's morph settles
@@ -1036,95 +1026,62 @@ struct CaptureConversationView: View {
         .clipShape(Capsule())
     }
 
-    // Component/Compose-Text-Pill (647:221) when empty; once there's content this
-    // becomes Component/Typed-Text-Box (651:3966) instead — a card with its own
-    // Collapsed (120pt)/Expanded (grows to fit more text) states via the expand/
-    // collapse icon, missing entirely before (Kell, Nov 10 2026).
+    // Nov 10 2026 rebuild: this used to hold a second, fully separate card view,
+    // cross-faded against `expandedComposeOverlay` (a THIRD, also-separate
+    // full-screen view) -- two independent `TextEditor`s bound to the same
+    // `$inputText`, swapped via conditional rendering. No matter how the
+    // transition/scrim/opacity was tuned, that shape kept producing some form
+    // of "two screens replacing each other" glitch, confirmed repeatedly by
+    // recording and frame-extracting our own build. The fix was architectural,
+    // not a timing tweak -- one `TextEditor`, never unmounted, whose
+    // *container* animates size/position/corner-radius. That single surface
+    // lives in `unifiedComposeSurface`, floated as its own top-level sibling in
+    // `body`'s outer ZStack (so it can span from the collapsed card's position
+    // all the way to full-screen).
+    //
+    // Nov 18 2026: this used to ALSO hold its own separate `TextField` for the
+    // empty state (torn down and replaced by `unifiedComposeSurface`'s
+    // `TextEditor` the instant `inputText` went non-empty) plus the mic button.
+    // That empty/non-empty seam was the actual cause of Kell's "typing changes
+    // composer size/position and brings it down" report on his own phone, not
+    // just the Simulator -- the same family of bug the Nov 10 rebuild above
+    // already fixed once for expanded/collapsed, just left unaddressed for
+    // empty/non-empty. `unifiedComposeSurface` now mounts unconditionally and
+    // owns the TextEditor, placeholder, and mic/send row for every state, so
+    // this is purely a layout spacer now -- reserves the same footprint so the
+    // scrolling thread still clears the floating card, renders nothing visible.
     private var composePill: some View {
-        Group {
-            if inputText.isEmpty {
-                HStack(spacing: 8) {
-                    TextField("", text: $inputText, prompt: Text("Share what's on your mind...").foregroundColor(Theme.Capture.textMuted), axis: .vertical)
-                        .font(.system(size: 16))
-                        .foregroundColor(Theme.Capture.textPrimary)
-                        .tint(Theme.gold)
-                        .focused($inputFocused)
-                        .submitLabel(.done)
-                        // Dismiss only -- never send. Found live Nov 17 2026: this
-                        // used to call sendUserTurn() directly, which meant a voice
-                        // transcript landing while this field was focused (box still
-                        // empty) could get auto-sent as a side effect of THIS field
-                        // being torn down when `inputText` flips non-empty (SwiftUI
-                        // can synthesize a submit on a focused TextField's removal),
-                        // not a real Done-key press -- directly contradicting the
-                        // "lands for review, never auto-sends" rule `transcribeIntoTextField`
-                        // already documents. Sending stays exclusively the explicit
-                        // send-button tap; Done here only matches its own label.
-                        .onSubmit { inputFocused = false }
-                        .disabled(isWaitingForDwelly)
-                        // T-133-adjacent fix (Kell reported, Nov 18 2026): tapping this
-                        // field didn't reliably bring up the keyboard -- same dead-
-                        // hit-target class of bug already chased down elsewhere in this
-                        // screen/session (see this property's own header comment). An
-                        // explicit tap-to-focus over the field's full visual frame
-                        // guarantees the tap reaches it instead of landing in dead
-                        // space between the real hit target and the capsule's edges.
-                        .contentShape(Rectangle())
-                        .onTapGesture { inputFocused = true }
-
-                    Button(action: handleRecordTap) {
-                        Image(systemName: "mic.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(Theme.gold)
-                            .frame(width: 44, height: 44)
-                            .background(Theme.Capture.cardBorder)
-                            .clipShape(Circle())
-                    }
-                    .disabled(isWaitingForDwelly)
-                }
-                .padding(.leading, 20)
-                .padding(.trailing, 8)
-                .frame(height: 60)
-                .background(Theme.Capture.cardBackground)
-                .clipShape(Capsule())
-            } else {
-                // Nov 10 2026 rebuild: this used to be a second, fully separate card
-                // view here, cross-faded against `expandedComposeOverlay` (a THIRD,
-                // also-separate full-screen view) -- two independent `TextEditor`s
-                // bound to the same `$inputText`, swapped via conditional rendering.
-                // No matter how the transition/scrim/opacity was tuned, that shape
-                // kept producing some form of "two screens replacing each other"
-                // glitch, confirmed repeatedly by recording and frame-extracting our
-                // own build. Kell's own diagnosis, and a second model's independent
-                // read of the same handoff, agreed: the fix is architectural, not a
-                // timing tweak -- one `TextEditor`, never unmounted, whose
-                // *container* animates size/position/corner-radius. That single
-                // surface now lives in `unifiedComposeSurface`, floated as its own
-                // top-level sibling in `body`'s outer ZStack (so it can span from the
-                // collapsed card's position all the way to full-screen). This branch
-                // only reserves the same footprint the collapsed card occupies, so
-                // the scrolling thread still clears it -- it renders nothing visible.
-                Color.clear.frame(height: 120)
-            }
-        }
-        .animation(.easeOut(duration: 0.15), value: inputText.isEmpty)
-        .padding(.horizontal, 24)
-        .padding(.bottom, Theme.Spacing.xxl)
+        Color.clear
+            .frame(height: 120)
+            .padding(.horizontal, 24)
+            .padding(.bottom, Theme.Spacing.xxl)
     }
 
-    // The single persistent compose surface -- ONE `TextEditor`, mounted for as
-    // long as `inputText` is non-empty, regardless of `isComposeExpanded`. Its
-    // *container* (this GeometryReader + the `.frame`/`.position` below) is what
-    // animates between the collapsed card's geometry and the full screen, not the
-    // editor itself being swapped for a different instance. Because the editor is
-    // never removed/reinserted, SwiftUI preserves its scroll position and
-    // `$inputFocused` state across the transition for free -- no manual
-    // coordination needed (Nov 10 2026 rebuild, replacing the old two-view
-    // `composePill`/`expandedComposeOverlay` split; see the comment on that old
-    // branch in `composePill` above for why).
+    // The single persistent compose surface -- ONE `TextEditor`, mounted
+    // UNCONDITIONALLY (idle/empty included), regardless of `inputText` or
+    // `isComposeExpanded`. Its *container* (this GeometryReader + the
+    // `.frame`/`.position` below) is what animates between the collapsed card's
+    // geometry and the full screen, not the editor itself being swapped for a
+    // different instance. Because the editor is never removed/reinserted,
+    // SwiftUI preserves its scroll position and `$inputFocused` state across
+    // every transition for free -- no manual coordination needed (Nov 10 2026
+    // rebuild, replacing the old two-view `composePill`/`expandedComposeOverlay`
+    // split; see the comment on that old branch in `composePill` above for why).
+    //
+    // Nov 18 2026: this used to only mount `if !inputText.isEmpty`, with a
+    // SEPARATE `TextField` in `composePill` covering the empty state. That was
+    // exactly the same two-views-trading-places bug the Nov 10 rebuild above
+    // already fixed once for expanded/collapsed -- just left one seam
+    // unaddressed, between empty and non-empty. Kell caught it on his own
+    // phone, not just the Simulator: tapping in sometimes showed the keyboard,
+    // but the FIRST character typed tore down the TextField, mounted this
+    // TextEditor fresh, and visibly dropped/resized the composer as focus and
+    // the keyboard notification both had to re-settle on the new view. Always
+    // mounting this one editor, with `composePill` below reduced to a pure
+    // layout spacer, removes that swap entirely.
     @ViewBuilder
     private var unifiedComposeSurface: some View {
-        if !inputText.isEmpty {
+        if true {
             // No `GeometryReader` here at all, on purpose -- both `proxy.safeAreaInsets`
             // AND `proxy.size` proved unreliable in this specific tree (confirmed
             // empirically, Nov 10 2026, each time via a temporary on-screen debug
@@ -1283,6 +1240,29 @@ struct CaptureConversationView: View {
                         // tap-to-focus over the full (post-clip) visual frame.
                         .contentShape(Rectangle())
                         .onTapGesture { inputFocused = true }
+                        // This TextEditor is now the ONE persistent composer for
+                        // every state (idle/typing/expanded) -- see this surface's
+                        // own header comment, and `composePill` below, for why the
+                        // OLD empty-state TextField (torn down and replaced by THIS
+                        // view the instant `inputText` flipped non-empty) was the
+                        // real cause of Kell's "typing changes composer size/
+                        // position and brings it down" report (Nov 18 2026): that
+                        // was never one editor animating, it was two different
+                        // UIKit text views trading places mid-keystroke, each with
+                        // its own first-responder transition and its own keyboard
+                        // show/hide notification. `TextEditor` has no native
+                        // placeholder, so this overlay stands in for the old
+                        // TextField's `prompt:`.
+                        .overlay(alignment: .topLeading) {
+                            if inputText.isEmpty {
+                                Text("Share what's on your mind...")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(Theme.Capture.textMuted)
+                                    .padding(.leading, isComposeExpanded ? 25 : 21)
+                                    .padding(.top, isComposeExpanded ? expandedTopInset + 52 : 24)
+                                    .allowsHitTesting(false)
+                            }
+                        }
 
                     // Kell's follow-up ask (Nov 16 2026): a long transcript's collapsed
                     // preview just stopped dead at the 120pt clip -- no signal that
@@ -1313,32 +1293,33 @@ struct CaptureConversationView: View {
                     // far-right/trailing edge they've always had (ChatGPT-style,
                     // ticket/Kell's explicit call). Collapsed is back to a plain
                     // trailing-aligned HStack, same as every point before this
-                    // regression; only the expanded divider row (genuinely new,
-                    // intentional, from the prior pass) keeps its own full-width
-                    // wrapper, now correctly alignment: .bottomTrailing so IT doesn't
-                    // re-introduce the same centering bug.
+                    // regression.
+                    //
+                    // Nov 18 2026: the divider `Rectangle` the expanded branch used to
+                    // draw above this row is gone -- Kell flagged a stray thin gray
+                    // seam sitting directly above the send button, and this hairline
+                    // was the only literal divider anywhere in this card's bottom
+                    // area. ChatGPT's own composer has no such line either; the
+                    // trailing-aligned send button on its own already reads clearly
+                    // as the row's action without a rule drawn above it.
+                    let hasDraft = !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                     Group {
                         if isComposeExpanded {
-                            VStack(spacing: 0) {
-                                Rectangle()
-                                    .fill(Theme.Capture.cardBorder)
-                                    .frame(height: 1)
-                                HStack(spacing: 10) {
-                                    Spacer()
-                                    Button(action: sendUserTurn) {
-                                        Image(systemName: "arrow.up")
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundColor(Theme.goldDark)
-                                            .frame(width: 44, height: 44)
-                                            .background(Theme.gold)
-                                            .clipShape(Circle())
-                                    }
-                                    .disabled(isWaitingForDwelly || isOverCharacterLimit)
-                                    .opacity(isOverCharacterLimit ? 0.4 : 1.0)
+                            HStack(spacing: 10) {
+                                Spacer()
+                                Button(action: sendUserTurn) {
+                                    Image(systemName: "arrow.up")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(Theme.goldDark)
+                                        .frame(width: 44, height: 44)
+                                        .background(Theme.gold)
+                                        .clipShape(Circle())
                                 }
-                                .padding(.horizontal, 20)
-                                .padding(.top, 12)
+                                .disabled(isWaitingForDwelly || isOverCharacterLimit || !hasDraft)
+                                .opacity(isOverCharacterLimit || !hasDraft ? 0.4 : 1.0)
                             }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 12)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                         } else {
                             HStack(spacing: 10) {
@@ -1367,8 +1348,14 @@ struct CaptureConversationView: View {
                                         .background(Theme.gold)
                                         .clipShape(Circle())
                                 }
-                                .disabled(isWaitingForDwelly || isOverCharacterLimit)
-                                .opacity(isOverCharacterLimit ? 0.4 : 1.0)
+                                // Nov 18 2026: this row is now shown in the empty state too
+                                // (unifiedComposeSurface mounts unconditionally -- see its
+                                // own header comment), so Send needs its own empty-draft
+                                // guard; sendUserTurn() already no-ops on empty text, this
+                                // just makes that visible instead of showing a live-looking
+                                // button that does nothing.
+                                .disabled(isWaitingForDwelly || isOverCharacterLimit || !hasDraft)
+                                .opacity(isOverCharacterLimit || !hasDraft ? 0.4 : 1.0)
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                             .padding(.trailing, 10)
@@ -1430,6 +1417,11 @@ struct CaptureConversationView: View {
                 }
             }
             .transition(.identity)
+            // This surface is now always mounted (see the property's own header
+            // comment), including during the prompt-card morph that used to hide
+            // just `composePill`'s TextField via this same flag -- carry the fade
+            // over here too so that reveal timing is unchanged.
+            .opacity(isComposerRevealed ? 1 : 0)
         }
     }
 
@@ -1439,78 +1431,14 @@ struct CaptureConversationView: View {
         }
     }
 
-    // Component/Recording-Bar (node 648:220) — Cancel (✕) + a live, voice-reactive
-    // waveform + timer + Stop (circled gold, the "commits right now" action per this
-    // design system's own Icon-Circle rule).
-    private var recordingBar: some View {
-        HStack(spacing: 0) {
-            Button(action: cancelRecording) {
-                Text("✕")
-                    .font(.system(size: 13))
-                    .foregroundColor(Theme.Capture.textMuted)
-                    .frame(width: 44, height: 44)
-                    // Kell's direct ask (Nov 11 2026) after testing live: a bare ✕ with
-                    // no circle didn't read clearly enough as a tappable cancel action,
-                    // especially next to Stop's gold circle. Figma's own component has
-                    // no fill here either, so this is a deliberate addition beyond the
-                    // locked design, not a correction to it -- muted/soft (not gold),
-                    // so Cancel still reads as the secondary action next to Stop's
-                    // primary gold circle.
-                    .background(Theme.Capture.badgeBackground)
-                    .clipShape(Circle())
-            }
-
-            HStack(spacing: 10) {
-                liveWaveform
-                Text(audioManager.formattedDuration(audioManager.recordingDuration))
-                    .font(.system(size: 14))
-                    .foregroundColor(Theme.Payment.textSupporting)
-            }
-            .frame(maxWidth: .infinity)
-
-            Button(action: handleRecordTap) {
-                Rectangle()
-                    .fill(Theme.Payment.backgroundPrimary)
-                    .frame(width: 10, height: 10)
-                    .cornerRadius(2)
-                    .frame(width: 44, height: 44)
-                    .background(Theme.gold)
-                    .clipShape(Circle())
-            }
-        }
-        .padding(.leading, 20)
-        .padding(.trailing, 10)
-        .frame(height: 64)
-        .background(Theme.Capture.cardBackground)
-        .clipShape(Capsule())
-        .padding(.horizontal, 24)
-        .padding(.bottom, Theme.Spacing.xxl)
-    }
-
-    // Component/Transcribing-Bar (node 649:3850) — a continuously animated wave (no
-    // live audio exists anymore at this point, so this is a self-driven loop, not
-    // audio-reactive) plus a status label, shown while speech-to-text runs.
-    private var transcribingBar: some View {
-        HStack(spacing: 10) {
-            Circle().fill(Theme.Payment.textSupporting).frame(width: 6, height: 6)
-            // Spans most of the bar's available width between the status dot and the
-            // "Transcribing..." label -- Kell's ask: the old fixed-width 12-bar strip
-            // left most of the capsule empty. `maxWidth: .infinity` lets it fill
-            // whatever room is actually there instead of a hardcoded bar count.
-            transcribingWaveform
-                .frame(maxWidth: .infinity)
-            Text("Transcribing...")
-                .font(.system(size: 14))
-                .foregroundColor(Theme.Payment.textSupporting)
-                .fixedSize()
-        }
-        .padding(.horizontal, 20)
-        .frame(height: 64)
-        .background(Theme.Capture.cardBackground)
-        .clipShape(Capsule())
-        .padding(.horizontal, 24)
-        .padding(.bottom, Theme.Spacing.xxl)
-    }
+    // Nov 18 2026: `recordingBar`/`transcribingBar` (Figma 648:220 / 649:3850)
+    // used to live here as the pre-draft-only versions of this exact UI --
+    // removed now that `unifiedComposeSurface` mounts unconditionally and
+    // handles recording/transcribing for every state (empty included) via its
+    // own `isVoiceCapturing` branch. Keeping both meant two separate
+    // call sites could draw two overlapping recording bars in the same spot
+    // (the exact bug Kell caught Nov 17 2026 for the draft case); removing the
+    // duplicate removes that risk entirely rather than re-guarding it.
 
     // Reacts to AudioRecordingManager.audioLevel (real metering, sampled every
     // 0.1s) -- Kell's follow-up ask (Nov 16 2026): the old version scaled every
