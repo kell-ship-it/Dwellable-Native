@@ -73,7 +73,6 @@
 		D015 /* NewPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D014 /* NewPasswordView.swift */; };
 		D017 /* EmailConfirmedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D016 /* EmailConfirmedView.swift */; };
 		D019 /* EmailAlreadyExistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D018 /* EmailAlreadyExistsView.swift */; };
-		A001 /* ModelSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A000 /* ModelSetupView.swift */; };
 		E001 /* APIClientEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = E002 /* APIClientEnvironment.swift */; };
 		F001 /* NameEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F002 /* NameEntryView.swift */; };
 		F003 /* IntentSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F004 /* IntentSelectionView.swift */; };
@@ -155,7 +154,6 @@
 		23A6B11F2F60D59E006F12BD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		23FB528C2F5F7485001E0468 /* DwellyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DwellyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		23FB529B2F5F7935001E0468 /* Dwelly.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Dwelly.xctestplan; sourceTree = "<group>"; };
-		A000 /* ModelSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelSetupView.swift; sourceTree = "<group>"; };
 		E002 /* APIClientEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClientEnvironment.swift; sourceTree = "<group>"; };
 		D000 /* AppLoadingAnimation.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = AppLoadingAnimation.mp4; sourceTree = "<group>"; };
 		D002 /* IntroExplainer.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = IntroExplainer.mp4; sourceTree = "<group>"; };
@@ -197,6 +195,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0155 /* Fetch WhisperKit Model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Fetch WhisperKit Model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(CONTENTS_FOLDER_PATH)/WhisperKitModel/openai_whisper-base/config.json",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "\"${SRCROOT}/Scripts/fetch_whisperkit_model.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXGroup section */
 		0001 /* Dwelly */ = {
@@ -256,7 +277,6 @@
 				F01C /* EntriesView.swift */,
 				F020 /* SearchView.swift */,
 				F022 /* PlainStatsSection.swift */,
-				A000 /* ModelSetupView.swift */,
 				B105 /* PaywallView.swift */,
 				B107 /* TabScreenHeader.swift */,
 				B109 /* TodayView.swift */,
@@ -373,6 +393,7 @@
 				0141 /* Sources */,
 				0142 /* Resources */,
 				0140 /* Frameworks */,
+				0155 /* Fetch WhisperKit Model */,
 			);
 			buildRules = (
 			);
@@ -498,7 +519,6 @@
 				0146 /* MomentRow.swift in Sources */,
 				0148 /* SettingsView.swift in Sources */,
 				F013 /* RecentlyDeletedView.swift in Sources */,
-				A001 /* ModelSetupView.swift in Sources */,
 				0112 /* AuthManager.swift in Sources */,
 				0128 /* AudioRecordingManager.swift in Sources */,
 				012140 /* AudioFileManager.swift in Sources */,
