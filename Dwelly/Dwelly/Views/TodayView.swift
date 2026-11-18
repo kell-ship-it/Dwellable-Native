@@ -30,6 +30,15 @@ private struct JournalReadyEntry: Identifiable {
 /// `MainTabView`, which owns the actual `fullScreenCover` + paywall gate.
 struct TodayView: View {
     @Environment(\.apiClient) private var apiClient
+    // T-184: re-checks the local day boundary whenever the app returns to the
+    // foreground, not just once per app launch -- a user who crosses timezones
+    // mid-session (phone never relaunches, this view never gets re-created, since
+    // MainTabView keeps all 4 tab roots mounted continuously) would otherwise never
+    // see the day boundary follow them. `loadDailyContent()` is cheap and idempotent
+    // either way: each `*ForToday()` call already checks its own UserDefaults cache
+    // against the device's *current* `Calendar.current`/timeZone, so calling it again
+    // on an unchanged day is a no-op, not a re-roll.
+    @Environment(\.scenePhase) private var scenePhase
     let userId: String
     var onCapture: () -> Void
     var onOpenPrompt: (_ prompt: (title: String, category: String)) -> Void
@@ -57,16 +66,13 @@ struct TodayView: View {
     // tab (same reattachment behavior `CaptureConversationView.hasInitialized` already
     // guards against for the same reason) -- without this, a second firing could
     // re-roll the verse mid-session even though the UserDefaults cache was already
-    // correct, so the displayed verse and the cached one silently diverged. Loads
-    // exactly once per view lifetime; the real 24h/day-boundary cache lives in
-    // `DailyVerseLibrary` itself, not here.
+    // correct, so the displayed verse and the cached one silently diverged. Guards
+    // the FIRST load only (see `loadDailyContent()`/`scenePhase` below for T-184's
+    // later re-checks on every foreground, not just the first appearance).
     @State private var hasLoadedDailyVerse = false
 
     // T-182: Mood and Life-Domain rotate daily through their real locked pools
-    // (`TodayPromptLibraries.swift`) instead of always showing the same fixed prompt --
-    // same once-per-appearance-load guard `hasLoadedDailyVerse` already uses, for the
-    // same reattachment reason.
-    @State private var hasLoadedRotatingTiles = false
+    // (`TodayPromptLibraries.swift`) instead of always showing the same fixed prompt.
     @State private var moodTile: TodayPrompt = MoodPromptLibrary.prompts[0]
     @State private var lifeDomainTile: TodayPrompt = LifeDomainPromptLibrary.prompts[0]
 
@@ -126,16 +132,27 @@ struct TodayView: View {
         .onAppear {
             guard !hasLoadedDailyVerse else { return }
             hasLoadedDailyVerse = true
-            dailyVerse = DailyVerseLibrary.verseForToday()
+            loadDailyContent()
         }
-        .onAppear {
-            guard !hasLoadedRotatingTiles else { return }
-            hasLoadedRotatingTiles = true
-            moodTile = MoodPromptLibrary.promptForToday()
-            lifeDomainTile = LifeDomainPromptLibrary.promptForToday()
-            intercessionFallback = IntercessionPromptLibrary.promptForToday()
-            resolveTileOverlaps()
+        .onChange(of: scenePhase) { newPhase in
+            // T-184: only re-check once the daily content has loaded at least once
+            // this launch -- guards against firing before `hasLoadedDailyVerse`'s own
+            // `.onAppear` has run its first pass.
+            guard newPhase == .active, hasLoadedDailyVerse else { return }
+            loadDailyContent()
         }
+    }
+
+    /// T-184: the single place that (re-)reads today's verse + rotating tiles,
+    /// callable both on first appearance and every time the app becomes active
+    /// again, so the local day boundary follows the device's current timezone
+    /// rather than whatever it was when the app last launched.
+    private func loadDailyContent() {
+        dailyVerse = DailyVerseLibrary.verseForToday()
+        moodTile = MoodPromptLibrary.promptForToday()
+        lifeDomainTile = LifeDomainPromptLibrary.promptForToday()
+        intercessionFallback = IntercessionPromptLibrary.promptForToday()
+        resolveTileOverlaps()
     }
 
     /// T-182 (overlap-avoidance, locked `docs/PILLAR_TODAY_PROMPT_TAXONOMY.md` --
