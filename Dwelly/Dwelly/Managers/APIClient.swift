@@ -89,6 +89,8 @@ protocol APIClient {
 
     // Analytics endpoints
     func sendUsageEvents(_ events: [UsageEventData], userId: String) async throws
+    // T-116: pre-signup funnel events, keyed by anonymous device ID instead of userId
+    func sendAnonymousUsageEvents(_ events: [AnonymousUsageEventData]) async throws
 
     // LLM endpoint (T-168) — the one call every LLM-backed feature (Capture's
     // conversation, Prayer generation, Journal synthesis) goes through.
@@ -135,6 +137,14 @@ struct UsageEventData: Codable {
     let id: String
     let userId: String
     let userEmail: String?
+    let eventType: String
+    let momentType: String?
+    let timestamp: Date
+}
+
+struct AnonymousUsageEventData: Codable {
+    let id: String
+    let anonymousId: String
     let eventType: String
     let momentType: String?
     let timestamp: Date

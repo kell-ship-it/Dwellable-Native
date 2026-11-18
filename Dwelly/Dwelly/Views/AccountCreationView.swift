@@ -205,6 +205,11 @@ struct AccountCreationView: View {
         // that hasn't been submitted yet — Kell caught this Nov 2026, same bug as the
         // OTP-error-leaking-onto-Login one, just the reverse direction.
         .onAppear { authManager.errorMessage = nil }
+        // T-116: pre-signup funnel event — see UsageTracker.logAnonymousOnboardingScreenReached.
+        .onAppear {
+            UsageTracker.shared.logAnonymousOnboardingScreenReached(screen: "account_creation")
+            Task { try? await UsageTracker.shared.syncAnonymousEventsToBackend(apiClient: SupabaseAPIClient()) }
+        }
     }
 
     // MARK: - Fields
