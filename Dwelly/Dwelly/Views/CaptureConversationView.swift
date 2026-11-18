@@ -1062,6 +1062,15 @@ struct CaptureConversationView: View {
                         // send-button tap; Done here only matches its own label.
                         .onSubmit { inputFocused = false }
                         .disabled(isWaitingForDwelly)
+                        // T-133-adjacent fix (Kell reported, Nov 18 2026): tapping this
+                        // field didn't reliably bring up the keyboard -- same dead-
+                        // hit-target class of bug already chased down elsewhere in this
+                        // screen/session (see this property's own header comment). An
+                        // explicit tap-to-focus over the field's full visual frame
+                        // guarantees the tap reaches it instead of landing in dead
+                        // space between the real hit target and the capsule's edges.
+                        .contentShape(Rectangle())
+                        .onTapGesture { inputFocused = true }
 
                     Button(action: handleRecordTap) {
                         Image(systemName: "mic.fill")
@@ -1267,6 +1276,13 @@ struct CaptureConversationView: View {
                         .padding(.bottom, isComposeExpanded ? keyboardHeight + 70 : 58)
                         .frame(height: isComposeExpanded ? nil : 120)
                         .clipped()
+                        // T-133-adjacent fix (Kell reported, Nov 18 2026): same
+                        // dead-hit-target hardening as the empty-state TextField
+                        // above -- a tap inside this editor's visible area didn't
+                        // always reliably bring up the keyboard either. Explicit
+                        // tap-to-focus over the full (post-clip) visual frame.
+                        .contentShape(Rectangle())
+                        .onTapGesture { inputFocused = true }
 
                     // Kell's follow-up ask (Nov 16 2026): a long transcript's collapsed
                     // preview just stopped dead at the 120pt clip -- no signal that
