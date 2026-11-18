@@ -445,33 +445,66 @@ struct CaptureConversationView: View {
     // (`width` is the TextEditor's own SwiftUI box width -- this subtracts
     // `lineFragmentPadding` on both sides itself, callers pass the box
     // width, not the already-narrowed text width).
+    //
+    // Nov 18 2026, SEVENTH pass: this used to call `NSString.boundingRect`,
+    // an APPROXIMATION of real text layout -- flagged as a risk when it was
+    // first written, and the risk turned out real. Kell pasted a long run
+    // of repeated characters with no spaces (a classic wrap-bug stress
+    // test): `boundingRect` measured it as needing several lines, so
+    // `composeCollapsedHeight` sized the card several lines tall -- but the
+    // real on-device `UITextView` rendered it as a single overflowing line
+    // (its own TextKit layout handled the unbreakable run differently).
+    // The card ended up taller than its actual visible content, and
+    // mic/send -- correctly bottom-pinned to that card -- landed looking
+    // like they'd floated into the middle of the box relative to the one
+    // line of real text sitting at its top. Not a positioning bug; a
+    // measurement-vs-reality mismatch for a specific hard case.
+    //
+    // Fixed by using the SAME engine `UITextView` itself is built on --
+    // `NSLayoutManager` laying out real glyphs in a real `NSTextContainer`
+    // at the real width, then counting actual line fragments -- instead of
+    // `boundingRect`'s separate, approximate code path. This can no longer
+    // disagree with what `UITextView` renders, for any input, including
+    // degenerate ones like this.
     private func composeMeasuredLineCount(for text: String, width: CGFloat) -> Int {
         let availableTextWidth = width - (composeLineFragmentPadding * 2)
         guard availableTextWidth > 0 else { return 1 }
         // At least one line's worth even when empty -- there is always a
         // caret/placeholder row to show, never a zero-height box.
         var measured = text.isEmpty ? "A" : text
-        // `NSString.boundingRect` never counts a trailing BLANK line:
-        // "hello\n" measures identical to "hello", even though a real
-        // `UITextView` shows a second, empty line with the caret sitting on
-        // it -- there's no glyph after the final newline for TextKit to lay
-        // a line fragment from. True regardless of how many consecutive
-        // trailing newlines there are ("\n\n" is still missing exactly ONE
-        // trailing empty line, not two -- every OTHER blank line in the
-        // string already has a following newline marking its own boundary,
-        // so it's already counted correctly). A trailing zero-width space
-        // forces that one missing line to actually count.
+        // Real `UITextView`/TextKit never lays out a glyph for a trailing
+        // newline's own blank line ("hello\n" has no glyph after the `\n`
+        // to anchor a line fragment from), though the real editor still
+        // shows a second, empty caret row there. True regardless of how
+        // many consecutive trailing newlines there are ("\n\n" is still
+        // missing exactly ONE trailing empty line, not two -- every OTHER
+        // blank line already has a following newline marking its own
+        // boundary). A trailing zero-width space forces that one missing
+        // line to actually count.
         if measured.hasSuffix("\n") {
             measured += "\u{200B}"
         }
-        let constraint = CGSize(width: availableTextWidth, height: .greatestFiniteMagnitude)
-        let bounds = (measured as NSString).boundingRect(
-            with: constraint,
-            options: [.usesLineFragmentOrigin, .usesFontLeading],
-            attributes: [.font: composeEditorFont],
-            context: nil
-        )
-        return max(1, Int((bounds.height / composeEditorFont.lineHeight).rounded()))
+        let textStorage = NSTextStorage(string: measured, attributes: [.font: composeEditorFont])
+        let layoutManager = NSLayoutManager()
+        textStorage.addLayoutManager(layoutManager)
+        let textContainer = NSTextContainer(size: CGSize(width: availableTextWidth, height: .greatestFiniteMagnitude))
+        // Padding is already subtracted into `availableTextWidth` above --
+        // zero it here so it isn't applied a second time inside the
+        // container itself.
+        textContainer.lineFragmentPadding = 0
+        layoutManager.addTextContainer(textContainer)
+        layoutManager.ensureLayout(for: textContainer)
+
+        var lineCount = 0
+        var glyphIndex = 0
+        let numberOfGlyphs = layoutManager.numberOfGlyphs
+        while glyphIndex < numberOfGlyphs {
+            var lineRange = NSRange(location: 0, length: 0)
+            layoutManager.lineFragmentRect(forGlyphAt: glyphIndex, effectiveRange: &lineRange)
+            lineCount += 1
+            glyphIndex = NSMaxRange(lineRange)
+        }
+        return max(1, lineCount)
     }
 
     // The TextEditor's own SwiftUI box height needed to show `lineCount`
