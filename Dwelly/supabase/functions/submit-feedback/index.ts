@@ -24,14 +24,13 @@
 //   resend_configured: boolean } -- the row is saved whenever ok:true, regardless of
 //   `emailed`. { ok: false, error } means nothing was saved/changed.
 //
-// Email delivery status as of this commit: RESEND_API_KEY is NOT set as a secret on
-// this project. sendResendAlert() returns false BEFORE making any network call when the
-// key is absent -- Resend's API has never been contacted, not once, by this function.
-// resend_configured and emailed are therefore always false today. The submission still
-// saves for real (feedback_submissions is the system of record) -- only the "also email
-// hello@dwelly.one" step is inert until ops sets a real key. See the bottom of this file
-// for exactly what to provision. Notion mirroring is intentionally out of scope for this
-// change (not touched by the retry path).
+// Email delivery status as of this commit: RESEND_API_KEY IS set (confirmed live,
+// Nov 18 2026) and FEEDBACK_ALERT_TO_EMAIL is overridden to kell@kellgolden.com --
+// Resend's sandbox sender can only deliver to the account's own registered address
+// until dwelly.one is domain-verified, so hello@dwelly.one/kells@kellgolden.com both
+// 403 today. The submission always saves for real regardless of `emailed`. Notion
+// mirroring is intentionally out of scope for this change (not touched by the retry
+// path).
 
 import { createClient } from "jsr:@supabase/supabase-js"
 
@@ -55,7 +54,36 @@ interface SubmitFeedbackBody {
   retry_submission_id?: string
 }
 
-async function sendResendAlert(userId: string, userEmail: string | null, category: Category, message: string, submissionId: string): Promise<boolean> {
+// Kell caught live (Nov 18 2026): the screenshot was saved to storage and the path was
+// stored on the row, but the alert email never actually carried it -- the Resend call
+// below had no `attachments` at all, so "optional screenshot" was silently dropped on
+// the one path (email) support actually reads from. Fetches the screenshot bytes with
+// the service-role client (same one the caller already uses for the insert) and
+// base64-encodes them into the Resend payload per Resend's attachments API.
+async function fetchScreenshotAttachment(
+  serviceClient: ReturnType<typeof createClient>,
+  screenshotPath: string | null
+): Promise<{ filename: string; content: string } | null> {
+  if (!screenshotPath) return null
+  const { data, error } = await serviceClient.storage.from("feedback-screenshots").download(screenshotPath)
+  if (error || !data) {
+    console.error("submit-feedback: could not download screenshot for attachment", error)
+    return null
+  }
+  const bytes = new Uint8Array(await data.arrayBuffer())
+  let binary = ""
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+  return { filename: screenshotPath.split("/").pop() ?? "screenshot.jpg", content: btoa(binary) }
+}
+
+async function sendResendAlert(
+  userId: string,
+  userEmail: string | null,
+  category: Category,
+  message: string,
+  submissionId: string,
+  attachment: { filename: string; content: string } | null
+): Promise<boolean> {
   const apiKey = Deno.env.get("RESEND_API_KEY")
   if (!apiKey) {
     console.log("submit-feedback: RESEND_API_KEY not set -- skipping Resend alert (see this function's header comment)")
@@ -86,6 +114,7 @@ async function sendResendAlert(userId: string, userEmail: string | null, categor
       to: toEmail,
       subject,
       text: `${subject}\n\nFrom: ${userEmail ?? userId}\nSubmission: ${submissionId}\n\n${message}`,
+      ...(attachment ? { attachments: [attachment] } : {}),
     }),
   })
 
@@ -175,7 +204,7 @@ Deno.serve(async (req: Request) => {
     if (body.retry_submission_id) {
       const { data: existing, error: fetchError } = await serviceClient
         .from("feedback_submissions")
-        .select("id, created_at, feedback_type, message")
+        .select("id, created_at, feedback_type, message, screenshot_url")
         .eq("id", body.retry_submission_id)
         .eq("user_id", userId)
         .single()
@@ -189,7 +218,8 @@ Deno.serve(async (req: Request) => {
 
       let retryEmailed = false
       try {
-        retryEmailed = await sendResendAlert(userId, userEmail, existing.feedback_type as Category, existing.message, existing.id)
+        const attachment = await fetchScreenshotAttachment(serviceClient, existing.screenshot_url)
+        retryEmailed = await sendResendAlert(userId, userEmail, existing.feedback_type as Category, existing.message, existing.id, attachment)
       } catch (error) {
         console.error("submit-feedback (retry): sendResendAlert threw", error)
       }
@@ -267,7 +297,8 @@ Deno.serve(async (req: Request) => {
     // the client already has a real, durable submission.
     let emailed = false
     try {
-      emailed = await sendResendAlert(userId, userEmail, body.category, message, inserted.id)
+      const attachment = await fetchScreenshotAttachment(serviceClient, screenshotPath)
+      emailed = await sendResendAlert(userId, userEmail, body.category, message, inserted.id, attachment)
     } catch (error) {
       console.error("submit-feedback: sendResendAlert threw", error)
     }
