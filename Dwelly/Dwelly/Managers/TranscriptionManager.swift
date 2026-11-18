@@ -231,13 +231,23 @@ class TranscriptionManager: NSObject, ObservableObject {
                     self.isTranscribing = false
                     self.transcriptionProgress = ""
 
-                    // Reject if empty, whitespace-only, blank audio marker, or too short
+                    // Reject only if genuinely empty/whitespace-only after cleaning --
+                    // a real `isBlankAudio` case (silence, or nothing left once the
+                    // [BLANK_AUDIO]/[SILENCE]/etc. markers are stripped). Found live
+                    // Nov 17 2026 (Kell said "ouch" into a real mic and it was
+                    // discarded): this used to ALSO reject any single-word
+                    // transcription outright ("wordCount < 2"), before the word ever
+                    // reached the app -- directly contradicting T-127's whole rebuild
+                    // the same day, where a single honest word ("Peaceful", "Ouch",
+                    // "Help") is explicitly valid, real content. Duration/file-size
+                    // floors already run before transcription even starts
+                    // (isValidAudioFile/hasAudioContent above) to catch truly-too-
+                    // short recordings; word count was a redundant, overly blunt
+                    // second gate on top of those.
                     let isBlankAudio = cleanedText.isEmpty
-                    let isTooShort = wordCount < 2 // Require at least 2 words
 
-                    if isBlankAudio || isTooShort {
-                        let reason = isBlankAudio ? "blank audio" : "too short (\(wordCount) word\(wordCount == 1 ? "" : "s"))"
-                        hlog("WhisperKit: rejected — \(reason) after \(String(format: "%.1f", elapsed))s", "WARNING")
+                    if isBlankAudio {
+                        hlog("WhisperKit: rejected — blank audio after \(String(format: "%.1f", elapsed))s", "WARNING")
                         self.transcript = "" // Clear transcript so ReviewView knows it's invalid
                         self.errorMessage = "Dwelly didn't catch that. Feel free to speak again."
                         self.deleteTemporaryAudioFile()

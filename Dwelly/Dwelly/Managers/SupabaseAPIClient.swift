@@ -379,7 +379,9 @@ class SupabaseAPIClient: APIClient {
             starred: entry.starred,
             edited: entry.edited,
             created_at: entry.createdAt.ISO8601Format(),
-            updated_at: Date().ISO8601Format()
+            updated_at: Date().ISO8601Format(),
+            formation_eligible: entry.formationEligible,
+            extracted_facts: entry.extractedFacts
         )
         // Upsert on the unique moment_id column -- one entry per moment, so saving
         // twice (e.g. re-saving moods after a title already exists) updates the
@@ -1059,6 +1061,8 @@ struct JournalEntryPayload: Codable {
     let edited: Bool
     let created_at: String
     let updated_at: String
+    let formation_eligible: Bool
+    let extracted_facts: String?
 }
 
 struct DwellerProfilePayload: Codable {

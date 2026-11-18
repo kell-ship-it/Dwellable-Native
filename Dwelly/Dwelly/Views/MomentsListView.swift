@@ -268,7 +268,8 @@ struct MomentsListView: View {
             }
         }
         .navigationDestination(isPresented: $showCapture) {
-            CaptureView(userId: userId, userEmail: authManager.currentUser?.email, syncManager: syncManager, onMomentSaved: {
+            // CaptureView merged into CaptureConversationView (Nov 17 2026).
+            CaptureConversationView(userId: userId, userEmail: authManager.currentUser?.email, syncManager: syncManager, onMomentSaved: {
                 var transaction = Transaction()
                 transaction.disablesAnimations = true
                 withTransaction(transaction) {

@@ -231,14 +231,15 @@ struct YourNarrativeCard: View {
         isLoading = true
         profile = try? await apiClient.fetchDwellerProfile(userId: userId)
         let allApproved = (try? await apiClient.fetchApprovedJournalEntries(userId: userId)) ?? []
-        // T-161/T-127 (Nov 17 2026): the validity floor this ticket always described
-        // ("must contain genuine content, not spam/repeated-character junk") never
-        // actually filtered anything -- every approved entry counted, full stop.
-        // JournalSynthesisManager.isGenuineReflection is now the real floor, applied
-        // at synthesis time (CaptureConversationView/SyncManager): a below-floor entry
-        // is saved with scriptureQuote == nil (deliberately, never faked), which is
-        // exactly the signal this filter needs -- no new column required.
-        let approved = allApproved.filter { $0.scriptureQuote != nil }
+        // T-161/T-127 (rebuilt Nov 17 2026): the validity floor this ticket always
+        // described ("must contain genuine content, not spam/repeated-character junk")
+        // never actually filtered anything -- every approved entry counted, full stop.
+        // Filters on the real, independent `formationEligible` column now -- NOT on
+        // scriptureQuote presence, which was flagged as the wrong proxy during review
+        // (a below-floor capture could carry a fake fallback verse on a hard LLM
+        // failure, and the old prompt forced a verse onto every entry regardless of
+        // whether anything was actually discernible).
+        let approved = allApproved.filter { $0.formationEligible }
         let feedback = (try? await apiClient.fetchNarrativeFeedback(userId: userId)) ?? []
         // T-161/T-164: "Not quite" feedback counts toward the threshold exactly like a
         // captured moment -- same list, same weight, not a separate lesser category.

@@ -53,14 +53,16 @@ struct OnboardingCoordinatorView: View {
             }
         }
         .fullScreenCover(isPresented: $showFirstCapture) {
-            CaptureView(userId: userId, userEmail: userEmail, syncManager: syncManager, isOnboarding: true, onMomentSaved: {
+            // CaptureView merged into CaptureConversationView (Nov 17 2026) -- no
+            // preset initialMessage means this opens straight into the idle state.
+            CaptureConversationView(userId: userId, userEmail: userEmail, syncManager: syncManager, isOnboarding: true, onMomentSaved: {
                 ProfileManager.shared.completeOnboarding(userId: userId)
                 showFirstCapture = false
                 onOnboardingComplete()
             })
             // First capture is mandatory here (Screen 7, locked) — unlike every other
-            // CaptureView presentation in the app, there's no swipe-to-dismiss escape:
-            // onboarding has nowhere else for the user to land yet.
+            // presentation of this screen in the app, there's no swipe-to-dismiss
+            // escape: onboarding has nowhere else for the user to land yet.
             .interactiveDismissDisabled()
         }
     }

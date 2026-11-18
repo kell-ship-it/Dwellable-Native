@@ -125,25 +125,12 @@ class SyncManager: ObservableObject {
             // Only the user's own words are available here, not Dwelly's side of the
             // conversation (that's never persisted anywhere -- see
             // CaptureConversationView.fullTranscript's own comment) -- a retried
-            // synthesis is real, just with less conversational context than the
-            // original attempt had.
-            // T-127: same validity-floor gate CaptureConversationView.generateJournalMeta
-            // applies on the first attempt -- a retry must treat below-floor content the
-            // same way, not run it through the LLM just because it waited for a sweep.
-            guard JournalSynthesisManager.isGenuineReflection(moment.body) else {
-                var updated = entry
-                updated.status = "approved"
-                updated.title = "A Moment Captured"
-                updated.body = moment.body
-                updated.moods = []
-                updated.scriptureQuote = nil
-                updated.scriptureReference = nil
-                _ = try? await apiClient.saveJournalEntry(updated)
-                continue
-            }
-
-            let userWordCount = moment.body.split(whereSeparator: { $0.isWhitespace }).count
-            guard let result = try? await JournalSynthesisManager.synthesize(transcript: moment.body, userWordCount: userWordCount, apiClient: apiClient) else { continue }
+            // decision is real, just with less conversational context than the
+            // original attempt had. T-127 (rebuilt Nov 17 2026): same one-call
+            // decision CaptureConversationView.generateJournalMeta uses on the first
+            // attempt -- no deterministic pre-check, a retry must be decided exactly
+            // the same way, not treated differently just because it waited for a sweep.
+            guard let result = try? await JournalSynthesisManager.synthesize(transcript: moment.body, userOnlyText: moment.body, apiClient: apiClient) else { continue }
 
             var updated = entry
             updated.status = "approved"
@@ -153,6 +140,13 @@ class SyncManager: ObservableObject {
             updated.scriptureQuote = result.scriptureQuote
             updated.scriptureReference = result.scriptureReference
             _ = try? await apiClient.saveJournalEntry(updated)
+
+            // T-274/T-127: same formation-eligibility gate as the first-attempt path --
+            // this sweep previously never fed the profile at all, a pre-existing gap
+            // fixed here alongside the eligibility rebuild rather than left stale.
+            if result.formationEligible, let facts = result.extractedFacts {
+                await DwellerProfileManager.updateRunningSummary(newEntryBody: facts, userId: userId, apiClient: apiClient)
+            }
         }
     }
 

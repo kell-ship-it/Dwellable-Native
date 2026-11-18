@@ -1014,7 +1014,18 @@ struct JournalDetailView: View {
             scriptureReference: effectiveScriptureReference,
             starred: isFavorited,
             edited: edited || (loadedEntry?.edited ?? false),
-            createdAt: loadedEntry?.createdAt ?? Date()
+            createdAt: loadedEntry?.createdAt ?? Date(),
+            // T-188: same upsert-overwrites-every-column risk -- without carrying this
+            // forward, editing body/moods after opening an entry would silently
+            // un-view it, making the Journal Ready tile reappear for something already
+            // read. Found while fixing the identical T-127 gap just below.
+            viewedAt: loadedEntry?.viewedAt,
+            // T-127: saveJournalEntry upserts every column -- without carrying these
+            // forward, editing body/moods here would silently reset formation
+            // eligibility to false and wipe extractedFacts on every save, breaking
+            // Growth eligibility retroactively for an already-eligible entry.
+            formationEligible: loadedEntry?.formationEligible ?? false,
+            extractedFacts: loadedEntry?.extractedFacts
         )
         loadedEntry = try? await apiClient.saveJournalEntry(entry)
     }

@@ -36,6 +36,11 @@ struct JournalEntry: Identifiable, Codable {
     // entry is actually opened -- the "Journal Ready" Today-tab tile reads this to
     // know when to stop showing itself, instead of guessing off a recency timer.
     var viewedAt: Date?
+    // T-127 (rebuilt Nov 17 2026): the real, independent formation-eligibility signal --
+    // never proxied by scriptureQuote presence or by whether synthesis ran. Gates
+    // DwellerProfileManager updates and Growth's narrative eligibility.
+    var formationEligible: Bool = false
+    var extractedFacts: String? = nil
 
     init(
         id: String = UUID().uuidString,
@@ -51,7 +56,9 @@ struct JournalEntry: Identifiable, Codable {
         edited: Bool = false,
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
-        viewedAt: Date? = nil
+        viewedAt: Date? = nil,
+        formationEligible: Bool = false,
+        extractedFacts: String? = nil
     ) {
         self.id = id
         self.momentId = momentId
@@ -67,6 +74,8 @@ struct JournalEntry: Identifiable, Codable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.viewedAt = viewedAt
+        self.formationEligible = formationEligible
+        self.extractedFacts = extractedFacts
     }
 
     enum CodingKeys: String, CodingKey {
@@ -84,5 +93,7 @@ struct JournalEntry: Identifiable, Codable {
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case viewedAt = "viewed_at"
+        case formationEligible = "formation_eligible"
+        case extractedFacts = "extracted_facts"
     }
 }
