@@ -602,12 +602,8 @@ struct CaptureConversationView: View {
     // top-right and mic/send are bottom-pinned, so they never share a row.
     private let composeControlsCompactTrailingPadding: CGFloat = 10
 
-    // Target total height for the slim pill -- big enough for a 44pt button
-    // to render with real vertical margin. Nov 18 2026, FOURTH pass:
-    // restored to the original 58pt (a deliberately tight ChatGPT-style
-    // pill) now that the chevron is cleared horizontally, by its own
-    // reserved column, rather than by growing this height -- see
-    // `composeControlsTrailingPadding`'s own comment for the actual fix.
+    // Slim pill height: a 44pt button with real vertical margin. The chevron
+    // is hidden while slim, so nothing else needs room here.
     private let composeSlimHeight: CGFloat = 58
 
     // Shared by `composePill` (the ScrollView-clearance spacer) and
@@ -1678,18 +1674,8 @@ struct CaptureConversationView: View {
                                 .disabled(isWaitingForDwelly || isOverCharacterLimit || !hasDraft)
                                 .opacity(isOverCharacterLimit || !hasDraft ? 0.4 : 1.0)
                             }
-                            // Nov 18 2026, FOURTH pass: slim centers this row
-                            // across the pill's full height (`.trailing`),
-                            // stacked pins it to the bottom (`.bottomTrailing`)
-                            // -- a real, intentional visual difference (inline
-                            // beside one line of text vs. below several), not a
-                            // special case for the chevron. The chevron collision
-                            // that USED to force these into one shared alignment
-                            // is gone now that the two controls are separated by
-                            // a reserved horizontal column instead (see
-                            // `composeControlsTrailingPadding`'s own comment) --
-                            // so this is free to go back to being a plain design
-                            // choice again, unrelated to where the chevron lives.
+                            // Slim centers this row beside its one line of text;
+                            // stacked pins it to the bottom-right corner.
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: isSlim ? .trailing : .bottomTrailing)
                             .padding(.trailing, composeControlsCompactTrailingPadding)
                         }
