@@ -32,11 +32,23 @@ struct SendFeedbackView: View {
 
     @State private var category: FeedbackCategory?
     @State private var message = ""
+    @FocusState private var isMessageFocused: Bool
     @State private var photosPickerItem: PhotosPickerItem?
     @State private var screenshotData: Data?
     @State private var isSubmitting = false
     @State private var errorMessage: String?
     @State private var stage: Stage = .form
+
+    // T-133 (Kell caught live, Nov 18 2026): this screen is pushed from a tab root
+    // (AccountProfileView), but MainTabView's FloatingTabBar is an always-on-top
+    // overlay in the OUTER ZStack, not something a pushed child's own safeAreaInset
+    // pushes out of the way -- both end up anchored to the same bottom safe area and
+    // the tab bar, drawn last, visually sits on top of and blocks taps on whatever a
+    // pushed screen puts at the very bottom. Clearing it with extra bottom padding
+    // here is a local fix for this one screen, not a fix for the underlying
+    // architecture (every bottom-anchored CTA pushed from a tab root has this same
+    // latent issue) -- that's a separate, bigger fix outside T-133's scope.
+    private let tabBarClearance: CGFloat = 90
 
     private var isValid: Bool {
         category != nil && !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -78,6 +90,7 @@ struct SendFeedbackView: View {
                         .font(.system(size: 16))
                         .foregroundColor(Theme.Payment.textHeading)
                         .scrollContentBackground(.hidden)
+                        .focused($isMessageFocused)
                         .frame(height: 140)
                         .padding(10)
                         .background(Theme.Payment.surfaceCard)
@@ -92,6 +105,15 @@ struct SendFeedbackView: View {
                                     .allowsHitTesting(false)
                             }
                         }
+                        // T-133 (Kell caught live, Nov 18 2026): tapping inside the
+                        // editor sometimes didn't bring up the keyboard -- TextEditor's
+                        // actual tappable UITextView can end up smaller than its
+                        // visual frame once padding/background/clipShape are layered
+                        // on. An explicit tap-to-focus over the full visual frame
+                        // guarantees any tap here reaches the field instead of landing
+                        // in dead space between the real hit target and the border.
+                        .contentShape(Rectangle())
+                        .onTapGesture { isMessageFocused = true }
                 }
 
                 screenshotPicker
@@ -264,23 +286,25 @@ struct SendFeedbackView: View {
 
     @ViewBuilder
     private var primaryButton: some View {
-        switch stage {
-        case .form:
-            button(title: "Send", disabled: !isValid, action: submit)
-        case .notSent(let submissionId):
-            VStack(spacing: 10) {
-                button(title: "Retry", disabled: false, action: { retry(submissionId: submissionId) })
-                Button(action: { dismiss() }) {
-                    Text("Done")
-                        .font(.system(size: 14))
-                        .foregroundColor(Theme.Payment.textSupporting)
+        Group {
+            switch stage {
+            case .form:
+                button(title: "Send", disabled: !isValid, action: submit)
+            case .notSent(let submissionId):
+                VStack(spacing: 10) {
+                    button(title: "Retry", disabled: false, action: { retry(submissionId: submissionId) })
+                    Button(action: { dismiss() }) {
+                        Text("Done")
+                            .font(.system(size: 14))
+                            .foregroundColor(Theme.Payment.textSupporting)
+                    }
                 }
-                .padding(.bottom, 4)
+                .padding(.horizontal, 20)
+            case .sent:
+                button(title: "Done", disabled: false, action: { dismiss() })
             }
-            .padding(.horizontal, 20)
-        case .sent:
-            button(title: "Done", disabled: false, action: { dismiss() })
         }
+        .padding(.bottom, tabBarClearance)
     }
 
     private func button(title: String, disabled: Bool, action: @escaping () -> Void) -> some View {
