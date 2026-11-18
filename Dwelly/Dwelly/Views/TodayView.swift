@@ -15,11 +15,13 @@ private struct JournalReadyEntry: Identifiable {
 /// field + unprayed-moment query) doesn't apply to what actually ships here; Prayer (P3)
 /// has zero code today regardless, so that section was correctly un-buildable either way.
 ///
-/// The "Word for Today" verse and the 3 reflection tiles (Mood/Intercession/Life-Domain)
-/// are static for MVP, not the LLM-generated daily prompt T-139 describes -- that's hard
-/// blocked on Formation Intelligence's LLM path (P6), which doesn't exist yet. This is the
-/// honest "Question Bank" fallback the docs already describe for exactly this situation,
-/// not a placeholder pretending to be the real thing.
+/// The "Word for Today" verse is a curated pick (`DailyVerseLibrary`), not the
+/// LLM-generated daily prompt T-139 describes -- that's hard blocked on Formation
+/// Intelligence's LLM path (P6), which doesn't exist yet. This is the honest "Question
+/// Bank" fallback the docs already describe for exactly this situation, not a
+/// placeholder pretending to be the real thing. The 3 sub-hero tiles are Mood,
+/// Sustain/Follow-up (or Intercession when there's no eligible history to follow up
+/// on -- the locked fallback rule), and Life-Domain -- see `loadFollowUpTile(from:)`.
 ///
 /// Tapping the verse or any tile opens a real capture conversation pre-opened with that
 /// specific prompt via `CaptureConversationView`'s existing `initialMessage`/
@@ -60,21 +62,28 @@ struct TodayView: View {
     // `DailyVerseLibrary` itself, not here.
     @State private var hasLoadedDailyVerse = false
 
-    // T-182: Mood and Life-Domain now rotate daily through their real locked pools
+    // T-182: Mood and Life-Domain rotate daily through their real locked pools
     // (`TodayPromptLibraries.swift`) instead of always showing the same fixed prompt --
     // same once-per-appearance-load guard `hasLoadedDailyVerse` already uses, for the
-    // same reattachment reason. Intercession stays a static tile for now -- the
-    // locked design actually wants it re-slotted as Sustain/Follow-up's no-history
-    // fallback, not a fourth always-on rotating tile; that reslotting is its own
-    // ticket, not touched here.
+    // same reattachment reason.
     @State private var hasLoadedRotatingTiles = false
     @State private var moodTile: TodayPrompt = MoodPromptLibrary.prompts[0]
     @State private var lifeDomainTile: TodayPrompt = LifeDomainPromptLibrary.prompts[0]
 
+    // T-182 continued: the middle slot is Sustain/Follow-up when there's real,
+    // already-viewed capture history to follow up on, falling back to a rotating
+    // Intercession prompt when there isn't -- the locked design's own fallback rule
+    // (`docs/PILLAR_TODAY_PROMPT_TAXONOMY.md`, "Designated fallback category:
+    // Intercession"), not a 4th always-on tile. `nil` until `loadFollowUpTile()`
+    // resolves; re-derived from the same entries fetch `loadJournalReady()` already
+    // does, not a second network round-trip.
+    @State private var followUpTile: (icon: String, category: String, title: String, subtitle: String)?
+    @State private var intercessionFallback: TodayPrompt = IntercessionPromptLibrary.prompts[0]
+
     private var tiles: [(icon: String, category: String, title: String, subtitle: String)] {
         [
             (moodTile.icon, moodTile.category, moodTile.title, moodTile.subtitle),
-            ("hands.sparkles", "Intercession", "Anyone on your heart lately?", "Worth a thought right now."),
+            followUpTile ?? (intercessionFallback.icon, intercessionFallback.category, intercessionFallback.title, intercessionFallback.subtitle),
             (lifeDomainTile.icon, lifeDomainTile.category, lifeDomainTile.title, lifeDomainTile.subtitle)
         ]
     }
@@ -119,8 +128,50 @@ struct TodayView: View {
             hasLoadedRotatingTiles = true
             moodTile = MoodPromptLibrary.promptForToday()
             lifeDomainTile = LifeDomainPromptLibrary.promptForToday()
+            intercessionFallback = IntercessionPromptLibrary.promptForToday()
         }
     }
+
+    /// T-182: Sustain/Follow-up's real selection logic, per the locked fallback rules
+    /// (`docs/PILLAR_TODAY_PROMPT_TAXONOMY.md`, "Follow-up: data lifecycle & fallback
+    /// rules"). Looks only at already-viewed, formation-eligible entries -- an
+    /// unviewed one is already surfaced by the separate "Journal Ready" card above,
+    /// so Follow-up would otherwise point at the exact same entry twice on one screen.
+    /// Prefers a real anniversary (same month+day, a prior year) over the plain most-
+    /// recent pick, matching the doc's long-range example ("one year ago today");
+    /// falls back to Intercession (set via `intercessionFallback`, already loaded)
+    /// when there's no eligible history at all -- never fabricates a Sustain item.
+    private func loadFollowUpTile(from entries: [JournalEntry]) {
+        let eligible = entries.filter { $0.formationEligible && $0.viewedAt != nil }
+        guard !eligible.isEmpty else {
+            followUpTile = nil
+            return
+        }
+
+        let calendar = Calendar.current
+        let today = calendar.dateComponents([.month, .day], from: Date())
+        let anniversary = eligible.first {
+            let components = calendar.dateComponents([.month, .day, .year], from: $0.createdAt)
+            return components.month == today.month && components.day == today.day
+                && !calendar.isDate($0.createdAt, inSameDayAs: Date())
+        }
+
+        guard let picked = anniversary ?? eligible.max(by: { $0.createdAt < $1.createdAt }) else {
+            followUpTile = nil
+            return
+        }
+
+        let headline = picked.title ?? "A moment you captured"
+        let timeAgo = Self.relativeTimeAgoFormatter.localizedString(for: picked.createdAt, relativeTo: Date())
+        let subtitle = anniversary != nil ? "From \(timeAgo). Does it still feel the same?" : "Captured \(timeAgo)."
+        followUpTile = ("arrow.uturn.left", "Sustain", "You wrote about \u{201C}\(headline)\u{201D}", subtitle)
+    }
+
+    private static let relativeTimeAgoFormatter: RelativeDateTimeFormatter = {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
+        return formatter
+    }()
 
     /// T-188: the most recent approved entry this user hasn't opened yet, if any.
     /// Re-fetched on every appearance rather than cached -- the whole point of this
@@ -129,6 +180,7 @@ struct TodayView: View {
     /// user already backed out of a capture).
     private func loadJournalReady() async {
         guard let entries = try? await apiClient.fetchApprovedJournalEntries(userId: userId) else { return }
+        loadFollowUpTile(from: entries)
         guard let latest = entries.filter({ $0.viewedAt == nil }).max(by: { $0.createdAt < $1.createdAt }) else {
             journalReady = nil
             return
