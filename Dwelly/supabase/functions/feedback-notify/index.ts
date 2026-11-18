@@ -47,7 +47,7 @@ async function sendResendAlert(body: FeedbackNotifyBody, userEmail: string | nul
     return
   }
 
-  const toEmail = Deno.env.get("FEEDBACK_ALERT_TO_EMAIL") ?? "hello@dwellable.com"
+  const toEmail = Deno.env.get("FEEDBACK_ALERT_TO_EMAIL") ?? "kells@kellgolden.com"
   const subject = body.feedback_type === "bug" ? "Dwelly bug report" : "Dwelly feedback"
 
   const res = await fetch("https://api.resend.com/emails", {

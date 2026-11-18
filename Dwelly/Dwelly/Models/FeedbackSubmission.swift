@@ -1,29 +1,51 @@
 import Foundation
 
-/// T-133: a row from the Support & Feedback screen's "Send Feedback" or "Report a Bug"
-/// card (Figma node 689:329). `type` is the only thing distinguishing the two -- same
-/// table, same columns, same submit path.
-enum FeedbackType: String, Codable {
-    case feedback
-    case bug
+/// T-133 (Kell's approved direction, Nov 18 2026): the one in-app Support & Feedback
+/// form's category picker -- replaces the earlier feedback/bug card split. No mailto
+/// hand-off; this submits straight to `feedback_submissions`.
+enum FeedbackCategory: String, Codable, CaseIterable {
+    case problem
+    case idea
+    case other
+
+    var displayName: String {
+        switch self {
+        case .problem: return "Report a problem"
+        case .idea: return "Suggest an idea"
+        case .other: return "Something else"
+        }
+    }
 }
 
 struct FeedbackSubmission: Codable, Identifiable {
     let id: String
     let userId: String
-    let type: FeedbackType
+    let category: FeedbackCategory
     let message: String
     let appVersion: String?
     let platform: String
+    // T-133: optional screenshot, stored in the feedback-screenshots bucket (private,
+    // RLS own-folder-only, same pattern as moments-audio) -- nil when none was attached.
+    let screenshotPath: String?
     let createdAt: Date
 
     enum CodingKeys: String, CodingKey {
         case id
         case userId = "user_id"
-        case type = "feedback_type"
+        case category = "feedback_type"
         case message
         case appVersion = "app_version"
         case platform
+        case screenshotPath = "screenshot_url"
         case createdAt = "created_at"
     }
+}
+
+/// T-133: result of a submit-feedback call (initial submit or retry). The approved
+/// requirement is email delivery, not just a saved row -- `emailed` is what callers
+/// must check before treating a submission as actually done.
+struct FeedbackSubmitResult {
+    let submission: FeedbackSubmission
+    let emailed: Bool
+    let resendConfigured: Bool
 }

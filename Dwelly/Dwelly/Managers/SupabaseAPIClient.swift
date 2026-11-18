@@ -500,30 +500,73 @@ class SupabaseAPIClient: APIClient {
 
     // MARK: - Support & Feedback (T-133)
 
-    func submitFeedback(userId: String, type: FeedbackType, message: String, appVersion: String?) async throws -> FeedbackSubmission {
-        let payload = FeedbackSubmissionPayload(user_id: userId, feedback_type: type.rawValue, message: message, app_version: appVersion, platform: "ios")
-        let saved = try await makeRequest(
+    // One authenticated round trip through the submit-feedback Edge Function: it
+    // validates, inserts, and attempts the Resend/Notion notify server-side, so this
+    // call's success/failure IS the real outcome -- no separate fire-and-forget step
+    // whose failure the client never sees. A thrown error here means nothing was saved;
+    // only a successful return means the submission is durably in feedback_submissions.
+    func submitFeedback(userId: String, category: FeedbackCategory, message: String, appVersion: String?, screenshotPath: String?) async throws -> FeedbackSubmitResult {
+        let payload = SubmitFeedbackPayload(category: category.rawValue, message: message, app_version: appVersion, screenshot_path: screenshotPath, retry_submission_id: nil)
+        let response = try await makeRequest(
             method: "POST",
-            endpoint: "/rest/v1/feedback_submissions",
+            endpoint: "/functions/v1/submit-feedback",
             body: payload,
-            responseType: [FeedbackSubmission].self
+            responseType: SubmitFeedbackResponse.self
         )
-        guard let submission = saved.first else { throw APIError.notFound }
-
-        // Best-effort notify -- feedback-notify currently only logs (Resend/Notion are
-        // stubbed pending ops credentials, see that function's own header comment), but
-        // even once it's live, a notify failure must never undo or block a submission
-        // that already landed in the table above.
-        Task {
-            _ = try? await self.makeRequest(
-                method: "POST",
-                endpoint: "/functions/v1/feedback-notify",
-                body: FeedbackNotifyPayload(submission_id: submission.id, feedback_type: submission.type.rawValue, message: submission.message, user_id: submission.userId),
-                responseType: FeedbackNotifyResponse.self
-            )
+        guard response.ok, let id = response.id, let createdAt = response.created_at else {
+            throw APIError.serverError
         }
+        let submission = FeedbackSubmission(id: id, userId: userId, category: category, message: message, appVersion: appVersion, platform: "ios", screenshotPath: screenshotPath, createdAt: Self.parseDate(createdAt))
+        return FeedbackSubmitResult(submission: submission, emailed: response.emailed ?? false, resendConfigured: response.resend_configured ?? false)
+    }
 
-        return submission
+    // Re-attempts the Resend email for an existing submission only -- never re-inserts,
+    // so the saved row stays the same no matter how many times this is called.
+    func retryFeedbackNotify(submissionId: String) async throws -> FeedbackSubmitResult {
+        let payload = SubmitFeedbackPayload(category: nil, message: nil, app_version: nil, screenshot_path: nil, retry_submission_id: submissionId)
+        let response = try await makeRequest(
+            method: "POST",
+            endpoint: "/functions/v1/submit-feedback",
+            body: payload,
+            responseType: SubmitFeedbackResponse.self
+        )
+        guard response.ok, let id = response.id, let createdAt = response.created_at else {
+            throw APIError.serverError
+        }
+        // The retry response doesn't echo category/message/screenshot back -- the
+        // caller already has those locally (it's retrying its own just-made submission)
+        // and only needs the updated emailed/resendConfigured status here.
+        let submission = FeedbackSubmission(id: id, userId: "", category: .other, message: "", appVersion: nil, platform: "ios", screenshotPath: nil, createdAt: Self.parseDate(createdAt))
+        return FeedbackSubmitResult(submission: submission, emailed: response.emailed ?? false, resendConfigured: response.resend_configured ?? false)
+    }
+
+    private static func parseDate(_ string: String) -> Date {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter.date(from: string) ?? ISO8601DateFormatter().date(from: string) ?? Date()
+    }
+
+    func uploadFeedbackScreenshot(_ imageData: Data, fileName: String, userId: String) async throws -> String {
+        let storagePath = "\(userId)/\(fileName)"
+        let uploadEndpoint = "/storage/v1/object/feedback-screenshots/\(storagePath)"
+
+        var uploadRequest = URLRequest(url: URL(string: baseURL + uploadEndpoint)!)
+        uploadRequest.httpMethod = "POST"
+        uploadRequest.setValue(anonKey, forHTTPHeaderField: "apikey")
+        uploadRequest.setValue("Bearer \(jwtToken ?? anonKey)", forHTTPHeaderField: "Authorization")
+        uploadRequest.setValue("image/jpeg", forHTTPHeaderField: "Content-Type")
+        uploadRequest.httpBody = imageData
+
+        do {
+            let (_, uploadResponse) = try await session.data(for: uploadRequest)
+            guard let httpResponse = uploadResponse as? HTTPURLResponse else { throw APIError.networkError }
+            guard (200...299).contains(httpResponse.statusCode) else { throw APIError.serverError }
+            return storagePath
+        } catch let error as APIError {
+            throw error
+        } catch {
+            throw APIError.networkError
+        }
     }
 
     // MARK: - Custom Moods API (T-294)
@@ -1204,23 +1247,21 @@ struct NarrativeFeedbackPayload: Codable {
     let narrative_at_time: String?
 }
 
-struct FeedbackSubmissionPayload: Codable {
-    let user_id: String
-    let feedback_type: String
-    let message: String
+struct SubmitFeedbackPayload: Codable {
+    let category: String?
+    let message: String?
     let app_version: String?
-    let platform: String
+    let screenshot_path: String?
+    let retry_submission_id: String?
 }
 
-struct FeedbackNotifyPayload: Codable {
-    let submission_id: String
-    let feedback_type: String
-    let message: String
-    let user_id: String
-}
-
-struct FeedbackNotifyResponse: Codable {
+struct SubmitFeedbackResponse: Codable {
     let ok: Bool
+    let id: String?
+    let created_at: String?
+    let emailed: Bool?
+    let resend_configured: Bool?
+    let error: String?
 }
 
 struct LoginPayload: Encodable {

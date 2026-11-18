@@ -182,11 +182,24 @@ class MockAPIClient: APIClient {
 
     private var storedFeedbackSubmissions: [FeedbackSubmission] = []
 
-    func submitFeedback(userId: String, type: FeedbackType, message: String, appVersion: String?) async throws -> FeedbackSubmission {
+    func submitFeedback(userId: String, category: FeedbackCategory, message: String, appVersion: String?, screenshotPath: String?) async throws -> FeedbackSubmitResult {
         try await Task.sleep(nanoseconds: 200_000_000)
-        let submission = FeedbackSubmission(id: UUID().uuidString, userId: userId, type: type, message: message, appVersion: appVersion, platform: "ios", createdAt: Date())
+        let submission = FeedbackSubmission(id: UUID().uuidString, userId: userId, category: category, message: message, appVersion: appVersion, platform: "ios", screenshotPath: screenshotPath, createdAt: Date())
         storedFeedbackSubmissions.append(submission)
-        return submission
+        // Mock has no real Resend account either -- mirrors the real backend's honest
+        // behavior instead of pretending email delivery works in previews/tests.
+        return FeedbackSubmitResult(submission: submission, emailed: false, resendConfigured: false)
+    }
+
+    func uploadFeedbackScreenshot(_ imageData: Data, fileName: String, userId: String) async throws -> String {
+        try await Task.sleep(nanoseconds: 100_000_000)
+        return "\(userId)/\(fileName)"
+    }
+
+    func retryFeedbackNotify(submissionId: String) async throws -> FeedbackSubmitResult {
+        try await Task.sleep(nanoseconds: 200_000_000)
+        guard let submission = storedFeedbackSubmissions.first(where: { $0.id == submissionId }) else { throw APIError.notFound }
+        return FeedbackSubmitResult(submission: submission, emailed: false, resendConfigured: false)
     }
 
     func debugSeedDwellerProfile(_ profile: DwellerProfile) {
