@@ -505,8 +505,8 @@ class SupabaseAPIClient: APIClient {
     // call's success/failure IS the real outcome -- no separate fire-and-forget step
     // whose failure the client never sees. A thrown error here means nothing was saved;
     // only a successful return means the submission is durably in feedback_submissions.
-    func submitFeedback(userId: String, category: FeedbackCategory, message: String, appVersion: String?, screenshotPath: String?) async throws -> FeedbackSubmission {
-        let payload = SubmitFeedbackPayload(category: category.rawValue, message: message, app_version: appVersion, screenshot_path: screenshotPath)
+    func submitFeedback(userId: String, category: FeedbackCategory, message: String, appVersion: String?, screenshotPath: String?) async throws -> FeedbackSubmitResult {
+        let payload = SubmitFeedbackPayload(category: category.rawValue, message: message, app_version: appVersion, screenshot_path: screenshotPath, retry_submission_id: nil)
         let response = try await makeRequest(
             method: "POST",
             endpoint: "/functions/v1/submit-feedback",
@@ -516,10 +516,34 @@ class SupabaseAPIClient: APIClient {
         guard response.ok, let id = response.id, let createdAt = response.created_at else {
             throw APIError.serverError
         }
+        let submission = FeedbackSubmission(id: id, userId: userId, category: category, message: message, appVersion: appVersion, platform: "ios", screenshotPath: screenshotPath, createdAt: Self.parseDate(createdAt))
+        return FeedbackSubmitResult(submission: submission, emailed: response.emailed ?? false, resendConfigured: response.resend_configured ?? false)
+    }
+
+    // Re-attempts the Resend email for an existing submission only -- never re-inserts,
+    // so the saved row stays the same no matter how many times this is called.
+    func retryFeedbackNotify(submissionId: String) async throws -> FeedbackSubmitResult {
+        let payload = SubmitFeedbackPayload(category: nil, message: nil, app_version: nil, screenshot_path: nil, retry_submission_id: submissionId)
+        let response = try await makeRequest(
+            method: "POST",
+            endpoint: "/functions/v1/submit-feedback",
+            body: payload,
+            responseType: SubmitFeedbackResponse.self
+        )
+        guard response.ok, let id = response.id, let createdAt = response.created_at else {
+            throw APIError.serverError
+        }
+        // The retry response doesn't echo category/message/screenshot back -- the
+        // caller already has those locally (it's retrying its own just-made submission)
+        // and only needs the updated emailed/resendConfigured status here.
+        let submission = FeedbackSubmission(id: id, userId: "", category: .other, message: "", appVersion: nil, platform: "ios", screenshotPath: nil, createdAt: Self.parseDate(createdAt))
+        return FeedbackSubmitResult(submission: submission, emailed: response.emailed ?? false, resendConfigured: response.resend_configured ?? false)
+    }
+
+    private static func parseDate(_ string: String) -> Date {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let date = formatter.date(from: createdAt) ?? ISO8601DateFormatter().date(from: createdAt) ?? Date()
-        return FeedbackSubmission(id: id, userId: userId, category: category, message: message, appVersion: appVersion, platform: "ios", screenshotPath: screenshotPath, createdAt: date)
+        return formatter.date(from: string) ?? ISO8601DateFormatter().date(from: string) ?? Date()
     }
 
     func uploadFeedbackScreenshot(_ imageData: Data, fileName: String, userId: String) async throws -> String {
@@ -1159,10 +1183,11 @@ struct NarrativeFeedbackPayload: Codable {
 }
 
 struct SubmitFeedbackPayload: Codable {
-    let category: String
-    let message: String
+    let category: String?
+    let message: String?
     let app_version: String?
     let screenshot_path: String?
+    let retry_submission_id: String?
 }
 
 struct SubmitFeedbackResponse: Codable {

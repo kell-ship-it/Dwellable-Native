@@ -40,3 +40,12 @@ struct FeedbackSubmission: Codable, Identifiable {
         case createdAt = "created_at"
     }
 }
+
+/// T-133: result of a submit-feedback call (initial submit or retry). The approved
+/// requirement is email delivery, not just a saved row -- `emailed` is what callers
+/// must check before treating a submission as actually done.
+struct FeedbackSubmitResult {
+    let submission: FeedbackSubmission
+    let emailed: Bool
+    let resendConfigured: Bool
+}

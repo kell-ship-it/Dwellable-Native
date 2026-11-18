@@ -86,15 +86,20 @@ protocol APIClient {
 
     // T-133 (Kell's approved direction, Nov 18 2026): the one in-app Support & Feedback
     // form -- category picker (problem/idea/other), message, optional screenshot. No
-    // mailto hand-off; submits straight to the backend. Best-effort notify (Resend/
-    // Notion, Resend still pending a real API key as of this ticket) happens separately
-    // after this succeeds; see FeedbackView's own comment and the feedback-notify Edge
-    // Function. `screenshotPath` is the storage path already uploaded via
+    // mailto hand-off; submits straight to the submit-feedback Edge Function, which
+    // inserts the row AND attempts the Resend email in one round trip. The approved
+    // requirement is EMAIL DELIVERY, not just a saved row -- `result.emailed` tells the
+    // caller whether that actually happened; `ok:true` alone only means the row saved.
+    // `screenshotPath` is the storage path already uploaded via
     // `uploadFeedbackScreenshot`, nil when no screenshot was attached.
-    func submitFeedback(userId: String, category: FeedbackCategory, message: String, appVersion: String?, screenshotPath: String?) async throws -> FeedbackSubmission
+    func submitFeedback(userId: String, category: FeedbackCategory, message: String, appVersion: String?, screenshotPath: String?) async throws -> FeedbackSubmitResult
     // Uploads to the private feedback-screenshots bucket (RLS own-folder-only, same
     // pattern as moments-audio) and returns the storage path to pass to submitFeedback.
     func uploadFeedbackScreenshot(_ imageData: Data, fileName: String, userId: String) async throws -> String
+    // Re-attempts the Resend email for an EXISTING submission -- idempotent with respect
+    // to the saved row (never inserts a second one). Lets the user retry just the email
+    // step without resubmitting their message.
+    func retryFeedbackNotify(submissionId: String) async throws -> FeedbackSubmitResult
 
     // Storage endpoints
     func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String

@@ -1,25 +1,37 @@
 // T-133 (Kell's approved direction, Nov 18 2026): the one real endpoint behind the
 // in-app Support & Feedback form. Supersedes the earlier client-REST-insert +
 // fire-and-forget feedback-notify split -- this does validation, the insert, and the
-// Resend/Notion delivery attempt in one authenticated round trip, so the client's
+// Resend delivery attempt in one authenticated round trip, so the client's
 // success/failure state reflects one real outcome instead of an optimistic insert that
 // might outlive a notify failure it never saw.
 //
-// Request: { category: "problem"|"idea"|"other", message: string, app_version?: string,
-//            screenshot_path?: string } with Authorization: Bearer <user JWT>.
-// Response: { ok: true, id, created_at, emailed: boolean, resend_configured: boolean }
-//           on success (the row is ALWAYS saved if this returns ok:true -- emailed/
-//           resend_configured describe only the best-effort notify step, never cause
-//           a saved submission to be reported as failed).
-//           { ok: false, error } on genuine failure (bad input, auth, or a DB error --
-//           nothing was saved).
+// The approved requirement is EMAIL DELIVERY to hello@dwelly.one, not just a saved row
+// -- a submission whose email didn't go out is NOT "done" from the client's point of
+// view, even though it's safely saved. See `emailed` below.
+//
+// Initial submit -- Request: { category: "problem"|"idea"|"other", message: string,
+//   app_version?: string, screenshot_path?: string } with Authorization: Bearer <user JWT>.
+//   Inserts a new row.
+// Retry -- Request: { retry_submission_id: string } with the same auth. Re-attempts the
+//   Resend send for an EXISTING submission (ownership-checked) -- idempotent: never
+//   inserts a second row, so retrying can't duplicate the submission. It CAN send a
+//   second email if called again after a send that already succeeded; the client only
+//   exposes Retry while `emailed` is still false, so that path doesn't happen in normal
+//   use, but this function doesn't rely on the client for that -- see the note at the
+//   call site below if that needs hardening later (e.g. tracking emailed_at).
+//
+// Response (both forms): { ok: true, id, created_at, emailed: boolean,
+//   resend_configured: boolean } -- the row is saved whenever ok:true, regardless of
+//   `emailed`. { ok: false, error } means nothing was saved/changed.
 //
 // Email delivery status as of this commit: RESEND_API_KEY is NOT set as a secret on
-// this project, so resend_configured is always false and emailed is always false today.
-// The submission itself still saves for real (feedback_submissions is the system of
-// record Kell's own team can read directly) -- only the "also email hello@dwelly.one"
-// step is inert until ops sets a real key. See the bottom of this file for exactly
-// what to provision.
+// this project. sendResendAlert() returns false BEFORE making any network call when the
+// key is absent -- Resend's API has never been contacted, not once, by this function.
+// resend_configured and emailed are therefore always false today. The submission still
+// saves for real (feedback_submissions is the system of record) -- only the "also email
+// hello@dwelly.one" step is inert until ops sets a real key. See the bottom of this file
+// for exactly what to provision. Notion mirroring is intentionally out of scope for this
+// change (not touched by the retry path).
 
 import { createClient } from "jsr:@supabase/supabase-js"
 
@@ -34,10 +46,13 @@ type Category = (typeof ALLOWED_CATEGORIES)[number]
 const MAX_MESSAGE_LENGTH = 4000
 
 interface SubmitFeedbackBody {
-  category: Category
-  message: string
+  category?: Category
+  message?: string
   app_version?: string | null
   screenshot_path?: string | null
+  // Present only on a retry call -- re-attempts Resend for this existing submission
+  // instead of inserting a new one.
+  retry_submission_id?: string
 }
 
 async function sendResendAlert(userId: string, userEmail: string | null, category: Category, message: string, submissionId: string): Promise<boolean> {
@@ -47,7 +62,10 @@ async function sendResendAlert(userId: string, userEmail: string | null, categor
     return false
   }
 
-  const toEmail = Deno.env.get("FEEDBACK_ALERT_TO_EMAIL") ?? "kells@kellgolden.com"
+  // Addresses hello@dwelly.one, not Kell's personal inbox directly -- inbound delivery
+  // for that alias (-> kells@kellgolden.com) is already confirmed working, and it's the
+  // stable support identity rather than a personal address baked into app behavior.
+  const toEmail = Deno.env.get("FEEDBACK_ALERT_TO_EMAIL") ?? "hello@dwelly.one"
   const subjectByCategory: Record<Category, string> = {
     problem: "Dwelly: problem reported",
     idea: "Dwelly: idea suggested",
@@ -149,6 +167,45 @@ Deno.serve(async (req: Request) => {
     const userEmail = userData.user.email ?? null
 
     const body = (await req.json()) as SubmitFeedbackBody
+    const serviceClient = createClient(supabaseUrl, serviceRoleKey)
+
+    // Retry path: re-attempt the email for an EXISTING submission. Never inserts --
+    // this is what makes a retry idempotent with respect to the saved row (you cannot
+    // get two rows out of retrying once).
+    if (body.retry_submission_id) {
+      const { data: existing, error: fetchError } = await serviceClient
+        .from("feedback_submissions")
+        .select("id, created_at, feedback_type, message")
+        .eq("id", body.retry_submission_id)
+        .eq("user_id", userId)
+        .single()
+
+      if (fetchError || !existing) {
+        return new Response(JSON.stringify({ ok: false, error: "Submission not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        })
+      }
+
+      let retryEmailed = false
+      try {
+        retryEmailed = await sendResendAlert(userId, userEmail, existing.feedback_type as Category, existing.message, existing.id)
+      } catch (error) {
+        console.error("submit-feedback (retry): sendResendAlert threw", error)
+      }
+
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          id: existing.id,
+          created_at: existing.created_at,
+          emailed: retryEmailed,
+          resend_configured: Deno.env.get("RESEND_API_KEY") !== undefined,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      )
+    }
+
     if (!body.category || !ALLOWED_CATEGORIES.includes(body.category)) {
       return new Response(JSON.stringify({ ok: false, error: `category must be one of ${ALLOWED_CATEGORIES.join(", ")}` }), {
         status: 400,
@@ -184,7 +241,6 @@ Deno.serve(async (req: Request) => {
       screenshotPath = body.screenshot_path
     }
 
-    const serviceClient = createClient(supabaseUrl, serviceRoleKey)
     const { data: inserted, error: dbError } = await serviceClient
       .from("feedback_submissions")
       .insert({
@@ -242,17 +298,20 @@ Deno.serve(async (req: Request) => {
 })
 
 // --- OPS SETUP NEEDED (no secret values below, just what to provision) ---
-// To make the "emailed" field turn true and real alert emails actually reach
-// kells@kellgolden.com (via the hello@dwelly.one inbound alias already verified):
+// To make "emailed" turn true and real alerts actually reach hello@dwelly.one (which
+// forwards to kells@kellgolden.com -- inbound confirmed already working):
 //   1. Create a Resend account (resend.com), generate an API key.
 //   2. `supabase secrets set RESEND_API_KEY=<the key>` for this project (or via the
 //      Supabase dashboard: Edge Functions -> Secrets). Never put it in client code or
 //      in this repo.
-//   3. Optional: set FEEDBACK_ALERT_TO_EMAIL if alerts should go somewhere other than
-//      kells@kellgolden.com.
-//   4. Redeploy this function (no code change needed -- it already checks for the key
+//   3. Sender address: this function currently sends `from: Dwelly <onboarding@resend.dev>`,
+//      Resend's own shared sandbox sender -- works with zero DNS setup, no domain
+//      verification needed, but mail from it is more likely to land in spam and can't
+//      be branded as @dwelly.one. If a real "from" address is wanted later, that needs
+//      its own domain verification (SPF/DKIM) in Resend -- separate, optional, not
+//      required to get emailed:true.
+//   4. Optional: set FEEDBACK_ALERT_TO_EMAIL to override the hello@dwelly.one default.
+//   5. Redeploy this function (no code change needed -- it already checks for the key
 //      at request time).
-// Notion mirror (optional, separate from the above): set NOTION_API_KEY and
-// NOTION_DATABASE_ID the same way, for a database with Name/Type/User properties
-// matching mirrorToNotion()'s shape above (or update that function to match the real
-// database).
+// Notion mirror: out of scope for this change -- NOTION_API_KEY/NOTION_DATABASE_ID stay
+// unset and mirrorToNotion() stays a no-op; nothing to provision for it right now.
