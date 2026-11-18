@@ -79,6 +79,11 @@ struct TodayView: View {
     // does, not a second network round-trip.
     @State private var followUpTile: (icon: String, category: String, title: String, subtitle: String)?
     @State private var intercessionFallback: TodayPrompt = IntercessionPromptLibrary.prompts[0]
+    // T-182 (overlap-avoidance): the cluster a real Sustain tile "echoes" -- derived
+    // from the picked journal entry's own first stored mood, if it has one. `nil`
+    // whenever the middle slot is the Intercession fallback instead (nothing to
+    // echo) or the entry carries no mood tag. See `resolveTileOverlaps()`.
+    @State private var followUpEchoesCluster: String?
 
     private var tiles: [(icon: String, category: String, title: String, subtitle: String)] {
         [
@@ -129,6 +134,32 @@ struct TodayView: View {
             moodTile = MoodPromptLibrary.promptForToday()
             lifeDomainTile = LifeDomainPromptLibrary.promptForToday()
             intercessionFallback = IntercessionPromptLibrary.promptForToday()
+            resolveTileOverlaps()
+        }
+    }
+
+    /// T-182 (overlap-avoidance, locked `docs/PILLAR_TODAY_PROMPT_TAXONOMY.md` --
+    /// "the 3-prompt structure can't show prompts that overlap in subject or
+    /// emotional tone, even if they come from different categories"). Pure
+    /// metadata-matching, no LLM: Scripture never moves (the one fixed/always-on
+    /// element); Mood re-rolls first if it collides with Scripture or with
+    /// Follow-up's `echoes_mood` (the exact bug the doc's own schema was written to
+    /// catch -- a Mood prompt and a Follow-up tile sharing the same real mood);
+    /// Life-Domain re-rolls last against whatever Scripture/Mood ended up as, so it
+    /// never reintroduces a collision Mood just resolved. Idempotent and safe to
+    /// call before every input is loaded -- re-run from each load site once its own
+    /// piece is ready rather than coordinating a single call site.
+    private func resolveTileOverlaps() {
+        var excluded: Set<String> = [dailyVerse.cluster]
+        if let followUpEchoesCluster { excluded.insert(followUpEchoesCluster) }
+
+        if excluded.contains(moodTile.cluster) {
+            moodTile = TodayPromptRotation.pickAvoiding(excluded, from: MoodPromptLibrary.prompts, indexKey: MoodPromptLibrary.indexKey, dateKey: MoodPromptLibrary.dateKey, defaults: .standard)
+        }
+        excluded.insert(moodTile.cluster)
+
+        if excluded.contains(lifeDomainTile.cluster) {
+            lifeDomainTile = TodayPromptRotation.pickAvoiding(excluded, from: LifeDomainPromptLibrary.prompts, indexKey: LifeDomainPromptLibrary.indexKey, dateKey: LifeDomainPromptLibrary.dateKey, defaults: .standard)
         }
     }
 
@@ -145,6 +176,8 @@ struct TodayView: View {
         let eligible = entries.filter { $0.formationEligible && $0.viewedAt != nil }
         guard !eligible.isEmpty else {
             followUpTile = nil
+            followUpEchoesCluster = nil
+            resolveTileOverlaps()
             return
         }
 
@@ -158,6 +191,8 @@ struct TodayView: View {
 
         guard let picked = anniversary ?? eligible.max(by: { $0.createdAt < $1.createdAt }) else {
             followUpTile = nil
+            followUpEchoesCluster = nil
+            resolveTileOverlaps()
             return
         }
 
@@ -165,6 +200,11 @@ struct TodayView: View {
         let timeAgo = Self.relativeTimeAgoFormatter.localizedString(for: picked.createdAt, relativeTo: Date())
         let subtitle = anniversary != nil ? "From \(timeAgo). Does it still feel the same?" : "Captured \(timeAgo)."
         followUpTile = ("arrow.uturn.left", "Sustain", "You wrote about \u{201C}\(headline)\u{201D}", subtitle)
+        // T-182 (overlap-avoidance): `echoes_mood` per the doc -- the real mood tag
+        // already on this entry, not inferred. Only the first tag is used; a journal
+        // entry with multiple moods doesn't multiply into multiple exclusions.
+        followUpEchoesCluster = picked.moods.first.flatMap { MoodPromptLibrary.moodWordClusters[$0.lowercased()] }
+        resolveTileOverlaps()
     }
 
     private static let relativeTimeAgoFormatter: RelativeDateTimeFormatter = {
