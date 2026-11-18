@@ -424,43 +424,140 @@ struct CaptureConversationView: View {
     // `.clipped()` + native internal scrolling (unchanged, already there)
     // takes over instead of the card growing further; matches Kell's "capped
     // about 5-6 lines" ask.
-    private let composeMaxVisibleLines: CGFloat = 6
+    private let composeMaxVisibleLines = 6
+    // `UITextView`'s own stock defaults underneath SwiftUI's `TextEditor` --
+    // `textContainerInset` (top/bottom 8pt each, left/right 0) and
+    // `lineFragmentPadding` (5pt each side, inside that inset, before any
+    // glyph is laid out). Confirmed via a global search that nothing in this
+    // app customizes either, so these stock defaults are what's actually
+    // live. Neither is visible to, or accounted for by, SwiftUI's own
+    // external `.padding()` modifiers -- measuring against the outer frame
+    // width/height alone would wrap text at a WIDER point than the real
+    // editor wraps at (undercounting lines) and leave LESS real vertical
+    // room than the box promises (the last line clipping, or the box only
+    // catching up a beat late as more text is typed). Both are folded into
+    // every measurement below so the computed box and the real `UITextView`
+    // agree.
+    private let composeLineFragmentPadding: CGFloat = 5 // each side
+    private let composeContainerInsetVertical: CGFloat = 16 // top(8) + bottom(8)
 
-    private func composeTextContentHeight(for text: String, width: CGFloat) -> CGFloat {
-        guard width > 0 else { return ceil(composeEditorFont.lineHeight) }
+    // Real wrapped LINE COUNT for `text` at the real text-rendering width
+    // (`width` is the TextEditor's own SwiftUI box width -- this subtracts
+    // `lineFragmentPadding` on both sides itself, callers pass the box
+    // width, not the already-narrowed text width).
+    private func composeMeasuredLineCount(for text: String, width: CGFloat) -> Int {
+        let availableTextWidth = width - (composeLineFragmentPadding * 2)
+        guard availableTextWidth > 0 else { return 1 }
         // At least one line's worth even when empty -- there is always a
         // caret/placeholder row to show, never a zero-height box.
-        let measured = text.isEmpty ? "A" : text
-        let constraint = CGSize(width: width, height: .greatestFiniteMagnitude)
+        var measured = text.isEmpty ? "A" : text
+        // `NSString.boundingRect` never counts a trailing BLANK line:
+        // "hello\n" measures identical to "hello", even though a real
+        // `UITextView` shows a second, empty line with the caret sitting on
+        // it -- there's no glyph after the final newline for TextKit to lay
+        // a line fragment from. True regardless of how many consecutive
+        // trailing newlines there are ("\n\n" is still missing exactly ONE
+        // trailing empty line, not two -- every OTHER blank line in the
+        // string already has a following newline marking its own boundary,
+        // so it's already counted correctly). A trailing zero-width space
+        // forces that one missing line to actually count.
+        if measured.hasSuffix("\n") {
+            measured += "\u{200B}"
+        }
+        let constraint = CGSize(width: availableTextWidth, height: .greatestFiniteMagnitude)
         let bounds = (measured as NSString).boundingRect(
             with: constraint,
             options: [.usesLineFragmentOrigin, .usesFontLeading],
             attributes: [.font: composeEditorFont],
             context: nil
         )
-        let singleLine = ceil(composeEditorFont.lineHeight)
-        let capped = ceil(composeEditorFont.lineHeight * composeMaxVisibleLines)
-        return min(max(ceil(bounds.height), singleLine), capped)
+        return max(1, Int((bounds.height / composeEditorFont.lineHeight).rounded()))
     }
+
+    // The TextEditor's own SwiftUI box height needed to show `lineCount`
+    // real lines without clipping -- includes the internal vertical
+    // container inset, which lives INSIDE this box, not in the external
+    // `.padding()` around it.
+    private func composeEditorBoxHeight(forLineCount lineCount: Int) -> CGFloat {
+        let cappedLines = min(max(lineCount, 1), composeMaxVisibleLines)
+        return ceil(composeEditorFont.lineHeight * CGFloat(cappedLines)) + composeContainerInsetVertical
+    }
+
+    // Nov 18 2026 (Kell's sizing refinement, same pass): empty/one-line
+    // should read as a genuinely compact ChatGPT-style PILL -- mic/send
+    // sitting inline, vertically centered beside the single line of text --
+    // not a permanently-reserved blank text row sitting on top of a
+    // separate button row underneath it. Once content needs more than one
+    // line, it switches to the ORIGINAL stacked layout (text area growing
+    // upward, mic/send pinned below it) -- this is the one load-bearing
+    // layout decision the whole collapsed composer hangs off, so it's
+    // computed once, here, shared by every other collapsed measurement.
+    //
+    // Decided against the SLIM width specifically (not whichever width the
+    // current layout happens to be using) on purpose: slim reserves MORE
+    // trailing room for the inline buttons than stacked does, so slim's
+    // width is the narrower, more conservative test. Testing against a
+    // fixed reference width, rather than "whatever we're currently showing,"
+    // is what keeps this decision a pure function of `inputText` alone --
+    // if it depended on the current layout's own (varying) width, a
+    // borderline draft could flip back and forth between slim and stacked
+    // on the exact same text as the two widths disagree about whether it
+    // still fits one line, which is exactly the kind of oscillation this
+    // avoids by construction. One accepted trade-off from that: a draft that
+    // just barely stops fitting at slim's narrower width still shows as
+    // "stacked" even though it might still visually fit one line at
+    // stacked's own wider width -- a deliberate, slightly-conservative
+    // simplification, not a bug.
+    private var composeIsSlim: Bool {
+        let collapsedWidth = deviceScreenSize.width - 48
+        let slimTextWidth = collapsedWidth - composeCollapsedLeadingPadding - composeSlimTrailingPadding
+        return composeMeasuredLineCount(for: inputText, width: slimTextWidth) <= 1
+    }
+
+    private let composeCollapsedLeadingPadding: CGFloat = 16
+    // Reserves room for mic (44pt) + an 8pt gap + send (44pt) + a 12pt
+    // margin before the pill's own edge, so inline text never runs under
+    // the buttons -- this SAME value is what the TextEditor's own trailing
+    // padding uses below when slim, so the measured wrap width and the real
+    // rendered wrap width can't disagree.
+    private let composeSlimTrailingPadding: CGFloat = 108
+    // The ORIGINAL stacked-mode trailing inset (unchanged from before this
+    // pass) -- controls move below the text once stacked, so this no longer
+    // needs to clear them horizontally.
+    private let composeStackedTrailingPadding: CGFloat = 44
+    private let composeStackedTopPadding: CGFloat = 16
+    // Reserves room for the stacked mic/send row living below the text area
+    // -- unchanged from before this pass.
+    private let composeStackedBottomPadding: CGFloat = 58
+    // Target total height for the slim pill -- big enough for a 44pt button
+    // to render with real vertical margin (not the full-height stacked
+    // allocation the old fixed-120pt/measured-stacked height gave every
+    // empty draft).
+    private let composeSlimHeight: CGFloat = 58
 
     // Shared by `composePill` (the ScrollView-clearance spacer) and
     // `unifiedComposeSurface` (the real floating card) so both agree on
     // exactly the same collapsed height -- computed once, here, rather than
     // each recomputing its own copy and risking the two drifting apart.
-    // `collapsedLeadingPadding`/`collapsedTrailingPadding`/`collapsedTopPadding`/
-    // `collapsedBottomPadding` MUST match the real `TextEditor`'s own
-    // collapsed-state padding exactly (see its padding modifiers below), or
-    // this measures a different content width/box than the editor actually
-    // renders.
     private var composeCollapsedHeight: CGFloat {
+        if composeIsSlim {
+            return composeSlimHeight
+        }
         let collapsedWidth = deviceScreenSize.width - 48
-        let collapsedLeadingPadding: CGFloat = 16
-        let collapsedTrailingPadding: CGFloat = 44
-        let collapsedTopPadding: CGFloat = 16
-        let collapsedBottomPadding: CGFloat = 58
-        let collapsedTextWidth = collapsedWidth - collapsedLeadingPadding - collapsedTrailingPadding
-        let collapsedTextHeight = composeTextContentHeight(for: inputText, width: collapsedTextWidth)
-        return collapsedTopPadding + collapsedTextHeight + collapsedBottomPadding
+        let stackedTextWidth = collapsedWidth - composeCollapsedLeadingPadding - composeStackedTrailingPadding
+        let lineCount = composeMeasuredLineCount(for: inputText, width: stackedTextWidth)
+        let textHeight = composeEditorBoxHeight(forLineCount: lineCount)
+        return composeStackedTopPadding + textHeight + composeStackedBottomPadding
+    }
+
+    // The TextEditor's own external top/bottom `.padding()` when collapsed
+    // AND slim -- symmetric centering padding around the one-line box
+    // inside the fixed-height pill, computed (not hardcoded) so it stays
+    // correct if font metrics ever change. When collapsed but NOT slim,
+    // this isn't used -- the stacked constants above apply instead.
+    private var composeSlimVerticalPadding: CGFloat {
+        let oneLineBoxHeight = composeEditorBoxHeight(forLineCount: 1)
+        return max(0, (composeSlimHeight - oneLineBoxHeight) / 2)
     }
 
     var body: some View {
@@ -1185,6 +1282,12 @@ struct CaptureConversationView: View {
                 // comment for why padding values there must match the real
                 // TextEditor's own collapsed padding below exactly.
                 let collapsedHeight = composeCollapsedHeight
+                // Computed once per render pass and reused by every layout
+                // decision below (TextEditor padding, placeholder padding,
+                // the mic/send row's own alignment) -- see `composeIsSlim`'s
+                // own header comment for why it's a pure function of
+                // `inputText` alone, not of the current layout.
+                let isSlim = composeIsSlim
                 // With the keyboard up, float just above IT instead of the static
                 // home-indicator inset -- `keyboardHeight` (tracked by hand, see the
                 // comment on that `@State` above) already measures from the true
@@ -1309,10 +1412,20 @@ struct CaptureConversationView: View {
                         .background(Color.clear)
                         .focused($inputFocused)
                         .disabled(isWaitingForDwelly)
-                        .padding(.leading, isComposeExpanded ? 20 : 16)
-                        .padding(.top, isComposeExpanded ? expandedTopInset + 44 : 16)
-                        .padding(.trailing, isComposeExpanded ? 20 : 44)
-                        .padding(.bottom, isComposeExpanded ? keyboardHeight + 70 : 58)
+                        .padding(.leading, isComposeExpanded ? 20 : composeCollapsedLeadingPadding)
+                        .padding(.top, isComposeExpanded ? expandedTopInset + 44 : (isSlim ? composeSlimVerticalPadding : composeStackedTopPadding))
+                        // Nov 18 2026 (Kell's sizing refinement): slim reserves
+                        // MUCH more trailing room than stacked -- the mic/send
+                        // row sits INLINE to the right of the text when slim,
+                        // so the text itself must not run under those buttons;
+                        // once stacked, the row moves below the text instead,
+                        // so this shrinks back to the normal inset. Must match
+                        // `composeIsSlim`'s/`composeCollapsedHeight`'s own
+                        // constants exactly -- both read from the SAME
+                        // `composeSlimTrailingPadding`/`composeStackedTrailingPadding`
+                        // properties, never a separate literal here.
+                        .padding(.trailing, isComposeExpanded ? 20 : (isSlim ? composeSlimTrailingPadding : composeStackedTrailingPadding))
+                        .padding(.bottom, isComposeExpanded ? keyboardHeight + 70 : (isSlim ? composeSlimVerticalPadding : composeStackedBottomPadding))
                         .frame(height: isComposeExpanded ? nil : collapsedHeight)
                         .clipped()
                         // Nov 18 2026, SECOND reinspection: removed the
@@ -1350,8 +1463,8 @@ struct CaptureConversationView: View {
                                 Text("Share what's on your mind...")
                                     .font(.system(size: 13))
                                     .foregroundColor(Theme.Capture.textMuted)
-                                    .padding(.leading, isComposeExpanded ? 25 : 21)
-                                    .padding(.top, isComposeExpanded ? expandedTopInset + 52 : 24)
+                                    .padding(.leading, isComposeExpanded ? 25 : composeCollapsedLeadingPadding + 5)
+                                    .padding(.top, isComposeExpanded ? expandedTopInset + 52 : (isSlim ? composeSlimVerticalPadding + 8 : composeStackedTopPadding + 8))
                                     .allowsHitTesting(false)
                             }
                         }
@@ -1363,8 +1476,10 @@ struct CaptureConversationView: View {
                     // transparent to the card's own background right where the
                     // controls row starts, reads as "this trails off" instead of "this
                     // got cut off." Non-interactive and collapsed-only -- expanded mode
-                    // already shows the full text with nothing to fade.
-                    if !isComposeExpanded {
+                    // already shows the full text with nothing to fade. Also skipped
+                    // when slim (Nov 18 2026) -- slim is BY DEFINITION one line that
+                    // already fits in full, there's nothing trailing off to signal.
+                    if !isComposeExpanded && !isSlim {
                         LinearGradient(
                             colors: [Theme.Capture.cardBackground.opacity(0), Theme.Capture.cardBackground],
                             startPoint: .top,
@@ -1414,7 +1529,18 @@ struct CaptureConversationView: View {
                             .padding(.top, 12)
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
                         } else {
-                            HStack(spacing: 10) {
+                            // Nov 18 2026 (Kell's sizing refinement): the SAME two
+                            // buttons, same actions, same identity either way --
+                            // only their row's own alignment changes between slim
+                            // (vertically centered beside the single line of text,
+                            // via plain `.trailing`) and stacked (pinned below the
+                            // text, via `.bottomTrailing`, unchanged from before).
+                            // Never two separate button instances -- that would
+                            // reintroduce exactly the kind of identity-swap this
+                            // whole screen's history has already fought through
+                            // once (see `unifiedComposeSurface`'s own header
+                            // comment).
+                            HStack(spacing: 8) {
                                 // Mic only ever shows collapsed -- Kell's own correction
                                 // after seeing it live (Nov 10 2026): "remove the mic
                                 // because it creates a different experience... the only
@@ -1449,15 +1575,18 @@ struct CaptureConversationView: View {
                                 .disabled(isWaitingForDwelly || isOverCharacterLimit || !hasDraft)
                                 .opacity(isOverCharacterLimit || !hasDraft ? 0.4 : 1.0)
                             }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                            .padding(.trailing, 10)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: isSlim ? .trailing : .bottomTrailing)
+                            .padding(.trailing, isSlim ? 12 : 10)
                         }
                     }
                     // Send button needs to clear the keyboard in the expanded case
                     // too -- `.safeAreaInset(edge: .bottom)` used to do this for
                     // free on the old `expandedComposeOverlay`; this floating
-                    // surface has to track it by hand via `keyboardHeight`.
-                    .padding(.bottom, isComposeExpanded ? keyboardHeight + 16 : 10)
+                    // surface has to track it by hand via `keyboardHeight`. Slim
+                    // needs none of this -- `.trailing` alignment above already
+                    // centers the row vertically within the pill, a bottom
+                    // padding here would just push it off-center.
+                    .padding(.bottom, isComposeExpanded ? keyboardHeight + 16 : (isSlim ? 0 : 10))
                     }
                 }
                 .frame(width: cardWidth, height: cardHeight)
