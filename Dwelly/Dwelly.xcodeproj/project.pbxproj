@@ -25,6 +25,9 @@
 		F021 /* PlainStatsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F022 /* PlainStatsSection.swift */; };
 		F023 /* NarrativeFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = F024 /* NarrativeFeedback.swift */; };
 		F029 /* SecurityPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02A /* SecurityPrivacyView.swift */; };
+		F031 /* FeedbackSubmission.swift in Sources */ = {isa = PBXBuildFile; fileRef = F032 /* FeedbackSubmission.swift */; };
+		F033 /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F034 /* FeedbackView.swift */; };
+		F035 /* SendFeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F036 /* SendFeedbackView.swift */; };
 		F02B /* ChangePasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02C /* ChangePasswordView.swift */; };
 		F02D /* EncryptionInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02E /* EncryptionInfoView.swift */; };
 		F02F /* NotificationsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030 /* NotificationsSettingsView.swift */; };
@@ -111,6 +114,9 @@
 		F022 /* PlainStatsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlainStatsSection.swift; sourceTree = "<group>"; };
 		F024 /* NarrativeFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NarrativeFeedback.swift; sourceTree = "<group>"; };
 		F02A /* SecurityPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityPrivacyView.swift; sourceTree = "<group>"; };
+		F032 /* FeedbackSubmission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackSubmission.swift; sourceTree = "<group>"; };
+		F034 /* FeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackView.swift; sourceTree = "<group>"; };
+		F036 /* SendFeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendFeedbackView.swift; sourceTree = "<group>"; };
 		F02C /* ChangePasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordView.swift; sourceTree = "<group>"; };
 		F02E /* EncryptionInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionInfoView.swift; sourceTree = "<group>"; };
 		F030 /* NotificationsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsSettingsView.swift; sourceTree = "<group>"; };
@@ -273,6 +279,8 @@
 				F02C /* ChangePasswordView.swift */,
 				F02E /* EncryptionInfoView.swift */,
 				F030 /* NotificationsSettingsView.swift */,
+				F034 /* FeedbackView.swift */,
+				F036 /* SendFeedbackView.swift */,
 				F01A /* YourNarrativeCard.swift */,
 				F01C /* EntriesView.swift */,
 				F020 /* SearchView.swift */,
@@ -333,6 +341,7 @@
 				F103 /* TodayPromptLibraries.swift */,
 				F01E /* CustomMood.swift */,
 				F024 /* NarrativeFeedback.swift */,
+				F032 /* FeedbackSubmission.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -543,6 +552,9 @@
 				F021 /* PlainStatsSection.swift in Sources */,
 				F023 /* NarrativeFeedback.swift in Sources */,
 				F029 /* SecurityPrivacyView.swift in Sources */,
+				F031 /* FeedbackSubmission.swift in Sources */,
+				F033 /* FeedbackView.swift in Sources */,
+				F035 /* SendFeedbackView.swift in Sources */,
 				F02B /* ChangePasswordView.swift in Sources */,
 				F02D /* EncryptionInfoView.swift in Sources */,
 				F02F /* NotificationsSettingsView.swift in Sources */,

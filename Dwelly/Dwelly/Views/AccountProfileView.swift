@@ -5,7 +5,8 @@ import SwiftUI
 /// + Settings Card rows match the locked design; the sub-screens each row pushes to
 /// are separate tickets (T-131/T-133/T-134/T-176/T-086) — Security & Privacy (T-131),
 /// Recently Deleted (T-176), and Notifications (T-086) are wired to real screens;
-/// Support & Feedback and Legal & About still have no destination built yet.
+/// Support & Feedback is now wired too (T-133); Legal & About still has no destination
+/// built yet.
 struct AccountProfileView: View {
     @EnvironmentObject var authManager: AuthManager
     @ObservedObject private var paymentManager = PaymentManager.shared
@@ -159,16 +160,17 @@ struct AccountProfileView: View {
             }
             .buttonStyle(.plain)
             Divider().background(Theme.Payment.timelineRail)
-            settingsRow(icon: "questionmark.circle", title: "Support & Feedback")
+            NavigationLink(destination: FeedbackView()) {
+                settingsRow(icon: "questionmark.circle", title: "Support & Feedback")
+            }
+            .buttonStyle(.plain)
             Divider().background(Theme.Payment.timelineRail)
             settingsRow(icon: "doc.text", title: "Legal & About")
             Divider().background(Theme.Payment.timelineRail)
             // Kell caught this live (Nov 16 2026): every row here looked tappable but
-            // none of them actually went anywhere -- this is the one real exception.
-            // RecentlyDeletedView (T-176) already exists and works; it just never got
-            // wired to this row. The other four still have nowhere real to push to
-            // yet (T-131/T-133/T-134, and Notifications has no ticket at all) -- see
-            // this file's own top comment.
+            // none of them actually went anywhere. Security & Privacy (T-131) and
+            // Support & Feedback (T-133) are wired now too; Legal & About (T-134) and
+            // Recently Deleted are the remaining ones -- see this file's own top comment.
             if let userId = authManager.currentUser?.id {
                 NavigationLink(destination: RecentlyDeletedView(userId: userId)) {
                     settingsRow(icon: "trash", title: "Recently Deleted")
