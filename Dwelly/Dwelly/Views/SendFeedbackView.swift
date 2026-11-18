@@ -190,7 +190,12 @@ struct SendFeedbackView: View {
                 .font(.system(size: 28, design: .serif))
                 .foregroundColor(Theme.Payment.textHeading)
 
-            Text("Your feedback goes straight to our team — we read every note.")
+            // Deliberately doesn't say "sent to our team" or similar -- the backend
+            // saves this for real, but the Resend email alert that would actually
+            // notify a human is unconfigured (no RESEND_API_KEY secret set), so no one
+            // is notified in real time yet. This copy only promises what's true today:
+            // the submission is saved.
+            Text("Your feedback has been saved.")
                 .font(.system(size: 15))
                 .foregroundColor(Theme.Payment.textSupporting)
                 .multilineTextAlignment(.center)

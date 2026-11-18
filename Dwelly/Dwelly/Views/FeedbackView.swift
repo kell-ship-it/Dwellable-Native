@@ -39,7 +39,7 @@ struct FeedbackView: View {
                             card(
                                 icon: "square.and.pencil",
                                 title: "Send Feedback",
-                                body: "Report a problem, suggest an idea, or tell us anything else. Goes straight to our team.",
+                                body: "Report a problem, suggest an idea, or tell us anything else.",
                                 buttonTitle: "Send Feedback"
                             )
                         }
