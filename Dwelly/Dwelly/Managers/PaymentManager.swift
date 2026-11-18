@@ -34,12 +34,22 @@ final class PaymentManager: ObservableObject {
     @Published private(set) var isPurchasing = false
     @Published private(set) var hasActiveEntitlement = false
     @Published private(set) var loadError: String?
+    /// Days left in an active introductory-offer (trial) period, or nil if the current
+    /// entitlement (if any) isn't a trial. Drives the "Free Trial · N days left" row on
+    /// Account Profile (T-224) — distinct from `hasActiveEntitlement`, which is true for
+    /// both a trial and a fully paid subscription.
+    @Published private(set) var trialDaysRemaining: Int?
 
     private var transactionListenerTask: Task<Void, Never>?
 
     private init() {
         transactionListenerTask = listenForTransactionUpdates()
         Task { await loadProducts() }
+        // T-224: without this, hasActiveEntitlement/trialDaysRemaining stayed at their
+        // initial false/nil values on a fresh launch until the next Transaction.updates
+        // event fired (new purchase or renewal) — Account Profile's Subscription row
+        // showed "Free" for an already-subscribed/trialing user until that happened.
+        Task { await refreshEntitlementStatus() }
     }
 
     deinit {
@@ -92,7 +102,7 @@ final class PaymentManager: ObservableObject {
             case .success(let verification):
                 let transaction = try checkVerified(verification)
                 await transaction.finish()
-                hasActiveEntitlement = true
+                await refreshEntitlementStatus()
                 return .success
             case .userCancelled:
                 return .userCancelled
@@ -122,12 +132,18 @@ final class PaymentManager: ObservableObject {
 
     func refreshEntitlementStatus() async {
         var active = false
+        var daysRemaining: Int?
         for await result in Transaction.currentEntitlements {
             if let transaction = try? checkVerified(result), SubscriptionPlan(rawValue: transaction.productID) != nil {
                 active = true
+                if transaction.offerType == .introductory, let expirationDate = transaction.expirationDate {
+                    let days = Calendar.current.dateComponents([.day], from: Date(), to: expirationDate).day ?? 0
+                    daysRemaining = max(0, days)
+                }
             }
         }
         hasActiveEntitlement = active
+        trialDaysRemaining = daysRemaining
     }
 
     private func listenForTransactionUpdates() -> Task<Void, Never> {

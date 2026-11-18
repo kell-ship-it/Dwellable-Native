@@ -18,6 +18,9 @@ struct AccountProfileView: View {
     @State private var deleteAccountError: String?
     // T-130: "Member Since" was a hardcoded "—" placeholder; this is the real value.
     @State private var memberSince: Date?
+    // T-224: the Subscription row's upgrade flow. Identifiable-item fullScreenCover,
+    // same fix MainTabView's own paywallContext already uses for this class of problem.
+    @State private var paywallContext: PaywallContext?
 
     private var initials: String {
         guard let email = authManager.currentUser?.email, let first = email.first else { return "?" }
@@ -37,8 +40,47 @@ struct AccountProfileView: View {
         return memberSince.formatted(date: .abbreviated, time: .omitted)
     }
 
+    // T-224: real "Free Trial · N days left" copy, matching the locked Figma row
+    // (node 711:5003/5005) verbatim — the code only ever rendered "Premium"/"Free"
+    // before this, which both dropped the trial state the design calls for and was
+    // the whole reason this row read as inert (no information to act on).
     private var subscriptionDisplay: String {
-        paymentManager.hasActiveEntitlement ? "Premium" : "Free"
+        if let days = paymentManager.trialDaysRemaining {
+            return "Free Trial · \(days) day\(days == 1 ? "" : "s") left"
+        }
+        return paymentManager.hasActiveEntitlement ? "Premium" : "Free"
+    }
+
+    // Tappable whenever there's something to upgrade to: no subscription yet, or
+    // currently in the trial window. A fully paid (non-trial) subscriber has nothing
+    // to upgrade to under this app's single-tier model (T-198) -- that row stays inert.
+    private var canUpgradeSubscription: Bool {
+        !paymentManager.hasActiveEntitlement || paymentManager.trialDaysRemaining != nil
+    }
+
+    // T-224: external reviewer flagged this row as the most actionable-looking item on
+    // the screen with nothing behind it -- no upgrade flow, no chevron. No locked
+    // design exists for an Account-Profile-initiated upgrade screen (checked live via
+    // Figma MCP: P12 "Payment (7 Scenarios)" has exactly 7 frames -- onboarding paywall,
+    // the two StoreKit sheet mockups, purchase-failed, the second-capture gate, and
+    // trial-already-used -- none scoped to this entry point). Per Kell's standing rule
+    // on this project, not inventing a new screen with no design backing. Routes into
+    // the existing, already-built PaywallView instead, reusing its real context copy
+    // rather than inventing new copy to match: .secondCaptureGate for a user who's
+    // never started a trial, .trialAlreadyUsed for a user who already has (whether
+    // that's because StoreKit says this Apple ID already consumed its intro offer, or
+    // because they're mid-trial right now -- either way there's no trial left to
+    // pitch, which is exactly what that context's copy already says). This is the same
+    // branch MainTabView.attemptCapture() uses for the capture-flow gate (T-255).
+    private func presentUpgradeFlow() {
+        if paymentManager.trialDaysRemaining != nil {
+            paywallContext = .trialAlreadyUsed
+            return
+        }
+        Task {
+            let eligible = await paymentManager.isEligibleForIntroOffer(.yearly)
+            paywallContext = eligible ? .secondCaptureGate : .trialAlreadyUsed
+        }
     }
 
     var body: some View {
@@ -139,12 +181,27 @@ struct AccountProfileView: View {
             // from Member Since's plain heading color (node 711:5005) -- the only
             // gold text in this card, same "one confirmed thing stands out" logic as
             // everywhere else gold is used in this app.
-            profileRow(label: "Subscription", value: subscriptionDisplay, valueColor: Theme.gold)
+            if canUpgradeSubscription {
+                Button(action: presentUpgradeFlow) {
+                    profileRow(
+                        label: "Subscription",
+                        value: subscriptionDisplay,
+                        valueColor: Theme.gold,
+                        showChevron: true
+                    )
+                }
+                .buttonStyle(.plain)
+            } else {
+                profileRow(label: "Subscription", value: subscriptionDisplay, valueColor: Theme.gold)
+            }
         }
         .background(Theme.Payment.surfaceCard)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .padding(.horizontal, 24)
         .padding(.bottom, 16)
+        .fullScreenCover(item: $paywallContext) { context in
+            PaywallView(context: context, onDismiss: { paywallContext = nil })
+        }
     }
 
     private var settingsCard: some View {
@@ -197,7 +254,12 @@ struct AccountProfileView: View {
         .padding(.bottom, 32)
     }
 
-    private func profileRow(label: String, value: String, valueColor: Color = Theme.Payment.textHeading) -> some View {
+    private func profileRow(
+        label: String,
+        value: String,
+        valueColor: Color = Theme.Payment.textHeading,
+        showChevron: Bool = false
+    ) -> some View {
         HStack {
             Text(label)
                 .font(.system(size: 12, weight: .medium))
@@ -207,9 +269,15 @@ struct AccountProfileView: View {
             Text(value)
                 .font(.system(size: 16))
                 .foregroundColor(valueColor)
+            if showChevron {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12))
+                    .foregroundColor(Theme.Payment.textSupporting)
+            }
         }
         .padding(.horizontal, 16)
         .frame(height: 56)
+        .contentShape(Rectangle())
     }
 
     private func settingsRow(icon: String, title: String) -> some View {
