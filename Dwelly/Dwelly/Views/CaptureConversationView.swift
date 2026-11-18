@@ -1403,18 +1403,20 @@ struct CaptureConversationView: View {
                             .foregroundColor(Theme.Payment.textSupporting)
                             .frame(width: 32, height: 32)
                     }
-                    .position(
-                        x: cardRightX - (isComposeExpanded ? 20 : 14) - 16,
-                        y: cardTopY + (isComposeExpanded ? expandedTopInset : 0) + 14 + 16 + composeDragOffset
-                    )
-                    .ignoresSafeArea()
-                    // Nov 18 2026 (Kell's explicit ask): downward drag on this
-                    // handle ONLY -- never on the TextEditor itself, so typed
-                    // text, selection, and the editor's own scroll are untouched.
-                    // `.simultaneousGesture` (not `.gesture`) so a quick tap still
-                    // reaches the Button's own `toggleComposeExpanded` action; a
-                    // real drag's larger translation is what actually drives
-                    // `composeDragOffset` below, a plain tap barely moves it.
+                    // Nov 18 2026 (Kell's explicit ask, and his own direct code
+                    // review flagged this ordering as a real risk): `.contentShape`
+                    // + `.simultaneousGesture` are attached HERE, to the plain
+                    // 32x32-framed button, BEFORE `.position()`/`.ignoresSafeArea()`
+                    // run -- not after. `.ignoresSafeArea()` wraps its input in a
+                    // safe-area-ignoring container; attaching the gesture to THAT
+                    // wrapper instead of the small button underneath it risks the
+                    // gesture's (and the tap's) hit-testing region silently
+                    // inheriting that wrapper's larger proposed size rather than
+                    // staying pinned to the visible 32x32 circle, which could
+                    // intercept touches meant for the TextEditor/keyboard beneath
+                    // it. Pinning `.contentShape(Rectangle())` to the exact frame
+                    // before either modifier runs removes that ambiguity entirely.
+                    .contentShape(Rectangle())
                     .simultaneousGesture(
                         DragGesture(minimumDistance: 8)
                             .onChanged { value in
@@ -1451,6 +1453,11 @@ struct CaptureConversationView: View {
                                 }
                             }
                     )
+                    .position(
+                        x: cardRightX - (isComposeExpanded ? 20 : 14) - 16,
+                        y: cardTopY + (isComposeExpanded ? expandedTopInset : 0) + 14 + 16 + composeDragOffset
+                    )
+                    .ignoresSafeArea()
                 }
 
                 // T-272 over-length caption -- Figma E9 ("Message Too Long"),
