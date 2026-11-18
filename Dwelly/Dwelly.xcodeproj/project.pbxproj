@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		0100 /* DwellyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0101 /* DwellyApp.swift */; };
 		0102 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0103 /* LoginView.swift */; };
-		0104 /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0105 /* CaptureView.swift */; };
 		0106 /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0107 /* ReviewView.swift */; };
 		0108 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0109 /* AppView.swift */; };
 		0110 /* MomentsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0111 /* MomentsListView.swift */; };
@@ -55,6 +54,7 @@
 		F00F /* JournalEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F010 /* JournalEntry.swift */; };
 		F011 /* JournalSynthesisManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F012 /* JournalSynthesisManager.swift */; };
 		F015 /* DwellerProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F016 /* DwellerProfile.swift */; };
+		F100 /* DailyVerseLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F101 /* DailyVerseLibrary.swift */; };
 		F017 /* DwellerProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F018 /* DwellerProfileManager.swift */; };
 		F019 /* YourNarrativeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01A /* YourNarrativeCard.swift */; };
 		0144 /* MomentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0145 /* MomentDetailView.swift */; };
@@ -95,7 +95,6 @@
 /* Begin PBXFileReference section */
 		0101 /* DwellyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DwellyApp.swift; sourceTree = "<group>"; };
 		0103 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
-		0105 /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
 		0107 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
 		0109 /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
 		0111 /* MomentsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentsListView.swift; sourceTree = "<group>"; };
@@ -143,6 +142,7 @@
 		F010 /* JournalEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEntry.swift; sourceTree = "<group>"; };
 		F012 /* JournalSynthesisManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalSynthesisManager.swift; sourceTree = "<group>"; };
 		F016 /* DwellerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DwellerProfile.swift; sourceTree = "<group>"; };
+		F101 /* DailyVerseLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyVerseLibrary.swift; sourceTree = "<group>"; };
 		F018 /* DwellerProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DwellerProfileManager.swift; sourceTree = "<group>"; };
 		F01A /* YourNarrativeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YourNarrativeCard.swift; sourceTree = "<group>"; };
 		0145 /* MomentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentDetailView.swift; sourceTree = "<group>"; };
@@ -235,7 +235,6 @@
 			isa = PBXGroup;
 			children = (
 				0103 /* LoginView.swift */,
-				0105 /* CaptureView.swift */,
 				0107 /* ReviewView.swift */,
 				012d /* TranscribingView.swift */,
 				0109 /* AppView.swift */,
@@ -308,6 +307,7 @@
 				12c1 /* UsageTracker.swift */,
 				B103 /* PaywallContext.swift */,
 				F016 /* DwellerProfile.swift */,
+				F101 /* DailyVerseLibrary.swift */,
 				F01E /* CustomMood.swift */,
 				F024 /* NarrativeFeedback.swift */,
 			);
@@ -477,7 +477,6 @@
 				D019 /* EmailAlreadyExistsView.swift in Sources */,
 				0100 /* DwellyApp.swift in Sources */,
 				0102 /* LoginView.swift in Sources */,
-				0104 /* CaptureView.swift in Sources */,
 				0106 /* ReviewView.swift in Sources */,
 				012c /* TranscribingView.swift in Sources */,
 				0108 /* AppView.swift in Sources */,
@@ -488,6 +487,7 @@
 				F00F /* JournalEntry.swift in Sources */,
 				F011 /* JournalSynthesisManager.swift in Sources */,
 				F015 /* DwellerProfile.swift in Sources */,
+				F100 /* DailyVerseLibrary.swift in Sources */,
 				F017 /* DwellerProfileManager.swift in Sources */,
 				F019 /* YourNarrativeCard.swift in Sources */,
 				0144 /* MomentDetailView.swift in Sources */,

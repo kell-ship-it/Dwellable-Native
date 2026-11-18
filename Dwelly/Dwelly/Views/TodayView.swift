@@ -47,9 +47,18 @@ struct TodayView: View {
         return "Hi there."
     }
 
-    private let verseReference = "Mark 9:24 · ESV"
-    private let verseQuote = "\"Lord, I believe; help my unbelief.\""
-    private let verseQuestion = "When you see this verse, what does that mean to you? What comes to mind?"
+    // T-138: was 3 hardcoded `let`s showing the same single verse forever -- now
+    // sourced from `DailyVerseLibrary`'s curated pool + 24h cache, `@State` since it's
+    // read fresh (cache-checked) once per appearance rather than computed per-render.
+    @State private var dailyVerse: DailyVerse = DailyVerseLibrary.verses[0]
+    // Caught live (Nov 17 2026): `.onAppear` fires more than once per launch for this
+    // tab (same reattachment behavior `CaptureConversationView.hasInitialized` already
+    // guards against for the same reason) -- without this, a second firing could
+    // re-roll the verse mid-session even though the UserDefaults cache was already
+    // correct, so the displayed verse and the cached one silently diverged. Loads
+    // exactly once per view lifetime; the real 24h/day-boundary cache lives in
+    // `DailyVerseLibrary` itself, not here.
+    @State private var hasLoadedDailyVerse = false
 
     private let tiles: [(icon: String, category: String, title: String, subtitle: String)] = [
         ("heart", "Mood", "What are you grateful for today?", "Even something small counts."),
@@ -87,6 +96,11 @@ struct TodayView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Payment.background.ignoresSafeArea())
         .task { await loadJournalReady() }
+        .onAppear {
+            guard !hasLoadedDailyVerse else { return }
+            hasLoadedDailyVerse = true
+            dailyVerse = DailyVerseLibrary.verseForToday()
+        }
     }
 
     /// T-188: the most recent approved entry this user hasn't opened yet, if any.
@@ -111,22 +125,22 @@ struct TodayView: View {
                 .tracking(1.5)
                 .foregroundColor(Theme.Payment.textSupporting)
 
-            Text(verseReference)
+            Text(dailyVerse.reference)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(Theme.Payment.textSupporting)
 
-            Text(verseQuote)
+            Text(dailyVerse.quote)
                 .font(.system(size: 24, design: .serif))
                 .foregroundColor(Theme.Payment.textHeading)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text(verseQuestion)
+            Text(dailyVerse.question)
                 .font(.system(size: 11))
                 .foregroundColor(Theme.Payment.textSupporting)
                 .fixedSize(horizontal: false, vertical: true)
 
             Button(action: {
-                onOpenPrompt((title: verseQuestion, category: "Scripture"))
+                onOpenPrompt((title: dailyVerse.question, category: "Scripture"))
             }) {
                 HStack(spacing: 8) {
                     Text("Sit with this")
