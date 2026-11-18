@@ -715,6 +715,8 @@ struct CaptureConversationView: View {
                     }
                     .onChange(of: isConversationComplete) { complete in
                         if complete {
+                            inputFocused = false
+                            isComposeExpanded = false
                             withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
                                 proxy.scrollTo("journalPreview", anchor: .bottom)
                             }
@@ -924,7 +926,12 @@ struct CaptureConversationView: View {
                 // geometry and full-screen. It's declared last here for the same
                 // reason the old overlay was: so it renders in front of the header
                 // and scroll content once it grows past the collapsed card's bounds.
-                unifiedComposeSurface
+                // Once the reflection is complete there's nothing left to send;
+                // the journal card's "Open" is the only forward action.
+                if !isConversationComplete {
+                    unifiedComposeSurface
+                        .transition(.opacity)
+                }
 
                 // Merged in from `CaptureView` (Nov 17 2026) -- declared last so it
                 // covers everything else, same as that screen's own placement.
