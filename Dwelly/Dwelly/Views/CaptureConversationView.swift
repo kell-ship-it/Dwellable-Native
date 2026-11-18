@@ -1694,7 +1694,19 @@ struct CaptureConversationView: View {
                 // the drag offset applied to the card's `.position()` carries it
                 // along for free too.
                 .overlay(alignment: .topTrailing) {
-                    if !isVoiceCapturing {
+                    // SIXTH pass: Kell's real objection wasn't the chevron's
+                    // position or its visual weight -- it was that there was
+                    // anything to expand at all while the draft is a single
+                    // slim line. A one-line draft has nothing further to
+                    // reveal; the explicit-expand control only means
+                    // something once there's more text than the slim pill
+                    // shows, i.e. once `composeIsSlim` goes false (stacked)
+                    // or the editor is already expanded (so collapsing it
+                    // stays reachable). This is still the ONE branch the big
+                    // comment above already called out ("only whether it's
+                    // shown at all") -- WHERE it sits never changes; this
+                    // only adds a second condition for whether it renders.
+                    if !isVoiceCapturing && (isComposeExpanded || !isSlim) {
                         Button(action: toggleComposeExpanded) {
                             // FIFTH pass: plain `chevron.up`/`chevron.down` --
                             // no `.circle` glyph, no fill, no border -- so this
