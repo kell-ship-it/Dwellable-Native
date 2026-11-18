@@ -1243,13 +1243,23 @@ struct CaptureConversationView: View {
                         .padding(.bottom, isComposeExpanded ? keyboardHeight + 70 : 58)
                         .frame(height: isComposeExpanded ? nil : 120)
                         .clipped()
-                        // T-133-adjacent fix (Kell reported, Nov 18 2026): same
-                        // dead-hit-target hardening as the empty-state TextField
-                        // above -- a tap inside this editor's visible area didn't
-                        // always reliably bring up the keyboard either. Explicit
-                        // tap-to-focus over the full (post-clip) visual frame.
-                        .contentShape(Rectangle())
-                        .onTapGesture { inputFocused = true }
+                        // Nov 18 2026, SECOND reinspection: removed the
+                        // `.contentShape(Rectangle()).onTapGesture { inputFocused =
+                        // true }` that used to sit right here. It was added under
+                        // the (wrong) "dead hit target" theory, before the real
+                        // cause -- the TextField/TextEditor identity swap just
+                        // above -- was found and fixed. `TextEditor` is natively
+                        // focusable on tap; it never needed a synthetic tap
+                        // gesture to become first responder. Layering a
+                        // `UITapGestureRecognizer` (what `.onTapGesture` compiles
+                        // to) directly on top of a `TextEditor`'s own `UITextView`
+                        // is a documented SwiftUI/UIKit interop hazard: the two
+                        // gesture recognizers can compete for the same touch, and
+                        // on some iOS versions that competition is exactly what
+                        // produces "tap shows the keyboard, then it dismisses and
+                        // reopens while typing" -- matching Kell's exact report.
+                        // With the real swap bug gone, this hack was pure
+                        // remaining risk with no upside left to justify it.
                         // This TextEditor is now the ONE persistent composer for
                         // every state (idle/typing/expanded) -- see this surface's
                         // own header comment, and `composePill` below, for why the

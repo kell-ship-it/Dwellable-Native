@@ -105,15 +105,22 @@ struct SendFeedbackView: View {
                                     .allowsHitTesting(false)
                             }
                         }
-                        // T-133 (Kell caught live, Nov 18 2026): tapping inside the
-                        // editor sometimes didn't bring up the keyboard -- TextEditor's
-                        // actual tappable UITextView can end up smaller than its
-                        // visual frame once padding/background/clipShape are layered
-                        // on. An explicit tap-to-focus over the full visual frame
-                        // guarantees any tap here reaches the field instead of landing
-                        // in dead space between the real hit target and the border.
-                        .contentShape(Rectangle())
-                        .onTapGesture { isMessageFocused = true }
+                        // Nov 18 2026, reinspection: removed the
+                        // `.contentShape(Rectangle()).onTapGesture { isMessageFocused
+                        // = true }` that used to sit right here, added under the
+                        // (wrong) "dead hit target" theory. This screen only ever has
+                        // ONE `TextEditor` -- no TextField/TextEditor identity swap
+                        // was ever possible here, so that bug class never applied,
+                        // and the keyboard issue Kell kept re-reporting on THIS
+                        // screen was never explained by it either. The real
+                        // explanation, found while reinspecting the moment composer's
+                        // identical hack: `.onTapGesture` compiles to a
+                        // `UITapGestureRecognizer` layered directly on top of
+                        // `TextEditor`'s own `UITextView`, and that competition for
+                        // the same touch is a documented cause of exactly "tap shows
+                        // the keyboard, then it dismisses and reopens while typing."
+                        // `TextEditor` is natively focusable on tap; it never needed
+                        // this hack.
                 }
 
                 screenshotPicker
