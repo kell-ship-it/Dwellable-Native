@@ -4,9 +4,8 @@ import SwiftUI
 /// root per T-253 — no modal close, reached only via the tab bar. Identity + Info Card
 /// + Settings Card rows match the locked design; the sub-screens each row pushes to
 /// are separate tickets (T-131/T-133/T-134/T-176/T-086) — Security & Privacy (T-131),
-/// Recently Deleted (T-176), and Notifications (T-086) are wired to real screens;
-/// Support & Feedback is now wired too (T-133); Legal & About still has no destination
-/// built yet.
+/// Recently Deleted (T-176), Notifications (T-086), Support & Feedback (T-133), and
+/// Legal & About (T-134) are all wired to real screens.
 struct AccountProfileView: View {
     @EnvironmentObject var authManager: AuthManager
     @ObservedObject private var paymentManager = PaymentManager.shared
@@ -165,7 +164,10 @@ struct AccountProfileView: View {
             }
             .buttonStyle(.plain)
             Divider().background(Theme.Payment.timelineRail)
-            settingsRow(icon: "doc.text", title: "Legal & About")
+            NavigationLink(destination: LegalAboutView()) {
+                settingsRow(icon: "doc.text", title: "Legal & About")
+            }
+            .buttonStyle(.plain)
             Divider().background(Theme.Payment.timelineRail)
             // Kell caught this live (Nov 16 2026): every row here looked tappable but
             // none of them actually went anywhere. Security & Privacy (T-131) and
