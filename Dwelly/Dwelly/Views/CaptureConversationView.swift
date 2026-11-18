@@ -515,20 +515,15 @@ struct CaptureConversationView: View {
     }
 
     private let composeCollapsedLeadingPadding: CGFloat = 16
-    // Nov 18 2026, FOURTH pass: growing the pill's own height (the prior
-    // pass's `composeSlimHeight = 96`) was the wrong way to clear the
-    // chevron -- Kell rejected it outright, correctly: it undid his own
-    // explicit 58pt slim requirement from earlier the same day, and height
-    // was never the only axis available. The chevron's column lives
-    // entirely to the RIGHT of this text reserve now (see
-    // `composeChevronSize`'s own comment below for the exact numbers), so
-    // this is mic (44pt) + an 8pt gap + send (44pt) + the SAME
-    // `composeControlsTrailingPadding` the controls row itself uses --
-    // whatever that reserves for the chevron's column, text has to clear
-    // too. Still the SAME value the TextEditor's own trailing padding uses
-    // below, so the measured wrap width and the real rendered wrap width
-    // can't disagree.
-    private var composeSlimTrailingPadding: CGFloat { 96 + composeControlsTrailingPadding }
+    // Nov 18 2026, SIXTH pass: the chevron is now hidden entirely while slim
+    // (see the `.overlay` below's own comment) -- a slim draft never shares
+    // its trailing edge with the chevron's column at all, so this goes back
+    // to reserving room for ONLY mic (44pt) + an 8pt gap + send (44pt) + the
+    // plain `composeControlsCompactTrailingPadding` margin, not the wider
+    // chevron-clearing reserve. Still the SAME value the TextEditor's own
+    // trailing padding uses below, so the measured wrap width and the real
+    // rendered wrap width can't disagree.
+    private var composeSlimTrailingPadding: CGFloat { 96 + composeControlsCompactTrailingPadding }
     // The ORIGINAL stacked-mode trailing inset (unchanged from before this
     // pass) -- controls move below the text once stacked, so this no longer
     // needs to clear them horizontally.
@@ -566,20 +561,31 @@ struct CaptureConversationView: View {
     private let composeChevronTopInset: CGFloat = 15
     private let composeChevronTrailingInset: CGFloat = 15
     private let composeControlsBottomPadding: CGFloat = 10
+    // The plain trailing margin for the mic/send row when there's no
+    // chevron sharing this edge to clear -- the ORIGINAL small inset from
+    // before any of the chevron-collision passes touched this value.
+    private let composeControlsCompactTrailingPadding: CGFloat = 10
     // Nov 18 2026, FOURTH pass (sizing updated FIFTH pass): collision fix for
     // the chevron-overlap bug, on the horizontal axis instead of growing the
     // pill's height (which Kell rejected -- see `composeSlimTrailingPadding`'s
     // own comment). The chevron's corner slot occupies a column
     // `composeChevronTrailingInset + composeChevronSize` (15 + 28 = 43pt)
-    // wide along the card's trailing edge, in EVERY state, top-anchored.
-    // Reserving that same column's width again here, plus a clear 16pt
-    // gap (43 + 16 = 59), as the mic/send row's own trailing inset means
-    // that row's rightmost edge (Send) never enters the chevron's column
-    // no matter how the two rows' own vertical alignment differs between
-    // slim (centered) and stacked (bottom-pinned) -- the two controls are
-    // separated by X position, not by height, so neither state needs its
-    // own branch to stay collision-free, and neither needs to grow the
-    // pill to do it.
+    // wide along the card's trailing edge, top-anchored. Reserving that same
+    // column's width again here, plus a clear 16pt gap (43 + 16 = 59), as
+    // the mic/send row's own trailing inset means that row's rightmost edge
+    // (Send) never enters the chevron's column no matter how the two rows'
+    // own vertical alignment differs between slim (centered) and stacked
+    // (bottom-pinned).
+    //
+    // SIXTH pass: this reserve only matters where the chevron can actually
+    // appear -- stacked and expanded. Slim hides the chevron outright (see
+    // the `.overlay` below), so applying this wider reserve there too left
+    // a dead, unexplained gap after Send with nothing occupying it -- caught
+    // directly by Kell ("what's up with all this space towards the right?
+    // That's not what we designed."). The two padding usages below now pick
+    // `composeControlsCompactTrailingPadding` instead whenever `isSlim` is
+    // true, so the reserve exists exactly when, and only when, there's a
+    // chevron it needs to clear.
     private let composeControlsTrailingPadding: CGFloat = 59
 
     // Target total height for the slim pill -- big enough for a 44pt button
@@ -1664,7 +1670,7 @@ struct CaptureConversationView: View {
                             // so this is free to go back to being a plain design
                             // choice again, unrelated to where the chevron lives.
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: isSlim ? .trailing : .bottomTrailing)
-                            .padding(.trailing, composeControlsTrailingPadding)
+                            .padding(.trailing, isSlim ? composeControlsCompactTrailingPadding : composeControlsTrailingPadding)
                         }
                     }
                     // Send button needs to clear the keyboard in the expanded case
