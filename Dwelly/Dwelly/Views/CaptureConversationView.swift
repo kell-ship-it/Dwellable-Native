@@ -549,30 +549,38 @@ struct CaptureConversationView: View {
     // branched on `isSlim` again; it moves only because its PARENT (the
     // card) moves/resizes, which is the one thing Kell actually asked for.
     //
-    // FOURTH pass: sized to a real 44pt hit target (matching mic/send's own
-    // circular buttons, not a smaller 24pt icon) per Kell's explicit ask,
-    // with a 7pt inset on both the top and trailing edge -- symmetric on
-    // purpose, so a 44pt circle in a 58pt-tall slim pill (7 + 44 + 7 = 58)
-    // lands PERFECTLY vertically centered with no extra tuning.
-    private let composeChevronSize: CGFloat = 44
-    private let composeChevronTopInset: CGFloat = 7
-    private let composeChevronTrailingInset: CGFloat = 7
+    // FIFTH pass: the fourth pass's real 44pt circular hit target -- matching
+    // mic/send's own buttons exactly -- fixed the overlap but made the
+    // chevron read as a THIRD button competing for attention in the same
+    // row, which is its own problem Kell flagged ("great degradation...
+    // look at the fucking design"). A secondary, occasional control
+    // (explicit expand) shouldn't carry equal visual weight to the primary
+    // mic/send actions. This drops the filled-circle `.circle` SF Symbol
+    // variant entirely (see the Image below -- plain `chevron.up`/
+    // `chevron.down`, no circle glyph at all) and shrinks the frame to a
+    // small, quiet icon. Insets are still symmetric top+trailing (15pt),
+    // so a 28pt icon in the 58pt slim pill (15 + 28 + 15 = 58) stays
+    // perfectly vertically centered with mic/send -- same positioning
+    // formula as before, only the control's own visual weight changed.
+    private let composeChevronSize: CGFloat = 28
+    private let composeChevronTopInset: CGFloat = 15
+    private let composeChevronTrailingInset: CGFloat = 15
     private let composeControlsBottomPadding: CGFloat = 10
-    // Nov 18 2026, FOURTH pass: collision fix for the SAME chevron-overlap
-    // bug, but on the horizontal axis instead of growing the pill's height
-    // (which Kell rejected -- see `composeSlimTrailingPadding`'s own
-    // comment). The chevron's corner slot occupies a column
-    // `composeChevronTrailingInset + composeChevronSize` (7 + 44 = 51pt)
+    // Nov 18 2026, FOURTH pass (sizing updated FIFTH pass): collision fix for
+    // the chevron-overlap bug, on the horizontal axis instead of growing the
+    // pill's height (which Kell rejected -- see `composeSlimTrailingPadding`'s
+    // own comment). The chevron's corner slot occupies a column
+    // `composeChevronTrailingInset + composeChevronSize` (15 + 28 = 43pt)
     // wide along the card's trailing edge, in EVERY state, top-anchored.
     // Reserving that same column's width again here, plus a clear 16pt
-    // gap (51 + 16 = 67), as the mic/send row's own trailing inset means
+    // gap (43 + 16 = 59), as the mic/send row's own trailing inset means
     // that row's rightmost edge (Send) never enters the chevron's column
     // no matter how the two rows' own vertical alignment differs between
     // slim (centered) and stacked (bottom-pinned) -- the two controls are
     // separated by X position, not by height, so neither state needs its
     // own branch to stay collision-free, and neither needs to grow the
     // pill to do it.
-    private let composeControlsTrailingPadding: CGFloat = 67
+    private let composeControlsTrailingPadding: CGFloat = 59
 
     // Target total height for the slim pill -- big enough for a 44pt button
     // to render with real vertical margin. Nov 18 2026, FOURTH pass:
@@ -1688,8 +1696,12 @@ struct CaptureConversationView: View {
                 .overlay(alignment: .topTrailing) {
                     if !isVoiceCapturing {
                         Button(action: toggleComposeExpanded) {
-                            Image(systemName: isComposeExpanded ? "chevron.down.circle" : "chevron.up.circle")
-                                .font(.system(size: 18))
+                            // FIFTH pass: plain `chevron.up`/`chevron.down` --
+                            // no `.circle` glyph, no fill, no border -- so this
+                            // reads as a quiet secondary affordance rather than
+                            // a third button matching mic/send's own weight.
+                            Image(systemName: isComposeExpanded ? "chevron.down" : "chevron.up")
+                                .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(Theme.Payment.textSupporting)
                                 .frame(width: composeChevronSize, height: composeChevronSize)
                         }
