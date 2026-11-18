@@ -404,6 +404,65 @@ struct CaptureConversationView: View {
             .bounds.size ?? .zero
     }
 
+    // Nov 18 2026 (Kell's explicit ChatGPT-style spec, superseding the prior
+    // fixed-120pt requirement): the collapsed composer's height is no longer a
+    // constant -- it measures the REAL wrapped height of `inputText` against
+    // the exact content width the `TextEditor` renders at, so an empty or
+    // short draft stays slim (ChatGPT-style), and the box only grows as
+    // actual wrapped lines or explicit newlines demand more room, shrinking
+    // right back down as text is deleted. Same font/size the `TextEditor`
+    // itself uses below, so this measurement and the editor's own real
+    // layout agree. `NSString.boundingRect` (not a live `GeometryReader` on
+    // the actual rendered text) is deliberate -- a reader would need the text
+    // to already be laid out once to report back, which is exactly the kind
+    // of one-frame-late feedback loop that produced visible jumps elsewhere
+    // in this same screen's history; measuring the string directly is
+    // synchronous and available in the same render pass that decides the
+    // frame.
+    private let composeEditorFont = UIFont.systemFont(ofSize: 13)
+    // Cap -- past this many lines' worth of height, the `TextEditor`'s own
+    // `.clipped()` + native internal scrolling (unchanged, already there)
+    // takes over instead of the card growing further; matches Kell's "capped
+    // about 5-6 lines" ask.
+    private let composeMaxVisibleLines: CGFloat = 6
+
+    private func composeTextContentHeight(for text: String, width: CGFloat) -> CGFloat {
+        guard width > 0 else { return ceil(composeEditorFont.lineHeight) }
+        // At least one line's worth even when empty -- there is always a
+        // caret/placeholder row to show, never a zero-height box.
+        let measured = text.isEmpty ? "A" : text
+        let constraint = CGSize(width: width, height: .greatestFiniteMagnitude)
+        let bounds = (measured as NSString).boundingRect(
+            with: constraint,
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: [.font: composeEditorFont],
+            context: nil
+        )
+        let singleLine = ceil(composeEditorFont.lineHeight)
+        let capped = ceil(composeEditorFont.lineHeight * composeMaxVisibleLines)
+        return min(max(ceil(bounds.height), singleLine), capped)
+    }
+
+    // Shared by `composePill` (the ScrollView-clearance spacer) and
+    // `unifiedComposeSurface` (the real floating card) so both agree on
+    // exactly the same collapsed height -- computed once, here, rather than
+    // each recomputing its own copy and risking the two drifting apart.
+    // `collapsedLeadingPadding`/`collapsedTrailingPadding`/`collapsedTopPadding`/
+    // `collapsedBottomPadding` MUST match the real `TextEditor`'s own
+    // collapsed-state padding exactly (see its padding modifiers below), or
+    // this measures a different content width/box than the editor actually
+    // renders.
+    private var composeCollapsedHeight: CGFloat {
+        let collapsedWidth = deviceScreenSize.width - 48
+        let collapsedLeadingPadding: CGFloat = 16
+        let collapsedTrailingPadding: CGFloat = 44
+        let collapsedTopPadding: CGFloat = 16
+        let collapsedBottomPadding: CGFloat = 58
+        let collapsedTextWidth = collapsedWidth - collapsedLeadingPadding - collapsedTrailingPadding
+        let collapsedTextHeight = composeTextContentHeight(for: inputText, width: collapsedTextWidth)
+        return collapsedTopPadding + collapsedTextHeight + collapsedBottomPadding
+    }
+
     var body: some View {
             ZStack(alignment: .top) {
                 // Content scrolls the full height of the screen, UNDER the floating
@@ -1061,10 +1120,18 @@ struct CaptureConversationView: View {
     // this is purely a layout spacer now -- reserves the same footprint so the
     // scrolling thread still clears the floating card, renders nothing visible.
     private var composePill: some View {
+        // Nov 18 2026: tracks `composeCollapsedHeight` (same value
+        // `unifiedComposeSurface` itself sizes to), not a fixed 120pt -- this
+        // spacer's only job is reserving exactly enough scroll clearance for
+        // whatever height the floating card is ACTUALLY using right now, so a
+        // tall multi-line draft doesn't leave the scroll thread's last bubble
+        // tucked underneath it, and a slim empty draft doesn't leave a big
+        // dead gap above it either.
         Color.clear
-            .frame(height: 120)
+            .frame(height: composeCollapsedHeight)
             .padding(.horizontal, 24)
             .padding(.bottom, Theme.Spacing.xxl)
+            .animation(.easeOut(duration: 0.18), value: composeCollapsedHeight)
     }
 
     // The single persistent compose surface -- ONE `TextEditor`, mounted
@@ -1112,7 +1179,12 @@ struct CaptureConversationView: View {
                 // sat: 24pt horizontal padding each side, and `Theme.Spacing.xxl`
                 // above the device's own home-indicator safe area.
                 let collapsedWidth = fullWidth - 48
-                let collapsedHeight: CGFloat = 120
+                // Nov 18 2026 (Kell's explicit ChatGPT-style spec, superseding
+                // the prior fixed-120pt requirement): shared with `composePill`
+                // via `composeCollapsedHeight` -- see that property's own header
+                // comment for why padding values there must match the real
+                // TextEditor's own collapsed padding below exactly.
+                let collapsedHeight = composeCollapsedHeight
                 // With the keyboard up, float just above IT instead of the static
                 // home-indicator inset -- `keyboardHeight` (tracked by hand, see the
                 // comment on that `@State` above) already measures from the true
@@ -1241,7 +1313,7 @@ struct CaptureConversationView: View {
                         .padding(.top, isComposeExpanded ? expandedTopInset + 44 : 16)
                         .padding(.trailing, isComposeExpanded ? 20 : 44)
                         .padding(.bottom, isComposeExpanded ? keyboardHeight + 70 : 58)
-                        .frame(height: isComposeExpanded ? nil : 120)
+                        .frame(height: isComposeExpanded ? nil : collapsedHeight)
                         .clipped()
                         // Nov 18 2026, SECOND reinspection: removed the
                         // `.contentShape(Rectangle()).onTapGesture { inputFocused =
@@ -1492,6 +1564,15 @@ struct CaptureConversationView: View {
             // just `composePill`'s TextField via this same flag -- carry the fade
             // over here too so that reveal timing is unchanged.
             .opacity(isComposerRevealed ? 1 : 0)
+            // Nov 18 2026: `collapsedHeight` now changes on every keystroke
+            // (grows/shrinks with the real wrapped text) instead of being a
+            // constant -- an explicit, narrowly-scoped implicit animation on
+            // exactly that value is what makes the card's resulting
+            // `.frame`/`.position` changes read as smooth growth/shrink
+            // instead of a hard snap on each character, WITHOUT touching
+            // `$inputFocused` or re-triggering any transition -- this is a
+            // size/position animation on the container, never a remount.
+            .animation(.easeOut(duration: 0.18), value: collapsedHeight)
         }
     }
 
