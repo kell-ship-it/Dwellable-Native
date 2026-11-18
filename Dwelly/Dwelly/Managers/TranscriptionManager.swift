@@ -49,10 +49,30 @@ class TranscriptionManager: NSObject, ObservableObject {
             return
         }
 
+        // T-097: the model is bundled into the app binary at build time (see
+        // Scripts/fetch_whisperkit_model.sh + the "Fetch WhisperKit Model" build
+        // phase), so install-time availability doesn't depend on a network call.
+        // If the bundled folder is missing — e.g. a dev build where the fetch
+        // script couldn't reach the network — fall back to WhisperKit's own
+        // network download, same as before this ticket.
+        if let bundledModelFolder = Self.bundledModelFolderPath() {
+            do {
+                hlog("WhisperKit: loading bundled base model from \(bundledModelFolder)...")
+                let config = WhisperKitConfig(model: "base", modelFolder: bundledModelFolder, verbose: false, load: true, download: false)
+                whisperKit = try await WhisperKit(config)
+                isModelLoaded = true
+                hlog("WhisperKit: bundled base model ready ✓", "SUCCESS")
+                return
+            } catch {
+                hlog("WhisperKit: failed to load bundled model — \(error.localizedDescription), falling back to network download", "WARNING")
+                whisperKit = nil
+            }
+        } else {
+            hlog("WhisperKit: no bundled model found, falling back to network download", "WARNING")
+        }
+
         do {
-            // "base" (~74MB) — fast download, reliable accuracy for voice memos
-            // "small" (~244MB) — higher accuracy if needed in future
-            hlog("WhisperKit: downloading/loading base model (~74MB)...")
+            hlog("WhisperKit: downloading/loading base model over network...")
             let config = WhisperKitConfig(model: "base", verbose: false, load: true, download: true)
             whisperKit = try await WhisperKit(config)
             isModelLoaded = true
@@ -62,6 +82,18 @@ class TranscriptionManager: NSObject, ObservableObject {
             whisperKit = nil
             isModelLoaded = false
         }
+    }
+
+    /// Path to the WhisperKit model bundled into the app at build time, if present.
+    private static func bundledModelFolderPath() -> String? {
+        guard let resourceURL = Bundle.main.resourceURL else { return nil }
+        let modelFolder = resourceURL
+            .appendingPathComponent("WhisperKitModel")
+            .appendingPathComponent("openai_whisper-base")
+        guard FileManager.default.fileExists(atPath: modelFolder.appendingPathComponent("config.json").path) else {
+            return nil
+        }
+        return modelFolder.path
     }
 
     // MARK: - File Validation
