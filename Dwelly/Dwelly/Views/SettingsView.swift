@@ -70,7 +70,7 @@ struct SettingsView: View {
                                         Text("Version")
                                             .font(.system(size: 12, weight: .regular))
                                             .foregroundColor(Theme.tertiaryText)
-                                        Text("1.0.0")
+                                        Text(AppInfo.versionString)
                                             .font(.system(size: 14, weight: .regular))
                                             .foregroundColor(Theme.text)
                                     }
@@ -115,7 +115,7 @@ struct SettingsView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
                             VStack(spacing: Theme.Spacing.sm) {
-                                Button(action: {}) {
+                                NavigationLink(destination: TermsOfServiceView()) {
                                     HStack {
                                         Text("Terms of Service")
                                             .font(.system(size: 14, weight: .regular))
@@ -130,9 +130,24 @@ struct SettingsView: View {
                                     .cornerRadius(10)
                                 }
 
-                                Button(action: {}) {
+                                NavigationLink(destination: PrivacyPolicyView()) {
                                     HStack {
                                         Text("Privacy Policy")
+                                            .font(.system(size: 14, weight: .regular))
+                                            .foregroundColor(Theme.text)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 12, weight: .regular))
+                                            .foregroundColor(Theme.tertiaryText)
+                                    }
+                                    .padding(Theme.Spacing.lg)
+                                    .background(Theme.surfaceBackground)
+                                    .cornerRadius(10)
+                                }
+
+                                NavigationLink(destination: AboutDwellyView()) {
+                                    HStack {
+                                        Text("About Dwelly")
                                             .font(.system(size: 14, weight: .regular))
                                             .foregroundColor(Theme.text)
                                         Spacer()

@@ -25,6 +25,11 @@
 		F021 /* PlainStatsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F022 /* PlainStatsSection.swift */; };
 		F023 /* NarrativeFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = F024 /* NarrativeFeedback.swift */; };
 		F029 /* SecurityPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02A /* SecurityPrivacyView.swift */; };
+		F031 /* LegalAboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F032 /* LegalAboutView.swift */; };
+		F033 /* TermsOfServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F034 /* TermsOfServiceView.swift */; };
+		F035 /* PrivacyPolicyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F036 /* PrivacyPolicyView.swift */; };
+		F037 /* AboutDwellyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F038 /* AboutDwellyView.swift */; };
+		F039 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F03A /* AppInfo.swift */; };
 		F02B /* ChangePasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02C /* ChangePasswordView.swift */; };
 		F02D /* EncryptionInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02E /* EncryptionInfoView.swift */; };
 		F02F /* NotificationsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030 /* NotificationsSettingsView.swift */; };
@@ -111,6 +116,11 @@
 		F022 /* PlainStatsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlainStatsSection.swift; sourceTree = "<group>"; };
 		F024 /* NarrativeFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NarrativeFeedback.swift; sourceTree = "<group>"; };
 		F02A /* SecurityPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityPrivacyView.swift; sourceTree = "<group>"; };
+		F032 /* LegalAboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalAboutView.swift; sourceTree = "<group>"; };
+		F034 /* TermsOfServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsOfServiceView.swift; sourceTree = "<group>"; };
+		F036 /* PrivacyPolicyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyView.swift; sourceTree = "<group>"; };
+		F038 /* AboutDwellyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutDwellyView.swift; sourceTree = "<group>"; };
+		F03A /* AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfo.swift; sourceTree = "<group>"; };
 		F02C /* ChangePasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordView.swift; sourceTree = "<group>"; };
 		F02E /* EncryptionInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionInfoView.swift; sourceTree = "<group>"; };
 		F030 /* NotificationsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsSettingsView.swift; sourceTree = "<group>"; };
@@ -273,6 +283,10 @@
 				F02C /* ChangePasswordView.swift */,
 				F02E /* EncryptionInfoView.swift */,
 				F030 /* NotificationsSettingsView.swift */,
+				F032 /* LegalAboutView.swift */,
+				F034 /* TermsOfServiceView.swift */,
+				F036 /* PrivacyPolicyView.swift */,
+				F038 /* AboutDwellyView.swift */,
 				F01A /* YourNarrativeCard.swift */,
 				F01C /* EntriesView.swift */,
 				F020 /* SearchView.swift */,
@@ -341,6 +355,7 @@
 			isa = PBXGroup;
 			children = (
 				0117 /* Theme.swift */,
+				F03A /* AppInfo.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -543,6 +558,11 @@
 				F021 /* PlainStatsSection.swift in Sources */,
 				F023 /* NarrativeFeedback.swift in Sources */,
 				F029 /* SecurityPrivacyView.swift in Sources */,
+				F031 /* LegalAboutView.swift in Sources */,
+				F033 /* TermsOfServiceView.swift in Sources */,
+				F035 /* PrivacyPolicyView.swift in Sources */,
+				F037 /* AboutDwellyView.swift in Sources */,
+				F039 /* AppInfo.swift in Sources */,
 				F02B /* ChangePasswordView.swift in Sources */,
 				F02D /* EncryptionInfoView.swift in Sources */,
 				F02F /* NotificationsSettingsView.swift in Sources */,
