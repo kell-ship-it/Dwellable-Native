@@ -2,26 +2,26 @@ import SwiftUI
 
 /// T-133: the real Support & Feedback screen, pushed from Account Profile's Settings
 /// Card (Figma node 711:5025 -- only the row existed there, no detail frame, same gap
-/// Security & Privacy and Recently Deleted had before T-131/T-176). Matches the locked
-/// design at node 689:329 ("iphone-frame — Support & Feedback"), four cards:
+/// Security & Privacy and Recently Deleted had before T-131/T-176).
 ///
-/// - Send Feedback / Report a Bug: both real -- push to `SendFeedbackView`, which writes
-///   a row to `feedback_submissions` via `APIClient.submitFeedback`. A Resend email alert
-///   and Notion mirror fire best-effort after that write (see
-///   `SupabaseAPIClient.submitFeedback` and the `feedback-notify` Edge Function) but are
-///   currently stubbed pending real ops credentials -- see that function's header
-///   comment for exactly what's real vs. stubbed.
-/// - Contact Support: a real `mailto:` link to hello@dwelly.one (opens the device's Mail
-///   app, same as the design's own caption describes). Inbound delivery (hello@dwelly.one
-///   -> kells@kellgolden.com) is confirmed working -- Kell verified a real test email
-///   landed in his inbox. Outbound send-as for that alias (SPF/DKIM, actually sending
-///   mail FROM hello@dwelly.one) is NOT configured or tested -- not this link's problem,
-///   since a mailto: only addresses a new message TO the alias; any reply Kell sends goes
-///   out from whatever his Mail client sends as, not from the alias itself.
-/// - FAQ & Help Center: no FAQ content exists anywhere yet (not in this ticket, not
-///   elsewhere in the app) -- shown disabled with "Coming soon" rather than linking
-///   somewhere fake, same honest-disabled-state pattern `SecurityPrivacyView` already
-///   uses for Data Export.
+/// Kell's approved direction (Nov 18 2026) replaced the locked design's separate "Send
+/// Feedback" / "Report a Bug" cards with ONE in-app form (`SendFeedbackView`): a 3-way
+/// category picker (Report a problem / Suggest an idea / Something else), a message
+/// field, and an optional screenshot, submitted entirely in-app -- no mailto hand-off
+/// anywhere in that flow. It goes through the `submit-feedback` Edge Function (see
+/// `SupabaseAPIClient.submitFeedback`), which inserts the row and attempts a Resend
+/// email alert + Notion mirror server-side in one round trip; see that function's own
+/// header comment for exactly what's real vs. still pending a Resend API key.
+///
+/// - Contact Support: unaffected by that change -- still a real `mailto:` link to
+///   hello@dwelly.one (opens the device's Mail app, same as the design's own caption
+///   describes). Inbound delivery (hello@dwelly.one -> kells@kellgolden.com) is
+///   confirmed working -- Kell verified a real test email landed in his inbox. Outbound
+///   send-as for that alias (SPF/DKIM) is NOT configured or tested -- not this link's
+///   problem, since a mailto: only addresses a new message TO the alias.
+/// - FAQ & Help Center: no FAQ content exists anywhere yet -- shown disabled with
+///   "Coming soon" rather than linking somewhere fake, same honest-disabled-state
+///   pattern `SecurityPrivacyView` already uses for Data Export.
 struct FeedbackView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showMailUnavailableAlert = false
@@ -35,22 +35,12 @@ struct FeedbackView: View {
                     header
 
                     VStack(spacing: 12) {
-                        NavigationLink(destination: SendFeedbackView(type: .feedback)) {
+                        NavigationLink(destination: SendFeedbackView()) {
                             card(
                                 icon: "square.and.pencil",
                                 title: "Send Feedback",
-                                body: "Help us improve Dwelly. Goes straight to our team.",
+                                body: "Report a problem, suggest an idea, or tell us anything else. Goes straight to our team.",
                                 buttonTitle: "Send Feedback"
-                            )
-                        }
-                        .buttonStyle(.plain)
-
-                        NavigationLink(destination: SendFeedbackView(type: .bug)) {
-                            card(
-                                icon: "ladybug",
-                                title: "Report a Bug",
-                                body: "Something not working? Tell us what happened and what you expected instead.",
-                                buttonTitle: "Report Bug"
                             )
                         }
                         .buttonStyle(.plain)

@@ -84,11 +84,17 @@ protocol APIClient {
     func fetchOnboardingProfile(userId: String) async throws -> OnboardingProfileRow
     func updateOnboardingProfile(userId: String, update: OnboardingProfileUpdate) async throws
 
-    // T-133: Support & Feedback -- "Send Feedback" and "Report a Bug" both write here,
-    // distinguished by `type`. Best-effort notify (Resend/Notion, both stubbed pending
-    // ops credentials) happens separately after this succeeds; see FeedbackView's own
-    // comment and the feedback-notify Edge Function.
-    func submitFeedback(userId: String, type: FeedbackType, message: String, appVersion: String?) async throws -> FeedbackSubmission
+    // T-133 (Kell's approved direction, Nov 18 2026): the one in-app Support & Feedback
+    // form -- category picker (problem/idea/other), message, optional screenshot. No
+    // mailto hand-off; submits straight to the backend. Best-effort notify (Resend/
+    // Notion, Resend still pending a real API key as of this ticket) happens separately
+    // after this succeeds; see FeedbackView's own comment and the feedback-notify Edge
+    // Function. `screenshotPath` is the storage path already uploaded via
+    // `uploadFeedbackScreenshot`, nil when no screenshot was attached.
+    func submitFeedback(userId: String, category: FeedbackCategory, message: String, appVersion: String?, screenshotPath: String?) async throws -> FeedbackSubmission
+    // Uploads to the private feedback-screenshots bucket (RLS own-folder-only, same
+    // pattern as moments-audio) and returns the storage path to pass to submitFeedback.
+    func uploadFeedbackScreenshot(_ imageData: Data, fileName: String, userId: String) async throws -> String
 
     // Storage endpoints
     func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String
