@@ -86,6 +86,12 @@ protocol APIClient {
 
     // Storage endpoints
     func uploadAudio(_ audioData: Data, fileName: String, userId: String) async throws -> String
+    // T-156: journal hero photos -- private "journal-photos" bucket, same shape as
+    // uploadAudio/moments-audio. Returns the storage path (not a URL); the caller
+    // persists that path on JournalEntry.photoPath and resolves it to a viewable
+    // URL via fetchJournalPhotoSignedURL when displaying it.
+    func uploadJournalPhoto(_ imageData: Data, fileName: String, userId: String) async throws -> String
+    func fetchJournalPhotoSignedURL(storagePath: String) async throws -> URL
 
     // Analytics endpoints
     func sendUsageEvents(_ events: [UsageEventData], userId: String) async throws

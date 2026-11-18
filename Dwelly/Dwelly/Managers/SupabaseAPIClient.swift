@@ -906,6 +906,71 @@ class SupabaseAPIClient: APIClient {
         }
     }
 
+    // T-156: journal hero photos. Same shape as uploadAudio above, just a different
+    // (also private) bucket -- "journal-photos" instead of "moments-audio".
+    func uploadJournalPhoto(_ imageData: Data, fileName: String, userId: String) async throws -> String {
+        let storagePath = "\(userId)/\(fileName)"
+        let uploadEndpoint = "/storage/v1/object/journal-photos/\(storagePath)"
+
+        var uploadRequest = URLRequest(url: URL(string: baseURL + uploadEndpoint)!)
+        uploadRequest.httpMethod = "POST"
+        uploadRequest.setValue(anonKey, forHTTPHeaderField: "apikey")
+        uploadRequest.setValue("Bearer \(jwtToken ?? anonKey)", forHTTPHeaderField: "Authorization")
+        uploadRequest.setValue("image/jpeg", forHTTPHeaderField: "Content-Type")
+        uploadRequest.httpBody = imageData
+
+        hlog("Uploading journal photo to Storage: \(fileName)")
+
+        do {
+            let (_, uploadResponse) = try await session.data(for: uploadRequest)
+            guard let httpResponse = uploadResponse as? HTTPURLResponse else { throw APIError.networkError }
+
+            if (200...299).contains(httpResponse.statusCode) {
+                hlog("Journal photo uploaded successfully: \(fileName)", "SUCCESS")
+                return storagePath
+            } else {
+                hlog("Journal photo upload failed (\(httpResponse.statusCode))", "ERROR")
+                throw APIError.serverError
+            }
+        } catch let error as APIError {
+            throw error
+        } catch {
+            hlog("Journal photo upload error: \(error.localizedDescription)", "ERROR")
+            throw APIError.networkError
+        }
+    }
+
+    // T-156: the bucket is private, so the raw storage path can never be loaded
+    // directly -- this mints a short-lived signed URL to actually display it.
+    // Same Storage sign-urls endpoint `generateSignedURL` below already uses for
+    // audio, just scoped to "journal-photos".
+    func fetchJournalPhotoSignedURL(storagePath: String) async throws -> URL {
+        let endpoint = "/storage/v1/object/sign/journal-photos/\(storagePath)"
+        guard let url = URL(string: baseURL + endpoint) else { throw APIError.invalidRequest }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(anonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(jwtToken ?? anonKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(["expiresIn": 3600])
+
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else { throw APIError.networkError }
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            hlog("Failed to sign journal photo URL (\(httpResponse.statusCode))", "ERROR")
+            throw APIError.serverError
+        }
+
+        struct SignedPathResponse: Decodable { let signedURL: String }
+        let decoded = try JSONDecoder().decode(SignedPathResponse.self, from: data)
+        guard let signedURL = URL(string: baseURL + "/storage/v1" + decoded.signedURL) else {
+            throw APIError.serverError
+        }
+        return signedURL
+    }
+
     private func generateSignedURLViaFunction(storagePath: String) async throws -> String {
         // Call Edge Function to generate signed URL (uses service role, no RLS issues)
         let endpoint = "/functions/v1/generate-audio-signed-url"

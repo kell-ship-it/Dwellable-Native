@@ -16,8 +16,8 @@ import Foundation
 ///
 /// `status` is "pending" (body/title/scripture all nil) until synthesis succeeds,
 /// "approved" once it has -- see T-159 for the retry mechanism that moves a pending
-/// entry forward. Photos aren't modeled here either -- no Storage bucket/column
-/// exists yet for them (same gap `JournalDetailView`'s hero photo already flags).
+/// entry forward. `photoPath` (T-156) closes the gap `JournalDetailView`'s hero photo
+/// used to flag -- a real Storage object path now, not session-local only.
 struct JournalEntry: Identifiable, Codable {
     let id: String
     let momentId: String
@@ -41,6 +41,10 @@ struct JournalEntry: Identifiable, Codable {
     // DwellerProfileManager updates and Growth's narrative eligibility.
     var formationEligible: Bool = false
     var extractedFacts: String? = nil
+    // T-156: Storage object path in the (private) "journal-photos" bucket, e.g.
+    // "<userId>/<file>.jpg" -- never a signed/public URL, same reasoning as
+    // `Moment.audioURL`. Nil when no photo is attached.
+    var photoPath: String? = nil
 
     init(
         id: String = UUID().uuidString,
@@ -58,7 +62,8 @@ struct JournalEntry: Identifiable, Codable {
         updatedAt: Date = Date(),
         viewedAt: Date? = nil,
         formationEligible: Bool = false,
-        extractedFacts: String? = nil
+        extractedFacts: String? = nil,
+        photoPath: String? = nil
     ) {
         self.id = id
         self.momentId = momentId
@@ -76,6 +81,7 @@ struct JournalEntry: Identifiable, Codable {
         self.viewedAt = viewedAt
         self.formationEligible = formationEligible
         self.extractedFacts = extractedFacts
+        self.photoPath = photoPath
     }
 
     enum CodingKeys: String, CodingKey {
@@ -95,5 +101,6 @@ struct JournalEntry: Identifiable, Codable {
         case viewedAt = "viewed_at"
         case formationEligible = "formation_eligible"
         case extractedFacts = "extracted_facts"
+        case photoPath = "photo_path"
     }
 }
