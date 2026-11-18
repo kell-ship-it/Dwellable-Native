@@ -141,6 +141,16 @@ struct CaptureConversationView: View {
     // ChatGPT-style behavior caused repeated real-device bugs and were a departure
     // from this locked spec -- reverted back to it entirely.
     @State private var isComposeExpanded = false
+    // Nov 18 2026 (Kell's explicit ask, ChatGPT-style): a fluid downward drag on
+    // the chevron handle collapses an expanded composer, or dismisses the
+    // keyboard from an already-collapsed one -- never the text content itself.
+    // Lives entirely in this one offset, added only to the card's and chevron's
+    // own `.position()` y-coordinates (see `unifiedComposeSurface`), reset to 0
+    // the instant the gesture ends either way (commit or spring-back). The drag
+    // gesture itself is attached ONLY to the chevron button via
+    // `.simultaneousGesture`, never to the `TextEditor` -- so native text
+    // selection/scrolling inside the editor is completely untouched by this.
+    @State private var composeDragOffset: CGFloat = 0
     // Kell's fix (Nov 16 2026): a single shared `audioLevel` scaled by a fixed
     // per-bar random multiplier made every bar move in lockstep -- same instant,
     // just different heights, which reads as "pulsing," not a waveform. Voice
@@ -1375,7 +1385,7 @@ struct CaptureConversationView: View {
                 // `AnyShape` (iOS 17+) is needed to pick between the two at runtime,
                 // and this target sits on iOS 16.
                 .clipShape(RoundedRectangle(cornerRadius: isVoiceCapturing ? captureBarHeight / 2 : (isComposeExpanded ? 0 : 20)))
-                .position(x: fullWidth / 2, y: cardCenterY)
+                .position(x: fullWidth / 2, y: cardCenterY + composeDragOffset)
                 .ignoresSafeArea()
 
                 // Sibling of the card (not nested inside it) -- see the comment
@@ -1395,9 +1405,52 @@ struct CaptureConversationView: View {
                     }
                     .position(
                         x: cardRightX - (isComposeExpanded ? 20 : 14) - 16,
-                        y: cardTopY + (isComposeExpanded ? expandedTopInset : 0) + 14 + 16
+                        y: cardTopY + (isComposeExpanded ? expandedTopInset : 0) + 14 + 16 + composeDragOffset
                     )
                     .ignoresSafeArea()
+                    // Nov 18 2026 (Kell's explicit ask): downward drag on this
+                    // handle ONLY -- never on the TextEditor itself, so typed
+                    // text, selection, and the editor's own scroll are untouched.
+                    // `.simultaneousGesture` (not `.gesture`) so a quick tap still
+                    // reaches the Button's own `toggleComposeExpanded` action; a
+                    // real drag's larger translation is what actually drives
+                    // `composeDragOffset` below, a plain tap barely moves it.
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 8)
+                            .onChanged { value in
+                                // Downward only, clamped -- dragging UP here isn't a
+                                // gesture this control owns (that's the chevron's own
+                                // tap, i.e. the explicit expand action).
+                                composeDragOffset = min(max(0, value.translation.height), 220)
+                            }
+                            .onEnded { value in
+                                // Distance OR velocity commits -- a short, fast flick
+                                // should collapse/dismiss just as reliably as a slow
+                                // drag past the distance threshold, matching the
+                                // "fluid" feel Kell asked for rather than a hard stop.
+                                let committed = value.translation.height > 70 || value.predictedEndTranslation.height > 160
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.86)) {
+                                    if committed {
+                                        if isComposeExpanded {
+                                            // Collapse the expanded editor back to the
+                                            // compact card -- draft text (`inputText`)
+                                            // is never touched by any of this.
+                                            isComposeExpanded = false
+                                        } else {
+                                            // Already compact -- nothing left to
+                                            // collapse, so this dismisses the keyboard
+                                            // instead, same "swipe down to put it away"
+                                            // gesture ChatGPT's own composer supports.
+                                            // Draft stays exactly as typed; tapping the
+                                            // field again (see its own tap-to-focus
+                                            // handling) refocuses and reopens it.
+                                            inputFocused = false
+                                        }
+                                    }
+                                    composeDragOffset = 0
+                                }
+                            }
+                    )
                 }
 
                 // T-272 over-length caption -- Figma E9 ("Message Too Long"),
