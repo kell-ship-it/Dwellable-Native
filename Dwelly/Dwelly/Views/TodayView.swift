@@ -60,11 +60,24 @@ struct TodayView: View {
     // `DailyVerseLibrary` itself, not here.
     @State private var hasLoadedDailyVerse = false
 
-    private let tiles: [(icon: String, category: String, title: String, subtitle: String)] = [
-        ("heart", "Mood", "What are you grateful for today?", "Even something small counts."),
-        ("hands.sparkles", "Intercession", "Anyone on your heart lately?", "Worth a thought right now."),
-        ("mountain.2", "Life-Domain", "Have you had any dreams lately?", "Sometimes that's where God shows up.")
-    ]
+    // T-182: Mood and Life-Domain now rotate daily through their real locked pools
+    // (`TodayPromptLibraries.swift`) instead of always showing the same fixed prompt --
+    // same once-per-appearance-load guard `hasLoadedDailyVerse` already uses, for the
+    // same reattachment reason. Intercession stays a static tile for now -- the
+    // locked design actually wants it re-slotted as Sustain/Follow-up's no-history
+    // fallback, not a fourth always-on rotating tile; that reslotting is its own
+    // ticket, not touched here.
+    @State private var hasLoadedRotatingTiles = false
+    @State private var moodTile: TodayPrompt = MoodPromptLibrary.prompts[0]
+    @State private var lifeDomainTile: TodayPrompt = LifeDomainPromptLibrary.prompts[0]
+
+    private var tiles: [(icon: String, category: String, title: String, subtitle: String)] {
+        [
+            (moodTile.icon, moodTile.category, moodTile.title, moodTile.subtitle),
+            ("hands.sparkles", "Intercession", "Anyone on your heart lately?", "Worth a thought right now."),
+            (lifeDomainTile.icon, lifeDomainTile.category, lifeDomainTile.title, lifeDomainTile.subtitle)
+        ]
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -100,6 +113,12 @@ struct TodayView: View {
             guard !hasLoadedDailyVerse else { return }
             hasLoadedDailyVerse = true
             dailyVerse = DailyVerseLibrary.verseForToday()
+        }
+        .onAppear {
+            guard !hasLoadedRotatingTiles else { return }
+            hasLoadedRotatingTiles = true
+            moodTile = MoodPromptLibrary.promptForToday()
+            lifeDomainTile = LifeDomainPromptLibrary.promptForToday()
         }
     }
 
