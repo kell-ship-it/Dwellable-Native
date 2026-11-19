@@ -419,5 +419,16 @@ await scenario("Ordinary conversation is also closed after Finish") { d in
     check(d.session.noteRequestScheduled(userText: "again") == false, "no new turn after Finish")
 }
 
+// MARK: - A closed support conversation never ends on a question
+
+let q = CaptureSafetySession.closingDisplayText
+check(q("I'm glad to hear you're okay. What's been a bright spot in your day so far that you can hold onto?") == "I'm glad to hear you're okay.", "trailing question removed, the rest kept")
+check(q("That sounds heavy. I'm here. Does that make sense? Want to say more?") == "That sounds heavy. I'm here.", "several trailing questions all removed")
+check(q("Thank you for trusting me.\n\nYou don't have to carry this alone.") == "Thank you for trusting me.\n\nYou don't have to carry this alone.", "a reply with no question comes back unchanged, paragraph break intact")
+check(q("What's on your heart?") == "Thank you for sharing that with me.", "a reply that is only a question falls back to a short fixed line")
+check(q("Is that right? I hear you. Thank you.") == "Is that right? I hear you. Thank you.", "a question in the middle (not trailing) is left alone")
+check(q("I'm glad you told me. Can you say more?\n\n\u{2022} findahelpline.com lists a crisis line\n\u{2022} Call your local emergency number") == "I'm glad you told me.\n\n\u{2022} findahelpline.com lists a crisis line\n\u{2022} Call your local emergency number", "the question is dropped but an appended resource block is kept exactly")
+check(q("") == "", "empty text is unchanged")
+
 print(failures == 0 ? "ALL CHECKS PASSED" : "\(failures) CHECK(S) FAILED")
 exit(failures == 0 ? 0 : 1)

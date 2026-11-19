@@ -35,6 +35,16 @@ struct FeedbackView: View {
                     header
 
                     VStack(spacing: 12) {
+                        NavigationLink(destination: SafetyHelpView()) {
+                            card(
+                                icon: "lifepreserver",
+                                title: "Crisis & Safety Help",
+                                body: "If you or someone you know may hurt themselves or someone else, here is where to turn.",
+                                buttonTitle: "Get help now"
+                            )
+                        }
+                        .buttonStyle(.plain)
+
                         NavigationLink(destination: SendFeedbackView()) {
                             card(
                                 icon: "square.and.pencil",

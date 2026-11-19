@@ -50,7 +50,7 @@ enum SafetyResourceCenter {
     /// Plain-language national resources for self-risk. Verified against each service's
     /// own published number as of this writing; re-check before relying on this at launch,
     /// numbers/services do change.
-    private static func selfRiskLines(for country: SupportedCountry) -> [String] {
+    static func selfRiskLines(for country: SupportedCountry) -> [String] {
         switch country {
         case .unitedStates:
             return [
@@ -86,7 +86,7 @@ enum SafetyResourceCenter {
     /// 988 (and most equivalents) explicitly also take calls from a concerned third party --
     /// stated here so the same line serves both the at-risk person and the one asking on
     /// their behalf, without inventing a second set of numbers.
-    private static func thirdPartyRiskLines(for country: SupportedCountry) -> [String] {
+    static func thirdPartyRiskLines(for country: SupportedCountry) -> [String] {
         switch country {
         case .unitedStates:
             return [

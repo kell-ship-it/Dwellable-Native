@@ -66,13 +66,17 @@ const corsHeaders = {
 const GROQ_MODEL = "openai/gpt-oss-120b"
 const OPENAI_MODEL = "gpt-4o-mini"
 // T-302/T-303: the crisis/misuse safety layer, scoped only to "capture_conversation" --
-// free-form text is the one place it enters this app (see T-125's own notes). Both the
-// input contextual classifier and the output check deliberately run on OpenAI only, not
-// Groq -- this needs reliable structured JSON output, not the cheapest/fastest option,
-// and keeping the whole safety layer on one provider keeps its failure mode simple (one
-// provider down means "fail closed," not "guess which of two providers to trust").
+// free-form text is the one place it enters this app (see T-125's own notes). Kell's rule
+// (Nov 19 2026): EVERY AI call tries Groq first and only falls back to OpenAI when Groq
+// fails (including hitting its daily limit) -- the safety checks included. An earlier pass
+// ran the classifier and output check on OpenAI only; that spent OpenAI tokens while Groq
+// was still available. If BOTH providers fail, the check throws and the proxy fails
+// closed exactly as before (neutral fallback reply, unverified turn, nothing saved).
+// The OpenAI moderation endpoint is the one exception: it is a separate free service
+// with no Groq equivalent, supplementary only, and non-fatal if it fails.
 const SAFETY_MODEL = "gpt-4o-mini"
 const SAFETY_TIMEOUT_MS = 8_000
+const SAFETY_GROQ_TIMEOUT_MS = 12_000
 // Raised from 500 (Nov 11 2026): gpt-oss-120b is a reasoning model -- it spends
 // tokens on hidden "thinking" before its visible answer, and at 500 it sometimes
 // burned the whole budget on that and returned an empty choices[0].message.content,
@@ -215,83 +219,123 @@ async function callModeration(text: string): Promise<ModerationResult> {
   }
 }
 
-async function classifyInput(
+type SafetyChatResult<T> = { value: T; usage: TokenUsage; provider: "groq" | "openai"; model: string }
+
+// Pulls the JSON object out of a model reply even if it wrapped it in prose or a code
+// fence (a reasoning model on Groq can, since Groq is called without json_object mode).
+function extractJSONObject(raw: string): string {
+  const start = raw.indexOf("{")
+  const end = raw.lastIndexOf("}")
+  if (start === -1 || end <= start) throw new Error(`Safety model returned no JSON object: ${raw.slice(0, 200)}`)
+  return raw.slice(start, end + 1)
+}
+
+// One safety-model call: Groq first, OpenAI only if Groq fails for ANY reason (error,
+// timeout, empty reply, an unparseable reply, or its daily limit). `parse` turns the raw
+// reply into the typed result and throws if it can't, which counts as a failure of THAT
+// provider. Both failing throws, which the caller's existing fail-closed handling turns
+// into the neutral fallback.
+async function safetyChat<T>(
   messages: ChatMessage[],
-  moderationHint: string
-): Promise<{ classification: ReturnType<typeof parseClassificationJSON>; usage: TokenUsage }> {
+  groqMaxTokens: number,
+  openaiMaxTokens: number,
+  parse: (content: string) => T
+): Promise<SafetyChatResult<T>> {
+  try {
+    const groqKey = Deno.env.get("GROQ_API_KEY")
+    if (!groqKey) throw new Error("GROQ_API_KEY not set")
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), SAFETY_GROQ_TIMEOUT_MS)
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${groqKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages,
+          // gpt-oss-120b is a reasoning model: it spends hidden tokens before its visible
+          // answer, so this budget is much larger than the OpenAI one (only used tokens
+          // are billed/counted). Low effort keeps that reasoning short.
+          max_tokens: groqMaxTokens,
+          temperature: 0,
+          reasoning_effort: "low",
+        }),
+        signal: controller.signal,
+      })
+      if (!response.ok) throw new Error(`Groq safety call error ${response.status}: ${await response.text()}`)
+      const data = await response.json()
+      const content = data.choices?.[0]?.message?.content
+      if (!content) throw new Error("Groq safety call returned no content")
+      return { value: parse(content), usage: extractUsage(data), provider: "groq", model: GROQ_MODEL }
+    } finally {
+      clearTimeout(timeout)
+    }
+  } catch (groqError) {
+    console.error("llm-proxy: Groq safety call failed, falling back to OpenAI --", groqError)
+  }
+
   const apiKey = Deno.env.get("OPENAI_API_KEY")
   if (!apiKey) throw new Error("OPENAI_API_KEY not set")
-
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), SAFETY_TIMEOUT_MS)
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: SAFETY_MODEL,
-        messages: [
-          { role: "system", content: INPUT_CLASSIFIER_PROMPT },
-          ...messages,
-          {
-            role: "system",
-            content: `(Informational only, not conclusive -- an automated content filter flagged: ${moderationHint})`,
-          },
-        ],
-        max_tokens: 200,
+        messages,
+        max_tokens: openaiMaxTokens,
         temperature: 0,
         response_format: { type: "json_object" },
       }),
       signal: controller.signal,
     })
-    if (!response.ok) throw new Error(`Safety classifier error ${response.status}: ${await response.text()}`)
+    if (!response.ok) throw new Error(`OpenAI safety call error ${response.status}: ${await response.text()}`)
     const data = await response.json()
-    const raw = data.choices?.[0]?.message?.content
-    if (!raw) throw new Error("Safety classifier response missing content")
-    return { classification: parseClassificationJSON(raw), usage: extractUsage(data) }
+    const content = data.choices?.[0]?.message?.content
+    if (!content) throw new Error("OpenAI safety call returned no content")
+    return { value: parse(content), usage: extractUsage(data), provider: "openai", model: SAFETY_MODEL }
   } finally {
     clearTimeout(timeout)
   }
 }
 
-async function checkOutput(draftReply: string): Promise<{ safe: boolean; usage: TokenUsage }> {
-  const apiKey = Deno.env.get("OPENAI_API_KEY")
-  if (!apiKey) throw new Error("OPENAI_API_KEY not set")
-
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), SAFETY_TIMEOUT_MS)
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+async function classifyInput(
+  messages: ChatMessage[],
+  moderationHint: string
+): Promise<{ classification: ReturnType<typeof parseClassificationJSON>; usage: TokenUsage; provider: "groq" | "openai"; model: string }> {
+  const result = await safetyChat(
+    [
+      { role: "system", content: INPUT_CLASSIFIER_PROMPT },
+      ...messages,
+      {
+        role: "system",
+        content: `(Informational only, not conclusive -- an automated content filter flagged: ${moderationHint})`,
       },
-      body: JSON.stringify({
-        model: SAFETY_MODEL,
-        messages: [
-          { role: "system", content: OUTPUT_CHECK_PROMPT },
-          { role: "user", content: draftReply },
-        ],
-        max_tokens: 20,
-        temperature: 0,
-        response_format: { type: "json_object" },
-      }),
-      signal: controller.signal,
-    })
-    if (!response.ok) throw new Error(`Output check error ${response.status}: ${await response.text()}`)
-    const data = await response.json()
-    const raw = data.choices?.[0]?.message?.content
-    if (!raw) throw new Error("Output check response missing content")
-    const parsed = JSON.parse(raw) as { safe?: boolean }
-    if (typeof parsed.safe !== "boolean") throw new Error(`Output check returned no boolean safe field: ${raw}`)
-    return { safe: parsed.safe, usage: extractUsage(data) }
-  } finally {
-    clearTimeout(timeout)
-  }
+    ],
+    1000,
+    200,
+    (content) => parseClassificationJSON(extractJSONObject(content))
+  )
+  return { classification: result.value, usage: result.usage, provider: result.provider, model: result.model }
+}
+
+async function checkOutput(draftReply: string): Promise<{ safe: boolean; usage: TokenUsage; provider: "groq" | "openai"; model: string }> {
+  const result = await safetyChat(
+    [
+      { role: "system", content: OUTPUT_CHECK_PROMPT },
+      { role: "user", content: draftReply },
+    ],
+    600,
+    20,
+    (content) => {
+      const parsed = JSON.parse(extractJSONObject(content)) as { safe?: boolean }
+      if (typeof parsed.safe !== "boolean") throw new Error(`Output check returned no boolean safe field: ${content.slice(0, 200)}`)
+      return parsed.safe
+    }
+  )
+  return { safe: result.value, usage: result.usage, provider: result.provider, model: result.model }
 }
 
 // deno-lint-ignore no-explicit-any -- `createClient()` with no generics (same as every

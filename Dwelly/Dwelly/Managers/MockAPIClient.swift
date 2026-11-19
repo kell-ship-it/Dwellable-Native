@@ -425,6 +425,11 @@ class MockAPIClient: APIClient {
             return LLMResponse(content: json, model: "mock", provider: "groq", safetyTier: nil)
         }
         if feature == "capture_conversation" && omitCaptureSafetyTier {
+            // DEBUG UI harness only: a reply that ends in a question, to see the closed
+            // support state drop it.
+            if messages.last?.content.lowercased().contains("joking") == true {
+                return LLMResponse(content: "I'm glad to hear you're okay. What's been a bright spot in your day so far that you can hold onto?", model: "mock", provider: "groq", safetyTier: nil)
+            }
             return LLMResponse(content: "I'm really glad you told me. You don't have to carry this alone.", model: "mock", provider: "groq", safetyTier: nil)
         }
         return LLMResponse(content: "[Mock response for \(feature)]", model: "mock", provider: "groq", safetyTier: feature == "capture_conversation" ? "normal" : nil)

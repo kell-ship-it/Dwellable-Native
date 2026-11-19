@@ -39,6 +39,14 @@ export interface InputClassification {
   clarifyQuestion: string | null
 }
 
+// Which provider/model actually answered a safety call. Groq first, OpenAI only as the
+// fallback (Kell, Nov 19 2026) -- so usage logging must record what really ran, not
+// assume OpenAI. Optional so callers/fakes that don't care keep working.
+export interface SafetyCallMeta {
+  provider?: "groq" | "openai"
+  model?: string
+}
+
 export interface ProxyResult {
   status: number
   body: Record<string, unknown>
@@ -125,8 +133,8 @@ export const FALLBACK_TEXT =
 /// in index.ts; see handler.test.ts for the fake ones used in tests.
 export interface ProxyDependencies {
   callModeration(text: string): Promise<ModerationResult>
-  classifyInput(messages: ChatMessage[], moderationHint: string): Promise<{ classification: InputClassification; usage: TokenUsage }>
-  checkOutput(draftReply: string): Promise<{ safe: boolean; usage: TokenUsage }>
+  classifyInput(messages: ChatMessage[], moderationHint: string): Promise<{ classification: InputClassification; usage: TokenUsage } & SafetyCallMeta>
+  checkOutput(draftReply: string): Promise<{ safe: boolean; usage: TokenUsage } & SafetyCallMeta>
   callGroq(messages: ChatMessage[], maxTokens: number, temperature: number): Promise<{ content: string; usage: TokenUsage }>
   callOpenAI(messages: ChatMessage[], maxTokens: number, temperature: number): Promise<{ content: string; usage: TokenUsage }>
   // T-304 point 4: EVERY real spend -- the main conversational call AND the safety
@@ -186,7 +194,7 @@ export async function handleProxyRequest(payload: LLMProxyRequest, deps: ProxyDe
     try {
       const classified = await deps.classifyInput(payload.messages, moderationHint)
       classification = classified.classification
-      await deps.logUsage({ feature: `${payload.feature}_safety_classifier`, provider: "openai", model: SAFETY_MODEL, usage: classified.usage })
+      await deps.logUsage({ feature: `${payload.feature}_safety_classifier`, provider: classified.provider ?? "openai", model: classified.model ?? SAFETY_MODEL, usage: classified.usage })
     } catch (classifierError) {
       // The contextual classifier failing IS fatal to the input stage -- without it we
       // can't safely distinguish A1 from A3, so this fails toward the neutral fallback
@@ -236,8 +244,9 @@ export async function handleProxyRequest(payload: LLMProxyRequest, deps: ProxyDe
   // Prayer/journal synthesis responses skip this (out of scope, see above).
   if (isCaptureConversation) {
     try {
-      const { safe, usage: outputCheckUsage } = await deps.checkOutput(result.content)
-      await deps.logUsage({ feature: `${payload.feature}_safety_output_check`, provider: "openai", model: SAFETY_MODEL, usage: outputCheckUsage })
+      const outputCheck = await deps.checkOutput(result.content)
+      const { safe, usage: outputCheckUsage } = outputCheck
+      await deps.logUsage({ feature: `${payload.feature}_safety_output_check`, provider: outputCheck.provider ?? "openai", model: outputCheck.model ?? SAFETY_MODEL, usage: outputCheckUsage })
       if (!safe) {
         await deps.bumpSafetyAggregate("output_blocked")
         return { status: 200, body: { content: FALLBACK_TEXT, model: "safety-fallback", provider: "openai", safetyTier: "fallback" } }

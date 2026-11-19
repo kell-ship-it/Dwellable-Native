@@ -339,3 +339,37 @@ Deno.test("ZERO_USAGE has all-null fields, not zeros that could be mistaken for 
   assertEquals(ZERO_USAGE.completionTokens, null)
   assertEquals(ZERO_USAGE.totalTokens, null)
 })
+
+// Kell, Nov 19 2026: every AI call tries Groq first, OpenAI only as the fallback -- the
+// safety checks included. The proxy's real provider choice lives in index.ts; what this
+// file can prove is that usage logging records WHICH provider actually answered, so the
+// usage dashboard and the daily cap see the truth instead of an assumed "openai".
+Deno.test("safety-call usage is logged under the provider that actually answered (Groq)", async () => {
+  const { deps, calls } = makeFakeDeps({
+    async classifyInput() {
+      return { classification: { action: "normal" as SafetyAction, clarifyQuestion: null }, usage: usage(50), provider: "groq" as const, model: "openai/gpt-oss-120b" }
+    },
+    async checkOutput() {
+      return { safe: true, usage: usage(15), provider: "groq" as const, model: "openai/gpt-oss-120b" }
+    },
+  })
+  await handleProxyRequest(capturePayload("Grateful for a quiet morning."), deps)
+  const classifier = calls.usageLogged.find((u) => u.feature === "capture_conversation_safety_classifier")
+  const outputCheck = calls.usageLogged.find((u) => u.feature === "capture_conversation_safety_output_check")
+  assertEquals(classifier?.provider, "groq")
+  assertEquals(classifier?.model, "openai/gpt-oss-120b")
+  assertEquals(outputCheck?.provider, "groq")
+  assertEquals(calls.usageLogged.some((u) => u.provider === "openai"), false)
+})
+
+Deno.test("safety-call usage is logged as OpenAI when OpenAI is what answered (the fallback)", async () => {
+  const { deps, calls } = makeFakeDeps({
+    async classifyInput() {
+      return { classification: { action: "normal" as SafetyAction, clarifyQuestion: null }, usage: usage(50), provider: "openai" as const, model: "gpt-4o-mini" }
+    },
+  })
+  await handleProxyRequest(capturePayload("Grateful for a quiet morning."), deps)
+  const classifier = calls.usageLogged.find((u) => u.feature === "capture_conversation_safety_classifier")
+  assertEquals(classifier?.provider, "openai")
+  assertEquals(classifier?.model, "gpt-4o-mini")
+})

@@ -1112,11 +1112,17 @@ struct CaptureConversationView: View {
             guard !hasInitialized else { return }
             hasInitialized = true
 
-            // T-308: shown once, ever, the first time Capture actually opens --
-            // not buried in Settings, where it's also reachable afterward.
-            if !UserDefaults.standard.bool(forKey: Self.hasSeenSafetyNoticeKey) {
+            // T-308: shown the first time Capture actually opens -- not buried in Settings,
+            // where it's also reachable afterward. Marked seen only when the person
+            // dismisses it (see the sheet's onDismiss), not merely when it appears, so a
+            // launch that never really showed it doesn't use it up. The DEBUG offline UI
+            // harness never shows it.
+            var skipForHarness = false
+            #if DEBUG
+            skipForHarness = CrisisSupportUIHarnessView.isRequested
+            #endif
+            if !skipForHarness && !UserDefaults.standard.bool(forKey: Self.hasSeenSafetyNoticeKey) {
                 showSafetyNotice = true
-                UserDefaults.standard.set(true, forKey: Self.hasSeenSafetyNoticeKey)
             }
 
             if let last = UserDefaults.standard.object(forKey: Self.lastReflectionDateKey) as? Date {
@@ -1195,7 +1201,9 @@ struct CaptureConversationView: View {
         // T-304/T-308: always-available help entry point + the one-time pilot
         // safety notice -- both are plain informational sheets, not tied to any
         // flagged content in this conversation.
-        .sheet(isPresented: $showSafetyNotice) {
+        .sheet(isPresented: $showSafetyNotice, onDismiss: {
+            UserDefaults.standard.set(true, forKey: Self.hasSeenSafetyNoticeKey)
+        }) {
             SafetyNoticeSheet()
         }
         // Merged in from `CaptureView` (Nov 17 2026) -- backgrounding mid-recording
@@ -1245,7 +1253,9 @@ struct CaptureConversationView: View {
             VStack(alignment: .leading, spacing: 8) {
                 dwellyBadge
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(turn.text)
+                    // A closed support conversation never ends on a question (display
+                    // only -- see CaptureSafetySession.closingDisplayText).
+                    Text(isFinal && isCrisisSupportBlocked ? CaptureSafetySession.closingDisplayText(turn.text) : turn.text)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Theme.Capture.textBody)
                     // Hidden once the morph starts (T-271) -- `showJournalMorph`

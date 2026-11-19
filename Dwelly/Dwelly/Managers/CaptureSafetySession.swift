@@ -42,6 +42,38 @@ final class CaptureSafetySession: ObservableObject {
     var status: CrisisSupportPolicy.Status { CrisisSupportPolicy.status(forTierSequence: tierSequence) }
     var isAwaitingClassification: Bool { pendingClassifications > 0 }
 
+    /// A closed support conversation must not end on a question nobody can answer. The
+    /// last reply was written before Finish was tapped, so it may still end by asking
+    /// one. This returns the reply's prose with any trailing question sentences removed,
+    /// leaving everything else (including paragraph breaks and an appended resource
+    /// block, which starts at the first "\n\n\u{2022} ") exactly as it was. If nothing but
+    /// questions remain, it falls back to a short fixed line. Display-only: the stored
+    /// turn is never changed, and a reply with no trailing question comes back as-is.
+    static func closingDisplayText(_ text: String) -> String {
+        let marker = "\n\n\u{2022} "
+        var prose = text
+        var suffix = ""
+        if let r = text.range(of: marker) {
+            prose = String(text[..<r.lowerBound])
+            suffix = String(text[r.lowerBound...])
+        }
+        var cutAt: String.Index?
+        prose.enumerateSubstrings(in: prose.startIndex..<prose.endIndex, options: [.bySentences, .reverse]) { sentence, range, _, stop in
+            guard let sentence else { return }
+            let trimmed = sentence.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty { return }
+            if trimmed.hasSuffix("?") {
+                cutAt = range.lowerBound
+            } else {
+                stop = true
+            }
+        }
+        guard let cutAt else { return text }
+        let kept = prose[..<cutAt].trimmingCharacters(in: .whitespacesAndNewlines)
+        let lead = kept.isEmpty ? "Thank you for sharing that with me." : kept
+        return suffix.isEmpty ? lead : lead + suffix
+    }
+
     static func normalize(_ raw: String?) -> String {
         guard let raw, contractTiers.contains(raw) else { return "unverified" }
         return raw
