@@ -2,6 +2,17 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (November 18, 2026 close — moment composer confirmed on device, beta scope locked)
+
+**Confirmed Pending Items:**
+1. **T-125 Crisis protocol + misuse guardrails** — safety handling and resource links for distress/misuse in the reflection chat. Non-negotiable before real beta testers.
+2. **T-107 LLM request queue, backoff, spend guardrails** — reopen the existing t-107 session. Protects against cost blowups and rate-limit failures under real tester load.
+3. **T-083 FCM setup, then T-084/085/087** — notifications foundation (scheduling, funnel stages, templates). Biggest in-scope chunk; must land before Nov 25.
+
+In parallel (Kell): decide T-252 and create the real IAP products in App Store Connect for T-254.
+
+**Rationale:** Beta plan (top of the Notion Launch Roadmap) targets engineering done by Nov 25, Kell's own acceptance pass Nov 27–Dec 10, TestFlight beta ~Dec 11. Notifications IN; Formation Intelligence OUT; Prayer out pending Kell confirming "Paul's" = paused vs Paul-owned. These three are the safety, cost, and largest-scope blockers on that list.
+
 ## Next Session Objective (November 16, 2026 close — T-078/T-223 built earlier, then T-287–T-293: capture polish, the real "entries aren't populating" root cause, journal-editing bugs, waveform/transcribing follow-ups)
 
 **Confirmed Pending Items:**
