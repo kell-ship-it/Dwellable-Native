@@ -60,9 +60,13 @@
 		0190 /* CaptureConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0191 /* CaptureConversationView.swift */; };
 		F048 /* SafetySupportSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = F049 /* SafetySupportSheets.swift */; };
 		F04A /* SafetySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B /* SafetySettingsView.swift */; };
+		F058 /* CrisisSupportUIHarnessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F059 /* CrisisSupportUIHarnessView.swift */; };
 		F04C /* LegalAcceptance.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04D /* LegalAcceptance.swift */; };
 		F04E /* FormationEligibilityPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04F /* FormationEligibilityPolicy.swift */; };
 		F050 /* CrisisSupportPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F051 /* CrisisSupportPolicy.swift */; };
+		F052 /* LLMResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F053 /* LLMResponse.swift */; };
+		F054 /* CaptureSafetySession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F055 /* CaptureSafetySession.swift */; };
+		F056 /* LocalExplicitHarmSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F057 /* LocalExplicitHarmSignal.swift */; };
 		F00D /* JournalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00E /* JournalDetailView.swift */; };
 		F00F /* JournalEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F010 /* JournalEntry.swift */; };
 		F011 /* JournalSynthesisManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F012 /* JournalSynthesisManager.swift */; };
@@ -162,9 +166,13 @@
 		0191 /* CaptureConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureConversationView.swift; sourceTree = "<group>"; };
 		F049 /* SafetySupportSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafetySupportSheets.swift; sourceTree = "<group>"; };
 		F04B /* SafetySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafetySettingsView.swift; sourceTree = "<group>"; };
+		F059 /* CrisisSupportUIHarnessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrisisSupportUIHarnessView.swift; sourceTree = "<group>"; };
 		F04D /* LegalAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalAcceptance.swift; sourceTree = "<group>"; };
 		F04F /* FormationEligibilityPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationEligibilityPolicy.swift; sourceTree = "<group>"; };
 		F051 /* CrisisSupportPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrisisSupportPolicy.swift; sourceTree = "<group>"; };
+		F053 /* LLMResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMResponse.swift; sourceTree = "<group>"; };
+		F055 /* CaptureSafetySession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSafetySession.swift; sourceTree = "<group>"; };
+		F057 /* LocalExplicitHarmSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalExplicitHarmSignal.swift; sourceTree = "<group>"; };
 		F00E /* JournalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalDetailView.swift; sourceTree = "<group>"; };
 		F010 /* JournalEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEntry.swift; sourceTree = "<group>"; };
 		F012 /* JournalSynthesisManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalSynthesisManager.swift; sourceTree = "<group>"; };
@@ -294,6 +302,7 @@
 				0191 /* CaptureConversationView.swift */,
 				F049 /* SafetySupportSheets.swift */,
 				F04B /* SafetySettingsView.swift */,
+				F059 /* CrisisSupportUIHarnessView.swift */,
 				F00E /* JournalDetailView.swift */,
 				0145 /* MomentDetailView.swift */,
 				0147 /* MomentRow.swift */,
@@ -357,6 +366,9 @@
 				F04D /* LegalAcceptance.swift */,
 				F04F /* FormationEligibilityPolicy.swift */,
 				F051 /* CrisisSupportPolicy.swift */,
+				F053 /* LLMResponse.swift */,
+				F055 /* CaptureSafetySession.swift */,
+				F057 /* LocalExplicitHarmSignal.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -551,6 +563,7 @@
 				0190 /* CaptureConversationView.swift in Sources */,
 				F048 /* SafetySupportSheets.swift in Sources */,
 				F04A /* SafetySettingsView.swift in Sources */,
+				F058 /* CrisisSupportUIHarnessView.swift in Sources */,
 				F00D /* JournalDetailView.swift in Sources */,
 				F00F /* JournalEntry.swift in Sources */,
 				F011 /* JournalSynthesisManager.swift in Sources */,
@@ -579,6 +592,9 @@
 				F04C /* LegalAcceptance.swift in Sources */,
 				F04E /* FormationEligibilityPolicy.swift in Sources */,
 				F050 /* CrisisSupportPolicy.swift in Sources */,
+				F052 /* LLMResponse.swift in Sources */,
+				F054 /* CaptureSafetySession.swift in Sources */,
+				F056 /* LocalExplicitHarmSignal.swift in Sources */,
 				0116 /* Theme.swift in Sources */,
 				0118 /* Config.swift in Sources */,
 				E001 /* APIClientEnvironment.swift in Sources */,

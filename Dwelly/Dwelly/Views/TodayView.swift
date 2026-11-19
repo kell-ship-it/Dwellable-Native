@@ -118,8 +118,6 @@ struct TodayView: View {
                     ForEach(tiles, id: \.title) { tile in
                         tileRow(tile)
                     }
-
-                    interlude
                 }
                 .padding(.horizontal, Theme.Spacing.xl)
                 .padding(.top, Theme.Spacing.lg)
@@ -394,25 +392,6 @@ struct TodayView: View {
             .clipShape(RoundedRectangle(cornerRadius: 15))
         }
         .buttonStyle(.pressableCard)
-    }
-
-    private var interlude: some View {
-        VStack(spacing: 11) {
-            Image(systemName: "scribble")
-                .font(.system(size: 18))
-                .foregroundColor(Theme.Payment.textSupporting)
-                .rotationEffect(.degrees(-10))
-
-            Text("Some days don't need new words.")
-                .font(.system(size: 17, design: .serif))
-                .foregroundColor(Theme.Payment.textHeading)
-                .multilineTextAlignment(.center)
-
-            Text("Just showing up counts.")
-                .font(.system(size: 13))
-                .foregroundColor(Theme.Payment.textFaint)
-        }
-        .padding(.top, Theme.Spacing.xl)
     }
 }
 

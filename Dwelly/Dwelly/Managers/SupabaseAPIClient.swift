@@ -382,7 +382,12 @@ class SupabaseAPIClient: APIClient {
             updated_at: Date().ISO8601Format(),
             formation_eligible: entry.formationEligible,
             extracted_facts: entry.extractedFacts,
-            profile_excluded: entry.profileExcluded
+            // Omitted (nil -> key not encoded) when false, the column's own DB
+            // default: keeps journal saves working against a database where
+            // migration 20261119140000 hasn't been applied yet. Only a true value
+            // is ever sent, and nothing sets it true while
+            // FormationEligibilityPolicy.isActive is off.
+            profile_excluded: entry.profileExcluded ? true : nil
         )
         // Upsert on the unique moment_id column -- one entry per moment, so saving
         // twice (e.g. re-saving moods after a title already exists) updates the
@@ -1252,7 +1257,7 @@ struct JournalEntryPayload: Codable {
     let updated_at: String
     let formation_eligible: Bool
     let extracted_facts: String?
-    let profile_excluded: Bool
+    let profile_excluded: Bool?
 }
 
 struct DwellerProfilePayload: Codable {

@@ -37,13 +37,25 @@ enum CrisisSupportPolicy {
     /// shifting into worship/God-encounter language afterward does not clear it, and
     /// neither does this file pretending a later "normal" turn can reverse a real
     /// latch -- `status(forTierSequence:)` below never un-latches once this fires.
-    static let genuineConcernTiers: Set<String> = ["crisis_self", "crisis_other", "ongoing_danger"]
+    ///
+    /// The three "local_explicit_*" tiers (Nov 19 2026) come from LocalExplicitHarmSignal:
+    /// an explicit, current statement in the user's own words, recorded only when that
+    /// turn's backend verdict was missing or failed. Same permanent latch.
+    static let genuineConcernTiers: Set<String> = [
+        "crisis_self", "crisis_other", "ongoing_danger",
+        "local_explicit_self_harm", "local_explicit_third_party_harm", "local_explicit_harm_to_others",
+    ]
 
     /// An unverifiable turn -- the proxy's safety check genuinely failed or timed out
     /// (CaptureConversationView's `requestDwellyResponse` catch block). This is NOT
     /// evidence of a real concern by itself, only of a check that couldn't complete --
     /// it creates a TEMPORARY hold, not a latch.
-    static let pendingTiers: Set<String> = ["fallback"]
+    ///
+    /// "unverified" (Nov 19 2026): the response carried no recognized safety verdict at
+    /// all -- missing `safetyTier` (e.g. a pre-safety proxy deployment) or a value
+    /// outside the contract. Same treatment as a failed check: blocks saving, never
+    /// read as normal, never read as a crisis either. See CaptureSafetySession.normalize.
+    static let pendingTiers: Set<String> = ["fallback", "unverified"]
 
     /// A real, completed safety check that found nothing current -- either "normal"
     /// (no concern) or "refusal" (a B3 misuse request was declined, which is itself
@@ -115,10 +127,23 @@ enum CrisisSupportPolicy {
     /// check failure -- each step down is a real but lower-certainty signal than the
     /// one above it. Takes the plain membership (order doesn't matter for this pick).
     static func primaryResourceTier(forTiersSeen tiersSeen: Set<String>) -> SafetyResourceCenter.Tier? {
-        if tiersSeen.contains("crisis_self") { return .crisisSelf }
+        if tiersSeen.contains("crisis_self") || tiersSeen.contains("local_explicit_self_harm") { return .crisisSelf }
         if tiersSeen.contains("ongoing_danger") { return .ongoingDanger }
-        if tiersSeen.contains("crisis_other") { return .crisisOther }
+        if tiersSeen.contains("crisis_other") || tiersSeen.contains("local_explicit_third_party_harm") { return .crisisOther }
+        // Harm-to-others has no dedicated resource set yet; it uses the general
+        // crisis-line + local-emergency-number lines (stated as a limitation).
+        if tiersSeen.contains("local_explicit_harm_to_others") { return .crisisSelf }
         if tiersSeen.contains("fallback") { return .fallback }
         return nil
+    }
+
+    /// The resource block to append after ONE turn's reply, keyed off the tier actually
+    /// recorded for that turn (never the reply's own wording).
+    static func resourceTier(forRecordedTier tier: String) -> SafetyResourceCenter.Tier? {
+        switch tier {
+        case "local_explicit_self_harm", "local_explicit_harm_to_others": return .crisisSelf
+        case "local_explicit_third_party_harm": return .crisisOther
+        default: return SafetyResourceCenter.Tier(rawValue: tier)
+        }
     }
 }

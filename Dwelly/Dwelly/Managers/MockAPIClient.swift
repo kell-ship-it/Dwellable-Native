@@ -4,6 +4,10 @@ class MockAPIClient: APIClient {
     private var storedMoments: [Moment] = []
     private var storedJournalEntries: [JournalEntry] = []
     private let currentUserId = "user-demo-001"
+    /// When true, capture_conversation replies carry NO `safetyTier` -- exactly the
+    /// response shape the currently-deployed llm-proxy v13 returns. Used only by the
+    /// DEBUG Crisis Support UI harness to render the real screen offline.
+    var omitCaptureSafetyTier = false
 
     // Mock test accounts for authentication
     private let validCredentials: [String: String] = [
@@ -419,6 +423,9 @@ class MockAPIClient: APIClient {
             "moods": ["Peaceful", "Grateful"]}
             """
             return LLMResponse(content: json, model: "mock", provider: "groq", safetyTier: nil)
+        }
+        if feature == "capture_conversation" && omitCaptureSafetyTier {
+            return LLMResponse(content: "I'm really glad you told me. You don't have to carry this alone.", model: "mock", provider: "groq", safetyTier: nil)
         }
         return LLMResponse(content: "[Mock response for \(feature)]", model: "mock", provider: "groq", safetyTier: feature == "capture_conversation" ? "normal" : nil)
     }

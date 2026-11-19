@@ -34,13 +34,15 @@ for forbidden in "saveMoment" "saveJournalEntry" "generateJournalMeta" "markMome
     ok "finishWithoutSaving()'s real body does NOT call '$forbidden'"
 done
 
-# Confirm the onChange branch really dispatches to finishWithoutSaving() when latched,
-# and finishAndSave() otherwise -- not, say, both unconditionally, or neither.
+# Confirm the onChange hook routes Finish through CaptureSafetySession.finish(), which
+# decides once (after waiting for in-flight replies) and runs exactly one path. The
+# runtime behavior of finish() itself is exercised by
+# Scripts/crisis_support_runtime_harness, not here.
 ONCHANGE=$(awk '/\.onChange\(of: isConversationComplete\)/{flag=1} flag{print} flag && /^                    }$/{exit}' "$FILE")
-echo "$ONCHANGE" | grep -q "if isCrisisSupportBlocked" || fail "onChange(of: isConversationComplete) does not branch on isCrisisSupportBlocked"
-echo "$ONCHANGE" | grep -q "finishWithoutSaving()" || fail "onChange(of: isConversationComplete) never calls finishWithoutSaving()"
-echo "$ONCHANGE" | grep -q "finishAndSave()" || fail "onChange(of: isConversationComplete) never calls finishAndSave()"
-ok "onChange(of: isConversationComplete) really branches between finishWithoutSaving() (blocked) and finishAndSave() (normal)"
+echo "$ONCHANGE" | grep -q "safetySession.finish(" || fail "onChange(of: isConversationComplete) no longer routes through safetySession.finish()"
+echo "$ONCHANGE" | grep -q "finishWithoutSaving()" || fail "onChange(of: isConversationComplete) never references finishWithoutSaving()"
+echo "$ONCHANGE" | grep -q "finishAndSave()" || fail "onChange(of: isConversationComplete) never references finishAndSave()"
+ok "onChange(of: isConversationComplete) routes Finish through safetySession.finish(save:block:)"
 
 # Confirm finishAndSave() -- the normal path -- still makes all six calls (regression
 # guard: this ticket must not have accidentally neutered the NORMAL save path while
@@ -51,35 +53,59 @@ for required in "saveMoment" "saveJournalEntry" "generateJournalMeta" "DwellerPr
     ok "finishAndSave()'s real body still calls '$required' (normal path unaffected)"
 done
 
-# Bounded-verification fix (Nov 19 2026): the header Finish/Done button must not be
-# tappable while a reply is still in flight -- tapping it mid-flight would flip
-# `isConversationComplete` and fire the onChange hook on a `safetyTierSequence`
-# snapshot that doesn't yet include the in-flight turn's own tier.
-grep -q 'dwellyResponseCount >= 1 && !isConversationComplete && !isWaitingForDwelly' "$FILE" \
-    || fail "the header Finish/Done button's real guard no longer excludes !isWaitingForDwelly -- the in-flight race this session fixed may have regressed"
-ok "the header Finish/Done button's real guard still excludes !isWaitingForDwelly (in-flight race closed)"
+# The header Finish/Done button is hidden while a reply is in flight, by BOTH signals.
+grep -q 'dwellyResponseCount >= 1 && !isConversationComplete && !isWaitingForDwelly && !safetySession.isAwaitingClassification' "$FILE" \
+    || fail "the header Finish/Done button's guard no longer excludes in-flight replies"
+ok "the header Finish/Done button is hidden while a reply is in flight"
 
-# Bounded-verification fix, round 2 (Nov 19 2026): the leave-confirmation alert's
-# "Save" button has no `if`/`.disabled()` mechanism available (SwiftUI alert actions
-# don't support one), so BOTH real finish entry points -- this button AND the header
-# button -- must route through the same `requestManualFinish()` guard instead of
-# setting `manuallyFinished = true` directly.
-grep -q 'Button("Save") { requestManualFinish() }' "$FILE" \
-    || fail "the leave-confirmation alert's real Save button no longer calls requestManualFinish() -- it may be setting manuallyFinished directly again, reopening the race"
-ok "the leave-confirmation alert's real Save button calls requestManualFinish(), not manuallyFinished directly"
+# Both real finish entry points go through requestManualFinish().
+grep -q 'Button("Save") { requestManualFinish() }' "$FILE" || fail "the leave-confirmation alert's Save no longer calls requestManualFinish()"
+grep -q 'Button(action: { requestManualFinish() })' "$FILE" || fail "the header Finish/Done button no longer calls requestManualFinish()"
+ok "the header button and the leave-alert Save both call requestManualFinish()"
+[ "$(grep -v '^[[:space:]]*//' "$FILE" | grep -c 'manuallyFinished = true')" = "1" ] || fail "manuallyFinished = true is set somewhere other than requestManualFinish()"
+ok "manuallyFinished = true is set in exactly one place"
 
-grep -q 'Button(action: { requestManualFinish() })' "$FILE" \
-    || fail "the header Finish/Done button no longer calls requestManualFinish()"
-ok "the header Finish/Done button also calls requestManualFinish() (one shared guard, not two divergent ones)"
+# Every scheduled reply is marked in flight synchronously, BEFORE its Task starts.
+SCHEDULES=$(grep -c 'Task { await requestDwellyResponse() }' "$FILE")
+MARKED=$(grep -B1 'Task { await requestDwellyResponse() }' "$FILE" | grep -c 'safetySession.noteRequestScheduled(userText: ')
+[ "$SCHEDULES" = "$MARKED" ] && [ "$SCHEDULES" -ge 1 ] || fail "$SCHEDULES reply schedule site(s) but only $MARKED immediately preceded by noteRequestScheduled(userText:)"
+ok "all $SCHEDULES reply schedule sites call noteRequestScheduled(userText:) synchronously right before their Task"
 
-REQUEST_MANUAL_FINISH_BODY=$(awk '/private func requestManualFinish\(\)/{flag=1; next} flag && /^    (private )?func /{exit} flag' "$FILE")
-echo "$REQUEST_MANUAL_FINISH_BODY" | grep -q 'waitForInFlightReply()' \
-    || fail "requestManualFinish()'s real body no longer awaits waitForInFlightReply() -- layer 1 of the race fix may have regressed"
-ok "requestManualFinish()'s real body awaits waitForInFlightReply() before setting manuallyFinished (layer 1)"
+# Every exit from requestDwellyResponse resolves its scheduled request through the session.
+REQ=$(awk '/private func requestDwellyResponse\(\)/{flag=1; next} flag && /^    (private )?func /{exit} flag' "$FILE")
+for call in "safetySession.cancelScheduled()" "safetySession.recordResponse(safetyTier: response.safetyTier)" "safetySession.recordFailure()" "CaptureSafetySession.onboardingClosingText(recordedTier: recordedTier, fixedCopy: closingMessage)"; do
+    echo "$REQ" | grep -qF "$call" || fail "requestDwellyResponse() no longer calls $call"
+done
+ok "requestDwellyResponse() resolves every exit path through the session (cancel / response / failure) and gates the onboarding closer on the verdict"
+echo "$REQ" | grep -q 'recordSkippedCheck' && fail "requestDwellyResponse() still skips the safety check for a turn"
+# The onboarding closer must not return early before the proxy call.
+CLOSER_LINE=$(echo "$REQ" | grep -n 'isFixedCloserTurn = ' | head -1 | cut -d: -f1)
+CALL_LINE=$(echo "$REQ" | grep -n 'apiClient.callLLM' | head -1 | cut -d: -f1)
+[ -n "$CLOSER_LINE" ] && [ -n "$CALL_LINE" ] || fail "could not locate the onboarding closer flag or the proxy call"
+BETWEEN=$(echo "$REQ" | sed -n "${CLOSER_LINE},${CALL_LINE}p")
+echo "$BETWEEN" | grep -qE '^[[:space:]]*return\b' && fail "requestDwellyResponse() returns before the proxy call on the onboarding closer turn"
+ok "the onboarding closing turn reaches the same proxy call as every other turn (no early return, no skipped check)"
+echo "$REQ" | grep -q 'if let tierRaw = response.safetyTier' && fail "requestDwellyResponse() reads response.safetyTier directly again (bypassing normalization)"
+ok "the resource block keys off the session's normalized tier, not the raw response field"
 
-ONCHANGE2=$(awk '/\.onChange\(of: isConversationComplete\)/{flag=1} flag{print} flag && /^                    }$/{exit}' "$FILE")
-echo "$ONCHANGE2" | grep -q 'waitForInFlightReply()' \
-    || fail "onChange(of: isConversationComplete) no longer awaits waitForInFlightReply() before deciding -- layer 2 (the actual save-entry guard) may have regressed"
-ok "onChange(of: isConversationComplete) also awaits waitForInFlightReply() before reading isCrisisSupportBlocked (layer 2, the real save-entry guard)"
+# No pre-emptive support link on the ordinary starting screen.
+PRELUDE=$(awk '/private var idlePrelude: some View/{flag=1; next} flag && /^    (private )?(var|func) /{exit} flag' "$FILE")
+echo "$PRELUDE" | grep -q 'Text("Need support now?")' && fail "idlePrelude still shows the pre-emptive \"Need support now?\" link"
+ok "idlePrelude has no pre-emptive \"Need support now?\" link"
+
+# Closed after Finish: the composer is mounted ONLY while the conversation is not complete,
+# with no Crisis Support exception, and every way back in is guarded.
+grep -B1 -A1 'unifiedComposeSurface$' "$FILE" | grep -q 'if !isConversationComplete {' \
+    || fail "the composer is no longer mounted exclusively under 'if !isConversationComplete {'"
+grep -q '!isConversationComplete || isCrisisSupportBlocked' "$FILE" && fail "a Crisis Support exception still keeps something open after Finish"
+grep -q 'isConversationComplete && !isCrisisSupportBlocked' "$FILE" && fail "the bottom area still treats Crisis Support as open after Finish"
+ok "composer exists only before Finish, for every conversation type"
+for fn in "private func sendUserTurn()" "private func handleRecordTap()" "private func transcribeIntoTextField()" "private func requestDwellyResponse() async"; do
+    BODY=$(awk -v f="$fn" 'index($0,f){flag=1; next} flag && /^    (private )?func /{exit} flag' "$FILE" | grep -v '^[[:space:]]*//' | head -4)
+    echo "$BODY" | grep -q 'guard !isConversationComplete, !safetySession.isClosed' || fail "$fn does not open with the closed-conversation guard"
+done
+ok "send, record, transcribe, and request all refuse once the conversation is closed"
+grep -q 'thread stays open' "$FILE" && fail "closure copy still says the thread stays open"
+ok "closure card copy no longer promises the thread stays open"
 
 echo "ALL CHECKS PASSED"

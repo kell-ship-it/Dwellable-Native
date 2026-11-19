@@ -179,16 +179,24 @@ enum SafetyResourceCenter {
     /// T-308: the honest, upfront explanation of what this safety layer does and doesn't do.
     /// Shown once (see CaptureConversationView's `hasSeenSafetyNoticeKey`) and reachable
     /// again anytime from Settings.
-    static let pilotNoticeText = """
-    Dwelly is a space for reflecting on your life with God — not therapy, and not a \
-    monitored safety service.
+    /// Country-aware (Nov 19 2026): the closing line used to name 988 for everyone,
+    /// a US default. It now lists the declared country's own lines -- or, when no
+    /// country is set, the international directory -- via the same selfRiskLines()
+    /// every other surface uses.
+    static var pilotNoticeText: String {
+        """
+        Dwelly is a space for reflecting on your life with God — not therapy, and not a \
+        monitored safety service.
 
-    If something you share looks like it might involve real danger, Dwelly will try to \
-    respond with care and point you to real help (like a crisis line). But no one is \
-    watching these conversations live, nothing is automatically reported to anyone, and \
-    Dwelly can't promise to notice everything.
+        If something you share looks like it might involve real danger, Dwelly will try to \
+        respond with care and point you to real help. But no one is watching these \
+        conversations live, nothing is automatically reported to anyone, and Dwelly can't \
+        promise to notice everything.
 
-    If you're ever in real danger, please reach out directly — to 988 (or your local \
-    equivalent), a trusted person, or emergency services. Don't wait on an app to catch it.
-    """
+        If you're ever in real danger, please reach out directly — to a crisis line, a \
+        trusted person, or emergency services. Don't wait on an app to catch it:
+
+        \(selfRiskLines(for: declaredCountry).map { "• \($0)" }.joined(separator: "\n"))
+        """
+    }
 }

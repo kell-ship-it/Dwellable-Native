@@ -221,29 +221,22 @@ struct CaptureConversationView: View {
     // of the only option.
     @State private var showLeaveConfirmation = false
 
-    // T-304/T-308: the always-available "Need support now?" entry point and the
-    // one-time pilot safety notice -- neither depends on anything being flagged in
-    // the current conversation, per the locked design.
-    @State private var showSupportSheet = false
+    // T-308: the one-time pilot safety notice. (The idle-screen "Need support now?"
+    // link that used to share this block was removed Nov 19 2026 -- see idlePrelude.)
     @State private var showSafetyNotice = false
     private static let hasSeenSafetyNoticeKey = "dwelly.safety.hasSeenNotice"
 
-    // T-125 downstream protection: every non-nil `safetyTier` seen across the WHOLE
-    // conversation (not just the latest turn) -- a mixed conversation is decided as
-    // one unit at save time via FormationEligibilityPolicy.decision(forTiersSeen:).
-    // In-memory only, never persisted as its own field -- only the resulting
-    // Bool (JournalEntry.profileExcluded) is saved, never which tiers caused it.
-    @State private var safetyTiersSeen: Set<String> = []
+    // Crisis Support (Nov 19 2026): the one owner of this conversation's safety state --
+    // the ordered tier sequence, how many replies are still awaiting a verdict, and the
+    // single Finish decision. Pulled out of this view into CaptureSafetySession so the
+    // exact production logic can be driven at runtime by
+    // Scripts/crisis_support_runtime_harness, not only checked as source text. In-memory
+    // only, never persisted -- FormationEligibilityPolicy also reads its `tiersSeen`.
+    @StateObject private var safetySession = CaptureSafetySession()
+    // The assistant turn after which the in-thread "we won't create a journal" notice
+    // is pinned -- set once, the first time this conversation latches.
+    @State private var supportNoticeTurnID: UUID?
 
-    // Crisis Support (unnumbered pillar) -- the SAME tiers as `safetyTiersSeen` above,
-    // but kept in the ORDER they actually happened. `CrisisSupportPolicy.status(
-    // forTierSequence:)` needs order: a real check failure ("fallback") followed later
-    // by a real clean check ("normal"/"refusal") resolves back to ordinary reflection,
-    // but the reverse order does not -- a `Set` has no way to express that distinction,
-    // which is exactly the bug Kell caught in this policy's first pass (a technical
-    // outage was being treated as permanent evidence of a crisis). In-memory only, same
-    // as `safetyTiersSeen` -- never persisted as its own field.
-    @State private var safetyTierSequence: [String] = []
 
     private let maxResponses = 3
 
@@ -296,7 +289,7 @@ struct CaptureConversationView: View {
     /// way, while this is true: this whole conversation gets a resource card instead of
     /// a journal preview, and `finishAndSave()` never runs.
     private var crisisSupportStatus: CrisisSupportPolicy.Status {
-        CrisisSupportPolicy.status(forTierSequence: safetyTierSequence)
+        safetySession.status
     }
     private var isCrisisSupportBlocked: Bool {
         crisisSupportStatus != .clear
@@ -724,11 +717,23 @@ struct CaptureConversationView: View {
                                     .transition(.opacity)
                             }
                             ForEach(turns) { turn in
-                                turnBubble(
-                                    turn,
-                                    isFinal: isConversationComplete && turn.id == turns.last?.id,
-                                    isPromptOrigin: openedWithPromptQuestion && turn.id == turns.first?.id
-                                )
+                                VStack(alignment: .leading, spacing: 12) {
+                                    turnBubble(
+                                        turn,
+                                        isFinal: isConversationComplete && turn.id == turns.last?.id,
+                                        isPromptOrigin: openedWithPromptQuestion && turn.id == turns.first?.id
+                                    )
+                                    // Crisis Support: the in-thread notice, pinned right after
+                                    // the supportive reply that latched this conversation.
+                                    // When this pinned turn is also the final one, the closure
+                                    // card leads with the notice instead, so it reads notice ->
+                                    // resources rather than resources -> notice.
+                                    if turn.id == supportNoticeTurnID && !(isConversationComplete && turn.id == turns.last?.id) {
+                                        crisisSupportNotice
+                                    } else if showsUnverifiedNotice(after: turn) {
+                                        unverifiedSafetyNotice
+                                    }
+                                }
                                 .id(turn.id == turns.last?.id ? "journalPreview" : turn.id.uuidString)
                                 .transition(.opacity)
                             }
@@ -783,6 +788,9 @@ struct CaptureConversationView: View {
                         if complete {
                             inputFocused = false
                             isComposeExpanded = false
+                            // A recording still running when Finish is tapped would
+                            // otherwise transcribe into a composer that no longer exists.
+                            if audioManager.isRecording { cancelRecording() }
                             withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
                                 proxy.scrollTo("journalPreview", anchor: .bottom)
                             }
@@ -804,12 +812,10 @@ struct CaptureConversationView: View {
                             // this wait, immediately before the one branch that can save/
                             // synthesize/profile-write -- never on a stale snapshot.
                             Task {
-                                await waitForInFlightReply()
-                                if isCrisisSupportBlocked {
-                                    await finishWithoutSaving()
-                                } else {
-                                    await finishAndSave()
-                                }
+                                await safetySession.finish(
+                                    save: { await finishAndSave() },
+                                    block: { await finishWithoutSaving() }
+                                )
                             }
                         }
                     }
@@ -832,7 +838,7 @@ struct CaptureConversationView: View {
                                     .padding(.horizontal, 28)
                             }
 
-                            if isConversationComplete && !isCrisisSupportBlocked {
+                            if isConversationComplete {
                                 // Kell's direct ask: remove this bottom "Continue" button
                                 // entirely -- "Open" on the journal card itself
                                 // (`journalPreviewContent` below) is now the sole forward
@@ -844,12 +850,10 @@ struct CaptureConversationView: View {
                                 // `onMomentSaved?()`) is unchanged -- it's reached via the
                                 // card's "Open" link instead, and from inside the entry via
                                 // its own back chevron (see JournalDetailView).
-                                //
-                                // Crisis Support (latched) is the one exception, per
-                                // Kell's "composer stays usable" rule -- it falls through
-                                // to the `composePill` branch below so the scroll-clearance
-                                // spacer keeps matching `unifiedComposeSurface`'s real
-                                // footprint, which stays mounted for a latched conversation.
+                                // Crisis Support follows the same rule (Kell, Nov 19 2026,
+                                // superseding the earlier keep-the-composer-after-Finish
+                                // design): once "Finish for now" is tapped the conversation
+                                // is closed, exactly like an ordinary completed reflection.
                             } else {
                                 if let warningMessage = audioManager.warningMessage {
                                     Text(warningMessage)
@@ -971,14 +975,14 @@ struct CaptureConversationView: View {
                             // cover before -- tapping this button WHILE a previous turn's
                             // reply (and that turn's own safety tier) is still in flight
                             // would flip `manuallyFinished` immediately, and the onChange
-                            // hook below reads `safetyTierSequence` synchronously at that
+                            // hook below reads the session's tier sequence synchronously at that
                             // instant -- BEFORE the in-flight tier has a chance to land.
                             // A genuinely latching tier arriving a moment later would be
                             // silently missed, and `finishAndSave()` could run as if the
                             // conversation were clear. Hiding the button while a reply is
                             // still pending means `manuallyFinished` can only ever be set
                             // once every tier sent so far has actually been recorded.
-                            if dwellyResponseCount >= 1 && !isConversationComplete && !isWaitingForDwelly {
+                            if dwellyResponseCount >= 1 && !isConversationComplete && !isWaitingForDwelly && !safetySession.isAwaitingClassification {
                                 // Crisis Support: same single header button, same single
                                 // action -- only the label changes once latched, to "Finish
                                 // for now" (Kell's locked copy: this is a user-chosen pause,
@@ -1039,14 +1043,13 @@ struct CaptureConversationView: View {
                 // geometry and full-screen. It's declared last here for the same
                 // reason the old overlay was: so it renders in front of the header
                 // and scroll content once it grows past the collapsed card's bounds.
-                // Once the reflection is complete there's nothing left to send;
-                // the journal card's "Open" is the only forward action. Crisis
-                // Support is the one exception: Kell's locked policy is explicit that
-                // the composer "stays usable" once latched, even after "Finish for
-                // now" -- the resource card is additive, not a wall, and the thread
-                // never visually looks like it hard-ended the way a normal completed
-                // reflection does.
-                if !isConversationComplete || isCrisisSupportBlocked {
+                // Once the reflection is complete there's nothing left to send. That
+                // includes Crisis Support: before "Finish for now" the support thread
+                // and composer stay open; after it, the resource card stands where the
+                // journal preview would be and the composer is removed entirely
+                // (Kell, Nov 19 2026 -- supersedes the earlier "composer stays usable
+                // after Finish" design).
+                if !isConversationComplete {
                     unifiedComposeSurface
                         .transition(.opacity)
                 }
@@ -1135,6 +1138,7 @@ struct CaptureConversationView: View {
                     openedWithPromptQuestion = true
                 } else {
                     turns = [Turn(role: .user, text: initialMessage)]
+                    safetySession.noteRequestScheduled(userText: initialMessage)
                     Task { await requestDwellyResponse() }
                 }
             }
@@ -1191,9 +1195,6 @@ struct CaptureConversationView: View {
         // T-304/T-308: always-available help entry point + the one-time pilot
         // safety notice -- both are plain informational sheets, not tied to any
         // flagged content in this conversation.
-        .sheet(isPresented: $showSupportSheet) {
-            SafetySupportSheet()
-        }
         .sheet(isPresented: $showSafetyNotice) {
             SafetyNoticeSheet()
         }
@@ -1302,23 +1303,79 @@ struct CaptureConversationView: View {
     /// text every "Need support now?" tap shows, so a user who never saw a specific tier's
     /// lines (e.g. latched purely by a `fallback`/unverifiable turn) still sees real
     /// resources. No "monitoring/live dispatch" claim here or anywhere in this block.
+    /// Shown once, in-thread, right after the reply that latched this conversation
+    /// (Kell's locked copy). The accessibility hint carries the plain detail that
+    /// nothing here feeds the profile, without naming internal systems on screen.
+    private var crisisSupportNotice: some View {
+        Text("We won't create a journal from this conversation. Let's focus on getting you support.")
+            .font(.system(size: 12, weight: .medium))
+            .foregroundColor(Theme.gold)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.leading, 4)
+            .accessibilityHint("Nothing from this conversation will be saved or used to update your profile.")
+    }
+
+    /// The honest counterpart for a pending hold: no safety verdict could be confirmed
+    /// (a failed check, or a server that returned no verdict at all). Deliberately NOT
+    /// crisis copy -- nothing here is evidence of a concern -- and only shown while the
+    /// hold is live, so it disappears if a later turn checks out clean.
+    private var unverifiedSafetyNotice: some View {
+        Text("Dwelly couldn't confirm its safety check just now, so this conversation won't be saved as a journal unless a later reply checks out.")
+            .font(.system(size: 12, weight: .medium))
+            .foregroundColor(Theme.Payment.textSupporting)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.leading, 4)
+    }
+
+    private func showsUnverifiedNotice(after turn: Turn) -> Bool {
+        safetySession.status == .pendingHold
+            && !isConversationComplete
+            && turn.role == .assistant
+            && turn.id == turns.last(where: { $0.role == .assistant })?.id
+    }
+
+    /// The closure card states the notice itself when it wasn't already shown in-thread
+    /// above it: no pinned turn yet, or the pinned turn IS the final turn.
+    private var closureCardLeadsWithNotice: Bool {
+        supportNoticeTurnID == nil || supportNoticeTurnID == turns.last?.id
+    }
+
     private var crisisSupportClosureContent: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("We won't create a journal from this conversation. Let's focus on getting you support.")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(Theme.Capture.textBody)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Rectangle()
-                .fill(Theme.gold)
-                .frame(height: 1)
-
-            if let tier = CrisisSupportPolicy.primaryResourceTier(forTiersSeen: safetyTiersSeen),
-               let resourceBlock = SafetyResourceCenter.resourceBlock(for: tier) {
-                Text(resourceBlock)
-                    .font(.system(size: 12))
+            // Latched: the notice already sits in-thread after the supportive reply, so
+            // this card leads with resources. Pending hold: say plainly that the check
+            // couldn't be confirmed -- this is not a crisis message.
+            if crisisSupportStatus == .latched {
+                if closureCardLeadsWithNotice {
+                    Text("We won't create a journal from this conversation. Let's focus on getting you support.")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Theme.Capture.textBody)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            } else {
+                Text("Dwelly couldn't confirm its safety check for this conversation, so we won't create a journal from it.")
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundColor(Theme.Capture.textBody)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+
+            // Divider only when a lead line sits above it -- in the latched case that
+            // line already lives in-thread, and an orphan rule at the top read as a bug.
+            if crisisSupportStatus != .latched || closureCardLeadsWithNotice {
+                Rectangle()
+                    .fill(Theme.gold)
+                    .frame(height: 1)
+            }
+
+            if let tier = CrisisSupportPolicy.primaryResourceTier(forTiersSeen: safetySession.tiersSeen),
+               let resourceBlock = SafetyResourceCenter.resourceBlock(for: tier) {
+                // Skip when the final reply right above already lists these same lines.
+                if !(turns.last?.text.contains(resourceBlock) ?? false) {
+                    Text(resourceBlock)
+                        .font(.system(size: 12))
+                        .foregroundColor(Theme.Capture.textBody)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             } else {
                 Text(SafetyResourceCenter.alwaysAvailableHelpText)
                     .font(.system(size: 12))
@@ -1326,7 +1383,7 @@ struct CaptureConversationView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            Text("Dwelly isn't staffed or monitored live. Your resources stay available below, and this thread stays open if you want to keep writing.")
+            Text("Dwelly isn't staffed or monitored live. These resources stay here whenever you need them.")
                 .font(.system(size: 11))
                 .foregroundColor(Theme.Payment.textSupporting)
                 .fixedSize(horizontal: false, vertical: true)
@@ -2106,6 +2163,8 @@ struct CaptureConversationView: View {
 
     private func sendUserTurn() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Closed conversations never resume -- including from a stale callback.
+        guard !isConversationComplete, !safetySession.isClosed else { return }
         guard !text.isEmpty, !isWaitingForDwelly, !isOverCharacterLimit else { return }
         // Kell's direct ask (Nov 17 2026, after watching the real send): the idle
         // "What's stirring in you today?" headline and the first user bubble used
@@ -2126,10 +2185,16 @@ struct CaptureConversationView: View {
             inputFocused = false
             turns.append(Turn(role: .user, text: text))
         }
+        // Marked in flight HERE, synchronously, not inside the Task below: before this,
+        // `isWaitingForDwelly` only flipped once the Task actually started, leaving a
+        // window where Done was tappable with nothing marked in flight and Finish could
+        // decide on a tier sequence that didn't include this message at all.
+        safetySession.noteRequestScheduled(userText: text)
         Task { await requestDwellyResponse() }
     }
 
     private func handleRecordTap() {
+        guard !isConversationComplete, !safetySession.isClosed else { return }
         if audioManager.isRecording {
             // T-300: bridges the gap between `audioManager.isRecording` going
             // false (near-instant) and `isTranscribingVoice` actually becoming
@@ -2376,18 +2441,10 @@ struct CaptureConversationView: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(Theme.Payment.textSupporting)
 
-            // T-304/T-308: the always-available help entry point. Placed in the
-            // idle state only (not inside onboarding's hand-tuned topic-card
-            // layout) -- also reachable anytime from Settings, so it's never
-            // truly gone once a conversation starts.
-            if !isOnboarding {
-                Button(action: { showSupportSheet = true }) {
-                    Text("Need support now?")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Theme.Payment.textSupporting)
-                        .underline()
-                }
-            }
+            // The pre-emptive "Need support now?" link that used to sit here was removed
+            // (Kell, Nov 19 2026): an ordinary capture shouldn't open with a crisis
+            // prompt. Resources appear in-thread only after a concern is actually
+            // recorded, and stay reachable anytime from Settings > Safety.
 
             if isOnboarding {
                 VStack(spacing: 12) {
@@ -2482,6 +2539,7 @@ struct CaptureConversationView: View {
     // both the first AND second recording in the same session -- both landed here
     // correctly, neither auto-sent nor opened a different screen.
     private func transcribeIntoTextField() {
+        guard !isConversationComplete, !safetySession.isClosed else { return }
         guard let audioURL = audioManager.audioURL else { return }
         // T-300: both of this function's own mutations are wrapped directly --
         // `isTranscribingVoice` is this view's own state, mutated right here in
@@ -2512,14 +2570,12 @@ struct CaptureConversationView: View {
     }
 
     private func requestDwellyResponse() async {
-        // Crisis Support: a latched conversation stays genuinely open even after
-        // "Finish for now" -- the composer stays usable (see `unifiedComposeSurface`'s
-        // mount condition), so a real send after that tap still gets a real reply,
-        // rather than silently going nowhere the way a normal completed reflection's
-        // guard would make it. `finishWithoutSaving()` already ran exactly once, from
-        // the `isConversationComplete` transition -- it never re-runs just because the
-        // user keeps talking, since that only fires on a false->true edge.
-        guard !isConversationComplete || isCrisisSupportBlocked else { return }
+        // A finished conversation -- ordinary or Crisis Support -- is closed: no new
+        // reply is requested, even if a stale scheduled call arrives after Finish.
+        guard !isConversationComplete, !safetySession.isClosed else {
+            safetySession.cancelScheduled()
+            return
+        }
         // Found auditing Kell's "still feels like changing screens" follow-up
         // (Nov 17 2026): the PREVIOUS pass only wrapped `sendUserTurn()`'s own
         // mutation in `withAnimation` -- it never touched this function at all,
@@ -2534,39 +2590,16 @@ struct CaptureConversationView: View {
             errorMessage = nil
         }
 
-        // The 3rd/final response doesn't need its own LLM call followed by a separate
-        // fixed hand-off bubble — Kell caught (Nov 10 2026) that showing both a real
-        // generated reply AND the closing message back to back reads as Dwelly
-        // responding twice, and spends tokens on a reply nobody reads before the
-        // hand-off. The fixed closingMessage IS response 3. Onboarding-only (Nov 11
-        // 2026) -- post-onboarding has no fixed 3rd response to special-case; every
-        // reply there is a real generated one, all the way until the user taps Done.
-        if isOnboarding && dwellyResponseCount == maxResponses - 1 {
-            // T-125 downstream protection: this branch skips calling the proxy
-            // entirely, which means the user turn that triggered it never went
-            // through the safety layer at all -- recorded as "unknown/unchecked",
-            // but deliberately NOT as "fallback". Found while wiring up Crisis
-            // Support's new ACTIVE latch (CrisisSupportPolicy, Nov 19 2026): tagging
-            // this the same as a genuine proxy failure would latch -- and so skip
-            // journaling/Formation entirely for -- every single onboarding
-            // conversation, since every one of them reaches this deliberate,
-            // benign skip at its 3rd exchange. That bug was dormant before today
-            // because FormationEligibilityPolicy (the only other reader of this
-            // set) stays `isActive = false`; it stops being dormant the moment
-            // anything active reads this set, so it's fixed here rather than
-            // inherited silently. A real proxy failure (the catch block below)
-            // keeps the "fallback" tag and still latches Crisis Support --
-            // this one case is "we chose not to check," not "the check failed."
-            safetyTiersSeen.insert("fixed_closer_skipped")
-            safetyTierSequence.append("fixed_closer_skipped")
-            await MainActor.run {
-                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
-                    turns.append(Turn(role: .assistant, text: closingMessage))
-                    isWaitingForDwelly = false
-                }
-            }
-            return
-        }
+        // Onboarding's 3rd/final response is the fixed `closingMessage` hand-off (Kell,
+        // Nov 10/11 2026: one closing bubble, not a generated reply plus a closer). It
+        // used to skip the proxy entirely, which left the user's last onboarding
+        // message completely unchecked -- a disclosed Crisis Support bypass (T-317).
+        // That turn now goes through the same proxy call and safety contract as every
+        // other turn; the fixed copy is shown ONLY when the verdict is verified
+        // "normal" (CaptureSafetySession.onboardingClosingText). Anything else -- a
+        // concern, a refusal, an unverified/old-backend reply -- shows the proxy's own
+        // reply and resources instead, and blocks saving exactly like any other turn.
+        let isFixedCloserTurn = isOnboarding && dwellyResponseCount == maxResponses - 1
 
         var messages = [
             LLMMessage(role: .system, content: systemPrompt),
@@ -2583,23 +2616,27 @@ struct CaptureConversationView: View {
             // owns the actual resource numbers (country-aware, never invented here).
             // "normal"/nil/"refusal" need no appended block; everything else does.
             var displayText = response.content
-            if let tierRaw = response.safetyTier {
-                // T-125 downstream protection: recorded regardless of whether this
-                // tier gets a resource block appended below -- the eligibility
-                // decision at save time needs every tier the conversation actually
-                // saw, not just the ones with visible UI consequences.
-                safetyTiersSeen.insert(tierRaw)
-                safetyTierSequence.append(tierRaw)
-            }
-            if let tierRaw = response.safetyTier,
-               let tier = SafetyResourceCenter.Tier(rawValue: tierRaw),
+            // Missing/unrecognized `safetyTier` is recorded as "unverified" (a pending
+            // hold that blocks saving), never as normal -- see CaptureSafetySession.
+            // The resource block below keys off the RECORDED tier only, so a reply's
+            // own wording (or a phone number in it) never puts the thread into support
+            // mode by itself.
+            let recordedTier = safetySession.recordResponse(safetyTier: response.safetyTier)
+            if isFixedCloserTurn,
+               let fixedCopy = CaptureSafetySession.onboardingClosingText(recordedTier: recordedTier, fixedCopy: closingMessage) {
+                displayText = fixedCopy
+            } else if let tier = CrisisSupportPolicy.resourceTier(forRecordedTier: recordedTier),
                let resourceBlock = SafetyResourceCenter.resourceBlock(for: tier) {
                 displayText += "\n\n" + resourceBlock
             }
+            let replyTurn = Turn(role: .assistant, text: displayText)
             await MainActor.run {
                 withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
-                    turns.append(Turn(role: .assistant, text: displayText))
+                    turns.append(replyTurn)
                     isWaitingForDwelly = false
+                    if supportNoticeTurnID == nil && safetySession.status == .latched {
+                        supportNoticeTurnID = replyTurn.id
+                    }
                 }
             }
         } catch {
@@ -2607,11 +2644,15 @@ struct CaptureConversationView: View {
             // providers-down) means this turn's own user message never got a real
             // safety verdict at all -- same "unknown/unchecked" situation as a
             // "fallback" tier, so it's recorded the same conservative way.
-            safetyTiersSeen.insert("fallback")
-            safetyTierSequence.append("fallback")
+            safetySession.recordFailure()
             await MainActor.run {
                 withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
                     isWaitingForDwelly = false
+                    // No reply was appended, so if the user's own message latched the
+                    // conversation, pin the notice to that message instead.
+                    if supportNoticeTurnID == nil && safetySession.status == .latched {
+                        supportNoticeTurnID = turns.last?.id
+                    }
                 }
                 errorMessage = "Dwelly couldn't respond just now. You can keep writing, or save what you have."
             }
@@ -2636,7 +2677,7 @@ struct CaptureConversationView: View {
     /// SwiftUI's `.alert` action buttons have no equivalent `if`/`.disabled()`
     /// mechanism -- this function is the guard for THAT path: it waits here, before
     /// flipping `manuallyFinished`, for any turn already in flight to actually land
-    /// (and its safety tier to be recorded in `safetyTierSequence`) instead of racing
+    /// (and its safety tier to be recorded in `safetySession`) instead of racing
     /// it. Bounded, not infinite: `requestDwellyResponse`'s own error handling already
     /// clears `isWaitingForDwelly` on a real failure, so a 30s ceiling here is purely a
     /// belt-and-suspenders guard against ever trapping the user on this screen.
@@ -2653,7 +2694,7 @@ struct CaptureConversationView: View {
     /// purpose, rather than trusting one to have already covered the other.
     private func waitForInFlightReply() async {
         var waited = 0
-        while isWaitingForDwelly && waited < 300 { // 300 * 0.1s = 30s ceiling
+        while (isWaitingForDwelly || safetySession.isAwaitingClassification) && waited < 300 { // 300 * 0.1s = 30s ceiling
             try? await Task.sleep(nanoseconds: 100_000_000)
             waited += 1
         }
@@ -2722,7 +2763,7 @@ struct CaptureConversationView: View {
         // has no access to this conversation's turns, only the saved entry/moment, so
         // the decision has to survive on the entry itself or it's lost. Still false
         // today for every real entry: FormationEligibilityPolicy.isActive is off.
-        let policyDecision = FormationEligibilityPolicy.decision(forTiersSeen: safetyTiersSeen)
+        let policyDecision = FormationEligibilityPolicy.decision(forTiersSeen: safetySession.tiersSeen)
         let isPolicyExcluded = policyDecision == .excluded
 
         let entry: JournalEntry
@@ -2800,7 +2841,7 @@ struct CaptureConversationView: View {
             // T-125: decided from every safety tier this conversation saw so far --
             // read here rather than passed in, since generateJournalMeta() only ever
             // runs once, at the very end of this screen's own conversation.
-            let policyExcluded = FormationEligibilityPolicy.decision(forTiersSeen: safetyTiersSeen) == .excluded
+            let policyExcluded = FormationEligibilityPolicy.decision(forTiersSeen: safetySession.tiersSeen) == .excluded
             let result = try await JournalSynthesisManager.synthesize(transcript: fullTranscript, userOnlyText: combinedBody, policyExcluded: policyExcluded, apiClient: apiClient)
             let meta = JournalMeta(
                 title: result.title,

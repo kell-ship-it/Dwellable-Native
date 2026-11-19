@@ -388,23 +388,36 @@ struct DwellyApp: App {
 
     @Environment(\.scenePhase) private var scenePhase
 
+    @ViewBuilder
+    private var rootContent: some View {
+        if showAppLoading {
+            AppLoadingView(onComplete: { showAppLoading = false })
+        } else if authManager.isAuthenticated {
+            // T-097: WhisperKit setup now starts during AppLoadingView itself (see
+            // that file), on every launch — this gated-on-a-dead-flag call here was
+            // redundant (and `setupWhisperKit()` only ever no-ops if already loaded
+            // anyway, so removing it changes no behavior, just dead weight).
+            AppView(syncManager: syncManager)
+                .environmentObject(authManager)
+                .environment(\.apiClient, apiClient)
+        } else {
+            WelcomeView()
+                .environmentObject(authManager)
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             ZStack {
-                if showAppLoading {
-                    AppLoadingView(onComplete: { showAppLoading = false })
-                } else if authManager.isAuthenticated {
-                    // T-097: WhisperKit setup now starts during AppLoadingView itself (see
-                    // that file), on every launch — this gated-on-a-dead-flag call here was
-                    // redundant (and `setupWhisperKit()` only ever no-ops if already loaded
-                    // anyway, so removing it changes no behavior, just dead weight).
-                    AppView(syncManager: syncManager)
-                        .environmentObject(authManager)
-                        .environment(\.apiClient, apiClient)
+                #if DEBUG
+                if CrisisSupportUIHarnessView.isRequested {
+                    CrisisSupportUIHarnessView()
                 } else {
-                    WelcomeView()
-                        .environmentObject(authManager)
+                    rootContent
                 }
+                #else
+                rootContent
+                #endif
             }
             .onOpenURL { handleIncomingURL($0) }
             .fullScreenCover(isPresented: $passwordResetPending) {

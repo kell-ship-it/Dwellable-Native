@@ -52,7 +52,17 @@ struct JournalEntry: Identifiable, Codable {
     // this entry's facts to actually reach DwellerProfileManager -- see
     // JournalSynthesisManager.synthesize's enforcement. Default false matches
     // FormationEligibilityPolicy.isActive being off: nothing is excluded yet.
-    var profileExcluded: Bool = false
+    //
+    // Stored as an Optional on purpose (Nov 19 2026): the live `journal_entries`
+    // table does not have this column until migration 20261119140000 is applied.
+    // A non-Optional Bool made the synthesized decoder throw `keyNotFound` for every
+    // row fetched from a pre-migration database, failing the whole Entries fetch.
+    // Optional decodes via `decodeIfPresent`, so both schema states load.
+    var profileExcludedRaw: Bool? = nil
+    var profileExcluded: Bool {
+        get { profileExcludedRaw ?? false }
+        set { profileExcludedRaw = newValue }
+    }
 
     init(
         id: String = UUID().uuidString,
@@ -91,7 +101,7 @@ struct JournalEntry: Identifiable, Codable {
         self.formationEligible = formationEligible
         self.extractedFacts = extractedFacts
         self.photoPath = photoPath
-        self.profileExcluded = profileExcluded
+        self.profileExcludedRaw = profileExcluded
     }
 
     enum CodingKeys: String, CodingKey {
@@ -112,6 +122,6 @@ struct JournalEntry: Identifiable, Codable {
         case formationEligible = "formation_eligible"
         case extractedFacts = "extracted_facts"
         case photoPath = "photo_path"
-        case profileExcluded = "profile_excluded"
+        case profileExcludedRaw = "profile_excluded"
     }
 }

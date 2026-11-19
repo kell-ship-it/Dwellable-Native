@@ -37,7 +37,9 @@ check(CrisisSupportPolicy.genuineConcernTiers.contains("crisis_other"), "genuine
 check(CrisisSupportPolicy.genuineConcernTiers.contains("ongoing_danger"), "genuine-concern tiers include ongoing_danger")
 check(!CrisisSupportPolicy.genuineConcernTiers.contains("fallback"), "fallback is NOT a genuine-concern tier -- an outage is not itself evidence of a crisis")
 check(!CrisisSupportPolicy.genuineConcernTiers.contains("refusal"), "refusal alone is NOT a genuine-concern tier -- B3 misuse has its own refusal reply, not a support-mode signal")
-check(CrisisSupportPolicy.pendingTiers == ["fallback"], "pending (temporary-hold) tiers are exactly {fallback}")
+check(CrisisSupportPolicy.pendingTiers == ["fallback", "unverified"], "pending (temporary-hold) tiers are exactly {fallback, unverified} -- unverified = no recognized verdict in the response")
+check(CrisisSupportPolicy.status(forTierSequence: ["unverified"]) == .pendingHold, "a response with no recognized safety verdict is a pending hold, never clear")
+check(CrisisSupportPolicy.status(forTierSequence: ["unverified", "normal"]) == .clear, "an unverified turn followed by a real clean check resolves")
 check(CrisisSupportPolicy.resolvingTiers == ["normal", "refusal"], "resolving tiers are exactly {normal, refusal} -- both mean a real check actually ran and found nothing current")
 check(!CrisisSupportPolicy.resolvingTiers.contains("fixed_closer_skipped"), "fixed_closer_skipped does NOT resolve a pending hold -- it was never actually checked at all")
 
