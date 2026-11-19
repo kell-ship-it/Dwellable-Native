@@ -194,6 +194,21 @@ class AuthManager: ObservableObject {
         }
     }
 
+    /// T-309: best-effort server mirror of the local Terms/Privacy acceptance record
+    /// (LegalAcceptance.recordLocalAcceptance, called by AccountCreationView BEFORE this).
+    /// Swallows its own error -- the local record is what actually gates anything on
+    /// this device, and the server columns this writes to don't exist on any live
+    /// database yet (migration 20261119120100 has not been applied as part of this
+    /// work), so a failure here is expected right now, not a real problem to surface.
+    func recordTermsAcceptance(version: String) async {
+        guard let userId = currentUser?.id else { return }
+        do {
+            try await apiClient.recordTermsAcceptance(userId: userId, version: version)
+        } catch {
+            print("AuthManager: recordTermsAcceptance failed (non-fatal, expected until the schema migration is applied): \(error)")
+        }
+    }
+
     /// Spec: docs/PILLAR_AUTHENTICATION_STRATEGY.md §6 "Account Creation". Client-side
     /// password-strength validation happens in AccountCreationView before this is ever
     /// called — this method assumes a password that already passed those rules and only

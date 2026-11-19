@@ -130,7 +130,13 @@ class SyncManager: ObservableObject {
             // decision CaptureConversationView.generateJournalMeta uses on the first
             // attempt -- no deterministic pre-check, a retry must be decided exactly
             // the same way, not treated differently just because it waited for a sweep.
-            guard let result = try? await JournalSynthesisManager.synthesize(transcript: moment.body, userOnlyText: moment.body, apiClient: apiClient) else { continue }
+            // T-125: `entry.profileExcluded` is the ORIGINAL exclusion decision,
+            // persisted at the first save attempt (CaptureConversationView.finishAndSave)
+            // from that conversation's own safety tiers -- this retry has no access to
+            // those tiers itself (only `moment.body`/`entry` survive to this point), so
+            // it reads the decision back rather than silently losing it and falling
+            // back to the substance-only gate alone.
+            guard let result = try? await JournalSynthesisManager.synthesize(transcript: moment.body, userOnlyText: moment.body, policyExcluded: entry.profileExcluded, apiClient: apiClient) else { continue }
 
             var updated = entry
             updated.status = "approved"

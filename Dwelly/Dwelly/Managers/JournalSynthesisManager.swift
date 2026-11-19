@@ -81,7 +81,17 @@ enum JournalSynthesisManager {
     /// `userOnlyText` is the user's own words alone, exactly what gets saved verbatim
     /// on a "preserve" outcome and what the synthesized length budget is measured
     /// against -- see `CaptureConversationView.fullTranscript` vs. `combinedBody`.
-    static func synthesize(transcript: String, userOnlyText: String, apiClient: APIClient) async throws -> Result {
+    /// `policyExcluded`: T-125's downstream-protection input, from
+    /// `FormationEligibilityPolicy.decision(forTiersSeen:)` -- an EXPLICIT, required
+    /// parameter (not read from global state here) so every call site has to decide
+    /// it deliberately. When true, this function still does the full synthesis (the
+    /// private journal entry itself -- title/body/moods/scripture -- is never
+    /// degraded or withheld), but overrides `formationEligible`/`extractedFacts` to
+    /// false/nil afterward REGARDLESS of what the model's own JSON said -- this is
+    /// deliberate defense-in-depth: the synthesis model is never trusted to self-censor
+    /// "formation_eligible" correctly for excluded content, the override happens in
+    /// Swift after parsing, every time.
+    static func synthesize(transcript: String, userOnlyText: String, policyExcluded: Bool, apiClient: APIClient) async throws -> Result {
         let prompt = """
         Based on this conversation between me and Dwelly, decide how to handle my own \
         words and return ONLY a single JSON object (no markdown, no commentary) with \
@@ -172,11 +182,21 @@ enum JournalSynthesisManager {
         let resolvedTitle = parsed.title?.trimmingCharacters(in: .whitespacesAndNewlines)
         let finalTitle = (resolvedTitle?.isEmpty ?? true) ? "A Moment Captured" : resolvedTitle!
 
+        // T-125: the actual enforcement point. `effectiveFormationEligible` is the
+        // AND of the existing substance-based gate AND the (pending-activation)
+        // policy gate -- excluded content never reaches DwellerProfileManager
+        // regardless of how "genuine" the model judged it, once the policy is active.
+        // scripture/moods still key off the model's OWN formation_eligible verdict
+        // (they're cosmetic journal presentation, not profile data) -- only
+        // `extractedFacts`, the thing that actually feeds the running profile, is
+        // gated by the combined decision.
+        let effectiveFormationEligible = parsed.formationEligible && !policyExcluded
+
         return Result(
             title: finalTitle,
             body: resolvedBody,
-            formationEligible: parsed.formationEligible,
-            extractedFacts: parsed.formationEligible ? parsed.extractedFacts : nil,
+            formationEligible: effectiveFormationEligible,
+            extractedFacts: effectiveFormationEligible ? parsed.extractedFacts : nil,
             scriptureQuote: parsed.formationEligible ? parsed.scriptureQuote : nil,
             scriptureReference: parsed.formationEligible ? parsed.scriptureReference : nil,
             moods: parsed.formationEligible ? (parsed.moods ?? []) : []

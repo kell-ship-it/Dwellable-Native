@@ -45,6 +45,14 @@ struct JournalEntry: Identifiable, Codable {
     // "<userId>/<file>.jpg" -- never a signed/public URL, same reasoning as
     // `Moment.audioURL`. Nil when no photo is attached.
     var photoPath: String? = nil
+    // T-125 (Nov 19 2026): minimal, purpose-specific eligibility flag -- NOT a
+    // detailed safety label. True if ANY turn in the source conversation was flagged
+    // by the crisis/misuse safety layer in a way FormationEligibilityPolicy excludes.
+    // Independent of `formationEligible` (substance-based); both must be true for
+    // this entry's facts to actually reach DwellerProfileManager -- see
+    // JournalSynthesisManager.synthesize's enforcement. Default false matches
+    // FormationEligibilityPolicy.isActive being off: nothing is excluded yet.
+    var profileExcluded: Bool = false
 
     init(
         id: String = UUID().uuidString,
@@ -63,7 +71,8 @@ struct JournalEntry: Identifiable, Codable {
         viewedAt: Date? = nil,
         formationEligible: Bool = false,
         extractedFacts: String? = nil,
-        photoPath: String? = nil
+        photoPath: String? = nil,
+        profileExcluded: Bool = false
     ) {
         self.id = id
         self.momentId = momentId
@@ -82,6 +91,7 @@ struct JournalEntry: Identifiable, Codable {
         self.formationEligible = formationEligible
         self.extractedFacts = extractedFacts
         self.photoPath = photoPath
+        self.profileExcluded = profileExcluded
     }
 
     enum CodingKeys: String, CodingKey {
@@ -102,5 +112,6 @@ struct JournalEntry: Identifiable, Codable {
         case formationEligible = "formation_eligible"
         case extractedFacts = "extracted_facts"
         case photoPath = "photo_path"
+        case profileExcluded = "profile_excluded"
     }
 }

@@ -1,14 +1,32 @@
 import SwiftUI
 
-/// T-134: real Privacy Policy content, pulled directly from the locked Figma design
-/// (node 709:543, "Privacy Policy") rather than invented — pushed from LegalAboutView.
+/// T-134, revised T-309: real Privacy Policy content, re-grounded in what the
+/// codebase actually does (verified directly, not assumed, before writing this):
+/// moment/journal body text is AES-256-GCM encrypted at rest (supabase/functions/
+/// _shared/encryption.ts) and only decrypted transiently inside save-moment/
+/// fetch-moments; journal title/moods/scripture are stored unencrypted
+/// (journal_entries table) since they're spec'd as non-sensitive; conversation text
+/// is sent to Groq and OpenAI for processing (llm-proxy); the T-125 safety layer
+/// (T-302/T-303) runs an OpenAI moderation check + a classification pass on every
+/// capture-conversation message, and logs only non-identifiable category/failure
+/// counts (safety_diagnostics/safety_event_aggregate), never message content or a
+/// persistent per-user label. "No human reviews your conversations" means no routine
+/// review process exists -- it does NOT mean no one technically could (the operator
+/// holds the encryption key and database access, same as any operator of a
+/// server-side-encrypted system); this policy says that plainly rather than
+/// claiming a stronger guarantee than is true.
 struct PrivacyPolicyView: View {
     @Environment(\.dismiss) var dismiss
 
     private let blocks: [(title: String, body: String)] = [
         ("What We Collect", "Your moments, journal entries, and basic account info (name, email). See the Encryption screen for how this is protected."),
         ("How We Use It", "Solely to power your reflection experience — generating prompts, prayers, and journal synthesis. Never sold or shared with advertisers."),
-        ("Third Parties", "Moment content is briefly sent to a cloud LLM provider for processing (Dwelly conversations, prayer, journal synthesis) — never stored by them as plaintext."),
+        ("Third Parties", "Moment and conversation content is sent to our LLM providers (Groq, and OpenAI as a fallback) to generate Dwelly's responses, prayers, and journal synthesis, and to OpenAI's moderation service as part of our safety check (see \"Safety Checks\" below). It is not stored by those providers as part of a permanent profile of you."),
+        ("Safety Checks", "Every message you send in a Dwelly conversation (the back-and-forth reflection screen) is checked for signs of real danger (to you or someone else) before and after Dwelly responds — this is automated, not reviewed by a person in the moment. This specific check does not currently run on your synthesized journal entry (the title/body Dwelly writes afterward) or on your Growth tab's \"Your Narrative\" summary — those are generated from reflection content you already sent through the checked conversation, but aren't independently re-checked themselves. If a conversation reflects a genuine, current safety concern, we don't create a journal entry or feed that conversation into your profile at all — the whole conversation is excluded, not just the flagged part. We log only a non-identifying count of how often the conversation check fires (by category and day) and short-lived technical failure logs — never your message content, and never a permanent label tied to your account. Whether and how long the conversation text itself is retained by our processing providers during this is still being finalized — we aren't stating a retention period here until that's settled, rather than guess."),
+        ("Human Access", "No one at Dwelly routinely reviews your conversations. We don't promise your content is something no one could ever technically access — like any service that processes your data to work, the people who operate it have the technical means to access it if truly necessary (for example, fixing a serious bug), but there is no staffed review process watching your conversations."),
+        ("Lawful Disclosure", "We do not sell or share your content with advertisers. We may be legally required to disclose information in response to a valid legal process (such as a subpoena or court order) — we don't promise your data is never disclosed under any circumstance, because that wouldn't be true."),
+        ("Retention & Deletion", "You can delete your account at any time from Account Profile, which permanently removes your moments, journal entries, and related data. Safety-check logs are either non-identifying aggregate counts or short-lived technical diagnostics not tied to your account."),
+        ("This Isn't a Liability Waiver", "This Privacy Policy describes what we actually do with your data. It does not limit our legal responsibility — that's covered separately in the Terms of Service, and only to the extent the law allows."),
         ("Your Rights", "Export your data (Post-MVP) or delete your account entirely, anytime, from Account Profile.")
     ]
 
@@ -20,7 +38,7 @@ struct PrivacyPolicyView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     Spacer().frame(height: 72)
 
-                    Text("Last updated: October 2026")
+                    Text("Last updated: November 19, 2026")
                         .font(.system(size: 13))
                         .foregroundColor(Theme.Payment.textSupporting)
 

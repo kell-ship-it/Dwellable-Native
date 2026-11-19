@@ -332,6 +332,10 @@ class MockAPIClient: APIClient {
         // No dormancy clock to simulate for previews/tests -- a no-op is the whole mock.
     }
 
+    func recordTermsAcceptance(userId: String, version: String) async throws {
+        // No server to mirror to for previews/tests -- a no-op is the whole mock.
+    }
+
     func logLoginAttempt(email: String, success: Bool) async {
         // Mock implementation - just logs locally
         print("Mock: Login attempt logged — email: \(email), success: \(success)")
@@ -414,9 +418,9 @@ class MockAPIClient: APIClient {
             "scripture_quote": "Be still, and know that I am God.", "scripture_reference": "Psalm 46:10", \
             "moods": ["Peaceful", "Grateful"]}
             """
-            return LLMResponse(content: json, model: "mock", provider: "groq")
+            return LLMResponse(content: json, model: "mock", provider: "groq", safetyTier: nil)
         }
-        return LLMResponse(content: "[Mock response for \(feature)]", model: "mock", provider: "groq")
+        return LLMResponse(content: "[Mock response for \(feature)]", model: "mock", provider: "groq", safetyTier: feature == "capture_conversation" ? "normal" : nil)
     }
 
     func setJWTToken(_ token: String) {

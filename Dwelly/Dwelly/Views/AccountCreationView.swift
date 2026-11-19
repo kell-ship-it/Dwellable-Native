@@ -175,8 +175,19 @@ struct AccountCreationView: View {
             .scrollDismissesKeyboard(.interactively)
             .safeAreaInset(edge: .bottom) { footer }
         }
+        // T-309: the real ToS/Privacy Policy screens (T-134, content revised Nov 19
+        // 2026) have existed and been reachable from Settings for a while now -- this
+        // tap target was still opening a stale "not published yet" placeholder that
+        // contradicted that. Same two-row pattern Settings' own Legal section already
+        // uses, rather than inventing a different presentation here.
         .sheet(isPresented: $showTermsPlaceholder) {
-            placeholderLegalSheet
+            NavigationStack {
+                List {
+                    NavigationLink("Terms of Service") { TermsOfServiceView() }
+                    NavigationLink("Privacy Policy") { PrivacyPolicyView() }
+                }
+                .navigationTitle("Legal")
+            }
         }
         .fullScreenCover(isPresented: $showCheckEmail) {
             if verificationSucceeded {
@@ -303,8 +314,9 @@ struct AccountCreationView: View {
             .accessibilityValue(agreedToTerms ? "Checked" : "Not checked")
             .accessibilityAddTraits(.isButton)
 
-            // Text/Privacy Policy aren't hosted anywhere yet (confirmed with Kell,
-            // Nov 3 2026) — this opens a clearly-labeled placeholder, not a dead link.
+            // T-309 (Nov 19 2026): opens the real Terms of Service / Privacy Policy
+            // screens -- this used to open a stale "not published yet" placeholder
+            // even though both documents have existed since T-134.
             (Text("I agree to the ")
                 .foregroundColor(Theme.Payment.textSupporting)
              + Text("Terms").foregroundColor(Theme.Payment.textHeading).underline()
@@ -317,22 +329,6 @@ struct AccountCreationView: View {
         }
     }
 
-    private var placeholderLegalSheet: some View {
-        VStack(spacing: 16) {
-            Text("Terms & Privacy Policy")
-                .font(.system(size: 20, design: .serif))
-                .foregroundColor(Theme.Payment.textHeading)
-            Text("Placeholder — fullyknown LLC's real Terms of Service and Privacy Policy aren't published yet. This will link to the real pages once they exist.")
-                .font(.system(size: 14))
-                .foregroundColor(Theme.Payment.textSupporting)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-            Button("Close") { showTermsPlaceholder = false }
-                .foregroundColor(Theme.gold)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.Payment.backgroundPrimary)
-    }
 
     /// Real success state (account exists in auth.users) for the "email confirmation
     /// required" outcome — not an error screen.
@@ -594,15 +590,28 @@ struct AccountCreationView: View {
         guard passwordsMatch else { return }
         guard agreedToTerms else { return }
 
+        // T-309: THIS submission -- not the earlier checkbox tap alone -- is the real
+        // consent action (someone could check the box, then back out without ever
+        // creating an account). Recorded locally regardless of which signup outcome
+        // follows, since agreeing happened either way; the local record is what
+        // actually gates anything on-device. Server mirroring (best-effort, may no-op
+        // against a database that hasn't had migration 20261119120100 applied yet)
+        // only happens below once a real userId exists.
+        LegalAcceptance.recordLocalAcceptance()
+
         Task {
             switch await authManager.signUp(email: email, password: password) {
             case .signedIn:
+                await authManager.recordTermsAcceptance(version: LegalAcceptance.currentVersion)
                 onContinue()
             case .pendingEmailConfirmation:
                 // Real success — the account exists — just no session until the
                 // confirmation link is clicked (this Supabase project requires email
                 // confirmation, confirmed Nov 4 2026). No session means onContinue()
                 // would be wrong here; there's nothing authenticated to continue into.
+                // Server-side terms acceptance isn't mirrored in this branch (no userId
+                // reachable from here yet) -- the local record still holds; flagged as a
+                // known minor gap in docs/T125_SAFETY_ACCEPTANCE_TESTS.md.
                 showCheckEmail = true
             case .emailAlreadyExists:
                 showEmailAlreadyExists = true

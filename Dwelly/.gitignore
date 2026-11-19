@@ -15,6 +15,9 @@ Podfile.lock
 # Swift Package Manager
 .swiftpm/
 
+# Deno (local Edge Function testing/typechecking, e.g. supabase/functions/llm-proxy)
+node_modules/
+
 # Carthage
 Carthage/Build
 

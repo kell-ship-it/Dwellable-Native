@@ -70,6 +70,12 @@ protocol APIClient {
     // stale, not materially different from the user having synced a few minutes
     // later than they actually did.
     func touchLastSynced(userId: String) async throws
+    // T-309: best-effort server mirror of the LOCAL acceptance record
+    // (LegalAcceptance.recordLocalAcceptance) -- the local record is the one that's
+    // actually authoritative for gating anything on-device; this is just so Kell can
+    // see acceptance server-side too, once migration 20261119120100 is actually applied
+    // to a live database. Every call site treats a failure here as non-fatal.
+    func recordTermsAcceptance(userId: String, version: String) async throws
     // T-131 (Kell's call, Nov 16 2026): changing your password confirms via a real email
     // OTP instead of re-typing the current password -- same NIST 800-63B "re-authenticate
     // before a sensitive change" idea, just proven via a second channel (the account's
@@ -188,4 +194,11 @@ struct LLMResponse: Codable {
     let content: String
     let model: String
     let provider: String
+    // T-302/T-303: present only for the "capture_conversation" feature's safety layer.
+    // nil for every other feature (prayer generation, journal synthesis) that doesn't
+    // run through the crisis/misuse check. One of: "normal", "crisis_self",
+    // "crisis_other", "refusal", "fallback" -- see SafetyResourceCenter.swift for what
+    // the client does with each. Optional so Codable's synthesized decoder tolerates
+    // its absence from every other feature's response without a custom init(from:).
+    let safetyTier: String?
 }

@@ -58,6 +58,11 @@
 		013c /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013d /* SyncManager.swift */; };
 		013e /* TypeFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013f /* TypeFlowView.swift */; };
 		0190 /* CaptureConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0191 /* CaptureConversationView.swift */; };
+		F048 /* SafetySupportSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = F049 /* SafetySupportSheets.swift */; };
+		F04A /* SafetySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B /* SafetySettingsView.swift */; };
+		F04C /* LegalAcceptance.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04D /* LegalAcceptance.swift */; };
+		F04E /* FormationEligibilityPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04F /* FormationEligibilityPolicy.swift */; };
+		F050 /* CrisisSupportPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F051 /* CrisisSupportPolicy.swift */; };
 		F00D /* JournalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00E /* JournalDetailView.swift */; };
 		F00F /* JournalEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F010 /* JournalEntry.swift */; };
 		F011 /* JournalSynthesisManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F012 /* JournalSynthesisManager.swift */; };
@@ -71,6 +76,7 @@
 		0148 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0149 /* SettingsView.swift */; };
 		F013 /* RecentlyDeletedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F014 /* RecentlyDeletedView.swift */; };
 		12c0 /* UsageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12c1 /* UsageTracker.swift */; };
+		F046 /* SafetyResourceCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F047 /* SafetyResourceCenter.swift */; };
 		2317A7B72F734EEE00B7F8F0 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA000002 /* WhisperKit */; };
 		23A6B1202F60D59E006F12BD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 23A6B11F2F60D59E006F12BD /* Assets.xcassets */; };
 		D001 /* AppLoadingAnimation.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D000 /* AppLoadingAnimation.mp4 */; };
@@ -154,6 +160,11 @@
 		013d /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
 		013f /* TypeFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeFlowView.swift; sourceTree = "<group>"; };
 		0191 /* CaptureConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureConversationView.swift; sourceTree = "<group>"; };
+		F049 /* SafetySupportSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafetySupportSheets.swift; sourceTree = "<group>"; };
+		F04B /* SafetySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafetySettingsView.swift; sourceTree = "<group>"; };
+		F04D /* LegalAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalAcceptance.swift; sourceTree = "<group>"; };
+		F04F /* FormationEligibilityPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationEligibilityPolicy.swift; sourceTree = "<group>"; };
+		F051 /* CrisisSupportPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrisisSupportPolicy.swift; sourceTree = "<group>"; };
 		F00E /* JournalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalDetailView.swift; sourceTree = "<group>"; };
 		F010 /* JournalEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEntry.swift; sourceTree = "<group>"; };
 		F012 /* JournalSynthesisManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalSynthesisManager.swift; sourceTree = "<group>"; };
@@ -167,6 +178,7 @@
 		0149 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F014 /* RecentlyDeletedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentlyDeletedView.swift; sourceTree = "<group>"; };
 		12c1 /* UsageTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageTracker.swift; sourceTree = "<group>"; };
+		F047 /* SafetyResourceCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafetyResourceCenter.swift; sourceTree = "<group>"; };
 		23A6B11F2F60D59E006F12BD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		23FB528C2F5F7485001E0468 /* DwellyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DwellyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		23FB529B2F5F7935001E0468 /* Dwelly.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Dwelly.xctestplan; sourceTree = "<group>"; };
@@ -280,6 +292,8 @@
 				0111 /* MomentsListView.swift */,
 				013f /* TypeFlowView.swift */,
 				0191 /* CaptureConversationView.swift */,
+				F049 /* SafetySupportSheets.swift */,
+				F04B /* SafetySettingsView.swift */,
 				F00E /* JournalDetailView.swift */,
 				0145 /* MomentDetailView.swift */,
 				0147 /* MomentRow.swift */,
@@ -339,6 +353,10 @@
 				F00C /* ProfileManager.swift */,
 				F012 /* JournalSynthesisManager.swift */,
 				F018 /* DwellerProfileManager.swift */,
+				F047 /* SafetyResourceCenter.swift */,
+				F04D /* LegalAcceptance.swift */,
+				F04F /* FormationEligibilityPolicy.swift */,
+				F051 /* CrisisSupportPolicy.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -531,6 +549,8 @@
 				0110 /* MomentsListView.swift in Sources */,
 				013e /* TypeFlowView.swift in Sources */,
 				0190 /* CaptureConversationView.swift in Sources */,
+				F048 /* SafetySupportSheets.swift in Sources */,
+				F04A /* SafetySettingsView.swift in Sources */,
 				F00D /* JournalDetailView.swift in Sources */,
 				F00F /* JournalEntry.swift in Sources */,
 				F011 /* JournalSynthesisManager.swift in Sources */,
@@ -555,6 +575,10 @@
 				013c /* SyncManager.swift in Sources */,
 				0114 /* Moment.swift in Sources */,
 				12c0 /* UsageTracker.swift in Sources */,
+				F046 /* SafetyResourceCenter.swift in Sources */,
+				F04C /* LegalAcceptance.swift in Sources */,
+				F04E /* FormationEligibilityPolicy.swift in Sources */,
+				F050 /* CrisisSupportPolicy.swift in Sources */,
 				0116 /* Theme.swift in Sources */,
 				0118 /* Config.swift in Sources */,
 				E001 /* APIClientEnvironment.swift in Sources */,

@@ -381,7 +381,8 @@ class SupabaseAPIClient: APIClient {
             created_at: entry.createdAt.ISO8601Format(),
             updated_at: Date().ISO8601Format(),
             formation_eligible: entry.formationEligible,
-            extracted_facts: entry.extractedFacts
+            extracted_facts: entry.extractedFacts,
+            profile_excluded: entry.profileExcluded
         )
         // Upsert on the unique moment_id column -- one entry per moment, so saving
         // twice (e.g. re-saving moods after a title already exists) updates the
@@ -924,6 +925,29 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    // T-309: best-effort only -- the columns this PATCHes
+    // (terms_accepted_at/terms_version/privacy_accepted_at/privacy_version) exist only
+    // in migration 20261119120100_add_terms_and_privacy_acceptance_to_users.sql, which
+    // has NOT been applied to any live database as part of this work. Until it is, this
+    // call will fail against a real backend (unknown column) -- every call site must
+    // treat that as non-fatal, same as touchLastSynced above.
+    func recordTermsAcceptance(userId: String, version: String) async throws {
+        let endpoint = "/rest/v1/users?id=eq.\(userId)"
+        let now = ISO8601DateFormatter().string(from: Date())
+        let body: [String: String] = [
+            "terms_accepted_at": now,
+            "terms_version": version,
+            "privacy_accepted_at": now,
+            "privacy_version": version,
+        ]
+        _ = try await makeRequest(
+            method: "PATCH",
+            endpoint: endpoint,
+            body: body,
+            responseType: [EmptyResponse].self
+        )
+    }
+
     // MARK: - Onboarding Profile API (T-111)
 
     func fetchOnboardingProfile(userId: String) async throws -> OnboardingProfileRow {
@@ -1228,6 +1252,7 @@ struct JournalEntryPayload: Codable {
     let updated_at: String
     let formation_eligible: Bool
     let extracted_facts: String?
+    let profile_excluded: Bool
 }
 
 struct DwellerProfilePayload: Codable {
