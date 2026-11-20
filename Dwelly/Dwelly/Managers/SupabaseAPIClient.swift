@@ -970,6 +970,17 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    func updateFCMToken(userId: String, token: String) async throws {
+        let endpoint = "/rest/v1/users?id=eq.\(userId)"
+        let body = ["fcm_token": token]
+        _ = try await makeRequest(
+            method: "PATCH",
+            endpoint: endpoint,
+            body: body,
+            responseType: [EmptyResponse].self
+        )
+    }
+
     // MARK: - Onboarding Profile API (T-111)
 
     func fetchOnboardingProfile(userId: String) async throws -> OnboardingProfileRow {

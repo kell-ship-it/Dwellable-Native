@@ -48,6 +48,13 @@ struct AppView: View {
                 // Set real userId on SyncManager (replaces placeholder "app-sync")
                 syncManager.updateUserId(user.id)
                 syncManager.syncPendingMoments()
+
+                // T-083: now that the user is known, PushNotificationManager can
+                // sync an already-received FCM token, or wait for one. Actually
+                // requesting OS permission is gated on the user's notification_opt_in
+                // choice from onboarding (NotificationPermissionView) -- this just
+                // wires the plumbing, it doesn't itself prompt.
+                PushNotificationManager.shared.configure(apiClient: apiClient, userId: user.id)
                 // Nov 16 2026: `syncPendingMoments()` only retries pending journal
                 // entries as its OWN tail call, gated behind "there are locally
                 // pending moments to sync" -- it early-returns otherwise. That left a

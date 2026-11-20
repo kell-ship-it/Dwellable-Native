@@ -56,6 +56,9 @@
 	<array>
 		<string>audio</string>
 		<string>fetch</string>
+		<!-- T-083: required for silent (content-available) push to wake the app
+		     in the background at all -- without this, iOS just drops them. -->
+		<string>remote-notification</string>
 	</array>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
