@@ -364,8 +364,9 @@ struct TodayView: View {
                     Text(tile.title)
                         .font(.system(size: 16, design: .serif))
                         .foregroundColor(Theme.Payment.textHeading)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        // Wrap to two lines instead of cutting a prompt off mid-question.
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text(tile.subtitle)
                         .font(.system(size: 11))
                         .foregroundColor(Theme.Payment.textSupporting)
