@@ -84,6 +84,13 @@ protocol APIClient {
     // this is for an already-existing, already-signed-in user, not a new signup.
     func sendPasswordChangeOTP(email: String) async throws
     func verifyPasswordChangeOTP(email: String, token: String) async throws -> AuthToken
+    // T-250: GoTrue's own built-in email-change flow (PUT /auth/v1/user with a new
+    // `email`) -- not a parallel custom OTP system like T-131's password change. GoTrue
+    // sends a confirmation link to the new address itself and leaves the current email
+    // active on the account until that link is clicked, exactly the behavior the design
+    // specifies. The caller re-authenticates with the current password first (login)
+    // as identity confirmation, same as the design's locked copy asks for.
+    func requestEmailChange(newEmail: String) async throws
     func logLoginAttempt(email: String, success: Bool) async
 
     // Onboarding profile endpoints (T-111)
