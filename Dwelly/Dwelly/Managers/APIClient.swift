@@ -70,6 +70,11 @@ protocol APIClient {
     // stale, not materially different from the user having synced a few minutes
     // later than they actually did.
     func touchLastSynced(userId: String) async throws
+    // T-083: persists the device's current FCM registration token so the future
+    // notification sender (T-084) has somewhere real to read it from. Token
+    // rotation (Firebase can reissue one at any time) just calls this again --
+    // PATCH overwrites, no separate "replace" path needed.
+    func updateFCMToken(userId: String, token: String) async throws
     // T-131 (Kell's call, Nov 16 2026): changing your password confirms via a real email
     // OTP instead of re-typing the current password -- same NIST 800-63B "re-authenticate
     // before a sensitive change" idea, just proven via a second channel (the account's

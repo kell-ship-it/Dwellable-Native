@@ -210,6 +210,10 @@ class LogHTTPServer {
 
 @main
 struct DwellyApp: App {
+    // T-083: gives SwiftUI's App a real UIApplicationDelegate so Firebase/APNs
+    // callbacks (didRegisterForRemoteNotifications, silent push) have somewhere
+    // to land -- SwiftUI's own lifecycle doesn't expose those.
+    @UIApplicationDelegateAdaptor(DwellyAppDelegate.self) private var appDelegate
     @StateObject private var authManager: AuthManager
     private let apiClient: APIClient
     @StateObject private var syncManager: SyncManager

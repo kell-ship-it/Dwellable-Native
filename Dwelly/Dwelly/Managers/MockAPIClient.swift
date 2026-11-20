@@ -310,6 +310,10 @@ class MockAPIClient: APIClient {
         // No dormancy clock to simulate for previews/tests -- a no-op is the whole mock.
     }
 
+    func updateFCMToken(userId: String, token: String) async throws {
+        // No server to simulate for previews/tests -- a no-op is the whole mock.
+    }
+
     func logLoginAttempt(email: String, success: Bool) async {
         // Mock implementation - just logs locally
         print("Mock: Login attempt logged — email: \(email), success: \(success)")

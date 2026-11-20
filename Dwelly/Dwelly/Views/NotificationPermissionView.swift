@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import UserNotifications
 
 /// Onboarding "Notification Permission" screen (T-110, T-238 Screen 6.5). Layout, copy, and
@@ -131,6 +132,13 @@ struct NotificationPermissionView: View {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
             DispatchQueue.main.async {
                 ProfileManager.shared.setNotificationOptIn(granted, userId: userId)
+                // T-083: this is the same system prompt PushNotificationManager's own
+                // requestAuthorizationAndRegister() would trigger -- since onboarding
+                // already asks here, just register for remote notifications directly
+                // on a grant rather than prompting the user a second time.
+                if granted {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
                 isRequesting = false
                 onContinue()
             }
