@@ -1237,13 +1237,19 @@ class SupabaseAPIClient: APIClient {
     // MARK: - LLM API (T-168)
 
     func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int? = nil) async throws -> LLMResponse {
-        let payload = LLMProxyPayload(messages: messages, feature: feature, max_tokens: maxTokens)
-        return try await makeRequest(
-            method: "POST",
-            endpoint: "/functions/v1/llm-proxy",
-            body: payload,
-            responseType: LLMResponse.self
-        )
+        // T-107: every call (capture conversation, journal synthesis, prayer
+        // generation once T-147 lands, etc.) goes through this one chokepoint, so
+        // routing it through LLMGateway here covers all of them with no call-site
+        // changes required.
+        try await LLMGateway.shared.execute(feature: feature, requestedMaxTokens: maxTokens) { clampedMaxTokens in
+            let payload = LLMProxyPayload(messages: messages, feature: feature, max_tokens: clampedMaxTokens)
+            return try await self.makeRequest(
+                method: "POST",
+                endpoint: "/functions/v1/llm-proxy",
+                body: payload,
+                responseType: LLMResponse.self
+            )
+        }
     }
 }
 

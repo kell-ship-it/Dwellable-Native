@@ -77,6 +77,7 @@
 		F100 /* DailyVerseLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F101 /* DailyVerseLibrary.swift */; };
 		F102 /* TodayPromptLibraries.swift in Sources */ = {isa = PBXBuildFile; fileRef = F103 /* TodayPromptLibraries.swift */; };
 		F017 /* DwellerProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F018 /* DwellerProfileManager.swift */; };
+		F300 /* LLMGateway.swift in Sources */ = {isa = PBXBuildFile; fileRef = F301 /* LLMGateway.swift */; };
 		F019 /* YourNarrativeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F01A /* YourNarrativeCard.swift */; };
 		0144 /* MomentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0145 /* MomentDetailView.swift */; };
 		0146 /* MomentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0147 /* MomentRow.swift */; };
@@ -190,6 +191,7 @@
 		F101 /* DailyVerseLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyVerseLibrary.swift; sourceTree = "<group>"; };
 		F103 /* TodayPromptLibraries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayPromptLibraries.swift; sourceTree = "<group>"; };
 		F018 /* DwellerProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DwellerProfileManager.swift; sourceTree = "<group>"; };
+		F301 /* LLMGateway.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMGateway.swift; sourceTree = "<group>"; };
 		F01A /* YourNarrativeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YourNarrativeCard.swift; sourceTree = "<group>"; };
 		0145 /* MomentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentDetailView.swift; sourceTree = "<group>"; };
 		0147 /* MomentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentRow.swift; sourceTree = "<group>"; };
@@ -388,6 +390,7 @@
 				F055 /* CaptureSafetySession.swift */,
 				F057 /* LocalExplicitHarmSignal.swift */,
 				FC000001 /* PushNotificationManager.swift */,
+				F301 /* LLMGateway.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -595,6 +598,7 @@
 				F100 /* DailyVerseLibrary.swift in Sources */,
 				F102 /* TodayPromptLibraries.swift in Sources */,
 				F017 /* DwellerProfileManager.swift in Sources */,
+				F300 /* LLMGateway.swift in Sources */,
 				F019 /* YourNarrativeCard.swift in Sources */,
 				0144 /* MomentDetailView.swift in Sources */,
 				0146 /* MomentRow.swift in Sources */,
