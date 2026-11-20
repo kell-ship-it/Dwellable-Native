@@ -180,7 +180,7 @@ struct JournalDetailView: View {
         // fallback here -- before synthesis has a chance to run at all, or if it
         // never produced a body. `loadEntry()` below corrects this once the real
         // persisted entry loads, same pattern as title/moods/scripture.
-        let initialBody = meta?.body ?? moment.body
+        let initialBody = meta?.body ?? moment.userWords
         _editedBody = State(initialValue: initialBody)
         _displayBody = State(initialValue: initialBody)
         _selectedMoods = State(initialValue: meta?.moods ?? [])
@@ -309,17 +309,12 @@ struct JournalDetailView: View {
             .font(.system(size: 13))
             .foregroundColor(Theme.Payment.textSupporting)
 
-        Text("IN YOUR WORDS")
+        Text(moment.transcriptTurns == nil ? "IN YOUR WORDS" : "THE CONVERSATION")
             .font(.system(size: 11, weight: .medium))
             .foregroundColor(Theme.Payment.textSupporting)
             .padding(.top, 8)
 
-        Text(moment.body)
-            .font(.system(size: 17, weight: .light))
-            .italic()
-            .foregroundColor(Theme.Capture.textBody)
-            .lineSpacing(1.6)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        MomentTranscriptView(moment: moment, fontSize: 17)
     }
 
     @ViewBuilder
@@ -866,16 +861,14 @@ struct JournalDetailView: View {
                     .foregroundColor(Theme.gold)
             }
 
-            Text("Your own words, exactly as captured -- before Dwelly's reframing turned them into this journal entry.")
+            Text(moment.transcriptTurns == nil
+                 ? "Your own words, exactly as captured -- before Dwelly's reframing turned them into this journal entry."
+                 : "The conversation exactly as it happened -- Dwelly's prompts and your words -- before it was turned into this journal entry.")
                 .font(.system(size: 13))
                 .foregroundColor(Theme.Payment.textSupporting)
 
             ScrollView {
-                Text(moment.body)
-                    .font(.system(size: 16, weight: .light))
-                    .foregroundColor(Theme.Capture.textBody)
-                    .lineSpacing(1.6)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                MomentTranscriptView(moment: moment, fontSize: 16)
             }
         }
         .padding(20)

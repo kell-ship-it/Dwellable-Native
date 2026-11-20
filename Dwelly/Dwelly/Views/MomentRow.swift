@@ -5,7 +5,7 @@ struct MomentRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(moment.body)
+            Text(moment.userWords)
                 .font(.system(size: 14, weight: .regular))
                 .foregroundColor(Theme.text)
                 .lineLimit(2)

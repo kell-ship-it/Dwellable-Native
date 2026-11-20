@@ -35,10 +35,7 @@ struct MomentDetailView: View {
                 // Full moment text
                 VStack(spacing: 0) {
                     ScrollView {
-                        Text(moment.body)
-                            .font(.system(size: 20, weight: .light))
-                            .foregroundColor(Theme.text)
-                            .lineSpacing(1.8)
+                        MomentTranscriptView(moment: moment, fontSize: 20)
                             .frame(maxWidth: .infinity, alignment: .topLeading)
                             .padding(.vertical, 12)
                     }

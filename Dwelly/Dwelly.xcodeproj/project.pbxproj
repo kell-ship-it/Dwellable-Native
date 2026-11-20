@@ -62,6 +62,7 @@
 		F04A /* SafetySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04B /* SafetySettingsView.swift */; };
 		F058 /* CrisisSupportUIHarnessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F059 /* CrisisSupportUIHarnessView.swift */; };
 		F05A /* SafetyHelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F05B /* SafetyHelpView.swift */; };
+		F05C /* MomentTranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F05D /* MomentTranscriptView.swift */; };
 		F04C /* LegalAcceptance.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04D /* LegalAcceptance.swift */; };
 		F04E /* FormationEligibilityPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F04F /* FormationEligibilityPolicy.swift */; };
 		F050 /* CrisisSupportPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F051 /* CrisisSupportPolicy.swift */; };
@@ -169,6 +170,7 @@
 		F04B /* SafetySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafetySettingsView.swift; sourceTree = "<group>"; };
 		F059 /* CrisisSupportUIHarnessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrisisSupportUIHarnessView.swift; sourceTree = "<group>"; };
 		F05B /* SafetyHelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafetyHelpView.swift; sourceTree = "<group>"; };
+		F05D /* MomentTranscriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MomentTranscriptView.swift; sourceTree = "<group>"; };
 		F04D /* LegalAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalAcceptance.swift; sourceTree = "<group>"; };
 		F04F /* FormationEligibilityPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormationEligibilityPolicy.swift; sourceTree = "<group>"; };
 		F051 /* CrisisSupportPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrisisSupportPolicy.swift; sourceTree = "<group>"; };
@@ -306,6 +308,7 @@
 				F04B /* SafetySettingsView.swift */,
 				F059 /* CrisisSupportUIHarnessView.swift */,
 				F05B /* SafetyHelpView.swift */,
+				F05D /* MomentTranscriptView.swift */,
 				F00E /* JournalDetailView.swift */,
 				0145 /* MomentDetailView.swift */,
 				0147 /* MomentRow.swift */,
@@ -568,6 +571,7 @@
 				F04A /* SafetySettingsView.swift in Sources */,
 				F058 /* CrisisSupportUIHarnessView.swift in Sources */,
 				F05A /* SafetyHelpView.swift in Sources */,
+				F05C /* MomentTranscriptView.swift in Sources */,
 				F00D /* JournalDetailView.swift in Sources */,
 				F00F /* JournalEntry.swift in Sources */,
 				F011 /* JournalSynthesisManager.swift in Sources */,

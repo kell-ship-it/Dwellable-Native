@@ -749,7 +749,7 @@ struct CaptureConversationView: View {
                             }
                         }
                         .padding(.horizontal, 24)
-                        .padding(.top, headerHeight)
+                        .padding(.top, headerHeight + 16)
                         .padding(.bottom, 24)
                         .background(
                             GeometryReader { geo in
@@ -1020,15 +1020,27 @@ struct CaptureConversationView: View {
                     Spacer(minLength: 0)
                 }
                 .frame(height: headerHeight)
-                .background(
-                    LinearGradient(
-                        colors: [Theme.background, Theme.background, Theme.background.opacity(0)],
-                        startPoint: .top, endPoint: .bottom
-                    )
-                    .frame(height: headerHeight + 40)
-                    .offset(y: -40)
-                    .ignoresSafeArea(edges: .top)
-                )
+                // Solid behind the whole button row, fading out only BELOW it (Nov 19 2026):
+                // scrolling text used to show through "Finish for now" and the back chevron.
+                // A first fix mis-sized this -- a background child is CENTERED in its parent,
+                // so the solid part ended above the buttons. Positions are now explicit from
+                // the header's top edge: an oversized solid block offset up to cover the
+                // status-bar area, ending at 58pt (the button row's bottom: 14 top padding +
+                // 44 row), then a 20pt fade below it, matching the extra scroll-content top
+                // padding so nothing at rest is dimmed.
+                .background(alignment: .top) {
+                    ZStack(alignment: .top) {
+                        Theme.background
+                            .frame(height: 258)
+                            .offset(y: -200)
+                        LinearGradient(
+                            colors: [Theme.background, Theme.background.opacity(0)],
+                            startPoint: .top, endPoint: .bottom
+                        )
+                        .frame(height: 20)
+                        .offset(y: 58)
+                    }
+                }
                 .allowsHitTesting(true)
 
                 // Nov 10 2026 rebuild: this used to be `if isComposeExpanded { scrim;
@@ -1500,10 +1512,10 @@ struct CaptureConversationView: View {
             .joined(separator: "\n\n")
     }
 
-    /// Both sides of the conversation, role-labeled -- used ONLY as synthesis context
-    /// (Nov 11 2026, real body-synthesis build), never stored or shown directly.
-    /// `combinedBody` (user words only) stays what's saved as `moment.body` and shown
-    /// as "In your words"/the pending placeholder; the model needs Dwelly's own
+    /// Both sides of the conversation, role-labeled -- used as synthesis context
+    /// (Nov 11 2026, real body-synthesis build). Since Nov 19 2026 the saved moment also
+    /// holds this conversation (Moment.encodeTranscript); `combinedBody` (user words
+    /// only) is still what synthesis treats as the user's verbatim text. The model needs Dwelly's own
     /// questions too to understand the arc of the conversation well enough to write a
     /// real reframed narrative, not just a concatenation of answers.
     private var fullTranscript: String {
@@ -2733,7 +2745,17 @@ struct CaptureConversationView: View {
 
         async let metaTask: Void = generateJournalMeta()
 
-        let moment = Moment(userId: userId, body: combinedBody, createdAt: Date())
+        // The saved reflection is the whole conversation (Dwelly's prompts and the user's
+        // answers), not just the user's side -- see Moment.encodeTranscript. Everything
+        // that needs only the user's words reads Moment.userWords.
+        let savedTurns = turns.compactMap { turn -> Moment.TranscriptTurn? in
+            switch turn.role {
+            case .user: return Moment.TranscriptTurn(isUser: true, text: turn.text)
+            case .assistant: return Moment.TranscriptTurn(isUser: false, text: turn.text)
+            case .system: return nil
+            }
+        }
+        let moment = Moment(userId: userId, body: Moment.encodeTranscript(savedTurns), createdAt: Date())
 
         do {
             _ = try await apiClient.saveMoment(moment)

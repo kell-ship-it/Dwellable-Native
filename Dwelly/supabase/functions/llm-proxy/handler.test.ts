@@ -14,6 +14,7 @@ import {
   handleProxyRequest,
   FIXED_SAFETY_TEXT,
   FALLBACK_TEXT,
+  INPUT_CLASSIFIER_PROMPT,
   ZERO_USAGE,
   type ChatMessage,
   type LLMProxyRequest,
@@ -372,4 +373,32 @@ Deno.test("safety-call usage is logged as OpenAI when OpenAI is what answered (t
   const classifier = calls.usageLogged.find((u) => u.feature === "capture_conversation_safety_classifier")
   assertEquals(classifier?.provider, "openai")
   assertEquals(classifier?.model, "gpt-4o-mini")
+})
+
+// The classifier prompt is model input, so these only guard that the wording this
+// behaviour depends on is still present -- they say nothing about how a model follows it.
+Deno.test("classifier prompt asks a DIRECT question for self-harm ambiguity and does not latch on an idiom alone", () => {
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes("ask DIRECTLY and gently whether they are having thoughts of hurting themselves or ending their life"), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes('Do NOT use "crisis_self" for a common figure of speech on its own'), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes('says something explicit (e.g. "I want to kill myself")'), true)
+})
+
+Deno.test("classifier prompt treats crude but honest wording as normal, not refusal", () => {
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes("Crude, blunt, or profane wording is not misuse either"), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes('is "normal", never "refusal"'), true)
+})
+
+Deno.test("classifier prompt remembers a clear denial in the same conversation and does not re-ask or lock on the same idiom", () => {
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes("Remember what the person already told you in THIS conversation"), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes('the SAME figure of speech used again in that same context is figurative'), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes("do not ask again and do not use \"crisis_self\""), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes("Stay alert only to NEW or stronger signals"), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes('is always "crisis_self", whatever was said before'), true)
+})
+
+Deno.test("classifier prompt judges the latest message on its own and ignores earlier assistant flags", () => {
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes("judge the LATEST user message on its own merits"), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes("are NOT evidence about the latest message"), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes('never repeat an earlier decision out of habit'), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes("a genuinely concerning latest message is flagged whatever came before"), true)
 })

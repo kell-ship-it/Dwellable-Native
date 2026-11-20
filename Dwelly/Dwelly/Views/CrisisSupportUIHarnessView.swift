@@ -17,7 +17,10 @@ struct CrisisSupportUIHarnessView: View {
 
     init() {
         let mock = MockAPIClient()
-        mock.omitCaptureSafetyTier = true
+        // Default: no safety verdict (today's old-backend shape). With -HarnessNormalVerdicts
+        // the mock answers "normal", so the ORDINARY save flow (journal, saved conversation)
+        // can be exercised offline too.
+        mock.omitCaptureSafetyTier = !ProcessInfo.processInfo.arguments.contains("-HarnessNormalVerdicts")
         client = mock
         _syncManager = StateObject(wrappedValue: SyncManager(apiClient: mock, userId: "crisis-support-ui-harness"))
     }

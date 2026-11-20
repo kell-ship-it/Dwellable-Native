@@ -136,7 +136,7 @@ class SyncManager: ObservableObject {
             // those tiers itself (only `moment.body`/`entry` survive to this point), so
             // it reads the decision back rather than silently losing it and falling
             // back to the substance-only gate alone.
-            guard let result = try? await JournalSynthesisManager.synthesize(transcript: moment.body, userOnlyText: moment.body, policyExcluded: entry.profileExcluded, apiClient: apiClient) else { continue }
+            guard let result = try? await JournalSynthesisManager.synthesize(transcript: moment.synthesisTranscript, userOnlyText: moment.userWords, policyExcluded: entry.profileExcluded, apiClient: apiClient) else { continue }
 
             var updated = entry
             updated.status = "approved"

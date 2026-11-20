@@ -105,7 +105,7 @@ struct RecentlyDeletedView: View {
     private func row(for moment: Moment) -> some View {
         let daysRemaining = daysRemaining(for: moment)
         return VStack(alignment: .leading, spacing: 8) {
-            Text(titles[moment.id] ?? String(moment.body.prefix(60)))
+            Text(titles[moment.id] ?? String(moment.userWords.prefix(60)))
                 .font(.system(size: 15, weight: .semibold, design: .serif))
                 .foregroundColor(Theme.Payment.textHeading)
                 .lineLimit(1)

@@ -2,6 +2,19 @@
 
 **📦 Older session entries (July 22, 2026 and earlier) archived to [`MEMORY_ARCHIVE.md`](MEMORY_ARCHIVE.md) to keep this file lean for session-start reads.** Read the archive only if you need identical detail on a specific past session.
 
+## Next Session Objective (November 19, 2026 close — crisis support live and working, remaining beta builds defined)
+
+**Confirmed Pending Items:**
+1. **T-320 Formation Intelligence + Dweller profile** — Kell finishes his outstanding ChatGPT design work first; then decide what ships for beta and build it. Also owed (Kell said later): a doc on capture strategy, meaning everything is captured but only some reflections feed Formation Intelligence.
+2. **T-224 upgrade/payment flow + T-254 StoreKit** — Profile shows Subscription "Free" with no visible upgrade entry. Needs Kell's decisions and real App Store Connect products (T-252).
+3. **T-169 real Terms + Privacy** (retention policy and adult-only pilot sign-off still open), then **T-321 Figma parity** (update the designs to match the app; Codex owns Figma writes).
+
+After those: **T-322**, a full day of on-device testing (including T-319 on the live account and checking llm_usage shows Groq on safety rows).
+
+**State at close:** `llm-proxy` v19 is live (classifier consistency rule). Three migrations (20261119120000/120100/140000) are NOT applied. Prayer is post-MVP and out of scope. Daily cap stays at 60 calls per user per day. Commit is local only; nothing pushed.
+
+**Rationale:** Crisis support is working; these are the only feature areas Kell sees left before a full test day and the beta.
+
 ## Next Session Objective (November 18, 2026 close — moment composer confirmed on device, beta scope locked)
 
 **Confirmed Pending Items:**
