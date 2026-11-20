@@ -26,6 +26,7 @@
 		F023 /* NarrativeFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = F024 /* NarrativeFeedback.swift */; };
 		F029 /* SecurityPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02A /* SecurityPrivacyView.swift */; };
 		F02B /* ChangePasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02C /* ChangePasswordView.swift */; };
+		F031 /* ChangeEmailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F032 /* ChangeEmailView.swift */; };
 		F02D /* EncryptionInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02E /* EncryptionInfoView.swift */; };
 		F02F /* NotificationsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F030 /* NotificationsSettingsView.swift */; };
 		B10E /* AccountProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10D /* AccountProfileView.swift */; };
@@ -112,6 +113,7 @@
 		F024 /* NarrativeFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NarrativeFeedback.swift; sourceTree = "<group>"; };
 		F02A /* SecurityPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityPrivacyView.swift; sourceTree = "<group>"; };
 		F02C /* ChangePasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordView.swift; sourceTree = "<group>"; };
+		F032 /* ChangeEmailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeEmailView.swift; sourceTree = "<group>"; };
 		F02E /* EncryptionInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionInfoView.swift; sourceTree = "<group>"; };
 		F030 /* NotificationsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsSettingsView.swift; sourceTree = "<group>"; };
 		B10D /* AccountProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountProfileView.swift; sourceTree = "<group>"; };
@@ -271,6 +273,7 @@
 				F014 /* RecentlyDeletedView.swift */,
 				F02A /* SecurityPrivacyView.swift */,
 				F02C /* ChangePasswordView.swift */,
+				F032 /* ChangeEmailView.swift */,
 				F02E /* EncryptionInfoView.swift */,
 				F030 /* NotificationsSettingsView.swift */,
 				F01A /* YourNarrativeCard.swift */,
@@ -544,6 +547,7 @@
 				F023 /* NarrativeFeedback.swift in Sources */,
 				F029 /* SecurityPrivacyView.swift in Sources */,
 				F02B /* ChangePasswordView.swift in Sources */,
+				F031 /* ChangeEmailView.swift in Sources */,
 				F02D /* EncryptionInfoView.swift in Sources */,
 				F02F /* NotificationsSettingsView.swift in Sources */,
 				B108 /* TabScreenHeader.swift in Sources */,

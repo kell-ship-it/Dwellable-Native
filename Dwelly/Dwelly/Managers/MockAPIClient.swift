@@ -283,6 +283,11 @@ class MockAPIClient: APIClient {
         )
     }
 
+    func requestEmailChange(newEmail: String) async throws {
+        try await Task.sleep(nanoseconds: 400_000_000)
+        guard !newEmail.isEmpty else { throw APIError.invalidRequest }
+    }
+
     func logout() async throws {
         // Simulate network delay
         try await Task.sleep(nanoseconds: 200_000_000) // 0.2 second

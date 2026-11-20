@@ -17,6 +17,7 @@ import SwiftUI
 ///   same honest-disabled-state pattern as GrowthPlaceholderView/TodayPlaceholderView,
 ///   not a dead tappable row.
 struct SecurityPrivacyView: View {
+    @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -25,6 +26,35 @@ struct SecurityPrivacyView: View {
 
             VStack(spacing: 0) {
                 header
+
+                // T-250: Email card, matching Scenario 14's design -- current email
+                // shown read-only, with a Change Email button, alongside the existing
+                // Password/Encryption rows rather than inside that same list, since the
+                // design frames it as its own card.
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Email")
+                        .font(.system(size: 12, weight: .medium))
+                        .tracking(0.3)
+                        .foregroundColor(Theme.Payment.textSupporting)
+
+                    Text(authManager.currentUser?.email ?? "")
+                        .font(.system(size: 15))
+                        .foregroundColor(Theme.Payment.textHeading)
+                        .padding(.top, 6)
+
+                    NavigationLink(destination: ChangeEmailView()) {
+                        Text("Change Email")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(Theme.gold)
+                    }
+                    .padding(.top, 14)
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.Payment.pillBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
 
                 VStack(spacing: 0) {
                     NavigationLink(destination: ChangePasswordView()) {
@@ -46,7 +76,7 @@ struct SecurityPrivacyView: View {
                 .background(Theme.Payment.pillBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .padding(.horizontal, 20)
-                .padding(.top, 20)
+                .padding(.top, 12)
 
                 Spacer()
             }

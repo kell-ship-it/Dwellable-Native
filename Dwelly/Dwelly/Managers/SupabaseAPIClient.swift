@@ -709,6 +709,23 @@ class SupabaseAPIClient: APIClient {
         )
     }
 
+    /// T-250: GoTrue's native email-change confirmation flow. `PUT /auth/v1/user` with a
+    /// new `email` on an authenticated session makes GoTrue send a confirmation link to
+    /// that new address automatically -- no custom OTP endpoint needed, unlike T-131's
+    /// password change. The signed-in account's email (and access) is untouched until
+    /// that link is clicked, which is exactly the locked design's "current email stays
+    /// active until confirmed."
+    func requestEmailChange(newEmail: String) async throws {
+        try checkRateLimit()
+        struct UpdateEmailPayload: Encodable { let email: String }
+        _ = try await makeRequest(
+            method: "PUT",
+            endpoint: "/auth/v1/user",
+            body: UpdateEmailPayload(email: newEmail),
+            responseType: EmptyResponse.self
+        )
+    }
+
     func login(email: String, password: String) async throws -> AuthToken {
         // Check rate limit
         try checkRateLimit()
