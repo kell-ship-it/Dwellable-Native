@@ -69,6 +69,7 @@
 		F050 /* CrisisSupportPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F051 /* CrisisSupportPolicy.swift */; };
 		F052 /* LLMResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F053 /* LLMResponse.swift */; };
 		F054 /* CaptureSafetySession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F055 /* CaptureSafetySession.swift */; };
+		F0CE11 /* ConversationalIntelligencePrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CE12 /* ConversationalIntelligencePrompt.swift */; };
 		F056 /* LocalExplicitHarmSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F057 /* LocalExplicitHarmSignal.swift */; };
 		F00D /* JournalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00E /* JournalDetailView.swift */; };
 		F00F /* JournalEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F010 /* JournalEntry.swift */; };
@@ -183,6 +184,7 @@
 		F051 /* CrisisSupportPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrisisSupportPolicy.swift; sourceTree = "<group>"; };
 		F053 /* LLMResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMResponse.swift; sourceTree = "<group>"; };
 		F055 /* CaptureSafetySession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSafetySession.swift; sourceTree = "<group>"; };
+		F0CE12 /* ConversationalIntelligencePrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationalIntelligencePrompt.swift; sourceTree = "<group>"; };
 		F057 /* LocalExplicitHarmSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalExplicitHarmSignal.swift; sourceTree = "<group>"; };
 		F00E /* JournalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalDetailView.swift; sourceTree = "<group>"; };
 		F010 /* JournalEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalEntry.swift; sourceTree = "<group>"; };
@@ -388,6 +390,7 @@
 				F051 /* CrisisSupportPolicy.swift */,
 				F053 /* LLMResponse.swift */,
 				F055 /* CaptureSafetySession.swift */,
+				F0CE12 /* ConversationalIntelligencePrompt.swift */,
 				F057 /* LocalExplicitHarmSignal.swift */,
 				FC000001 /* PushNotificationManager.swift */,
 				F301 /* LLMGateway.swift */,
@@ -622,6 +625,7 @@
 				F050 /* CrisisSupportPolicy.swift in Sources */,
 				F052 /* LLMResponse.swift in Sources */,
 				F054 /* CaptureSafetySession.swift in Sources */,
+				F0CE11 /* ConversationalIntelligencePrompt.swift in Sources */,
 				F056 /* LocalExplicitHarmSignal.swift in Sources */,
 				0116 /* Theme.swift in Sources */,
 				0118 /* Config.swift in Sources */,
