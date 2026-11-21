@@ -24,7 +24,7 @@
 // Groq-vs-OpenAI split to empirically verify the free-tier loop estimate in
 // docs/LLM_COST_CAPACITY_EXPLAINER.html rather than just trust it. DAILY_CALL_LIMIT is a
 // call-count cap (not a "loop" in that doc's sense -- one Capture conversation turn here
-// is one call), set generously (60/day/user) so it bounds runaway/bug cost without
+// is one call), set generously (200/day/user as of Nov 21 2026) so it bounds runaway/bug cost without
 // getting in the way of Kell's own multi-day manual testing.
 //
 // T-302/T-303 (Nov 19 2026): this file is now a thin HTTP/auth wrapper. All of the
@@ -88,7 +88,10 @@ const SAFETY_GROQ_TIMEOUT_MS = 12_000
 const DEFAULT_MAX_TOKENS = 1000
 const DEFAULT_TEMPERATURE = 0.8
 const GROQ_TIMEOUT_MS = 10_000
-const DAILY_CALL_LIMIT = 60
+// Nov 21 2026 (Kell): raised from 60 to 200 while the app is still in testing, and the
+// safety classifier/output-check rows no longer count toward it (only the user-facing
+// calls do). Still a per-user, per-UTC-day cap -- to be revisited before TestFlight/live.
+const DAILY_CALL_LIMIT = 200
 
 // T-307 (revised Nov 19 2026 per Kell/Codex's correction): short-lived, non-user-linked
 // diagnostic rows (a safety check FAILING, not what it found) are NOT written by default
@@ -417,6 +420,9 @@ Deno.serve(async (req: Request) => {
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
       .gte("created_at", todayStart.toISOString())
+      // Safety-layer rows (classifier / output check) are logged for cost visibility but
+      // are not counted toward the user's daily cap (Kell, Nov 21 2026).
+      .not("feature", "like", "%safety%")
 
     if (countError) {
       console.error("llm-proxy: usage count check failed:", countError)
