@@ -211,6 +211,11 @@ class SupabaseAPIClient: APIClient {
             case 404:
                 throw APIError.notFound
             case 429:
+                // The proxy's per-capture token budget refusal is NOT a rate limit and NOT a safety
+                // failure: nothing was spent and the caller must finish the capture gracefully.
+                if responseSnippet.contains("capture_budget_exhausted") {
+                    throw APIError.captureBudgetExhausted
+                }
                 // Was falling into the generic 400...499 branch below as "Invalid
                 // request" — genuinely confusing when it's really Supabase's per-IP rate
                 // limit (e.g. the 30-per-5-min signup/signin or recover limit) kicking in
@@ -1236,13 +1241,13 @@ class SupabaseAPIClient: APIClient {
 
     // MARK: - LLM API (T-168)
 
-    func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int? = nil) async throws -> LLMResponse {
+    func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int?, context: LLMRequestContext?, closer: String?) async throws -> LLMResponse {
         // T-107: every call (capture conversation, journal synthesis, prayer
         // generation once T-147 lands, etc.) goes through this one chokepoint, so
         // routing it through LLMGateway here covers all of them with no call-site
         // changes required.
         try await LLMGateway.shared.execute(feature: feature, requestedMaxTokens: maxTokens) { clampedMaxTokens in
-            let payload = LLMProxyPayload(messages: messages, feature: feature, max_tokens: clampedMaxTokens)
+            let payload = LLMProxyPayload(messages: messages, feature: feature, max_tokens: clampedMaxTokens, capture_id: context?.captureId, request_id: context?.requestId, capture_kind: context?.kind.rawValue, closer: closer)
             return try await self.makeRequest(
                 method: "POST",
                 endpoint: "/functions/v1/llm-proxy",
@@ -1263,6 +1268,12 @@ struct LLMProxyPayload: Encodable {
     // 2-3 paragraph body does not) -- nil lets every other feature keep using the
     // proxy's own default unchanged.
     let max_tokens: Int?
+    // Per-capture budget ledger ids (nil for calls outside a capture, e.g. the retry sweep).
+    let capture_id: String?
+    let request_id: String?
+    let capture_kind: String?
+    // Names a SERVER-OWNED fixed reply ("onboarding_final"). Never carries text.
+    let closer: String?
 }
 
 struct MomentPayload: Codable {

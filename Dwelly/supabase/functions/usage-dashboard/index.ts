@@ -7,6 +7,7 @@
 // own project's spend, not a per-user authenticated feature.
 
 import { createClient } from "jsr:@supabase/supabase-js"
+import { summarizeLastCapture, type UsageRow } from "./capture.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,7 +47,7 @@ Deno.serve(async (req: Request) => {
 
     const { data, error } = await client
       .from("llm_usage")
-      .select("provider, prompt_tokens, completion_tokens, total_tokens, created_at")
+      .select("provider, feature, prompt_tokens, completion_tokens, total_tokens, created_at")
       .order("created_at", { ascending: false })
       .limit(5000)
 
@@ -77,7 +78,19 @@ Deno.serve(async (req: Request) => {
     const grandTotalTokens = Object.values(totals).reduce((sum, t) => sum + t.totalTokens, 0)
     const grandTotalCalls = Object.values(totals).reduce((sum, t) => sum + t.calls, 0)
 
-    const groqTokensToday = today.groq?.totalTokens ?? 0
+    // Groq enforces its token limit over a ROLLING 24 hours (its 429s say "try again in
+    // 23m", not "resets at midnight"), so the budget bar sums the last 24h, not since
+    // UTC midnight. "Resets in" = when the oldest counted row ages out and frees tokens.
+    const windowStart = Date.now() - 24 * 3600 * 1000
+    let groqTokensToday = 0
+    let oldestInWindow = Infinity
+    for (const row of data ?? []) {
+      if (row.provider !== "groq") continue
+      const t = new Date(row.created_at).getTime()
+      if (t < windowStart) continue
+      groqTokensToday += row.total_tokens ?? 0
+      if (t < oldestInWindow) oldestInWindow = t
+    }
     const groqTokensRemaining = Math.max(0, GROQ_FREE_DAILY_TOKEN_BUDGET - groqTokensToday)
     const tomorrowUTC = new Date(Date.UTC(
       new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate() + 1
@@ -87,13 +100,29 @@ Deno.serve(async (req: Request) => {
       usedToday: groqTokensToday,
       remainingToday: groqTokensRemaining,
       percentUsed: Math.min(100, Math.round((groqTokensToday / GROQ_FREE_DAILY_TOKEN_BUDGET) * 100)),
-      resetsAt: tomorrowUTC.toISOString(),
-      resetsInSeconds: Math.max(0, Math.round((tomorrowUTC.getTime() - Date.now()) / 1000)),
+      resetsAt: new Date(Number.isFinite(oldestInWindow) ? oldestInWindow + 24 * 3600 * 1000 : tomorrowUTC.getTime()).toISOString(),
+      resetsInSeconds: Number.isFinite(oldestInWindow)
+        ? Math.max(0, Math.round((oldestInWindow + 24 * 3600 * 1000 - Date.now()) / 1000))
+        : 0,
     }
+
+    // Nov 23 2026 (Kell): rolling last-24-hours totals per provider (the "today" above is the
+    // UTC calendar day), and the most recent capture reconstructed from timestamps/feature
+    // names (llm_usage has no capture ID, so this is inferred; counts only, no content).
+    const last24h: Record<string, ProviderTotals> = { groq: emptyTotals(), openai: emptyTotals() }
+    for (const row of data ?? []) {
+      if (new Date(row.created_at).getTime() < windowStart) continue
+      const b = last24h[row.provider] ?? (last24h[row.provider] = emptyTotals())
+      b.calls += 1
+      b.promptTokens += row.prompt_tokens ?? 0
+      b.completionTokens += row.completion_tokens ?? 0
+      b.totalTokens += row.total_tokens ?? 0
+    }
+    const lastCapture = summarizeLastCapture((data ?? []) as UsageRow[])
 
     const url = new URL(req.url)
     if (url.searchParams.get("format") === "json") {
-      return new Response(JSON.stringify({ totals, today, grandTotalTokens, grandTotalCalls, freeTierBudget }), {
+      return new Response(JSON.stringify({ totals, today, last24h, lastCapture, grandTotalTokens, grandTotalCalls, freeTierBudget }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }
@@ -147,13 +176,13 @@ Deno.serve(async (req: Request) => {
   <div class="subtitle">Live token counts from public.llm_usage -- auto-refreshes every 10s</div>
   <div class="budget">
     <div class="budget-header">
-      <span class="title">Groq free tier -- resets daily</span>
-      <span class="resets">resets in ${Math.floor(freeTierBudget.resetsInSeconds / 3600)}h ${Math.floor((freeTierBudget.resetsInSeconds % 3600) / 60)}m</span>
+      <span class="title">Groq free tier -- rolling 24 hours</span>
+      <span class="resets">oldest tokens free up in ${Math.floor(freeTierBudget.resetsInSeconds / 3600)}h ${Math.floor((freeTierBudget.resetsInSeconds % 3600) / 60)}m</span>
     </div>
     <div class="bar-track"><div class="bar-fill" style="width:${freeTierBudget.percentUsed}%"></div></div>
     <div class="budget-foot">
-      <span>${fmt(freeTierBudget.usedToday)} / ${fmt(freeTierBudget.dailyBudget)} tokens used today</span>
-      <span>${fmt(freeTierBudget.remainingToday)} left before OpenAI billing kicks in</span>
+      <span>${fmt(freeTierBudget.usedToday)} / ${fmt(freeTierBudget.dailyBudget)} tokens used in the last 24h</span>
+      <span>${fmt(freeTierBudget.remainingToday)} left on Groq's free tier (OpenAI bills as soon as Groq returns a rate limit)</span>
     </div>
   </div>
   <div class="grand">

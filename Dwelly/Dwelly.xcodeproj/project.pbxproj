@@ -69,6 +69,12 @@
 		F050 /* CrisisSupportPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F051 /* CrisisSupportPolicy.swift */; };
 		F052 /* LLMResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F053 /* LLMResponse.swift */; };
 		F054 /* CaptureSafetySession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F055 /* CaptureSafetySession.swift */; };
+		F0CE21 /* ScriptureLookup.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CE22 /* ScriptureLookup.swift */; };
+		F0CE23 /* JournalRetryApplier.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CE24 /* JournalRetryApplier.swift */; };
+		F0CE2B /* JournalExcerpt.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CE2C /* JournalExcerpt.swift */; };
+		F0CE29 /* OnboardingCaptureStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CE2A /* OnboardingCaptureStore.swift */; };
+		F0CE27 /* CaptureBudget.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CE28 /* CaptureBudget.swift */; };
+		F0CE25 /* InputClarity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CE26 /* InputClarity.swift */; };
 		F0CE11 /* ConversationalIntelligencePrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0CE12 /* ConversationalIntelligencePrompt.swift */; };
 		F056 /* LocalExplicitHarmSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F057 /* LocalExplicitHarmSignal.swift */; };
 		F00D /* JournalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00E /* JournalDetailView.swift */; };
@@ -184,6 +190,12 @@
 		F051 /* CrisisSupportPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrisisSupportPolicy.swift; sourceTree = "<group>"; };
 		F053 /* LLMResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMResponse.swift; sourceTree = "<group>"; };
 		F055 /* CaptureSafetySession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSafetySession.swift; sourceTree = "<group>"; };
+		F0CE2C /* JournalExcerpt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalExcerpt.swift; sourceTree = "<group>"; };
+		F0CE2A /* OnboardingCaptureStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCaptureStore.swift; sourceTree = "<group>"; };
+		F0CE28 /* CaptureBudget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureBudget.swift; sourceTree = "<group>"; };
+		F0CE26 /* InputClarity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputClarity.swift; sourceTree = "<group>"; };
+		F0CE24 /* JournalRetryApplier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalRetryApplier.swift; sourceTree = "<group>"; };
+		F0CE22 /* ScriptureLookup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureLookup.swift; sourceTree = "<group>"; };
 		F0CE12 /* ConversationalIntelligencePrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationalIntelligencePrompt.swift; sourceTree = "<group>"; };
 		F057 /* LocalExplicitHarmSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalExplicitHarmSignal.swift; sourceTree = "<group>"; };
 		F00E /* JournalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalDetailView.swift; sourceTree = "<group>"; };
@@ -391,6 +403,12 @@
 				F053 /* LLMResponse.swift */,
 				F055 /* CaptureSafetySession.swift */,
 				F0CE12 /* ConversationalIntelligencePrompt.swift */,
+				F0CE22 /* ScriptureLookup.swift */,
+				F0CE24 /* JournalRetryApplier.swift */,
+				F0CE26 /* InputClarity.swift */,
+				F0CE28 /* CaptureBudget.swift */,
+				F0CE2A /* OnboardingCaptureStore.swift */,
+				F0CE2C /* JournalExcerpt.swift */,
 				F057 /* LocalExplicitHarmSignal.swift */,
 				FC000001 /* PushNotificationManager.swift */,
 				F301 /* LLMGateway.swift */,
@@ -626,6 +644,12 @@
 				F052 /* LLMResponse.swift in Sources */,
 				F054 /* CaptureSafetySession.swift in Sources */,
 				F0CE11 /* ConversationalIntelligencePrompt.swift in Sources */,
+				F0CE21 /* ScriptureLookup.swift in Sources */,
+				F0CE23 /* JournalRetryApplier.swift in Sources */,
+				F0CE25 /* InputClarity.swift in Sources */,
+				F0CE27 /* CaptureBudget.swift in Sources */,
+				F0CE29 /* OnboardingCaptureStore.swift in Sources */,
+				F0CE2B /* JournalExcerpt.swift in Sources */,
 				F056 /* LocalExplicitHarmSignal.swift in Sources */,
 				0116 /* Theme.swift in Sources */,
 				0118 /* Config.swift in Sources */,

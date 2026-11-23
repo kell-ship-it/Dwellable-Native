@@ -36,6 +36,13 @@ final class CaptureSafetySession: ObservableObject {
     @Published private(set) var finishDecision: FinishDecision?
 
     var tiersSeen: Set<String> { Set(tierSequence) }
+
+    /// Restores the verified tier record of a resumed conversation (see OnboardingCaptureStore). Only
+    /// into a fresh session; never overwrites a record this session already built.
+    func restoreTiers(_ tiers: [String]) {
+        guard tierSequence.isEmpty else { return }
+        tierSequence = tiers
+    }
     /// True once the single Finish decision has been made. A closed conversation
     /// accepts no new requests (see `noteRequestScheduled(userText:)`).
     var isClosed: Bool { finishDecision != nil }
@@ -133,6 +140,21 @@ final class CaptureSafetySession: ObservableObject {
     /// exempted from the check and never treated as verified on its own.
     static func onboardingClosingText(recordedTier: String, fixedCopy: String) -> String? {
         recordedTier == "normal" ? fixedCopy : nil
+    }
+
+    /// Optimized final-turn variant. The fixed hand-off is shown ONLY when the verdict is normal
+    /// AND the server's trusted `closer` marker is present. A normal-tier reply without the marker
+    /// (a classifier clarifying question, an old backend that generated a reply) is not the
+    /// hand-off and is never replaced by it. Non-normal tiers never get it either.
+    /// True when a final-onboarding-turn reply is a safety clarifying question: verified normal tier but
+    /// WITHOUT the server's closer marker. The person then gets one extra turn outside the reply cap so a
+    /// safety question is never left unanswered by the wrap-up. At most once per conversation.
+    static func grantsClarifyExtraTurn(isFinalOnboardingTurn: Bool, recordedTier: String, closer: String?, alreadyGranted: Bool) -> Bool {
+        isFinalOnboardingTurn && recordedTier == "normal" && closer != "onboarding_final" && !alreadyGranted
+    }
+
+    static func onboardingClosingText(recordedTier: String, closer: String?, fixedCopy: String) -> String? {
+        (recordedTier == "normal" && closer == "onboarding_final") ? fixedCopy : nil
     }
 
     /// A scheduled request that returned before sending anything (the view's own

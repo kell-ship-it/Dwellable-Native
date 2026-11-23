@@ -417,8 +417,11 @@ class MockAPIClient: APIClient {
         print("Mock: Synced \(events.count) anonymous usage events")
     }
 
-    func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int? = nil) async throws -> LLMResponse {
+    func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int?, context: LLMRequestContext?, closer: String?) async throws -> LLMResponse {
         try await Task.sleep(nanoseconds: 400_000_000)
+        if feature == "capture_conversation", closer == "onboarding_final" {
+            return LLMResponse(content: "(server-owned closer)", model: "mock", provider: "openai", safetyTier: "normal", pipelineTokens: nil, pipelineTokensComplete: nil, closer: "onboarding_final")
+        }
         if feature == "journal_synthesis" {
             // Real JSON, not a placeholder string -- so JournalSynthesisManager's own
             // parsing path gets exercised in previews/mock-backed debug runs instead
@@ -431,17 +434,17 @@ class MockAPIClient: APIClient {
             "scripture_quote": "Be still, and know that I am God.", "scripture_reference": "Psalm 46:10", \
             "moods": ["Peaceful", "Grateful"]}
             """
-            return LLMResponse(content: json, model: "mock", provider: "groq", safetyTier: nil)
+            return LLMResponse(content: json, model: "mock", provider: "groq", safetyTier: nil, pipelineTokens: nil, pipelineTokensComplete: nil, closer: nil)
         }
         if feature == "capture_conversation" && omitCaptureSafetyTier {
             // DEBUG UI harness only: a reply that ends in a question, to see the closed
             // support state drop it.
             if messages.last?.content.lowercased().contains("joking") == true {
-                return LLMResponse(content: "I'm glad to hear you're okay. What's been a bright spot in your day so far that you can hold onto?", model: "mock", provider: "groq", safetyTier: nil)
+                return LLMResponse(content: "I'm glad to hear you're okay. What's been a bright spot in your day so far that you can hold onto?", model: "mock", provider: "groq", safetyTier: nil, pipelineTokens: nil, pipelineTokensComplete: nil, closer: nil)
             }
-            return LLMResponse(content: "I'm really glad you told me. You don't have to carry this alone.", model: "mock", provider: "groq", safetyTier: nil)
+            return LLMResponse(content: "I'm really glad you told me. You don't have to carry this alone.", model: "mock", provider: "groq", safetyTier: nil, pipelineTokens: nil, pipelineTokensComplete: nil, closer: nil)
         }
-        return LLMResponse(content: "[Mock response for \(feature)]", model: "mock", provider: "groq", safetyTier: feature == "capture_conversation" ? "normal" : nil)
+        return LLMResponse(content: "[Mock response for \(feature)]", model: "mock", provider: "groq", safetyTier: feature == "capture_conversation" ? "normal" : nil, pipelineTokens: nil, pipelineTokensComplete: nil, closer: nil)
     }
 
     func setJWTToken(_ token: String) {
@@ -461,6 +464,7 @@ enum APIError: LocalizedError {
     case serverError
     case unauthorized   // 401 — JWT expired
     case unknown
+    case captureBudgetExhausted // proxy 429 "capture_budget_exhausted": this capture's token budget is spent
     case message(String) // server-provided reason, shown verbatim (e.g. GoTrue's signup errors)
 
     var errorDescription: String? {
@@ -477,6 +481,8 @@ enum APIError: LocalizedError {
             return "Server error"
         case .unauthorized:
             return "Session expired — please log in again"
+        case .captureBudgetExhausted:
+            return "This conversation has reached its limit"
         case .unknown:
             return "Unknown error"
         case .message(let text):

@@ -35,11 +35,13 @@
 // is just: CORS, method/payload checks, JWT verification, the daily-call-limit read, and
 // wiring real fetch/Supabase calls into the `ProxyDependencies` handler.ts asks for.
 
+import { withTimeout } from "./fetch_timeout.ts"
+import { extractUsage } from "./usage.ts"
 import { createClient } from "jsr:@supabase/supabase-js"
 import {
   handleProxyRequest,
   parseClassificationJSON,
-  INPUT_CLASSIFIER_PROMPT,
+  buildInputClassifierMessages,
   OUTPUT_CHECK_PROMPT,
   type ChatMessage,
   type LLMProxyRequest,
@@ -64,6 +66,9 @@ const corsHeaders = {
 // openai/gpt-oss-* family. openai/gpt-oss-120b is the largest general-purpose one
 // (131K context), so it's the new primary.
 const GROQ_MODEL = "openai/gpt-oss-120b"
+// Nov 23 2026 (Kell): Groq is SHELVED -- gpt-4o-mini handles every call (main reply,
+// classifier, output check) directly. Flip to true to restore Groq-first with OpenAI fallback.
+const GROQ_ENABLED = false
 const OPENAI_MODEL = "gpt-4o-mini"
 // T-302/T-303: the crisis/misuse safety layer, scoped only to "capture_conversation" --
 // free-form text is the one place it enters this app (see T-125's own notes). Kell's rule
@@ -75,7 +80,17 @@ const OPENAI_MODEL = "gpt-4o-mini"
 // The OpenAI moderation endpoint is the one exception: it is a separate free service
 // with no Groq equivalent, supplementary only, and non-fatal if it fails.
 const SAFETY_MODEL = "gpt-4o-mini"
+const LLM_USAGE_CACHED_COLUMN_READY = false
+
+// Per-capture token budget (draft migrations_draft/DRAFT_20261123130000_capture_budget.sql).
+// OFF until that migration is applied AND the client sends capture_id/request_id/capture_kind.
+// While false, no RPC is ever called and requests behave exactly as before.
+const CAPTURE_BUDGET_LEDGER_READY = true
+const CAPTURE_BUDGET_ENFORCE = false
 const SAFETY_TIMEOUT_MS = 8_000
+// Main OpenAI call previously had NO abort guard (every other outbound call did), so a
+// hung request could hold the proxy open until the platform killed it.
+const OPENAI_MAIN_TIMEOUT_MS = 25_000
 const SAFETY_GROQ_TIMEOUT_MS = 12_000
 // Raised from 500 (Nov 11 2026): gpt-oss-120b is a reasoning model -- it spends
 // tokens on hidden "thinking" before its visible answer, and at 500 it sometimes
@@ -104,14 +119,6 @@ const DAILY_CALL_LIMIT = 200
 // explicitly said aggregate counts are fine to keep by default; only the more detailed
 // failure-diagnostic log needed a retention decision first.
 const SAFETY_DIAGNOSTICS_ENABLED = false
-
-function extractUsage(data: { usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } }): TokenUsage {
-  return {
-    promptTokens: data.usage?.prompt_tokens ?? null,
-    completionTokens: data.usage?.completion_tokens ?? null,
-    totalTokens: data.usage?.total_tokens ?? null,
-  }
-}
 
 async function callGroq(messages: ChatMessage[], maxTokens: number, temperature: number): Promise<{ content: string; usage: TokenUsage }> {
   const apiKey = Deno.env.get("GROQ_API_KEY")
@@ -158,29 +165,32 @@ async function callOpenAI(messages: ChatMessage[], maxTokens: number, temperatur
   const apiKey = Deno.env.get("OPENAI_API_KEY")
   if (!apiKey) throw new Error("OPENAI_API_KEY not set")
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: OPENAI_MODEL,
-      messages,
-      max_tokens: maxTokens,
-      temperature,
-    }),
+  return await withTimeout(OPENAI_MAIN_TIMEOUT_MS, async (signal) => {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      signal,
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: OPENAI_MODEL,
+        messages,
+        max_tokens: maxTokens,
+        temperature,
+      }),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`OpenAI API error ${response.status}: ${errorText}`)
+    }
+
+    const data = await response.json() // body read is also covered by the deadline
+    const content = data.choices?.[0]?.message?.content
+    if (!content) throw new Error("OpenAI response missing choices[0].message.content")
+    return { content, usage: extractUsage(data) }
   })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`OpenAI API error ${response.status}: ${errorText}`)
-  }
-
-  const data = await response.json()
-  const content = data.choices?.[0]?.message?.content
-  if (!content) throw new Error("OpenAI response missing choices[0].message.content")
-  return { content, usage: extractUsage(data) }
 }
 
 async function callModeration(text: string): Promise<ModerationResult> {
@@ -244,7 +254,7 @@ async function safetyChat<T>(
   openaiMaxTokens: number,
   parse: (content: string) => T
 ): Promise<SafetyChatResult<T>> {
-  try {
+  if (GROQ_ENABLED) try {
     const groqKey = Deno.env.get("GROQ_API_KEY")
     if (!groqKey) throw new Error("GROQ_API_KEY not set")
     const controller = new AbortController()
@@ -309,14 +319,7 @@ async function classifyInput(
   moderationHint: string
 ): Promise<{ classification: ReturnType<typeof parseClassificationJSON>; usage: TokenUsage; provider: "groq" | "openai"; model: string }> {
   const result = await safetyChat(
-    [
-      { role: "system", content: INPUT_CLASSIFIER_PROMPT },
-      ...messages,
-      {
-        role: "system",
-        content: `(Informational only, not conclusive -- an automated content filter flagged: ${moderationHint})`,
-      },
-    ],
+    buildInputClassifierMessages(messages, moderationHint),
     1000,
     200,
     (content) => parseClassificationJSON(extractJSONObject(content))
@@ -456,6 +459,7 @@ Deno.serve(async (req: Request) => {
       callModeration,
       classifyInput,
       checkOutput,
+      groqEnabled: GROQ_ENABLED,
       callGroq,
       callOpenAI,
       async logUsage({ feature, provider, model, usage }) {
@@ -467,11 +471,34 @@ Deno.serve(async (req: Request) => {
           prompt_tokens: usage.promptTokens,
           completion_tokens: usage.completionTokens,
           total_tokens: usage.totalTokens,
+          // Written only after the additive migration adding llm_usage.cached_tokens is
+          // applied (draft: migrations/20261123120000_*). Inserting an unknown column would
+          // fail every usage insert, so this stays off until then.
+          ...(LLM_USAGE_CACHED_COLUMN_READY ? { cached_tokens: usage.cachedTokens ?? null } : {}),
         })
         if (logError) console.error("llm-proxy: failed to log usage (non-fatal):", logError)
       },
       logSafetyDiagnostic: (stage, failureType, feature) => logSafetyDiagnostic(serviceClient, stage, failureType, feature),
       bumpSafetyAggregate: (category) => bumpSafetyAggregate(serviceClient, category),
+      budgetEnforce: CAPTURE_BUDGET_ENFORCE,
+      // Service-role RPCs bound to the AUTHENTICATED user id, so a capture_id can never
+      // reach another user's ledger row.
+      budget: CAPTURE_BUDGET_LEDGER_READY ? {
+        async reserve(captureId, requestId, kind, amount) {
+          const { data, error } = await serviceClient.rpc("reserve_capture_tokens", {
+            p_user: userId, p_capture: captureId, p_request: requestId, p_kind: kind, p_amount: amount,
+          })
+          if (error) throw error
+          const row = Array.isArray(data) ? data[0] : data
+          return row.r_ok ? { ok: true as const, reserved: Number(row.r_reserved) } : { ok: false as const, spent: Number(row.r_spent), limit: Number(row.r_limit) }
+        },
+        async settle(captureId, requestId, actual) {
+          const { error } = await serviceClient.rpc("settle_capture_tokens", {
+            p_user: userId, p_capture: captureId, p_request: requestId, p_actual: actual,
+          })
+          if (error) throw error
+        },
+      } : undefined,
     }
 
     const result = await handleProxyRequest(payload, deps)
