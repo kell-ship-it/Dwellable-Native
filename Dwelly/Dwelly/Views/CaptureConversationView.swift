@@ -182,6 +182,16 @@ struct CaptureConversationView: View {
     // also resolved the alignment complaint by moving it into the header's own row
     // instead of a separate one below it.
     @State private var isScrollingNow = false
+    // Composer/scroll trial (Nov 24 2026): how far the bottom of the thread sits
+    // below the visible area, and how tall that visible area is. Used to tell
+    // "following the latest" (near the bottom) from "reviewing" (scrolled up).
+    @State private var isFollowingLatest = true
+    // A scroll waiting for the new turn to be laid out (see `onChange(of: turns.count)`).
+    private enum PendingThreadScroll { case none, latestBottom, replyTop }
+    @State private var pendingThreadScroll: PendingThreadScroll = .none
+    @State private var threadLayoutTick = 0
+    @State private var visibleThreadHeight: CGFloat = 0
+    private let followThreshold: CGFloat = 150
     @State private var scrollSettleWorkItem: DispatchWorkItem?
     @State private var isSaving = false
     @State private var isSyncPending = false
@@ -793,11 +803,15 @@ struct CaptureConversationView: View {
                         .padding(.bottom, 24)
                         .background(
                             GeometryReader { geo in
-                                Color.clear.preference(key: ScrollOffsetKey.self, value: geo.frame(in: .named("conversationScroll")).minY)
+                                Color.clear
+                                    .preference(key: ScrollOffsetKey.self, value: geo.frame(in: .named("conversationScroll")).minY)
                             }
                         )
                     }
                     .coordinateSpace(name: "conversationScroll")
+                    // Composer/scroll trial: exact "how far from the bottom" reading.
+                    .modifier(ThreadBottomDistanceReader(isFollowing: $isFollowingLatest, visibleHeight: $visibleThreadHeight, layoutTick: $threadLayoutTick, threshold: followThreshold,
+                        onUserScroll: { pendingThreadScroll = .none }))
                     .onPreferenceChange(ScrollOffsetKey.self) { _ in
                         isScrollingNow = true
                         scrollSettleWorkItem?.cancel()
@@ -813,19 +827,45 @@ struct CaptureConversationView: View {
                     // same send was part of why that moment read as disjointed/a
                     // screen swap rather than one continuous motion.
                     .onChange(of: turns.count) { _ in
-                        // T-336 (Nov 24 2026): the newest turn's view id is "journalPreview"
-                        // (see `.id(...)` above), NOT its UUID, so scrolling to
-                        // `turns.last?.id` matched nothing and never moved. The only scroll
-                        // was the earlier one to the spinner, and the taller reply that
-                        // replaced it spilled under the message box. Scroll to the real id,
-                        // then once more after the keyboard/layout settles.
-                        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
-                            proxy.scrollTo("journalPreview", anchor: .bottom)
+                        // Composer/scroll trial (Nov 24 2026):
+                        // - The user's own message always returns them to the latest.
+                        // - Dwelly's reply only moves the thread if the user was following
+                        //   (near the bottom); someone scrolled up to re-read is left alone.
+                        // - The reply is scrolled so its START sits just under the header.
+                        //   A short reply can't scroll that far, so it simply ends up fully
+                        //   visible above the message box; a long one shows its first lines
+                        //   instead of skipping straight to its last.
+                        // The old 0.45s second scroll is gone: it existed because Send
+                        // dismissed the keyboard and the layout moved after the scroll. Send
+                        // now keeps the keyboard up, and real keyboard changes are handled by
+                        // `onChange(of: keyboardHeight)` below.
+                        guard let last = turns.last else { return }
+                        if last.role == .user {
+                            isFollowingLatest = true
+                            requestThreadScroll(.latestBottom, proxy: proxy)
+                            return
                         }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
-                                proxy.scrollTo("journalPreview", anchor: .bottom)
-                            }
+                        guard isFollowingLatest else { return }
+                        requestThreadScroll(.replyTop, proxy: proxy)
+                    }
+                    // The new turn has actually been laid out (the thread got taller):
+                    // NOW the scroll lands on the right place. This replaces the old
+                    // fixed 0.45s second scroll with the real layout change.
+                    // Re-applied on every real layout change (thread height, message
+                    // box height) until the user touches the thread or the next turn
+                    // lands -- so it can't come up short when the message box shrinks
+                    // after Send or a safety notice is added under a reply.
+                    .onChange(of: threadLayoutTick) { _ in
+                        guard pendingThreadScroll != .none else { return }
+                        performThreadScroll(pendingThreadScroll, proxy: proxy)
+                    }
+                    .onChange(of: keyboardHeight) { _ in
+                        // Keyboard opened/closed: keep the latest content above the
+                        // message box, but only if the user was already at the bottom.
+                        // (A pending turn scroll already re-applies itself on this change.)
+                        guard isFollowingLatest, pendingThreadScroll == .none, !turns.isEmpty else { return }
+                        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+                            proxy.scrollTo(isWaitingForDwelly ? "spinner" : "journalPreview", anchor: .bottom)
                         }
                     }
                     .onChange(of: isWaitingForDwelly) { waiting in
@@ -1880,7 +1920,10 @@ struct CaptureConversationView: View {
                         .scrollContentBackground(.hidden)
                         .background(Color.clear)
                         .focused($inputFocused)
-                        .disabled(isWaitingForDwelly)
+                        // Composer/scroll trial (Nov 24 2026): no longer disabled while
+                        // Dwelly replies -- disabling a TextEditor drops its focus, which
+                        // closed the keyboard on every send. Typing ahead is fine; SENDING
+                        // stays blocked (send buttons + guard in `sendUserTurn()`).
                         .padding(.leading, isComposeExpanded ? 20 : composeCollapsedLeadingPadding)
                         .padding(.top, isComposeExpanded ? expandedTopInset + 44 : (isSlim ? composeSlimVerticalPadding : composeStackedTopPadding))
                         // Nov 18 2026 (Kell's sizing refinement): slim reserves
@@ -2303,6 +2346,34 @@ struct CaptureConversationView: View {
 
 
 
+    /// Composer/scroll trial (Nov 24 2026). Scrolls once this update has been laid
+    /// out (next main-queue turn -- no fixed delay), then (iOS 18+) re-applies on every
+    /// real layout change (`threadLayoutTick`) until the user touches the thread or
+    /// the next turn lands.
+    private func requestThreadScroll(_ kind: PendingThreadScroll, proxy: ScrollViewProxy) {
+        pendingThreadScroll = kind
+        DispatchQueue.main.async { performThreadScroll(kind, proxy: proxy) }
+    }
+
+    /// `.latestBottom`: the newest turn sits just above the message box.
+    /// `.replyTop`: the START of Dwelly's reply sits just under the header. A short
+    /// reply can't scroll that far, so it simply ends up fully visible above the
+    /// message box; a long reply shows its first lines instead of its last.
+    private func performThreadScroll(_ kind: PendingThreadScroll, proxy: ScrollViewProxy) {
+        let anchor: UnitPoint
+        switch kind {
+        case .none: return
+        case .latestBottom: anchor = .bottom
+        case .replyTop:
+            let topY = visibleThreadHeight > 0 ? min(0.4, (headerHeight + 12) / visibleThreadHeight) : 0
+            anchor = UnitPoint(x: 0.5, y: topY)
+        }
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
+            // While Dwelly is replying, "the latest" is the spinner under the new message.
+            proxy.scrollTo(kind == .latestBottom && isWaitingForDwelly ? "spinner" : "journalPreview", anchor: anchor)
+        }
+    }
+
     private func sendUserTurn() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         // Closed conversations never resume -- including from a stale callback.
@@ -2331,7 +2402,11 @@ struct CaptureConversationView: View {
             // expanded layout instead of the normal 120pt collapsed box. Every send now
             // returns the compose surface to its slim empty state, every time.
             isComposeExpanded = false
-            inputFocused = false
+            // Composer/scroll trial (Nov 24 2026): focus is left as it was, so the
+            // keyboard stays up for the next message. It still closes when the
+            // conversation completes (`onChange(of: isConversationComplete)`), on
+            // record, or when the user dismisses it. Sending stays blocked while
+            // Dwelly is replying (guard at the top of this function).
             turns.append(Turn(role: .user, text: text))
         }
         // Marked in flight HERE, synchronously, not inside the Task below: before this,
@@ -3180,4 +3255,54 @@ private struct PromptOriginMatch: ViewModifier {
         )
     }
     .environment(\.apiClient, apiClient)
+}
+
+/// Composer/scroll trial (Nov 24 2026): decides whether the user is "following the
+/// latest" (at/near the bottom) or "reviewing" (scrolled up). Only the user's own
+/// finger changes the answer (scroll phase `.interacting`), read once their scroll
+/// comes to rest -- the app's own scrolls and a reply landing never count. Also
+/// ticks `layoutTick` whenever the thread or the visible area changes size. iOS 18+;
+/// on older iOS it always says "following", as the app did before this trial.
+private struct ThreadBottomDistanceReader: ViewModifier {
+    @Binding var isFollowing: Bool
+    @Binding var visibleHeight: CGFloat
+    @Binding var layoutTick: Int
+    let threshold: CGFloat
+    let onUserScroll: () -> Void
+    @State private var userTouched = false
+
+    private struct Reading: Equatable {
+        var visible: CGFloat
+        var contentHeight: CGFloat
+    }
+
+    @available(iOS 18.0, *)
+    private static func distance(_ geo: ScrollGeometry) -> CGFloat {
+        let bottom = geo.contentSize.height + geo.contentInsets.bottom - geo.containerSize.height
+        return max(0, bottom - geo.contentOffset.y)
+    }
+
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content
+                .onScrollGeometryChange(for: Reading.self) { geo in
+                    Reading(visible: geo.containerSize.height - geo.contentInsets.top - geo.contentInsets.bottom,
+                            contentHeight: geo.contentSize.height)
+                } action: { _, new in
+                    visibleHeight = new.visible
+                    layoutTick &+= 1
+                }
+                .onScrollPhaseChange { _, phase, context in
+                    if phase == .interacting {
+                        userTouched = true
+                        onUserScroll()
+                    } else if phase == .idle && userTouched {
+                        userTouched = false
+                        isFollowing = Self.distance(context.geometry) <= threshold
+                    }
+                }
+        } else {
+            content
+        }
+    }
 }
