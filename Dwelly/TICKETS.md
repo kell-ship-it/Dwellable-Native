@@ -991,3 +991,6 @@ Enable users to ask questions about ALL their reflections at once and receive sy
 **Effort Estimate:** 6-8 sprints (design + implementation + testing)
 
 ---
+
+### T-323 -- Capture conversation: top of chat clips scrolled content (raised Nov 23 2026)
+Kell (screenshot 4:22 pm): scrolled text is cut off in a big band at the top; the header area is tall and mostly unused, so much of the scroll area is lost. Wants far more room at the top / full-height scroll. Before beta. Priority HIGH, size S. See TICKETS.csv.

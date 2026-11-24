@@ -186,6 +186,26 @@ struct CaptureConversationView: View {
     @State private var isSaving = false
     @State private var isSyncPending = false
     @State private var errorMessage: String?
+    // MVP input check (Nov 23 2026): a prepared, no-AI clarification for empty or
+    // mechanically repeated input. Not a turn: it never counts toward the 3-response
+    // onboarding entitlement, never reaches the model, and the original text stays in
+    // the composer, untrimmed, so the person can edit it.
+    @State private var inputClarification: String?
+    // Capture token budget (MVP, Nov 23 2026). LOCAL decision logic only -- not server
+    // enforcement (see CaptureBudget). `budgetFinish` marks a capture the budget ended
+    // automatically: it reuses the normal completion path (one save, one profile update)
+    // and asks the same synthesis call for the grounded transition sentence.
+    @State private var budget: CaptureBudget?
+    @State private var budgetFinish = false
+    // User turns the server refused (capture budget spent) BEFORE any safety check. They stay visible in
+    // the chat but never enter the journal, the saved transcript, or synthesis: unassessed content.
+    @State private var unassessedTurnIDs: Set<UUID> = []
+    // Durable id for THIS capture's server-side ledger (generated once per capture view).
+    // `pendingRequestId` is stable per LOGICAL send: set when a user turn is created and
+    // reused if that same send is retried, so the server never double-counts it.
+    @State private var captureId = "cap-" + UUID().uuidString
+    @State private var pendingRequestId: String?
+    private var captureKind: LLMRequestContext.Kind { isOnboarding ? .onboarding : .regular }
     @State private var savedMoment: Moment?
     @State private var journalMeta: JournalMeta?
     // T-159: tracks whether `journalMeta` above is real synthesis output or the
@@ -261,6 +281,12 @@ struct CaptureConversationView: View {
     // responses — it's the question the user is about to answer, so it's excluded
     // from the count and from the "Response N of 3" header until a real answer lands.
     @State private var openedWithPromptQuestion = false
+    // Nov 23 2026 (Kell): if the safety classifier asks a clarifying question on the FINAL onboarding
+    // turn, the conversation is not wrapped up over an unanswered safety question. The person gets ONE
+    // extra turn, outside the three-reply count, then the normal hand-off. Granted at most once.
+    @State private var safetyClarifyExtraTurn = false
+    /// Replies counted toward the onboarding cap: the safety clarifying question (if granted) is free.
+    private var effectiveResponseCount: Int { max(dwellyResponseCount - (safetyClarifyExtraTurn ? 1 : 0), 0) }
     private var dwellyResponseCount: Int {
         turns.filter { $0.role == .assistant }.count - (openedWithPromptQuestion ? 1 : 0)
     }
@@ -278,7 +304,7 @@ struct CaptureConversationView: View {
     // they're done, not count-capped at all). Onboarding is the ONLY place the 3-count
     // cap still applies -- post-onboarding completes only via manuallyFinished (Done).
     private var isConversationComplete: Bool {
-        manuallyFinished || (isOnboarding && dwellyResponseCount >= maxResponses)
+        manuallyFinished || (isOnboarding && effectiveResponseCount >= maxResponses)
     }
 
     /// Crisis Support (unnumbered pillar; see CrisisSupportPolicy's own header comment
@@ -325,6 +351,11 @@ struct CaptureConversationView: View {
         // below-floor-replacement path below sets this false.
         var formationEligible: Bool = true
         var extractedFacts: String? = nil
+        // Budget-boundary transition sentence (sanitized), nil unless the budget ended this capture.
+        var closing: String? = nil
+        // True ONLY for the synthesis-failed placeholder: no real title, no verse. The card shows the
+        // person's own words with a "finishing your entry" note until the background retry succeeds.
+        var isPlaceholder: Bool = false
     }
 
     /// Kept short and narrow on purpose — this is a first real wiring of T-168 into a
@@ -407,7 +438,7 @@ struct CaptureConversationView: View {
     /// the journal card" shouldn't depend on model behavior to get right every time, and
     /// the Figma reference itself uses this exact copy. Costs nothing extra to show,
     /// unlike the old approach which spent a whole LLM call on it.
-    private let closingMessage = "That makes sense to me. Now, let's go ahead and take what you've shared here and add this to your journal. Feel free to continue processing there."
+    private let closingMessage = "Now, let's go ahead and take what you've shared here and add this to your journal. Feel free to continue processing there."
 
     // Plain top-to-bottom `VStack` — header, scrolling transcript, then the input/save
     // footer as a normal trailing sibling — rather than the original `ZStack(alignment:
@@ -831,6 +862,15 @@ struct CaptureConversationView: View {
                     // moves for the keyboard either.
                     .safeAreaInset(edge: .bottom) {
                         VStack(spacing: 12) {
+                            if let inputClarification {
+                                Text(inputClarification)
+                                    .font(.system(size: 13))
+                                    .foregroundColor(Theme.secondaryText)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 28)
+                                    // Edit-to-dismiss: the prepared prompt goes away as soon as the text changes.
+                                    .onChange(of: inputText) { _ in self.inputClarification = nil }
+                            }
                             if let errorMessage {
                                 Text(errorMessage)
                                     .font(.system(size: 12))
@@ -957,7 +997,7 @@ struct CaptureConversationView: View {
                             // opening-prompt screen shouldn't be missing it while
                             // waiting for an answer. Counts the slot the user's about
                             // to fill, not just completed responses.
-                            Text("Response \(max(dwellyResponseCount, 1)) of \(maxResponses)")
+                            Text("Response \(max(effectiveResponseCount, 1)) of \(maxResponses)")
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundColor(Theme.Payment.textSupporting)
                                 .opacity(isScrollingNow ? 0 : 1)
@@ -1161,6 +1201,7 @@ struct CaptureConversationView: View {
                     Task { await requestDwellyResponse() }
                 }
             }
+            restoreOnboardingCaptureIfAny()
         }
         // `unifiedComposeSurface` needs the REAL, live keyboard height (see
         // `keyboardHeight` above) because it positions itself by hand instead of
@@ -1168,6 +1209,8 @@ struct CaptureConversationView: View {
         // Reading the notification's own animation duration/curve (rather than a
         // fixed spring) keeps this in lockstep with the system keyboard's actual
         // motion instead of guessing at one.
+        .onChange(of: turns.count) { _ in persistOnboardingCapture() }
+        .onChange(of: safetyClarifyExtraTurn) { _ in persistOnboardingCapture() }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
             guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
             let duration = (notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
@@ -1201,15 +1244,22 @@ struct CaptureConversationView: View {
         // `keyboardWillChangeFrame` listener only mattered for riding frame-by-
         // frame with an in-progress drag-to-dismiss gesture, which isn't wanted
         // here.
-        .alert("Save this reflection?", isPresented: $showLeaveConfirmation) {
+        .alert(isCrisisSupportBlocked ? "Leave this conversation?" : "Save this reflection?",
+               isPresented: $showLeaveConfirmation) {
             Button("Keep Talking", role: .cancel) {}
-            Button("Save") { requestManualFinish() }
-            Button("Discard", role: .destructive) {
+            // A flagged conversation never becomes a journal entry, so offering
+            // Save would be misleading.
+            if !isCrisisSupportBlocked {
+                Button("Save") { requestManualFinish() }
+            }
+            Button(isCrisisSupportBlocked ? "Leave" : "Discard", role: .destructive) {
                 onMomentSaved?()
                 dismiss()
             }
         } message: {
-            Text("You haven't saved this yet. Save it to your journal, or discard it and start over.")
+            Text(isCrisisSupportBlocked
+                 ? "This conversation won't be saved to your journal."
+                 : "You haven't saved this yet. Save it to your journal, or discard it and start over.")
         }
         // T-304/T-308: always-available help entry point + the one-time pilot
         // safety notice -- both are plain informational sheets, not tied to any
@@ -1252,15 +1302,30 @@ struct CaptureConversationView: View {
     private func turnBubble(_ turn: Turn, isFinal: Bool = false, isPromptOrigin: Bool = false) -> some View {
         switch turn.role {
         case .user:
-            HStack {
-                Spacer(minLength: 56)
-                Text(turn.text)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Theme.Payment.backgroundPrimary)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .background(Theme.Capture.userBubble)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
+            VStack(alignment: .trailing, spacing: 6) {
+                HStack {
+                    Spacer(minLength: 56)
+                    Text(turn.text)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Theme.Payment.backgroundPrimary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(Theme.Capture.userBubble)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                }
+                // The refused (never safety-checked) message can be the LAST bubble, so Dwelly's usual
+                // closing card has nothing to attach to. Show the same closing content below it.
+                if isFinal && !showJournalMorph && unassessedTurnIDs.contains(turn.id) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        if isCrisisSupportBlocked {
+                            crisisSupportClosureContent
+                        } else {
+                            if budgetFinish { budgetClosingView }
+                            journalPreviewContent
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
         case .assistant:
             VStack(alignment: .leading, spacing: 8) {
@@ -1281,6 +1346,8 @@ struct CaptureConversationView: View {
                         if isCrisisSupportBlocked {
                             crisisSupportClosureContent
                         } else {
+                            if budgetFinish { budgetClosingView }
+                            else if isOnboarding, let unclear = journalMeta?.closing { onboardingUnclearView(unclear) }
                             journalPreviewContent
                         }
                     }
@@ -1419,6 +1486,32 @@ struct CaptureConversationView: View {
         .padding(.top, 16)
     }
 
+    /// Budget-boundary transition shown ABOVE the journal: one grounded sentence (when the
+    /// synthesis call produced a usable one) plus the fixed follow-up line.
+    private var budgetClosingView: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if let sentence = journalMeta?.closing {
+                Text(sentence)
+            }
+            Text(BudgetClosing.fixedFollowUp)
+        }
+        .font(.system(size: 13, weight: .medium))
+        .foregroundColor(Theme.Capture.textBody)
+        .padding(.top, 10)
+        .padding(.bottom, 12)
+    }
+
+    /// Onboarding only, and only when the synthesis call says what the person was working through
+    /// stayed unclear (or they said they didn't know, or contradicted themselves): one honest
+    /// sentence above the journal card. Otherwise there is nothing here and the fixed hand-off stands.
+    private func onboardingUnclearView(_ sentence: String) -> some View {
+        Text(sentence)
+            .font(.system(size: 13, weight: .medium))
+            .foregroundColor(Theme.Capture.textBody)
+            .padding(.top, 10)
+            .padding(.bottom, 12)
+    }
+
     private var journalPreviewContent: some View {
         // Exact Component/Journal-Preview-Card spec (Figma node 650:220, pulled via
         // Figma MCP Nov 10 2026) — fill/border/fonts/sizes/14px gap all match verbatim,
@@ -1464,10 +1557,12 @@ struct CaptureConversationView: View {
             }
 
             if let journalMeta {
-                Text(journalMeta.title)
-                    .font(.system(size: 17, design: .serif))
-                    .foregroundColor(Theme.Payment.textHeading)
-                    .lineLimit(1)
+                if !journalMeta.isPlaceholder {
+                    Text(journalMeta.title)
+                        .font(.system(size: 17, design: .serif))
+                        .foregroundColor(Theme.Payment.textHeading)
+                        .lineLimit(1)
+                }
 
                 Text(journalMeta.excerpt)
                     .font(.system(size: 12))
@@ -1483,6 +1578,12 @@ struct CaptureConversationView: View {
                         .font(.system(size: 11, design: .serif))
                         .italic()
                         .foregroundColor(Theme.gold)
+                }
+
+                if journalMeta.isPlaceholder {
+                    Text("We\u{2019}re finishing your entry. It will be here shortly.")
+                        .font(.system(size: 11))
+                        .foregroundColor(Theme.Payment.textSupporting)
                 }
             } else {
                 HStack(spacing: 8) {
@@ -1508,7 +1609,7 @@ struct CaptureConversationView: View {
 
     private var combinedBody: String {
         turns
-            .filter { $0.role == .user }
+            .filter { $0.role == .user && !unassessedTurnIDs.contains($0.id) }
             .map(\.text)
             .joined(separator: "\n\n")
     }
@@ -1521,6 +1622,7 @@ struct CaptureConversationView: View {
     /// real reframed narrative, not just a concatenation of answers.
     private var fullTranscript: String {
         turns
+            .filter { !unassessedTurnIDs.contains($0.id) }
             .map { "\($0.role == .user ? "Me" : "Dwelly"): \($0.text)" }
             .joined(separator: "\n\n")
     }
@@ -2188,7 +2290,14 @@ struct CaptureConversationView: View {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         // Closed conversations never resume -- including from a stale callback.
         guard !isConversationComplete, !safetySession.isClosed else { return }
-        guard !text.isEmpty, !isWaitingForDwelly, !isOverCharacterLimit else { return }
+        guard !isWaitingForDwelly, !isOverCharacterLimit else { return }
+        // No-AI mechanical check on the ORIGINAL text, before anything is sent or appended.
+        if let prepared = InputClarity.clarification(for: InputClarity.check(inputText)) {
+            inputClarification = prepared
+            return
+        }
+        inputClarification = nil
+        guard !text.isEmpty else { return }
         // Kell's direct ask (Nov 17 2026, after watching the real send): the idle
         // "What's stirring in you today?" headline and the first user bubble used
         // to swap in one unanimated frame -- `turns.append` flipping `turns.isEmpty`
@@ -2212,7 +2321,11 @@ struct CaptureConversationView: View {
         // `isWaitingForDwelly` only flipped once the Task actually started, leaving a
         // window where Done was tappable with nothing marked in flight and Finish could
         // decide on a tier sequence that didn't include this message at all.
+        pendingRequestId = "req-" + UUID().uuidString
         safetySession.noteRequestScheduled(userText: text)
+        // Save NOW, synchronously, not on the next SwiftUI update: an app kill right after Send must not
+        // lose the message just sent (found live: killed within a second -> message missing on restore).
+        persistOnboardingCapture()
         Task { await requestDwellyResponse() }
     }
 
@@ -2622,17 +2735,27 @@ struct CaptureConversationView: View {
         // "normal" (CaptureSafetySession.onboardingClosingText). Anything else -- a
         // concern, a refusal, an unverified/old-backend reply -- shows the proxy's own
         // reply and resources instead, and blocks saving exactly like any other turn.
-        let isFixedCloserTurn = isOnboarding && dwellyResponseCount == maxResponses - 1
+        let isFixedCloserTurn = isOnboarding && effectiveResponseCount == maxResponses - 1
 
+        // Nov 23 2026 (Kell): the time context goes LAST, after the transcript. OpenAI's
+        // automatic prompt caching only matches an unchanged prefix, and the time string
+        // changes every minute -- while it sat third, everything after it (the whole
+        // transcript) was re-billed at full price on every Send. Now the persona,
+        // guardrails and the transcript so far form a stable prefix. Same three system
+        // contents, only the position of the time note changed. The proxy's classifier
+        // and moderation read only user/assistant messages / the latest user message, so
+        // they are unaffected.
         var messages = [
             LLMMessage(role: .system, content: systemPrompt),
             LLMMessage(role: .system, content: safetyGuardrails),
-            LLMMessage(role: .system, content: timeAwareContext),
         ]
         messages.append(contentsOf: turns.map { LLMMessage(role: $0.role, content: $0.text) })
+        messages.append(LLMMessage(role: .system, content: timeAwareContext))
 
         do {
-            let response = try await apiClient.callLLM(messages: messages, feature: "capture_conversation")
+            let context = LLMRequestContext(captureId: captureId, requestId: pendingRequestId ?? ("req-" + UUID().uuidString), kind: captureKind)
+            let response = try await apiClient.callLLM(messages: messages, feature: "capture_conversation", maxTokens: nil, context: context, closer: isFixedCloserTurn ? "onboarding_final" : nil)
+            await MainActor.run { recordBudget(response: response, requestMessages: messages) }
             // T-304: llm-proxy's own safety layer (T-302/T-303) may have replaced the
             // normal reply with a compassionate crisis acknowledgment, a refusal, or a
             // fail-closed fallback -- `safetyTier` says which, and SafetyResourceCenter
@@ -2646,14 +2769,22 @@ struct CaptureConversationView: View {
             // mode by itself.
             let recordedTier = safetySession.recordResponse(safetyTier: response.safetyTier)
             if isFixedCloserTurn,
-               let fixedCopy = CaptureSafetySession.onboardingClosingText(recordedTier: recordedTier, fixedCopy: closingMessage) {
+               let fixedCopy = CaptureSafetySession.onboardingClosingText(recordedTier: recordedTier, closer: response.closer, fixedCopy: closingMessage) {
                 displayText = fixedCopy
             } else if let tier = CrisisSupportPolicy.resourceTier(forRecordedTier: recordedTier),
                let resourceBlock = SafetyResourceCenter.resourceBlock(for: tier) {
                 displayText += "\n\n" + resourceBlock
+            } else {
+                // Real Scripture text for a passage Dwelly named (World English Bible);
+                // unchanged if nothing is named or the lookup fails.
+                displayText = await ScriptureLookup.appendingVerseText(to: displayText)
             }
             let replyTurn = Turn(role: .assistant, text: displayText)
             await MainActor.run {
+                // Set BEFORE the reply is appended, so the cap never briefly reads as reached.
+                if CaptureSafetySession.grantsClarifyExtraTurn(isFinalOnboardingTurn: isFixedCloserTurn, recordedTier: recordedTier, closer: response.closer, alreadyGranted: safetyClarifyExtraTurn) {
+                    safetyClarifyExtraTurn = true
+                }
                 withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
                     turns.append(replyTurn)
                     isWaitingForDwelly = false
@@ -2661,13 +2792,22 @@ struct CaptureConversationView: View {
                         supportNoticeTurnID = replyTurn.id
                     }
                 }
+                // The newest user message has now received its safety verdict (recorded
+                // above), so it is safe to let the budget end the capture if needed.
+                finishIfBudgetExhausted()
             }
+        } catch APIError.captureBudgetExhausted {
+            // Not a safety failure and not a network failure: the server refused BEFORE any call, so the
+            // newest message was never assessed. Finish through the normal completion path from the turns
+            // that WERE assessed; keep the refused message visible but out of the journal.
+            await MainActor.run { handleCaptureBudgetExhausted() }
         } catch {
             // T-125 downstream protection: a total proxy failure (network/both-
             // providers-down) means this turn's own user message never got a real
             // safety verdict at all -- same "unknown/unchecked" situation as a
             // "fallback" tier, so it's recorded the same conservative way.
             safetySession.recordFailure()
+            await MainActor.run { recordBudget(response: nil, requestMessages: messages) }
             await MainActor.run {
                 withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
                     isWaitingForDwelly = false
@@ -2680,6 +2820,83 @@ struct CaptureConversationView: View {
                 errorMessage = "Dwelly couldn't respond just now. You can keep writing, or save what you have."
             }
             HTMLLogManager.shared.log("llm-proxy call failed: \(error.localizedDescription)", level: "ERROR")
+        }
+    }
+
+    private func handleCaptureBudgetExhausted() {
+        safetySession.cancelScheduled() // clears the in-flight count WITHOUT recording any tier
+        if let last = turns.last(where: { $0.role == .user }) { unassessedTurnIDs.insert(last.id) }
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) { isWaitingForDwelly = false }
+        guard !isConversationComplete, !safetySession.isClosed else { return }
+        budgetFinish = true      // same completion path as the proactive budget finish (one save, one profile update)
+        requestManualFinish()
+    }
+
+    /// Saves the onboarding conversation on the phone so a relaunch resumes it (OnboardingCaptureStore).
+    private func persistOnboardingCapture() {
+        guard isOnboarding, !isConversationComplete, !turns.isEmpty else { return }
+        let snapshot = OnboardingCaptureSnapshot(
+            captureId: captureId,
+            turns: turns.compactMap { turn in
+                switch turn.role {
+                case .user: return .init(isUser: true, text: turn.text)
+                case .assistant: return .init(isUser: false, text: turn.text)
+                case .system: return nil
+                }
+            },
+            openedWithPromptQuestion: openedWithPromptQuestion,
+            safetyClarifyExtraTurn: safetyClarifyExtraTurn,
+            tiers: safetySession.tierSequence
+        )
+        OnboardingCaptureStore.save(snapshot, userId: userId)
+    }
+
+    private func restoreOnboardingCaptureIfAny() {
+        guard isOnboarding, turns.isEmpty, let snapshot = OnboardingCaptureStore.load(userId: userId) else { return }
+        let resumed = OnboardingCaptureStore.resume(snapshot)
+        captureId = snapshot.captureId
+        openedWithPromptQuestion = snapshot.openedWithPromptQuestion
+        safetyClarifyExtraTurn = snapshot.safetyClarifyExtraTurn
+        safetySession.restoreTiers(snapshot.tiers)
+        turns = resumed.turns.map { Turn(role: $0.isUser ? .user : .assistant, text: $0.text) }
+        if !resumed.composerText.isEmpty { inputText = resumed.composerText }
+    }
+
+    /// Records what the just-finished request cost. Exact when the proxy reports a complete
+    /// total; otherwise the unknown part is charged at a ceiling, never as zero.
+    private func recordBudget(response: LLMResponse?, requestMessages: [LLMMessage]) {
+        var b = budget ?? CaptureBudget(isOnboarding: isOnboarding)
+        let inputTokens = requestMessages.reduce(0) { $0 + CaptureBudget.estimateTokens($1.content) }
+        // Unknown ceiling: classifier + main both read the messages, plus the main output ceiling.
+        let ceiling = 2 * inputTokens + CaptureBudget.mainReplyOutputCeiling
+        if let response {
+            b.record(pipelineTokens: response.pipelineTokens, complete: response.pipelineTokensComplete, ceilingIfUnknown: ceiling)
+        } else {
+            b.recordUnknown(ceiling: ceiling)
+        }
+        budget = b
+    }
+
+    /// Stops ordinary turns and finishes through the EXISTING completion path when another
+    /// ordinary turn (a maximum-length message plus a full-ceiling reply) would eat into
+    /// the finish reserve. Never a second save: it only sets the same flag Done sets.
+    private func finishIfBudgetExhausted() {
+        guard let b = budget, !isConversationComplete, !safetySession.isClosed, !budgetFinish else { return }
+        let transcript = fullTranscript
+        let transcriptTokens = CaptureBudget.estimateTokens(transcript)
+        // Worst case for the next turn: a max-length message (1 token per character is the
+        // conservative bound) and the whole turn costing what the last one measured.
+        let next = CaptureBudget.nextTurnCost(transcriptTokens: transcriptTokens, newUserTokens: maxInputLength, safetyOverhead: b.lastRecordedCost)
+        // The finish will see the transcript AFTER that next turn, so size the reserve for it.
+        let growth = String(repeating: "x", count: (maxInputLength + CaptureBudget.mainReplyOutputCeiling) * 3)
+        let reserve = CaptureBudget.finishReserve(
+            synthesisPrompt: JournalSynthesisManager.prompt(transcript: transcript + growth, requestClosing: true),
+            existingProfileSummary: nil,            // unknown here -> reserved at its output ceiling
+            profileInstructionTokens: 300           // ~850 chars of fixed template text, est. /3
+        )
+        if b.decision(nextTurnCost: next, finishReserve: reserve) == .finishNow {
+            budgetFinish = true
+            requestManualFinish()
         }
     }
 
@@ -2736,10 +2953,12 @@ struct CaptureConversationView: View {
     /// there is nothing for a later retry/background sweep to pick up either --
     /// the no-save guarantee holds without any new guard needed in SyncManager itself.
     private func finishWithoutSaving() async {
+        if isOnboarding { OnboardingCaptureStore.clear(userId: userId) }
         isSaving = false
     }
 
     private func finishAndSave() async {
+        if isOnboarding { OnboardingCaptureStore.clear(userId: userId) }
         isSaving = true
         errorMessage = nil
         UserDefaults.standard.set(Date(), forKey: Self.lastReflectionDateKey)
@@ -2749,7 +2968,7 @@ struct CaptureConversationView: View {
         // The saved reflection is the whole conversation (Dwelly's prompts and the user's
         // answers), not just the user's side -- see Moment.encodeTranscript. Everything
         // that needs only the user's words reads Moment.userWords.
-        let savedTurns = turns.compactMap { turn -> Moment.TranscriptTurn? in
+        let savedTurns = turns.filter { !unassessedTurnIDs.contains($0.id) }.compactMap { turn -> Moment.TranscriptTurn? in
             switch turn.role {
             case .user: return Moment.TranscriptTurn(isUser: true, text: turn.text)
             case .assistant: return Moment.TranscriptTurn(isUser: false, text: turn.text)
@@ -2829,7 +3048,7 @@ struct CaptureConversationView: View {
         // only content), never the full body, so a mixed entry's filler portions can't
         // leak in even when the real portion qualifies.
         if journalSynthesisSucceeded, let journalMeta, journalMeta.formationEligible, let facts = journalMeta.extractedFacts {
-            Task { await DwellerProfileManager.updateRunningSummary(newEntryBody: facts, userId: userId, apiClient: apiClient) }
+            Task { await DwellerProfileManager.updateRunningSummary(newEntryBody: facts, userId: userId, context: .profile(captureId: captureId, kind: captureKind), apiClient: apiClient) }
         }
 
         // T-159 fast path: a new capture is exactly the kind of sync-triggering event
@@ -2875,16 +3094,17 @@ struct CaptureConversationView: View {
             // read here rather than passed in, since generateJournalMeta() only ever
             // runs once, at the very end of this screen's own conversation.
             let policyExcluded = FormationEligibilityPolicy.decision(forTiersSeen: safetySession.tiersSeen) == .excluded
-            let result = try await JournalSynthesisManager.synthesize(transcript: fullTranscript, userOnlyText: combinedBody, policyExcluded: policyExcluded, apiClient: apiClient)
+            let result = try await JournalSynthesisManager.synthesize(transcript: fullTranscript, userOnlyText: combinedBody, policyExcluded: policyExcluded, requestClosing: budgetFinish, closingOnlyIfUnclear: isOnboarding, context: .synthesis(captureId: captureId, kind: captureKind), apiClient: apiClient)
             let meta = JournalMeta(
                 title: result.title,
-                excerpt: String(result.body.prefix(140)),
+                excerpt: JournalExcerpt.make(from: result.body),
                 body: result.body,
                 scriptureQuote: result.scriptureQuote,
                 scriptureReference: result.scriptureReference,
                 moods: result.moods,
                 formationEligible: result.formationEligible,
-                extractedFacts: result.extractedFacts
+                extractedFacts: result.extractedFacts,
+                closing: result.closing
             )
             await MainActor.run {
                 journalMeta = meta
@@ -2896,13 +3116,17 @@ struct CaptureConversationView: View {
                 // Even the hard-failure fallback keeps a verse -- Kell confirmed (Nov 10
                 // 2026) the card should never show without one, matching the Figma
                 // reference, which always pairs an entry with scripture.
+                // Nov 23 2026 (Kell): no made-up title or unrelated verse (the old placeholder was
+                // "A Moment With God" + Psalm 46:10). Their own words only; the saved entry is
+                // "pending" and the background retry fills in the real title and verse.
                 journalMeta = JournalMeta(
-                    title: "A Moment With God",
-                    excerpt: String(combinedBody.prefix(140)),
+                    title: "Your entry",
+                    excerpt: JournalExcerpt.make(from: combinedBody),
                     body: nil,
-                    scriptureQuote: "Be still, and know that I am God.",
-                    scriptureReference: "Psalm 46:10",
-                    moods: []
+                    scriptureQuote: nil,
+                    scriptureReference: nil,
+                    moods: [],
+                    isPlaceholder: true
                 )
             }
         }

@@ -55,6 +55,10 @@ enum JournalSynthesisManager {
         let scriptureQuote: String?
         let scriptureReference: String?
         let moods: [String]
+        /// Budget-boundary transition sentence, produced in this same call (no extra model
+        /// call) and only when `requestClosing` was true. Already passed through
+        /// `BudgetClosing.sanitize`; nil when not requested, unusable, or nothing to ground in.
+        var closing: String? = nil
     }
 
     private struct LLMJSON: Decodable {
@@ -66,9 +70,10 @@ enum JournalSynthesisManager {
         let scriptureQuote: String?
         let scriptureReference: String?
         let moods: [String]?
+        let closing: String?
 
         enum CodingKeys: String, CodingKey {
-            case rendering, body, title, moods
+            case rendering, body, title, moods, closing
             case formationEligible = "formation_eligible"
             case extractedFacts = "extracted_facts"
             case scriptureQuote = "scripture_quote"
@@ -91,8 +96,40 @@ enum JournalSynthesisManager {
     /// deliberate defense-in-depth: the synthesis model is never trusted to self-censor
     /// "formation_eligible" correctly for excluded content, the override happens in
     /// Swift after parsing, every time.
-    static func synthesize(transcript: String, userOnlyText: String, policyExcluded: Bool, apiClient: APIClient) async throws -> Result {
-        let prompt = """
+    static func synthesize(transcript: String, userOnlyText: String, policyExcluded: Bool, requestClosing: Bool = false, closingOnlyIfUnclear: Bool = false, context: LLMRequestContext? = nil, apiClient: APIClient) async throws -> Result {
+        let prompt = prompt(transcript: transcript, requestClosing: requestClosing, closingOnlyIfUnclear: closingOnlyIfUnclear)
+        let messages = [
+            LLMMessage(role: .system, content: "You return only valid JSON, nothing else."),
+            LLMMessage(role: .user, content: prompt),
+        ]
+        return try await run(messages: messages, userOnlyText: userOnlyText, policyExcluded: policyExcluded, requestClosing: requestClosing || closingOnlyIfUnclear, context: context, apiClient: apiClient)
+    }
+
+    /// The exact prompt sent, exposed so the capture budget can size the finish reserve
+    /// from the real request rather than a guess.
+    static func prompt(transcript: String, requestClosing: Bool, closingOnlyIfUnclear: Bool = false) -> String {
+        let unclearKey = (closingOnlyIfUnclear && !requestClosing) ? """
+
+        "closing": ONLY if what I was working through is still unclear, I said I did not \
+        know, or my answers contradicted each other -- otherwise null. When it applies, ONE \
+        plain sentence saying what is unclear and that you kept it in my own words, for \
+        example "I'm still not sure I've understood that last part, so I've kept it in your \
+        own words." No "thanks for sharing", no praise, no "here's what I learned", no \
+        question, no new Bible reference, no resolution or peace.
+
+        """ : ""
+        let closingKey = requestClosing ? """
+
+        "closing": ONE concise sentence, in my own terms, grounded in the concern, need, \
+        joy, uncertainty or takeaway I actually expressed -- at whatever point in the \
+        conversation I reached, however early. No "thanks for sharing", no stock praise, \
+        no "here's what I learned", no claiming to understand more than I said, no \
+        forced resolution or peace, no question, and no new Bible reference. If what I \
+        was working through is still unclear, say so plainly rather than inventing a \
+        confirmed point. Null if there is nothing discernible.
+
+        """ : unclearKey
+        return """
         Based on this conversation between me and Dwelly, decide how to handle my own \
         words and return ONLY a single JSON object (no markdown, no commentary) with \
         these exact keys:
@@ -139,7 +176,10 @@ enum JournalSynthesisManager {
 
         "scripture_quote" / "scripture_reference" (e.g. "Psalm 46:10"): a short, real \
         Bible verse that genuinely fits, included ONLY if formation_eligible is true -- \
-        both null if formation_eligible is false. Never invent a verse pairing for \
+        both null if formation_eligible is false. Include one ONLY if I clearly confirmed \
+        or named what I was working through (a concern, need or joy in my own words). If I \
+        only gave unsure or non-answers ("I don't know", "idk"), or what I was working \
+        through stayed unclear, both are null. Never invent a verse pairing for \
         something you couldn't discern.
 
         "moods": an array of 2-3 strings, chosen ONLY from this exact list, that best \
@@ -147,17 +187,16 @@ enum JournalSynthesisManager {
         formation_eligible is true; empty array if false. Never invent a word outside \
         this list.
 
+        \(closingKey)
         Conversation:
         \(transcript)
         """
-        let messages = [
-            LLMMessage(role: .system, content: "You return only valid JSON, nothing else."),
-            LLMMessage(role: .user, content: prompt),
-        ]
+    }
 
+    private static func run(messages: [LLMMessage], userOnlyText: String, policyExcluded: Bool, requestClosing: Bool, context: LLMRequestContext?, apiClient: APIClient) async throws -> Result {
         // 1500, not the proxy's own 1000 default -- a real 2-3 paragraph body plus
         // title/facts/verse plus JSON structure needs more room than metadata alone did.
-        let response = try await apiClient.callLLM(messages: messages, feature: "journal_synthesis", maxTokens: 1500)
+        let response = try await apiClient.callLLM(messages: messages, feature: "journal_synthesis", maxTokens: 1500, context: context)
         guard let start = response.content.firstIndex(of: "{"), let end = response.content.lastIndex(of: "}") else {
             throw NSError(domain: "JournalSynthesisManager", code: 0, userInfo: [NSLocalizedDescriptionKey: "No JSON object in LLM response"])
         }
@@ -199,7 +238,8 @@ enum JournalSynthesisManager {
             extractedFacts: effectiveFormationEligible ? parsed.extractedFacts : nil,
             scriptureQuote: parsed.formationEligible ? parsed.scriptureQuote : nil,
             scriptureReference: parsed.formationEligible ? parsed.scriptureReference : nil,
-            moods: parsed.formationEligible ? (parsed.moods ?? []) : []
+            moods: parsed.formationEligible ? (parsed.moods ?? []) : [],
+            closing: requestClosing ? BudgetClosing.sanitize(parsed.closing) : nil
         )
     }
 }

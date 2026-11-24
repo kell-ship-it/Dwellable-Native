@@ -10,6 +10,8 @@
 // handler.test.ts builds a FAKE `ProxyDependencies` instead and exercises every branch
 // below directly -- see that file for the actual test run, not just typechecked.
 
+import { type BudgetLedger, type CaptureKind, isValidId, reserveEstimate } from "./budget.ts"
+
 export type ChatMessage = { role: "system" | "user" | "assistant"; content: string }
 
 export interface LLMProxyRequest {
@@ -17,12 +19,22 @@ export interface LLMProxyRequest {
   feature: string
   max_tokens?: number
   temperature?: number
+  /** Names a SERVER-OWNED fixed reply. Never carries text; the server only ever returns its own constant. */
+  closer?: "onboarding_final"
+  /** Durable per-capture id (client-generated, scoped to the authenticated user server-side). */
+  capture_id?: string
+  /** Stable per LOGICAL operation: a retry of the same send reuses it. */
+  request_id?: string
+  /** Fixes the capture's token limit on its FIRST reservation; cannot be changed later. */
+  capture_kind?: CaptureKind
 }
 
 export interface TokenUsage {
   promptTokens: number | null
   completionTokens: number | null
   totalTokens: number | null
+  /** Provider-reported cached input tokens; null = not reported (unknown), 0 = reported zero. */
+  cachedTokens?: number | null
 }
 
 export const ZERO_USAGE: TokenUsage = { promptTokens: null, completionTokens: null, totalTokens: null }
@@ -87,7 +99,7 @@ Critical rules, in order of importance:
 1. Honest disclosure is never misuse. Adult sexual desire or temptation, grief, doubt, past resolved struggles, intrusive unwanted thoughts the person doesn't want to act on, quoted hateful language said TO the user by someone else, a disclosure of being abused (at any age, including as a current minor) -- all of these are "normal". Never refuse or redirect these. Crude, blunt, or profane wording is not misuse either: people speak honestly the way they would to a trusted friend, pastor, or mentor, so judge the meaning, not the vocabulary. A vulgar or sexually explicit statement of an honest desire, frustration, or loneliness is "normal", never "refusal".
 2. A third party being at risk (e.g. "my cousin tried to hurt himself") is not automatically low-risk just because it isn't the user -- if the person described sounds like they may still be in danger, use "crisis_other"; if it reads as resolved/past/no ongoing danger, "normal" is fine, but judge this from the actual content, not just tense.
 3. A DETAILED OR SPECIFIC plan to harm someone, described with NO request for help from you, is still just a disclosure -- use "crisis_other" or "ongoing_danger" (risk + support), NOT "refusal". Only use "refusal" when the person is explicitly asking YOU to help them do something harmful (instructions, drafting harassment, planning an attack, anything involving a minor sexually).
-4. Vague statements ("I don't want to be here anymore", "I could kill him") are judged by actual context, never auto-dismissed as venting and never auto-escalated -- if genuinely ambiguous, use "clarify" with ONE short, natural, non-alarming clarifying question. When the ambiguity is about whether the person might hurt or end their own life (e.g. "I can't do this anymore", "it's killing me", "I can't take it"), the clarifying question must ask DIRECTLY and gently whether they are having thoughts of hurting themselves or ending their life -- not only invite them to say more. Do NOT use "crisis_self" for a common figure of speech on its own. Use "crisis_self" when the person states or confirms thoughts of suicide or self-harm, says something explicit (e.g. "I want to kill myself"), or has already been asked directly and gives a deflecting answer that keeps expressing being unable to go on. Remember what the person already told you in THIS conversation: if they were asked directly and clearly said it is not about hurting themselves (for example they explained they are lonely or struggling with something specific), then the SAME figure of speech used again in that same context is figurative -- use "normal" and do not ask again and do not use "crisis_self". Stay alert only to NEW or stronger signals (hopelessness, "no point", "better off without me", "can't go on", a stated plan or wish to die): if one appears after such a denial, use "clarify" once more with a direct question in different words, and use "crisis_self" if they confirm, deflect, or say something explicit. An explicit statement such as "I want to kill myself" is always "crisis_self", whatever was said before.
+4. Vague statements ("I don't want to be here anymore", "I could kill him") are judged by actual context, never auto-dismissed as venting and never auto-escalated -- if genuinely ambiguous, use "clarify" with ONE short, natural, non-alarming clarifying question. When the ambiguity is about whether the person might hurt or end their own life (e.g. "I can't do this anymore", "it's killing me", "I can't take it"), the clarifying question must ask DIRECTLY and gently whether they are having thoughts of hurting themselves or ending their life -- not only invite them to say more. Do NOT use "crisis_self" for a common figure of speech on its own. Indirect or passive wording about not being here -- e.g. "everyone would be better off without me", "I wish I wasn't here", "I just want it all to stop", "I'm done", "I can't go on" -- is NEVER enough for "crisis_self" on its own, even when it sounds serious: use "clarify" and ask the direct question first, because people also say such things as dark humor or figures of speech, and only their own confirmation should bring the resource response. A third party's quoted words ("he told me to go kill myself") are not the user's own statement. Use "crisis_self" when the person confirms thoughts of suicide or self-harm after being asked, or has already been asked directly and gives a deflecting answer that keeps expressing being unable to go on. Remember what the person already told you in THIS conversation: if they were asked directly and clearly said it is not about hurting themselves (for example they explained they are lonely or struggling with something specific), then the SAME figure of speech used again in that same context is figurative -- use "normal" and do not ask again and do not use "crisis_self". Stay alert only to NEW or stronger signals (hopelessness, "no point", "better off without me", "can't go on", a stated plan or wish to die): if one appears after such a denial, use "clarify" once more with a direct question in different words, and use "crisis_self" if they confirm, deflect, or say something explicit. Even an explicit first-person statement such as "I want to kill myself" gets ONE direct "clarify" question first (people use such words as figures of speech or dark humor); once the person has been asked directly in this conversation and confirms, repeats it, or answers explicitly, use "crisis_self" without asking again.
 5. Past-tense phrasing is only "resolved" if the context actually supports that (explicit "I'm in a different place now", no sign it's recurring) -- "it's creeping back lately" is NOT resolved even though it's phrased with "used to."
 6. If someone is currently in an ongoing dangerous situation themselves (e.g. active abuse from another person), use "ongoing_danger", not "crisis_self" (which is for self-harm/suicide risk) and not "refusal".
 
@@ -97,6 +109,28 @@ Respond with ONLY this JSON shape, no other text:
 {"action": "normal" | "clarify" | "crisis_self" | "crisis_other" | "ongoing_danger" | "refusal", "clarifyQuestion": string or null}
 
 "clarifyQuestion" is required (a short, warm, natural-sounding question) only when action is "clarify"; null otherwise.`
+
+/// Messages the INPUT safety classifier sees (Nov 22 2026, Kell-approved duplication fix).
+/// The client's capture_conversation payload leads with the app's own conversational
+/// system messages (the Dwelly persona/framework, the conversational guardrails, the
+/// time context). Those steer the REPLY, not the safety decision, and told the classifier
+/// to behave like the replying assistant -- while duplicating thousands of tokens already
+/// sent to the main call. So the classifier now gets: its own authoritative policy, then
+/// every user and assistant message exactly as sent (same order, same content -- the
+/// prior assistant question is what lets it read a bare "yes"/"no"), then the existing
+/// moderation hint. Pure: builds a new array and never mutates `messages`.
+export function buildInputClassifierMessages(messages: ChatMessage[], moderationHint: string): ChatMessage[] {
+  return [
+    { role: "system", content: INPUT_CLASSIFIER_PROMPT },
+    ...messages
+      .filter((m) => m.role === "user" || m.role === "assistant")
+      .map((m) => ({ role: m.role, content: m.content })),
+    {
+      role: "system",
+      content: `(Informational only, not conclusive -- an automated content filter flagged: ${moderationHint})`,
+    },
+  ]
+}
 
 export const OUTPUT_CHECK_PROMPT = `You are checking a drafted reply from a compassionate Christian reflection app before it's shown to a user. Answer whether it is safe to show. It is UNSAFE if it: gives harmful instructions of any kind; pressures the user to forgive, reconcile with, or stay close to someone who has hurt them; offers prayer or scripture as a substitute for a real safety action when danger was described; or shames/moralizes at an honest disclosure (e.g. about sexual feelings, doubt, or past wrongdoing). Respond with ONLY this JSON: {"safe": true or false}`
 
@@ -137,6 +171,8 @@ export interface ProxyDependencies {
   callModeration(text: string): Promise<ModerationResult>
   classifyInput(messages: ChatMessage[], moderationHint: string): Promise<{ classification: InputClassification; usage: TokenUsage } & SafetyCallMeta>
   checkOutput(draftReply: string): Promise<{ safe: boolean; usage: TokenUsage } & SafetyCallMeta>
+  // false = Groq is shelved: skip it and call OpenAI directly (undefined/true = Groq first).
+  groqEnabled?: boolean
   callGroq(messages: ChatMessage[], maxTokens: number, temperature: number): Promise<{ content: string; usage: TokenUsage }>
   callOpenAI(messages: ChatMessage[], maxTokens: number, temperature: number): Promise<{ content: string; usage: TokenUsage }>
   // T-304 point 4: EVERY real spend -- the main conversational call AND the safety
@@ -152,7 +188,17 @@ export interface ProxyDependencies {
   // than silently writing indefinite-retention rows.
   logSafetyDiagnostic(stage: "input" | "output", failureType: string, feature: string): Promise<void>
   bumpSafetyAggregate(category: string): Promise<void>
+  /** Per-capture budget ledger, bound to the authenticated user. Absent = not enforcing. */
+  budget?: BudgetLedger
+  /** When true, capture_conversation requests MUST carry capture_id/request_id/capture_kind. */
+  budgetEnforce?: boolean
 }
+
+// Server-owned copy for the onboarding hand-off (must match the client's `closingMessage`
+// in CaptureConversationView.swift until the client reads it from the response). The client
+// can only NAME this closer; it can never supply the text.
+export const ONBOARDING_FINAL_CLOSER =
+  "Now, let's go ahead and take what you've shared here and add this to your journal. Feel free to continue processing there."
 
 const GROQ_MODEL = "openai/gpt-oss-120b"
 const OPENAI_MODEL = "gpt-4o-mini"
@@ -163,7 +209,120 @@ const DEFAULT_TEMPERATURE = 0.8
 /// The actual decision + model-call orchestration, fully independent of HTTP/auth/CORS
 /// and of any specific provider's fetch call -- everything provider-specific is behind
 /// `deps`. Returns a plain {status, body} the caller turns into a Response.
+async function handleMetered(payload: LLMProxyRequest, deps: ProxyDependencies): Promise<ProxyResult> {
+  // Provider-reported tokens for every billable call this request STARTED. A call that
+  // threw, timed out, or returned no usable total consumed an UNKNOWN amount -- that is
+  // never counted as zero: `pipelineTokensComplete` goes false and the caller must budget
+  // the call's ceiling instead. Applies to non-200 responses too (a failed main call
+  // after a billed classifier still spent tokens). Moderation is free and not counted.
+  let spent = 0
+  let unknownCalls = 0
+  const meter = <T extends { usage: TokenUsage }>(fn: () => Promise<T>) => async (): Promise<T> => {
+    try {
+      const r = await fn()
+      if (r.usage.totalTokens === null || r.usage.totalTokens === undefined) unknownCalls++
+      else spent += r.usage.totalTokens
+      return r
+    } catch (e) {
+      unknownCalls++
+      throw e
+    }
+  }
+  const metered: ProxyDependencies = {
+    ...deps,
+    classifyInput: (m, h) => meter(() => deps.classifyInput(m, h))(),
+    checkOutput: (t) => meter(() => deps.checkOutput(t))(),
+    callGroq: (m, mt, t) => meter(() => deps.callGroq(m, mt, t))(),
+    callOpenAI: (m, mt, t) => meter(() => deps.callOpenAI(m, mt, t))(),
+  }
+  const out = await handleProxyRequestInner(payload, metered)
+  return { status: out.status, body: { ...out.body, pipelineTokens: spent, pipelineTokensComplete: unknownCalls === 0, pipelineUnknownCalls: unknownCalls } }
+}
+
+/// Per-message input cap, mirroring the app's `maxInputLength` (CaptureConversationView, T-272).
+/// Enforced here too so a modified/old client cannot send an oversized message. Counted in
+/// user-perceived characters (grapheme clusters), the same unit the app's String.count uses, so a
+/// message the app accepted is never rejected here. Never truncates: it rejects.
+export const MAX_USER_MESSAGE_CHARS = 2000
+const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" })
+export function graphemeCount(text: string): number {
+  let n = 0
+  for (const _ of graphemeSegmenter.segment(text)) n++
+  return n
+}
+
 export async function handleProxyRequest(payload: LLMProxyRequest, deps: ProxyDependencies): Promise<ProxyResult> {
+  if (payload.feature === "capture_conversation") {
+    for (const m of payload.messages) {
+      // Cheap pre-check first: more graphemes than UTF-16 units is impossible.
+      if (m.role === "user" && m.content.length > MAX_USER_MESSAGE_CHARS && graphemeCount(m.content) > MAX_USER_MESSAGE_CHARS) {
+        return { status: 413, body: { error: "message_too_long", limit: MAX_USER_MESSAGE_CHARS } }
+      }
+    }
+  }
+  const hasAnyId = payload.capture_id !== undefined || payload.request_id !== undefined || payload.capture_kind !== undefined
+  const isCapture = payload.feature === "capture_conversation"
+  if (!deps.budget || (!deps.budgetEnforce && !hasAnyId)) {
+    return await handleMetered(payload, deps)
+  }
+  if (hasAnyId || (deps.budgetEnforce && isCapture)) {
+    // Invalid or partial ids are REJECTED, never silently dropped (attribution/budget would be lost).
+    if (!isValidId(payload.capture_id) || !isValidId(payload.request_id) ||
+        (payload.capture_kind !== "onboarding" && payload.capture_kind !== "regular")) {
+      return { status: 400, body: { error: "capture_id, request_id and capture_kind are required and must be valid" } }
+    }
+  } else {
+    return await handleMetered(payload, deps)
+  }
+  const captureId = payload.capture_id as string
+  const requestId = payload.request_id as string
+  const maxTokens = payload.max_tokens ?? DEFAULT_MAX_TOKENS
+  const amount = reserveEstimate({
+    messagesText: payload.messages.map((m) => m.content),
+    conversationText: payload.messages.filter((m) => m.role !== "system").map((m) => m.content),
+    maxTokens,
+    isCaptureConversation: isCapture,
+    classifierPrompt: INPUT_CLASSIFIER_PROMPT,
+    outputCheckPrompt: OUTPUT_CHECK_PROMPT,
+  })
+  // The two capture-finishing calls (journal synthesis, profile update) must NEVER be blocked by the cap:
+  // refusing them would lose the person's journal. They reserve 0 (so they still show up and their real
+  // spend is settled into the ledger) and, if the capture is somehow already over its limit, run untracked.
+  const isFinishCall = payload.feature === "journal_synthesis" || payload.feature === "dweller_profile_summary"
+  let reservation
+  try {
+    reservation = await deps.budget.reserve(captureId, requestId, payload.capture_kind as CaptureKind, isFinishCall ? 0 : amount)
+  } catch (e) {
+    // Fail CLOSED: a cost ceiling that cannot be checked is not a ceiling. Nothing was spent.
+    console.error("llm-proxy: capture budget reserve failed --", e)
+    return { status: 503, body: { error: "capture_budget_unavailable" } }
+  }
+  if (!reservation.ok) {
+    if (isFinishCall) return await handleMetered(payload, deps) // over the limit already: still finish, untracked
+    return { status: 429, body: { error: "capture_budget_exhausted", spent: reservation.spent, limit: reservation.limit } }
+  }
+  let out: ProxyResult
+  try {
+    out = await handleMetered(payload, deps)
+  } catch (e) {
+    // Unknown spend: keep the whole reservation (settle with its own amount).
+    try { await deps.budget.settle(captureId, requestId, reservation.reserved) } catch (_) { /* reservation stays; conservative */ }
+    throw e
+  }
+  const b = out.body as Record<string, unknown>
+  const spent = typeof b.pipelineTokens === "number" ? b.pipelineTokens : 0
+  const unknown = typeof b.pipelineUnknownCalls === "number" ? b.pipelineUnknownCalls : 1
+  // Unknown calls may have billed anything up to the reservation: never settle BELOW it then.
+  const actual = unknown > 0 ? Math.max(spent, reservation.reserved) : spent
+  try {
+    await deps.budget.settle(captureId, requestId, actual)
+  } catch (e) {
+    console.error("llm-proxy: capture budget settle failed (reservation stays) --", e)
+  }
+  return out
+}
+
+async function handleProxyRequestInner(payload: LLMProxyRequest, deps: ProxyDependencies): Promise<ProxyResult> {
   const maxTokens = payload.max_tokens ?? DEFAULT_MAX_TOKENS
   const temperature = payload.temperature ?? DEFAULT_TEMPERATURE
 
@@ -173,6 +332,10 @@ export async function handleProxyRequest(payload: LLMProxyRequest, deps: ProxyDe
   // free-form turn, so they're explicitly out of this ticket's scope -- see
   // handler.test.ts's "other features skip the safety layer entirely" test.
   const isCaptureConversation = payload.feature === "capture_conversation"
+
+  if (payload.closer !== undefined && (payload.closer !== "onboarding_final" || !isCaptureConversation)) {
+    return { status: 400, body: { error: "Unsupported closer" } }
+  }
 
   let safetyTier: string | undefined
   let shortCircuitContent: string | undefined
@@ -222,23 +385,61 @@ export async function handleProxyRequest(payload: LLMProxyRequest, deps: ProxyDe
     return { status: 200, body: { content: shortCircuitContent, model: "safety-fixed", provider: "openai", safetyTier } }
   }
 
-  let result: { content: string; model: string; provider: "groq" | "openai" }
-  let usage: TokenUsage
-  try {
-    const groqResult = await deps.callGroq(payload.messages, maxTokens, temperature)
-    result = { content: groqResult.content, model: GROQ_MODEL, provider: "groq" }
-    usage = groqResult.usage
-  } catch (groqError) {
-    console.error(`llm-proxy [${payload.feature}]: Groq failed, falling back to OpenAI --`, groqError)
+  // Final onboarding turn: moderation + classifier above already ran and returned "normal"
+  // (anything else short-circuited). Skip the generation that would be discarded, and
+  // return the server's own fixed closer after the same output check as any reply.
+  // Fail-closed: a failed or unsafe check returns the neutral fallback tier, never the closer.
+  if (isCaptureConversation && payload.closer === "onboarding_final") {
+    try {
+      const check = await deps.checkOutput(ONBOARDING_FINAL_CLOSER)
+      await deps.logUsage({ feature: `${payload.feature}_safety_output_check`, provider: check.provider ?? "openai", model: check.model ?? SAFETY_MODEL, usage: check.usage })
+      if (!check.safe) {
+        await deps.bumpSafetyAggregate("output_blocked")
+        return { status: 200, body: { content: FALLBACK_TEXT, model: "safety-fallback", provider: "openai", safetyTier: "fallback" } }
+      }
+    } catch (closerCheckError) {
+      console.error(`llm-proxy [${payload.feature}]: closer output check failed --`, closerCheckError)
+      await deps.logSafetyDiagnostic("output", "output_check_error", payload.feature)
+      return { status: 200, body: { content: FALLBACK_TEXT, model: "safety-fallback", provider: "openai", safetyTier: "fallback" } }
+    }
+    return { status: 200, body: { content: ONBOARDING_FINAL_CLOSER, model: "safety-fixed", provider: "openai", safetyTier: "normal", closer: "onboarding_final" } }
+  }
+
+  // groqError undefined = Groq is shelved (direct OpenAI call), otherwise it is the fallback.
+  const tryOpenAI = async (groqError: unknown): Promise<
+    | { ok: true; result: { content: string; model: string; provider: "groq" | "openai" }; usage: TokenUsage }
+    | { ok: false; response: { status: number; body: Record<string, unknown> } }
+  > => {
     try {
       const openaiResult = await deps.callOpenAI(payload.messages, maxTokens, temperature)
-      result = { content: openaiResult.content, model: OPENAI_MODEL, provider: "openai" }
-      usage = openaiResult.usage
+      return { ok: true, result: { content: openaiResult.content, model: OPENAI_MODEL, provider: "openai" }, usage: openaiResult.usage }
     } catch (openaiError) {
-      console.error(`llm-proxy [${payload.feature}]: OpenAI fallback also failed --`, openaiError)
-      return { status: 502, body: { error: "Both LLM providers failed", groq: String(groqError), openai: String(openaiError) } }
+      console.error(`llm-proxy [${payload.feature}]: OpenAI ${groqError === undefined ? "call" : "fallback"} failed --`, openaiError)
+      return { ok: false, response: { status: 502, body: { error: "Both LLM providers failed", groq: String(groqError ?? "disabled"), openai: String(openaiError) } } }
     }
   }
+  type ModelOutcome = { ok: true; result: { content: string; model: string; provider: "groq" | "openai" }; usage: TokenUsage } | { ok: false; response: { status: number; body: Record<string, unknown> } }
+  const runModel = async (): Promise<ModelOutcome> => {
+    if (deps.groqEnabled === false) return await tryOpenAI(undefined)
+    try {
+      const groqResult = await deps.callGroq(payload.messages, maxTokens, temperature)
+      return { ok: true, result: { content: groqResult.content, model: GROQ_MODEL, provider: "groq" }, usage: groqResult.usage }
+    } catch (groqError) {
+      console.error(`llm-proxy [${payload.feature}]: Groq failed, falling back to OpenAI --`, groqError)
+      return await tryOpenAI(groqError ?? "unknown")
+    }
+  }
+  const outcome = await runModel()
+  if (!outcome.ok) return outcome.response
+  const result = outcome.result
+  const usage = outcome.usage
+
+  // The main call is billed even when its reply is later rejected by the output check.
+  // Record that spend under a "safety" feature name so it is visible in llm_usage but, like
+  // every other safety row, is not counted toward the user's daily cap (index.ts excludes
+  // features containing "safety"); a reply the user never saw must not burn their quota.
+  const logRejectedReply = () =>
+    deps.logUsage({ feature: `${payload.feature}_safety_rejected_reply`, provider: result.provider, model: result.model, usage })
 
   // T-303: output check, capture_conversation only. On failure OR an unsafe verdict,
   // the generated reply is NEVER shown -- this is the whole point of this ticket's
@@ -250,21 +451,23 @@ export async function handleProxyRequest(payload: LLMProxyRequest, deps: ProxyDe
       const { safe, usage: outputCheckUsage } = outputCheck
       await deps.logUsage({ feature: `${payload.feature}_safety_output_check`, provider: outputCheck.provider ?? "openai", model: outputCheck.model ?? SAFETY_MODEL, usage: outputCheckUsage })
       if (!safe) {
+        await logRejectedReply()
         await deps.bumpSafetyAggregate("output_blocked")
         return { status: 200, body: { content: FALLBACK_TEXT, model: "safety-fallback", provider: "openai", safetyTier: "fallback" } }
       }
     } catch (outputCheckError) {
       console.error(`llm-proxy [${payload.feature}]: output check failed --`, outputCheckError)
+      await logRejectedReply()
       await deps.logSafetyDiagnostic("output", "output_check_error", payload.feature)
       return { status: 200, body: { content: FALLBACK_TEXT, model: "safety-fallback", provider: "openai", safetyTier: "fallback" } }
     }
   }
 
-  console.log(`llm-proxy [${payload.feature}]: served by ${result.provider}/${result.model}, ${usage.totalTokens ?? "?"} tokens`)
-
   // Log after a successful call, not before -- a failed call never happened and
   // shouldn't count against the daily cap or show up in Kell's provider-split check.
   await deps.logUsage({ feature: payload.feature, provider: result.provider, model: result.model, usage })
+
+  console.log(`llm-proxy [${payload.feature}]: served by ${result.provider}/${result.model}, ${usage.totalTokens ?? "?"} tokens`)
 
   return { status: 200, body: { ...result, safetyTier: isCaptureConversation ? "normal" : undefined } }
 }

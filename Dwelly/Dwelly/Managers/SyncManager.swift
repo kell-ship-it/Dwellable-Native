@@ -122,14 +122,12 @@ class SyncManager: ObservableObject {
 
         for entry in pending {
             guard let moment = try? await apiClient.fetchMoment(id: entry.momentId) else { continue }
-            // Only the user's own words are available here, not Dwelly's side of the
-            // conversation (that's never persisted anywhere -- see
-            // CaptureConversationView.fullTranscript's own comment) -- a retried
-            // decision is real, just with less conversational context than the
-            // original attempt had. T-127 (rebuilt Nov 17 2026): same one-call
-            // decision CaptureConversationView.generateJournalMeta uses on the first
-            // attempt -- no deterministic pre-check, a retry must be decided exactly
-            // the same way, not treated differently just because it waited for a sweep.
+            // The retry passes the same role-labelled transcript the first attempt used
+            // (`moment.synthesisTranscript`, "Me:"/"Dwelly:" turns for current moments) plus
+            // the user's own words (`moment.userWords`) as the separate user-only input.
+            // T-127 (rebuilt Nov 17 2026): same one-call decision
+            // CaptureConversationView.generateJournalMeta uses on the first attempt -- no
+            // deterministic pre-check.
             // T-125: `entry.profileExcluded` is the ORIGINAL exclusion decision,
             // persisted at the first save attempt (CaptureConversationView.finishAndSave)
             // from that conversation's own safety tiers -- this retry has no access to
@@ -138,21 +136,18 @@ class SyncManager: ObservableObject {
             // back to the substance-only gate alone.
             guard let result = try? await JournalSynthesisManager.synthesize(transcript: moment.synthesisTranscript, userOnlyText: moment.userWords, policyExcluded: entry.profileExcluded, apiClient: apiClient) else { continue }
 
-            var updated = entry
-            updated.status = "approved"
-            updated.title = result.title
-            updated.body = result.body
-            updated.moods = result.moods
-            updated.scriptureQuote = result.scriptureQuote
-            updated.scriptureReference = result.scriptureReference
-            _ = try? await apiClient.saveJournalEntry(updated)
-
-            // T-274/T-127: same formation-eligibility gate as the first-attempt path --
-            // this sweep previously never fed the profile at all, a pre-existing gap
-            // fixed here alongside the eligibility rebuild rather than left stale.
-            if result.formationEligible, let facts = result.extractedFacts {
-                await DwellerProfileManager.updateRunningSummary(newEntryBody: facts, userId: userId, apiClient: apiClient)
-            }
+            let updated = JournalRetryApplier.applying(
+                .init(title: result.title, body: result.body, moods: result.moods,
+                      scriptureQuote: result.scriptureQuote, scriptureReference: result.scriptureReference,
+                      formationEligible: result.formationEligible, extractedFacts: result.extractedFacts),
+                to: entry)
+            // T-274/T-127: same formation-eligibility gate as the first-attempt path.
+            // Save failure => entry stays pending, profile untouched (see applier).
+            _ = await JournalRetryApplier.persist(
+                updated,
+                save: { try await self.apiClient.saveJournalEntry($0) },
+                feedProfile: { await DwellerProfileManager.updateRunningSummary(newEntryBody: $0, userId: self.userId, apiClient: self.apiClient) }
+            )
         }
     }
 

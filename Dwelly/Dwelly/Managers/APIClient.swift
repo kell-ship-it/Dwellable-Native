@@ -135,7 +135,7 @@ protocol APIClient {
 
     // LLM endpoint (T-168) — the one call every LLM-backed feature (Capture's
     // conversation, Prayer generation, Journal synthesis) goes through.
-    func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int?) async throws -> LLMResponse
+    func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int?, context: LLMRequestContext?, closer: String?) async throws -> LLMResponse
 
     // JWT token management
     func setJWTToken(_ token: String)
@@ -147,7 +147,15 @@ extension APIClient {
     /// token budget keeps working unchanged; only real-body synthesis (which needs
     /// more room than the proxy's own default) passes `maxTokens` explicitly.
     func callLLM(messages: [LLMMessage], feature: String) async throws -> LLMResponse {
-        try await callLLM(messages: messages, feature: feature, maxTokens: nil)
+        try await callLLM(messages: messages, feature: feature, maxTokens: nil, context: nil, closer: nil)
+    }
+
+    func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int?, context: LLMRequestContext?) async throws -> LLMResponse {
+        try await callLLM(messages: messages, feature: feature, maxTokens: maxTokens, context: context, closer: nil)
+    }
+
+    func callLLM(messages: [LLMMessage], feature: String, maxTokens: Int?) async throws -> LLMResponse {
+        try await callLLM(messages: messages, feature: feature, maxTokens: maxTokens, context: nil, closer: nil)
     }
 }
 
@@ -204,3 +212,25 @@ struct LLMMessage: Codable {
 
 // LLMResponse lives in LLMResponse.swift (standalone so the Crisis Support runtime
 // harness can decode real proxy JSON with the exact production type).
+
+
+/// Identifies the capture an LLM call belongs to so the server can keep ONE durable token
+/// ledger per capture (hard enforcement; see CaptureBudget / capture_budget.ts).
+/// `requestId` must be stable per LOGICAL operation: a retry of the same send reuses it,
+/// a new send gets a new one. Both ids use [A-Za-z0-9_-], 8-100 chars (the server rejects
+/// anything else rather than silently dropping attribution).
+struct LLMRequestContext: Equatable {
+    enum Kind: String { case onboarding, regular }
+    let captureId: String
+    let requestId: String
+    let kind: Kind
+
+    /// Ids for the capture-level follow-on calls are derived from the capture id so they
+    /// are stable across retries and restarts without extra storage.
+    static func synthesis(captureId: String, kind: Kind) -> LLMRequestContext {
+        LLMRequestContext(captureId: captureId, requestId: "\(captureId)-synthesis", kind: kind)
+    }
+    static func profile(captureId: String, kind: Kind) -> LLMRequestContext {
+        LLMRequestContext(captureId: captureId, requestId: "\(captureId)-profile", kind: kind)
+    }
+}

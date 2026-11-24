@@ -23,7 +23,7 @@ import Foundation
 /// the same way `updateRunningSummary` already did, and `YourNarrativeCard` re-renders
 /// off that either way.
 enum DwellerProfileManager {
-    static func updateRunningSummary(newEntryBody: String, userId: String, apiClient: APIClient) async {
+    static func updateRunningSummary(newEntryBody: String, userId: String, context: LLMRequestContext? = nil, apiClient: APIClient) async {
         guard !newEntryBody.isEmpty else { return }
         let existing = try? await apiClient.fetchDwellerProfile(userId: userId)
 
@@ -83,7 +83,7 @@ enum DwellerProfileManager {
             LLMMessage(role: .user, content: prompt),
         ]
 
-        guard let response = try? await apiClient.callLLM(messages: messages, feature: "dweller_profile_summary") else { return }
+        guard let response = try? await apiClient.callLLM(messages: messages, feature: "dweller_profile_summary", maxTokens: nil, context: context) else { return }
         let summary = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !summary.isEmpty else { return }
 

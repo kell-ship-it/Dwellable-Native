@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dwelly LLM Usage &mdash; GPT-4o mini</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'SF Pro Text', system-ui, sans-serif; background: #0b0a08; color: #f5f5f7; padding: 28px; min-height: 100vh; }
+  h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { color: #857d69; font-size: 13px; margin-bottom: 28px; }
+  .grand { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .grand .stat { background: #161618; border: 1px solid #2c2c2e; border-radius: 14px; padding: 18px 22px; flex: 1; min-width: 160px; }
+  .grand .stat .label { color: #857d69; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .grand .stat .value { font-size: 30px; font-weight: 700; margin-top: 6px; color: #aa925c; }
+  .grand .stat .hint { color: #857d69; font-size: 11px; margin-top: 6px; }
+  .cards { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  .card { background: #161618; border: 1px solid #2c2c2e; border-radius: 14px; padding: 22px; min-width: 260px; flex: 1; }
+  .card-header { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: #aa925c; }
+  .big { font-size: 34px; font-weight: 700; }
+  .sub { color: #857d69; font-size: 12px; margin-bottom: 18px; }
+  .row { display: flex; justify-content: space-between; font-size: 13px; color: #b4ac9b; padding: 6px 0; border-top: 1px solid #2c2c2e; }
+  .refresh-note { color: #555; font-size: 11px; margin-top: 20px; }
+  .fine { color: #857d69; font-size: 11px; margin-top: 8px; line-height: 1.5; max-width: 720px; }
+  .budget { background: #161618; border: 1px solid #2c2c2e; border-radius: 14px; padding: 22px; margin-bottom: 20px; }
+  .budget-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 12px; flex-wrap: wrap; }
+  .budget-header .title { font-size: 14px; font-weight: 600; }
+  .budget-header button { background: #2c2c2e; color: #f5f5f7; border: 1px solid #3a3a3c; border-radius: 8px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
+  .left-big { font-size: 44px; font-weight: 700; color: #aa925c; margin: 6px 0 14px; }
+  .left-big.low { color: #f48771; }
+  .bar-track { height: 14px; background: #2c2c2e; border-radius: 7px; overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(90deg, #aa925c, #4ec9b0); transition: width 0.3s; }
+  .bar-fill.low { background: #f48771; }
+  .budget-foot { display: flex; justify-content: space-between; font-size: 13px; color: #b4ac9b; margin-top: 10px; gap: 12px; flex-wrap: wrap; }
+  table.cap { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  table.cap th { text-align: right; color: #857d69; font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; padding: 6px 8px; border-bottom: 1px solid #2c2c2e; }
+  table.cap td { text-align: right; padding: 7px 8px; color: #b4ac9b; border-top: 1px solid #2c2c2e; }
+  table.cap th:first-child, table.cap td:first-child { text-align: left; }
+  table.cap tr.sum td { color: #f5f5f7; font-weight: 700; }
+  .cap-meta { color: #857d69; font-size: 12px; margin-top: 6px; }
+  .err { color: #f48771; font-size: 13px; margin-top: 16px; }
+</style>
+</head>
+<body>
+  <h1>Dwelly LLM Usage &mdash; GPT-4o mini</h1>
+  <div class="subtitle">OpenAI GPT-4o mini only &mdash; live token counts from public.llm_usage, auto-refreshes every 10s</div>
+  <div class="budget" id="budget"></div>
+  <div class="budget" id="capture"></div>
+  <div class="grand" id="grand"></div>
+  <div class="cards" id="cards"></div>
+  <div class="fine" id="fine"></div>
+  <div class="refresh-note" id="note">Loading&hellip;</div>
+  <div class="err" id="err"></div>
+
+<script>
+// Reads the same public aggregate endpoint as llm-usage-dashboard.html and shows ONLY the
+// "openai" bucket (every OpenAI row in llm_usage is gpt-4o-mini). Groq is intentionally
+// not displayed: it is shelved (llm-proxy v23, Nov 23 2026), so Groq rows are old history.
+const ENDPOINT = "https://lhcjobrtmbawlhjyodxz.supabase.co/functions/v1/usage-dashboard?format=json";
+const PRICE_IN_PER_M = 0.15;   // $ per 1M input tokens, gpt-4o-mini list price
+const PRICE_OUT_PER_M = 0.60;  // $ per 1M output tokens
+const fmt = n => (n || 0).toLocaleString("en-US");
+const usd = n => "$" + (n || 0).toFixed(n >= 1 ? 2 : 4);
+const cost = t => (t.promptTokens * PRICE_IN_PER_M + t.completionTokens * PRICE_OUT_PER_M) / 1e6;
+const EMPTY = { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+
+
+// ---- Credit countdown ---------------------------------------------------------------
+// The page cannot read your OpenAI balance (that needs an admin key). So you tell it your
+// balance once (default below, from platform.openai.com Billing), and it counts DOWN from
+// there using the usage this ledger logs afterward. Stored in this browser only.
+// Estimate is at LIST price, ignoring the prompt-caching discount, so it drains slightly
+// FASTER than your real balance: a conservative countdown.
+const BUDGET_TOTAL = 5.00;      // credit you put on the account, for the bar
+const DEFAULT_BALANCE = 4.88;   // balance read from OpenAI on Nov 23 2026
+const CALLS_PER_CAPTURE = 11;   // 3 Sends x 3 calls + journal synthesis + profile summary
+const STORE_KEY = "dwelly.openaiBudget.v1";
+const FALLBACK_BASELINE_COST = 0.0067;            // ledger est. cost at the moment the $4.88 was read
+const DEFAULT_SET_AT = "2026-11-23T15:40:00.000Z";
+let lastAllCost = 0;
+
+function readBudget(allCost) {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) {}
+  // First visit, or the ledger shrank (rows were deleted): re-baseline from the default.
+  if (!s || typeof s.balance !== "number" || allCost < s.baselineCost - 1e-9) {
+    // If this browser blocks storage, fall back to a FIXED baseline (the ledger's estimated
+    // cost when the $4.88 balance was read) so the countdown still drains instead of
+    // resetting on every refresh.
+    s = { balance: DEFAULT_BALANCE, baselineCost: Math.min(allCost, FALLBACK_BASELINE_COST), setAt: DEFAULT_SET_AT };
+    try {
+      s.baselineCost = allCost; s.setAt = new Date().toISOString();
+      localStorage.setItem(STORE_KEY, JSON.stringify(s));
+    } catch (e) {
+      s.baselineCost = Math.min(allCost, FALLBACK_BASELINE_COST); s.setAt = DEFAULT_SET_AT;
+    }
+  }
+  return s;
+}
+
+function setBalance() {
+  const cur = readBudget(lastAllCost);
+  const v = parseFloat(prompt("Enter your CURRENT OpenAI credit balance in dollars (platform.openai.com > Billing):", cur.balance.toFixed(2)));
+  if (!isFinite(v) || v < 0) return;
+  const s = { balance: v, baselineCost: lastAllCost, setAt: new Date().toISOString() };
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e) {}
+  load();
+}
+
+function renderBudget(all) {
+  lastAllCost = cost(all);
+  const s = readBudget(lastAllCost);
+  const spentSince = Math.max(0, lastAllCost - s.baselineCost);
+  const remaining = Math.max(0, s.balance - spentSince);
+  const pctLeft = Math.max(0, Math.min(100, (remaining / BUDGET_TOTAL) * 100));
+  const low = pctLeft < 20;
+  const perCall = all.calls ? lastAllCost / all.calls : 0;
+  const perCapture = perCall * CALLS_PER_CAPTURE;
+  const capturesLeft = perCapture > 0 ? Math.floor(remaining / perCapture).toLocaleString("en-US") : "&mdash;";
+  document.getElementById("budget").innerHTML =
+    '<div class="budget-header"><span class="title">OpenAI credit left (countdown)</span>' +
+    '<button onclick="setBalance()">Set balance from OpenAI</button></div>' +
+    '<div class="left-big' + (low ? " low" : "") + '">' + usd(remaining) + ' left</div>' +
+    '<div class="bar-track"><div class="bar-fill' + (low ? " low" : "") + '" style="width:' + pctLeft.toFixed(1) + '%"></div></div>' +
+    '<div class="budget-foot"><span>' + usd(s.balance) + ' balance on ' + new Date(s.setAt).toLocaleString() + ' &minus; ' + usd(spentSince) + ' spent since</span>' +
+    '<span>&asymp; ' + capturesLeft + ' more 3-send captures at ' + usd(perCapture) + ' each</span></div>';
+}
+
+
+const STAGE_LABELS = [
+  ["classifier", "Safety classifier"],
+  ["outputCheck", "Output check"],
+  ["mainReply", "Main reply"],
+  ["journalSynthesis", "Journal synthesis"],
+  ["profileSummary", "Profile summary"],
+];
+
+function renderCapture(c) {
+  const el = document.getElementById("capture");
+  if (!c) { el.innerHTML = '<div class="budget-header"><span class="title">Most recent capture</span></div><div class="cap-meta">No capture logged yet.</div>'; return; }
+  const rows = STAGE_LABELS.filter(function(x) { return c.stages[x[0]]; }).map(function(x) {
+    const t = c.stages[x[0]];
+    return '<tr><td>' + x[1] + '</td><td>' + fmt(t.calls) + '</td><td>' + fmt(t.promptTokens) + '</td><td>' + fmt(t.completionTokens) + '</td><td>' + fmt(t.totalTokens) + '</td><td>' + usd(cost(t)) + '</td></tr>';
+  }).join("");
+  const started = new Date(c.startedAt), ended = new Date(c.endedAt);
+  el.innerHTML =
+    '<div class="budget-header"><span class="title">Most recent capture</span>' +
+    '<span class="cap-meta">' + started.toLocaleString() + ' &rarr; ' + ended.toLocaleTimeString() + ' (your time) &middot; ' +
+    fmt(c.turns) + ' Send' + (c.turns === 1 ? '' : 's') + ' &middot; ' + (c.saved ? 'saved to journal' : 'not saved yet') + '</span></div>' +
+    '<div class="left-big" style="font-size:34px">' + fmt(c.totals.totalTokens) + ' tokens &middot; ' + usd(cost(c.totals)) + '</div>' +
+    '<table class="cap"><tr><th>Stage</th><th>Calls</th><th>In</th><th>Out</th><th>Total</th><th>Est. cost</th></tr>' + rows +
+    '<tr class="sum"><td>Whole capture</td><td>' + fmt(c.totals.calls) + '</td><td>' + fmt(c.totals.promptTokens) + '</td><td>' + fmt(c.totals.completionTokens) + '</td><td>' + fmt(c.totals.totalTokens) + '</td><td>' + usd(cost(c.totals)) + '</td></tr></table>' +
+    '<div class="cap-meta">Grouped from timestamps and call types (the ledger has no capture ID), so treat it as a close inference, not a join. Excludes the free moderation check.</div>';
+}
+
+function card(label, t, sub) {
+  return '<div class="card">' +
+    '<div class="card-header"><span class="dot"></span>' + label + '</div>' +
+    '<div class="big">' + fmt(t.totalTokens) + '</div>' +
+    '<div class="sub">' + sub + ' &mdash; ' + fmt(t.calls) + ' calls</div>' +
+    '<div class="row"><span>Prompt (input) tokens</span><span>' + fmt(t.promptTokens) + '</span></div>' +
+    '<div class="row"><span>Completion (output) tokens</span><span>' + fmt(t.completionTokens) + '</span></div>' +
+    '<div class="row"><span>Est. cost at list price</span><span>' + usd(cost(t)) + '</span></div>' +
+  '</div>';
+}
+
+function render(data) {
+  const all = (data.totals && data.totals.openai) || EMPTY;
+  const today = (data.last24h && data.last24h.openai) || (data.today && data.today.openai) || EMPTY; // rolling last 24 hours
+
+  renderBudget(all);
+  renderCapture(data.lastCapture || null);
+  document.getElementById("grand").innerHTML =
+    '<div class="stat"><div class="label">Tokens, last 24 hours</div><div class="value">' + fmt(today.totalTokens) + '</div></div>' +
+    '<div class="stat"><div class="label">Est. cost, last 24 hours</div><div class="value">' + usd(cost(today)) + '</div></div>' +
+    '<div class="stat"><div class="label">Tokens (all time)</div><div class="value">' + fmt(all.totalTokens) + '</div></div>' +
+    '<div class="stat"><div class="label">Est. cost (all time)</div><div class="value">' + usd(cost(all)) + '</div></div>';
+
+  document.getElementById("cards").innerHTML =
+    card("GPT-4o mini &mdash; last 24 hours", today, "tokens, last 24h") +
+    card("GPT-4o mini &mdash; all time", all, "total tokens");
+
+  document.getElementById("fine").textContent =
+    "Cost is an estimate at list price ($0.15 per 1M input, $0.60 per 1M output). OpenAI's automatic prompt caching bills " +
+    "cached input at about half price, so your real bill is lower; check platform.openai.com Analytics for the actual spend. " +
+    "Counts exclude OpenAI's free moderation check (not logged). 'All time' uses the most recent 5,000 logged calls.";
+}
+
+async function load() {
+  try {
+    const res = await fetch(ENDPOINT);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    render(await res.json());
+    document.getElementById("note").textContent = "Last updated: " + new Date().toLocaleTimeString();
+    document.getElementById("err").textContent = "";
+  } catch (e) {
+    document.getElementById("err").textContent = "Couldn't load usage data: " + e.message;
+  }
+}
+
+load();
+setInterval(load, 10000);
+</script>
+</body>
+</html>
