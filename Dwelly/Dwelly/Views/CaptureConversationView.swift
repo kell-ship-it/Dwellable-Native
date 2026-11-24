@@ -285,6 +285,14 @@ struct CaptureConversationView: View {
     // turn, the conversation is not wrapped up over an unanswered safety question. The person gets ONE
     // extra turn, outside the three-reply count, then the normal hand-off. Granted at most once.
     @State private var safetyClarifyExtraTurn = false
+    /// The reply that is the safety classifier's clarifying question. While it is the last turn the
+    /// person has not answered it yet, so "Done" stays hidden (an unresolved safety conversation
+    /// must not be saveable). Recognised by the server's fixed-reply marker with a normal tier and no closer.
+    @State private var safetyClarifyTurnID: UUID?
+    private var isAwaitingSafetyClarifyAnswer: Bool {
+        guard let id = safetyClarifyTurnID else { return false }
+        return turns.last?.id == id
+    }
     /// Replies counted toward the onboarding cap: the safety clarifying question (if granted) is free.
     private var effectiveResponseCount: Int { max(dwellyResponseCount - (safetyClarifyExtraTurn ? 1 : 0), 0) }
     private var dwellyResponseCount: Int {
@@ -1023,7 +1031,7 @@ struct CaptureConversationView: View {
                             // conversation were clear. Hiding the button while a reply is
                             // still pending means `manuallyFinished` can only ever be set
                             // once every tier sent so far has actually been recorded.
-                            if dwellyResponseCount >= 1 && !isConversationComplete && !isWaitingForDwelly && !safetySession.isAwaitingClassification {
+                            if dwellyResponseCount >= 1 && !isConversationComplete && !isWaitingForDwelly && !safetySession.isAwaitingClassification && !isAwaitingSafetyClarifyAnswer {
                                 // Crisis Support: same single header button, same single
                                 // action -- only the label changes once latched, to "Finish
                                 // for now" (Kell's locked copy: this is a user-chosen pause,
@@ -2788,6 +2796,9 @@ struct CaptureConversationView: View {
                 withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
                     turns.append(replyTurn)
                     isWaitingForDwelly = false
+                    if response.model == "safety-fixed" && recordedTier == "normal" && response.closer == nil {
+                        safetyClarifyTurnID = replyTurn.id
+                    }
                     if supportNoticeTurnID == nil && safetySession.status == .latched {
                         supportNoticeTurnID = replyTurn.id
                     }

@@ -86,7 +86,8 @@ const LLM_USAGE_CACHED_COLUMN_READY = false
 // OFF until that migration is applied AND the client sends capture_id/request_id/capture_kind.
 // While false, no RPC is ever called and requests behave exactly as before.
 const CAPTURE_BUDGET_LEDGER_READY = true
-const CAPTURE_BUDGET_ENFORCE = false
+// ON Nov 23 2026 (Kell: all beta testers are on the newest build).
+const CAPTURE_BUDGET_ENFORCE = true
 const SAFETY_TIMEOUT_MS = 8_000
 // Main OpenAI call previously had NO abort guard (every other outbound call did), so a
 // hung request could hold the proxy open until the platform killed it.
