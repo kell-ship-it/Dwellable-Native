@@ -44,7 +44,7 @@ struct YourNarrativeCard: View {
     @State private var feedbackSubmitted = false
     @State private var isConfirming = false
 
-    private static let unlockThreshold = 3
+    private static let unlockThreshold = DwellerProfileManager.narrativeUnlockThreshold
 
     private static let relativeFormatter: RelativeDateTimeFormatter = {
         let formatter = RelativeDateTimeFormatter()
@@ -213,9 +213,24 @@ struct YourNarrativeCard: View {
                 .foregroundColor(Theme.Payment.textHeading)
                 .lineSpacing(4)
 
-            Text("A few more moments and we'll start noticing your story.")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(Theme.gold)
+            // Nov 24 2026 (Kell): show real progress toward the first narrative, so
+            // there's something to look forward to.
+            let shown = min(qualifyingReflectionCount, Self.unlockThreshold)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("\(shown) of \(Self.unlockThreshold) reflections")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Theme.gold)
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Theme.gold.opacity(0.15))
+                        Capsule().fill(Theme.gold)
+                            .frame(width: geo.size.width * CGFloat(shown) / CGFloat(Self.unlockThreshold))
+                    }
+                }
+                .frame(height: 4)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(shown) of \(Self.unlockThreshold) reflections toward your spiritual journey")
 
             Text("Generated from your own moments.")
                 .font(.system(size: 11))

@@ -54,7 +54,9 @@ enum DwellerProfileManager {
 
             \(newEntryBody)
 
-            Write an updated running summary -- 2 to 4 sentences, warm and plain (not \
+            Write an updated running summary -- 280 to 600 characters, 2 to 4 sentences, \
+            themes and patterns rather than a retelling of events, never quoting them, \
+            warm and plain (not \
             clinical), referring to them by \(subject), never "the writer". Nothing here \
             tracks this person's gender, so never guess a gendered pronoun ("he", "she", \
             "him", "her") -- use their name or "they"/"them" instead. Capture who this \
@@ -69,7 +71,8 @@ enum DwellerProfileManager {
 
             \(newEntryBody)
 
-            Write a short running summary -- 2 to 4 sentences, warm and plain (not \
+            Write a short running summary -- 280 to 600 characters, 2 to 4 sentences, \
+            themes rather than a retelling of events, never quoting them, warm and plain (not \
             clinical), referring to them by \(subject), never "the writer". Nothing here \
             tracks this person's gender, so never guess a gendered pronoun ("he", "she", \
             "him", "her") -- use their name or "they"/"them" instead. Capture who this \
@@ -84,7 +87,7 @@ enum DwellerProfileManager {
         ]
 
         guard let response = try? await apiClient.callLLM(messages: messages, feature: "dweller_profile_summary", maxTokens: nil, context: context) else { return }
-        let summary = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        let summary = capNarrative(response.content.trimmingCharacters(in: .whitespacesAndNewlines))
         guard !summary.isEmpty else { return }
 
         let profile = DwellerProfile(userId: userId, runningSummary: summary, updatedAt: Date())
@@ -109,7 +112,7 @@ enum DwellerProfileManager {
         let newFeedback = feedback.filter { $0.createdAt > lastUpdate }
         let qualifyingCount = approvedEntries.count + feedback.count
 
-        guard qualifyingCount >= 3, !(newEntries.isEmpty && newFeedback.isEmpty) else { return nil }
+        guard qualifyingCount >= narrativeUnlockThreshold, !(newEntries.isEmpty && newFeedback.isEmpty) else { return nil }
 
         guard let summary = await generateNarrative(userId: userId, approvedEntries: approvedEntries, feedback: feedback, apiClient: apiClient) else {
             return nil
@@ -186,8 +189,10 @@ enum DwellerProfileManager {
         shown at that point -- weigh what they said exactly as seriously as a journal \
         entry, and let a correction override whatever it contradicts from before it.
 
-        Write a short (2-4 sentence) running narrative about this person's spiritual \
-        journey so far -- warm, specific, grounded only in what's actually above, never \
+        Write a short running narrative about this person's spiritual journey so far. \
+        Length: between 280 and 600 characters, 2 to 4 sentences. Name the themes, \
+        patterns and growth you notice across their entries -- never retell events one by \
+        one, never quote or closely paraphrase what they said, no lists. Warm, specific, grounded only in what's actually above, never \
         inventing events or feelings not present in the material. If a correction said \
         something was off without saying what should replace it, don't guess at \
         specifics it didn't give you -- just don't repeat the part it rejected. Refer to \
@@ -203,7 +208,28 @@ enum DwellerProfileManager {
         guard let response = try? await apiClient.callLLM(messages: messages, feature: "dweller_profile_narrative", maxTokens: 400) else {
             return nil
         }
-        let summary = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        let summary = capNarrative(response.content.trimmingCharacters(in: .whitespacesAndNewlines))
         return summary.isEmpty ? nil : summary
+    }
+
+    /// Nov 24 2026 (Kell): the first narrative waits for 7 journals that went through
+    /// Formation Intelligence (formation_eligible), so it reflects real patterns rather
+    /// than one heavy week. See docs/DWELLER_PROFILE_NARRATIVE_FRAMEWORK.md.
+    static let narrativeUnlockThreshold = 7
+    /// Narrative length range in characters (framework doc). The prompt asks for it;
+    /// `capNarrative` enforces the upper bound so it can never become a transcript.
+    static let narrativeMinChars = 280
+    static let narrativeMaxChars = 600
+
+    /// Trims anything over the max at the last sentence end that fits (never mid-sentence;
+    /// if no sentence end fits, cuts at the last word and adds an ellipsis).
+    static func capNarrative(_ text: String) -> String {
+        guard text.count > narrativeMaxChars else { return text }
+        let head = String(text.prefix(narrativeMaxChars))
+        if let end = head.lastIndex(where: { ".!?".contains($0) }), head.distance(from: head.startIndex, to: end) >= narrativeMinChars / 2 {
+            return String(head[...end])
+        }
+        let words = head.split(separator: " ").dropLast().joined(separator: " ")
+        return words + "\u{2026}"
     }
 }
