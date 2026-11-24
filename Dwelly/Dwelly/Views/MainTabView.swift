@@ -179,6 +179,8 @@ struct MainTabView: View {
     /// Apple ID has never used its intro offer, show the real trial-start gate;
     /// otherwise (trial already consumed on this Apple ID, any device) go straight
     /// to a non-trial subscribe screen.
+    private static let betaFreeAccess = true
+
     private func attemptCapture(prompt: (title: String, category: String)? = nil) {
         #if DEBUG
         // Dev-only paywall bypass (Nov 11 2026) so Kell can run repeated real captures
@@ -189,7 +191,11 @@ struct MainTabView: View {
         return
         #endif
 
-        guard !paymentManager.hasActiveEntitlement else {
+        // Beta is free (Kell, Nov 23 2026; payments are parked and no real Apple IAP products
+        // exist yet). Without this, a TestFlight/Release build sends every tester without a
+        // subscription to the paywall on their second capture, and subscribing cannot work.
+        // Set `betaFreeAccess` to false when payments launch.
+        guard !Self.betaFreeAccess, !paymentManager.hasActiveEntitlement else {
             captureRequest = CaptureRequest(prompt: prompt)
             return
         }
