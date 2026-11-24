@@ -813,8 +813,19 @@ struct CaptureConversationView: View {
                     // same send was part of why that moment read as disjointed/a
                     // screen swap rather than one continuous motion.
                     .onChange(of: turns.count) { _ in
+                        // T-336 (Nov 24 2026): the newest turn's view id is "journalPreview"
+                        // (see `.id(...)` above), NOT its UUID, so scrolling to
+                        // `turns.last?.id` matched nothing and never moved. The only scroll
+                        // was the earlier one to the spinner, and the taller reply that
+                        // replaced it spilled under the message box. Scroll to the real id,
+                        // then once more after the keyboard/layout settles.
                         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
-                            proxy.scrollTo(turns.last?.id, anchor: .bottom)
+                            proxy.scrollTo("journalPreview", anchor: .bottom)
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+                                proxy.scrollTo("journalPreview", anchor: .bottom)
+                            }
                         }
                     }
                     .onChange(of: isWaitingForDwelly) { waiting in
@@ -963,6 +974,7 @@ struct CaptureConversationView: View {
                                         .font(.system(size: 16, weight: .semibold))
                                         .foregroundColor(Theme.Capture.textPrimary)
                                         .frame(width: 44, height: 44)
+                                        .glassNeutralCircleSurface()
                                 }
                                 .accessibilityLabel("Close")
                             } else {
@@ -978,6 +990,7 @@ struct CaptureConversationView: View {
                                         .font(.system(size: 18, weight: .medium))
                                         .foregroundColor(Theme.Capture.textPrimary)
                                         .frame(width: 44, height: 44)
+                                        .glassNeutralCircleSurface()
                                 }
                                 // T-223 sweep: every other back chevron in the app (onboarding's
                                 // 6 step screens) already carries this label -- this one and
@@ -990,6 +1003,7 @@ struct CaptureConversationView: View {
                                     .font(.system(size: 18, weight: .medium))
                                     .foregroundColor(Theme.Capture.textPrimary)
                                     .frame(width: 44, height: 44)
+                                .glassNeutralCircleSurface()
                             }
                             .accessibilityLabel("Back")
                         }
@@ -1070,35 +1084,23 @@ struct CaptureConversationView: View {
                     Spacer(minLength: 0)
                 }
                 .frame(height: headerHeight)
-                // Solid behind the whole button row, fading out only BELOW it (Nov 19 2026):
-                // scrolling text used to show through "Finish for now" and the back chevron.
-                // A first fix mis-sized this -- a background child is CENTERED in its parent,
-                // so the solid part ended above the buttons. Positions are now explicit from
-                // the header's top edge: an oversized solid block offset up to cover the
-                // status-bar area, ending at 58pt (the button row's bottom: 14 top padding +
-                // 44 row), then a 20pt fade below it, matching the extra scroll-content top
-                // padding so nothing at rest is dimmed.
+                // Nov 24 2026 (Kell, ChatGPT-style): the solid block + fade under the button row
+                // is gone, so the thread scrolls all the way to the top edge. The back/Done
+                // buttons carry their own glass (or solid, pre-iOS 26) backgrounds to stay
+                // readable over passing text; only the status-bar strip keeps a soft fade so
+                // the clock/battery stay legible.
                 .background(alignment: .top) {
-                    ZStack(alignment: .top) {
-                        Theme.background
-                            .frame(height: 258)
-                            .offset(y: -200)
-                        // T-323 (Nov 23 2026): the fade was only 20pt, so scrolled text dissolved
-                        // abruptly right under the buttons and looked hard-cut. Now 40pt with an
-                        // eased (not linear) curve; the scroll content's top padding below matches.
-                        LinearGradient(
-                            stops: [
-                                .init(color: Theme.background, location: 0),
-                                .init(color: Theme.background.opacity(0.85), location: 0.25),
-                                .init(color: Theme.background.opacity(0.45), location: 0.55),
-                                .init(color: Theme.background.opacity(0.12), location: 0.85),
-                                .init(color: Theme.background.opacity(0), location: 1)
-                            ],
-                            startPoint: .top, endPoint: .bottom
-                        )
-                        .frame(height: 40)
-                        .offset(y: 58)
-                    }
+                    LinearGradient(
+                        stops: [
+                            .init(color: Theme.background, location: 0),
+                            .init(color: Theme.background.opacity(0.7), location: 0.6),
+                            .init(color: Theme.background.opacity(0), location: 1)
+                        ],
+                        startPoint: .top, endPoint: .bottom
+                    )
+                    .frame(height: 70)
+                    .offset(y: -60)
+                    .allowsHitTesting(false)
                 }
                 .allowsHitTesting(true)
 

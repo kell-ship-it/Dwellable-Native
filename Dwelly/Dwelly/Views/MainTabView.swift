@@ -50,6 +50,8 @@ struct MainTabView: View {
         let prompt: (title: String, category: String)?
     }
     @State private var captureRequest: CaptureRequest?
+    /// Bumped whenever a conversation closes so Today/Growth re-load what it may have saved.
+    @State private var dataRefreshKey = 0
     // T-128: Search is reached the same way Capture is -- one shared full-screen
     // presentation off the tab bar's own header button, not a per-tab destination.
     @State private var showSearch = false
@@ -93,23 +95,26 @@ struct MainTabView: View {
             tabContent(.today) {
                 TodayView(userId: userId, onCapture: { attemptCapture() }, onOpenPrompt: { prompt in
                     attemptCapture(prompt: prompt)
-                })
+                }, refreshKey: dataRefreshKey)
             }
             tabContent(.entries) {
                 // T-078: real Entries tab (Untold-style calendar + list), replacing
                 // the Phase-1 MomentsListView. T-128 (Kell's call, Nov 16 2026):
                 // Search only lives here, not on Today/Growth/Profile -- it searches
                 // journal entries specifically, not anything those other tabs show.
-                EntriesView(userId: userId, syncManager: syncManager, onSearch: { showSearch = true }, onCapture: { attemptCapture() })
+                EntriesView(userId: userId, syncManager: syncManager, onSearch: { showSearch = true }, onCapture: { attemptCapture() }, isActive: selectedTab == .entries && captureRequest == nil && !showSearch)
             }
             tabContent(.growth) {
-                GrowthPlaceholderView(userId: userId, onCapture: { attemptCapture() })
+                GrowthPlaceholderView(userId: userId, onCapture: { attemptCapture() }, refreshKey: dataRefreshKey)
             }
             tabContent(.profile) {
                 AccountProfileView(onCapture: { attemptCapture() })
             }
 
             FloatingTabBar(selected: $selectedTab)
+        }
+        .onChange(of: captureRequest == nil) { closed in
+            if closed { dataRefreshKey += 1 }
         }
         .fullScreenCover(isPresented: $showSearch) {
             NavigationStack {

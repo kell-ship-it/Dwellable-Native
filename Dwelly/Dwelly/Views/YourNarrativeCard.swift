@@ -30,6 +30,9 @@ import SwiftUI
 /// same honest line T-163's own history already drew around "nowhere real to go yet."
 struct YourNarrativeCard: View {
     let userId: String
+    /// Bumped by MainTabView each time a conversation closes; tabs stay mounted (custom tab
+    /// bar), so this is what re-loads data that a new save changed (Nov 24 2026).
+    var refreshKey: Int = 0
     @Environment(\.apiClient) private var apiClient
 
     @State private var profile: DwellerProfile?
@@ -64,7 +67,7 @@ struct YourNarrativeCard: View {
                 preThresholdCard
             }
         }
-        .task { await load() }
+        .task(id: refreshKey) { await load() }
     }
 
     private func tierOneCard(summary: String) -> some View {
@@ -228,7 +231,8 @@ struct YourNarrativeCard: View {
     }
 
     private func load() async {
-        isLoading = true
+        // Only the first load shows the spinner; a refresh updates quietly in place.
+        if profile == nil && qualifyingReflectionCount == 0 { isLoading = true }
         profile = try? await apiClient.fetchDwellerProfile(userId: userId)
         let allApproved = (try? await apiClient.fetchApprovedJournalEntries(userId: userId)) ?? []
         // T-161/T-127 (rebuilt Nov 17 2026): the validity floor this ticket always

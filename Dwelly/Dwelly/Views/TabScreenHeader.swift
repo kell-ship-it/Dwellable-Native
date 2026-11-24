@@ -68,14 +68,28 @@ struct GlassCircleSurface: ViewModifier {
 struct GlassCapsuleSurface: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 26.0, *) {
-            content.padding(.horizontal, 14).glassEffect(.regular.interactive(), in: Capsule())
+            content.padding(.horizontal, 14).glassEffect(.regular.tint(Theme.background.opacity(0.55)).interactive(), in: Capsule())
         } else {
-            content
+            content.padding(.horizontal, 14).padding(.vertical, 8)
+                .background(Theme.Payment.backgroundSurface).clipShape(Capsule())
+        }
+    }
+}
+
+/// Neutral (untinted) glass circle for icon buttons that float over the chat, such as
+/// the back chevron. Older iOS: a solid dark circle so text never shows through.
+struct GlassNeutralCircleSurface: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular.tint(Theme.background.opacity(0.55)).interactive(), in: Circle())
+        } else {
+            content.background(Theme.Payment.backgroundSurface).clipShape(Circle())
         }
     }
 }
 
 extension View {
+    func glassNeutralCircleSurface() -> some View { modifier(GlassNeutralCircleSurface()) }
     func glassCircleSurface() -> some View { modifier(GlassCircleSurface()) }
     func glassCapsuleSurface() -> some View { modifier(GlassCapsuleSurface()) }
 }

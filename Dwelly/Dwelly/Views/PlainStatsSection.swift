@@ -11,6 +11,9 @@ import SwiftUI
 /// capture flow anywhere in the app yet -- there's nothing true to count.
 struct PlainStatsSection: View {
     let userId: String
+    /// Bumped by MainTabView each time a conversation closes; tabs stay mounted (custom tab
+    /// bar), so this is what re-loads data that a new save changed (Nov 24 2026).
+    var refreshKey: Int = 0
     @Environment(\.apiClient) private var apiClient
 
     @State private var momentCount: Int?
@@ -39,7 +42,7 @@ struct PlainStatsSection: View {
             .background(Theme.Payment.backgroundSurface)
             .clipShape(RoundedRectangle(cornerRadius: 15))
         }
-        .task { await load() }
+        .task(id: refreshKey) { await load() }
     }
 
     private func load() async {

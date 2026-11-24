@@ -20,6 +20,11 @@ struct EntriesView: View {
     @ObservedObject var syncManager: SyncManager
     var onSearch: () -> Void
     var onCapture: () -> Void
+    /// True while this tab is the visible one with no capture sheet over it. The custom tab
+    /// bar keeps every tab mounted (opacity-toggled), so `.onAppear` fires only once at
+    /// launch; without this, a just-saved entry didn't show until the app was reopened
+    /// (found Nov 24 2026).
+    var isActive: Bool = true
 
     private struct Entry: Identifiable {
         let moment: Moment
@@ -119,6 +124,9 @@ struct EntriesView: View {
         // all. Collapsed to one plain trigger -- no `id` to race, nothing to
         // cancel.
         .onAppear { Task { await loadEntries() } }
+        .onChange(of: isActive) { active in
+            if active { Task { await loadEntries() } }
+        }
     }
 
     // MARK: - Calendar

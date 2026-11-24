@@ -7,6 +7,9 @@ import SwiftUI
 struct GrowthPlaceholderView: View {
     let userId: String
     var onCapture: () -> Void
+    /// Bumped by MainTabView each time a conversation closes; tabs stay mounted (custom tab
+    /// bar), so this is what re-loads data that a new save changed (Nov 24 2026).
+    var refreshKey: Int = 0
 
     var body: some View {
         VStack(spacing: 0) {
@@ -16,8 +19,8 @@ struct GrowthPlaceholderView: View {
 
             ScrollView {
                 VStack(spacing: Theme.Spacing.lg) {
-                    YourNarrativeCard(userId: userId)
-                    PlainStatsSection(userId: userId)
+                    YourNarrativeCard(userId: userId, refreshKey: refreshKey)
+                    PlainStatsSection(userId: userId, refreshKey: refreshKey)
 
                     VStack(spacing: 8) {
                         Image(systemName: "leaf")

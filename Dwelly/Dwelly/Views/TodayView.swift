@@ -42,6 +42,9 @@ struct TodayView: View {
     let userId: String
     var onCapture: () -> Void
     var onOpenPrompt: (_ prompt: (title: String, category: String)) -> Void
+    /// Bumped by MainTabView each time a conversation closes; tabs stay mounted (custom tab
+    /// bar), so this is what re-loads data that a new save changed (Nov 24 2026).
+    var refreshKey: Int = 0
 
     // T-188: nil until loadJournalReady() finds an unviewed approved entry. Fetched
     // fresh every appearance (not cached) since the whole point is reacting to a
@@ -126,7 +129,7 @@ struct TodayView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Payment.background.ignoresSafeArea())
-        .task { await loadJournalReady() }
+        .task(id: refreshKey) { await loadJournalReady() }
         .onAppear {
             guard !hasLoadedDailyVerse else { return }
             hasLoadedDailyVerse = true

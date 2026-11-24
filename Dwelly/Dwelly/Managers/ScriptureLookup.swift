@@ -88,6 +88,41 @@ enum ScriptureLookup {
         guard let (data, response) = try? await URLSession.shared.data(for: request),
               (response as? HTTPURLResponse)?.statusCode == 200,
               let text = parseText(from: data) else { return reply }
-        return reply + "\n\n\(ref.display) (\(translationLabel)): \u{201C}\(text)\u{201D}"
+        return combine(reply: reply, verseText: text)
+    }
+
+    /// Nov 24 2026 (Kell saw Philippians 4:19 shown twice): the reply already names the
+    /// reference, so the appended verse no longer repeats it. And if the model quoted the
+    /// same verse from memory anyway, that unverified quote is removed so only the real
+    /// text shows. A quoted span is removed only when most of its words are in the verse,
+    /// so quoting the person's own words is left alone.
+    static func combine(reply: String, verseText: String) -> String {
+        let verseWords = Set(words(verseText))
+        var cleaned = reply
+        let pattern = "(\\s*:)?\\s*[\u{201C}\"]([^\u{201C}\u{201D}\"]{15,})[\u{201D}\"]"
+        if let regex = try? NSRegularExpression(pattern: pattern) {
+            let ns = cleaned as NSString
+            let matches = regex.matches(in: cleaned, range: NSRange(location: 0, length: ns.length))
+            for match in matches.reversed() {
+                let inner = ns.substring(with: match.range(at: 2))
+                let afterColon = match.range(at: 1).location != NSNotFound
+                let innerWords = words(inner)
+                guard innerWords.count >= 3 else { continue }
+                let overlap = Double(innerWords.filter { verseWords.contains($0) }.count) / Double(innerWords.count)
+                if overlap >= 0.5 {
+                    cleaned = (cleaned as NSString).replacingCharacters(in: match.range, with: afterColon ? "." : "")
+                }
+            }
+        }
+        cleaned = cleaned
+            .replacingOccurrences(of: ":\\s*(?=[.,]|$)", with: "", options: .regularExpression)
+            .replacingOccurrences(of: "[ \\t]{2,}", with: " ", options: .regularExpression)
+            .replacingOccurrences(of: " ([.,])", with: "$1", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleaned + "\n\n\u{201C}\(verseText)\u{201D} (\(translationLabel))"
+    }
+
+    private static func words(_ s: String) -> [String] {
+        s.lowercased().components(separatedBy: CharacterSet.letters.inverted).filter { $0.count > 2 }
     }
 }
