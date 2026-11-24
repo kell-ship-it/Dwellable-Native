@@ -7,9 +7,8 @@ import Foundation
 /// -- see TICKETS.md). `runningSummary` is built from already-synthesized `JournalEntry`
 /// bodies, not raw transcripts -- the summarization material already exists for free.
 ///
-/// Unencrypted by design, same reasoning as `JournalEntry`'s own fields: this is a
-/// summary of content (journal bodies) that's already stored unencrypted, so there's
-/// nothing new to protect here that direct `/rest/v1` reads/writes would expose.
+/// Encrypted at rest: `runningSummary` is stored as AES-256-GCM ciphertext and read/written
+/// only through the `dweller-profile` Edge Function (decrypted server-side for display).
 struct DwellerProfile: Codable {
     let userId: String
     var runningSummary: String?

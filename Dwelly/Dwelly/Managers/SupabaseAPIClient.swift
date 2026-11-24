@@ -358,10 +358,9 @@ class SupabaseAPIClient: APIClient {
     // MARK: - Journal Entries API (T-152)
 
     func fetchJournalEntry(momentId: String) async throws -> JournalEntry? {
-        // Direct /rest/v1 read, not an Edge Function -- unlike moments, nothing here
-        // is encrypted (title/moods/scripture are spec'd unencrypted, see
-        // JournalEntry.swift's own comment), so there's nothing to decrypt server-side.
-        let endpoint = "/rest/v1/journal_entries?moment_id=eq.\(momentId)&select=*"
+        // Routed through the fetch-journal-entries Edge Function: `body` is encrypted
+        // at rest and decrypted server-side here (title/moods/scripture stay plain).
+        let endpoint = "/functions/v1/fetch-journal-entries?moment_id=\(momentId)"
         let entries = try await makeRequest(
             method: "GET",
             endpoint: endpoint,
@@ -394,23 +393,18 @@ class SupabaseAPIClient: APIClient {
             // FormationEligibilityPolicy.isActive is off.
             profile_excluded: entry.profileExcluded ? true : nil
         )
-        // Upsert on the unique moment_id column -- one entry per moment, so saving
-        // twice (e.g. re-saving moods after a title already exists) updates the
-        // same row instead of erroring on the unique constraint.
-        let endpoint = "/rest/v1/journal_entries?on_conflict=moment_id"
-        let saved = try await makeRequest(
+        // save-journal-entry encrypts `body` server-side and upserts on the unique
+        // moment_id column -- one entry per moment, so saving twice updates the same row.
+        return try await makeRequest(
             method: "POST",
-            endpoint: endpoint,
+            endpoint: "/functions/v1/save-journal-entry",
             body: payload,
-            responseType: [JournalEntry].self,
-            preferHeader: "resolution=merge-duplicates,return=representation"
+            responseType: JournalEntry.self
         )
-        guard let entry = saved.first else { throw APIError.notFound }
-        return entry
     }
 
     func fetchPendingJournalEntries(userId: String) async throws -> [JournalEntry] {
-        let endpoint = "/rest/v1/journal_entries?user_id=eq.\(userId)&status=eq.pending&select=*"
+        let endpoint = "/functions/v1/fetch-journal-entries?status=pending"
         return try await makeRequest(
             method: "GET",
             endpoint: endpoint,
@@ -427,7 +421,7 @@ class SupabaseAPIClient: APIClient {
         // PostgREST embedded-resource filter: join moments, require its deleted_at IS
         // NULL. The extra embedded "moments" object each row carries back is silently
         // dropped by JournalEntry's own explicit CodingKeys.
-        let endpoint = "/rest/v1/journal_entries?user_id=eq.\(userId)&status=eq.approved&moments.deleted_at=is.null&select=*,moments!inner(deleted_at)"
+        let endpoint = "/functions/v1/fetch-journal-entries?status=approved"
         return try await makeRequest(
             method: "GET",
             endpoint: endpoint,
@@ -449,7 +443,8 @@ class SupabaseAPIClient: APIClient {
     // MARK: - DwellerProfile API (T-274)
 
     func fetchDwellerProfile(userId: String) async throws -> DwellerProfile? {
-        let endpoint = "/rest/v1/dweller_profiles?user_id=eq.\(userId)&select=*"
+        // dweller-profile Edge Function: summary is encrypted at rest; user comes from the JWT.
+        let endpoint = "/functions/v1/dweller-profile"
         let profiles = try await makeRequest(
             method: "GET",
             endpoint: endpoint,
@@ -464,30 +459,21 @@ class SupabaseAPIClient: APIClient {
             running_summary: profile.runningSummary,
             updated_at: profile.updatedAt.ISO8601Format()
         )
-        // Upsert on the unique user_id column -- one profile per user.
-        let endpoint = "/rest/v1/dweller_profiles?on_conflict=user_id"
-        let saved = try await makeRequest(
+        // Upsert on the unique user_id (done server-side) -- one profile per user.
+        return try await makeRequest(
             method: "POST",
-            endpoint: endpoint,
+            endpoint: "/functions/v1/dweller-profile",
             body: payload,
-            responseType: [DwellerProfile].self,
-            preferHeader: "resolution=merge-duplicates,return=representation"
+            responseType: DwellerProfile.self
         )
-        guard let profile = saved.first else { throw APIError.notFound }
-        return profile
     }
 
     func confirmDwellerProfile(userId: String) async throws -> DwellerProfile {
-        let endpoint = "/rest/v1/dweller_profiles?user_id=eq.\(userId)"
-        let body = ["confirmed_at": ISO8601DateFormatter().string(from: Date())]
-        let saved = try await makeRequest(
+        return try await makeRequest(
             method: "PATCH",
-            endpoint: endpoint,
-            body: body,
-            responseType: [DwellerProfile].self
+            endpoint: "/functions/v1/dweller-profile",
+            responseType: DwellerProfile.self
         )
-        guard let profile = saved.first else { throw APIError.notFound }
-        return profile
     }
 
     func submitNarrativeFeedback(userId: String, feedbackText: String, narrativeAtTime: String?) async throws {
