@@ -2083,7 +2083,7 @@ struct CaptureConversationView: View {
                                         .font(.system(size: 16))
                                         .foregroundColor(Theme.gold)
                                         .frame(width: 44, height: 44)
-                                        .background(Theme.Capture.cardBorder)
+                                        .background(Theme.Capture.cardBorder.opacity(0.82))
                                         .clipShape(Circle())
                                 }
                                 .disabled(isWaitingForDwelly)
@@ -2210,7 +2210,10 @@ struct CaptureConversationView: View {
                         .padding(.trailing, composeChevronTrailingInset)
                     }
                 }
-                .background(Theme.Capture.cardBackground)
+                // Trial (Nov 24 2026, Kell): slightly see-through while collapsed, so chat
+                // text passing behind the box blends in instead of clashing. Expanded
+                // (full-screen editing) stays solid.
+                .background(Theme.Capture.cardBackground.opacity(isComposeExpanded ? 1 : 0.82))
                 // A capsule is just a rounded rect whose radius is half its own
                 // height -- using that instead of a real `Capsule()` shape means no
                 // `AnyShape` (iOS 17+) is needed to pick between the two at runtime,
