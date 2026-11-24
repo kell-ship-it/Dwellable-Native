@@ -1244,15 +1244,22 @@ struct CaptureConversationView: View {
         // `keyboardWillChangeFrame` listener only mattered for riding frame-by-
         // frame with an in-progress drag-to-dismiss gesture, which isn't wanted
         // here.
-        .alert("Save this reflection?", isPresented: $showLeaveConfirmation) {
+        .alert(isCrisisSupportBlocked ? "Leave this conversation?" : "Save this reflection?",
+               isPresented: $showLeaveConfirmation) {
             Button("Keep Talking", role: .cancel) {}
-            Button("Save") { requestManualFinish() }
-            Button("Discard", role: .destructive) {
+            // A flagged conversation never becomes a journal entry, so offering
+            // Save would be misleading.
+            if !isCrisisSupportBlocked {
+                Button("Save") { requestManualFinish() }
+            }
+            Button(isCrisisSupportBlocked ? "Leave" : "Discard", role: .destructive) {
                 onMomentSaved?()
                 dismiss()
             }
         } message: {
-            Text("You haven't saved this yet. Save it to your journal, or discard it and start over.")
+            Text(isCrisisSupportBlocked
+                 ? "This conversation won't be saved to your journal."
+                 : "You haven't saved this yet. Save it to your journal, or discard it and start over.")
         }
         // T-304/T-308: always-available help entry point + the one-time pilot
         // safety notice -- both are plain informational sheets, not tied to any

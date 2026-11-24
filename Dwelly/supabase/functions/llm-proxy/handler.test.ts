@@ -384,7 +384,7 @@ Deno.test("safety-call usage is logged as OpenAI when OpenAI is what answered (t
 Deno.test("classifier prompt asks a DIRECT question for self-harm ambiguity and does not latch on an idiom alone", () => {
   assertEquals(INPUT_CLASSIFIER_PROMPT.includes("ask DIRECTLY and gently whether they are having thoughts of hurting themselves or ending their life"), true)
   assertEquals(INPUT_CLASSIFIER_PROMPT.includes('Do NOT use "crisis_self" for a common figure of speech on its own'), true)
-  assertEquals(INPUT_CLASSIFIER_PROMPT.includes('says something explicit (e.g. "I want to kill myself")'), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes('gets ONE direct "clarify" question first'), true)
 })
 
 Deno.test("classifier prompt treats crude but honest wording as normal, not refusal", () => {
@@ -397,7 +397,7 @@ Deno.test("classifier prompt remembers a clear denial in the same conversation a
   assertEquals(INPUT_CLASSIFIER_PROMPT.includes('the SAME figure of speech used again in that same context is figurative'), true)
   assertEquals(INPUT_CLASSIFIER_PROMPT.includes("do not ask again and do not use \"crisis_self\""), true)
   assertEquals(INPUT_CLASSIFIER_PROMPT.includes("Stay alert only to NEW or stronger signals"), true)
-  assertEquals(INPUT_CLASSIFIER_PROMPT.includes('is always "crisis_self", whatever was said before'), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes('without asking again'), true)
 })
 
 Deno.test("classifier prompt judges the latest message on its own and ignores earlier assistant flags", () => {
@@ -644,4 +644,10 @@ Deno.test("output-check failure after a billed main call: spend counted, complet
   assertEquals(b.safetyTier, "fallback")
   assertEquals(b.pipelineTokens, 250) // classifier 50 + main 200
   assertEquals(b.pipelineTokensComplete, false)
+})
+
+Deno.test("classifier prompt: indirect/passive wording must clarify first, not escalate on its own", () => {
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes("is NEVER enough for \"crisis_self\" on its own"), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes("only their own confirmation should bring the resource response"), true)
+  assertEquals(INPUT_CLASSIFIER_PROMPT.includes('gets ONE direct "clarify" question first'), true)
 })
