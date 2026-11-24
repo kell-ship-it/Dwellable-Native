@@ -69,7 +69,6 @@ export async function buildJournalRow(input: JournalWriteInput, userId: string):
     created_at: input.created_at,
     updated_at: input.updated_at ?? new Date().toISOString(),
     formation_eligible: input.formation_eligible ?? false,
-    extracted_facts: input.extracted_facts ?? null,
   }
   if (input.photo_path !== undefined) row.photo_path = input.photo_path
   // Same rule as the old client path: only ever send true; column may not exist on older schemas.
@@ -80,14 +79,22 @@ export async function buildJournalRow(input: JournalWriteInput, userId: string):
     row.body_encrypted = null
     row.body = null // no body: make sure no stale plaintext survives
   }
+  // extracted_facts gets the same treatment as body.
+  if (input.extracted_facts) {
+    row.extracted_facts_encrypted = await encryptToJson(input.extracted_facts)
+  } else {
+    row.extracted_facts_encrypted = null
+    row.extracted_facts = null
+  }
   return row
 }
 
 /** Converts a DB row into the exact shape the app already decodes (plaintext body, no ciphertext, no join extras). */
 export async function toClientJournalRow(row: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const { body_encrypted, body, moments: _moments, ...rest } = row
+  const { body_encrypted, body, extracted_facts_encrypted, extracted_facts, moments: _moments, ...rest } = row
   const plain = await readSecret(body_encrypted, body as string | null, `journal_entry ${row.id}`)
-  return { ...rest, body: plain }
+  const facts = await readSecret(extracted_facts_encrypted, extracted_facts as string | null, `journal_entry facts ${row.id}`)
+  return { ...rest, body: plain, extracted_facts: facts }
 }
 
 export async function toClientProfileRow(row: Record<string, unknown>): Promise<Record<string, unknown>> {

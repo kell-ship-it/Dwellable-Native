@@ -47,3 +47,17 @@ Deno.test("ciphertext differs per call (unique IV)", async () => {
   const b = await encryptToJson("same")
   assertNotEquals(a.encryptionIv, b.encryptionIv)
 })
+
+Deno.test("extracted_facts encrypted, never plaintext, round trips; empty clears both", async () => {
+  const row = await buildJournalRow({ ...base, body: "b", extracted_facts: "likes quiet mornings" }, "u")
+  assert(!("extracted_facts" in row))
+  assert(!JSON.stringify(row).includes("quiet mornings"))
+  const client = await toClientJournalRow(row)
+  assertEquals(client.extracted_facts, "likes quiet mornings")
+  assert(!("extracted_facts_encrypted" in client))
+  const empty = await buildJournalRow({ ...base, extracted_facts: null }, "u")
+  assertEquals(empty.extracted_facts, null)
+  assertEquals(empty.extracted_facts_encrypted, null)
+  const legacy = await toClientJournalRow({ id: "x", body: null, extracted_facts: "old facts" })
+  assertEquals(legacy.extracted_facts, "old facts")
+})
