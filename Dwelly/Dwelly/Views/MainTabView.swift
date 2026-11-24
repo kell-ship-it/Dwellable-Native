@@ -223,12 +223,13 @@ struct MainTabView: View {
 /// specific symptom.
 private struct FloatingTabBar: View {
     @Binding var selected: MainTabView.Tab
+    @Namespace private var pillNamespace
 
     var body: some View {
         HStack(spacing: 18) {
             ForEach(MainTabView.Tab.allCases, id: \.self) { tab in
                 let isSelected = tab == selected
-                Button(action: { selected = tab }) {
+                Button(action: { withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { selected = tab } }) {
                     VStack(spacing: 5) {
                         Image(systemName: tab.icon)
                             .font(.system(size: 21))
@@ -243,16 +244,42 @@ private struct FloatingTabBar: View {
                     }
                     .foregroundColor(isSelected ? Theme.gold : Theme.Payment.textSupporting)
                     .frame(maxWidth: .infinity)
+                    .background {
+                        // iOS 26+: the sliding highlight pill behind the selected tab, like
+                        // Apple's own tab bar. Older iOS keeps color-only selection.
+                        if isSelected, #available(iOS 26.0, *) {
+                            Capsule()
+                                .fill(Color.white.opacity(0.14))
+                                .overlay(Capsule().stroke(Color.white.opacity(0.18), lineWidth: 0.5))
+                                .padding(.vertical, -8)
+                                .padding(.horizontal, -6)
+                                .matchedGeometryEffect(id: "tabPill", in: pillNamespace)
+                        }
+                    }
                 }
                 .accessibilityAddTraits(isSelected ? [.isSelected] : [])
             }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
-        .background(Theme.Payment.backgroundPrimary)
-        .clipShape(RoundedRectangle(cornerRadius: 32))
-        .shadow(color: .black.opacity(0.35), radius: 15, x: 0, y: 10)
+        .modifier(TabBarSurface())
         .padding(.horizontal, 32)
         .padding(.bottom, 8)
+    }
+}
+
+/// Bar surface. iOS 26+ gets Apple's Liquid Glass (Nov 24 2026); older iOS keeps the
+/// solid Figma fill, so the glitch-prone translucent-material path is never used there.
+private struct TabBarSurface: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 32))
+        } else {
+            content
+                .background(Theme.Payment.backgroundPrimary)
+                .clipShape(RoundedRectangle(cornerRadius: 32))
+                .shadow(color: .black.opacity(0.35), radius: 15, x: 0, y: 10)
+        }
     }
 }

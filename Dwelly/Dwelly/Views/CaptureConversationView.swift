@@ -1042,6 +1042,7 @@ struct CaptureConversationView: View {
                                         .font(.system(size: 14, weight: .semibold))
                                         .foregroundColor(Theme.gold)
                                         .frame(height: 24)
+                                        .glassCapsuleSurface()
                                 }
                             }
                         } else {
@@ -1853,8 +1854,7 @@ struct CaptureConversationView: View {
                                         .frame(width: 10, height: 10)
                                         .cornerRadius(2)
                                         .frame(width: 44, height: 44)
-                                        .background(Theme.gold)
-                                        .clipShape(Circle())
+                                        .glassCircleSurface()
                                 }
                             }
                             .padding(.leading, 20)
@@ -2003,8 +2003,7 @@ struct CaptureConversationView: View {
                                         .font(.system(size: 16, weight: .semibold))
                                         .foregroundColor(Theme.goldDark)
                                         .frame(width: 44, height: 44)
-                                        .background(Theme.gold)
-                                        .clipShape(Circle())
+                                        .glassCircleSurface()
                                 }
                                 .disabled(isWaitingForDwelly || isOverCharacterLimit || !hasDraft)
                                 .opacity(isOverCharacterLimit || !hasDraft ? 0.4 : 1.0)
@@ -2050,8 +2049,7 @@ struct CaptureConversationView: View {
                                         .font(.system(size: 16, weight: .semibold))
                                         .foregroundColor(Theme.goldDark)
                                         .frame(width: 44, height: 44)
-                                        .background(Theme.gold)
-                                        .clipShape(Circle())
+                                        .glassCircleSurface()
                                 }
                                 // Nov 18 2026: this row is now shown in the empty state too
                                 // (unifiedComposeSurface mounts unconditionally -- see its

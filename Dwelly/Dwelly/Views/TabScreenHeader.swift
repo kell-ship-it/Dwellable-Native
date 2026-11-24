@@ -38,8 +38,7 @@ struct TabScreenHeader: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.black)
                     .frame(width: 44, height: 44)
-                    .background(Theme.gold)
-                    .clipShape(Circle())
+                    .glassCircleSurface()
             }
         }
         .padding(.horizontal, 20)
@@ -51,4 +50,32 @@ struct TabScreenHeader: View {
 #Preview {
     TabScreenHeader(title: "Today", onSearch: {}, onCapture: {})
         .background(Theme.Payment.background)
+}
+
+/// Floating-control surface (Nov 24 2026, T-331 preview). iOS 26+: gold-tinted Liquid Glass.
+/// Older iOS: the original solid gold circle, unchanged.
+struct GlassCircleSurface: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular.tint(Theme.gold.opacity(0.85)).interactive(), in: Circle())
+        } else {
+            content.background(Theme.gold).clipShape(Circle())
+        }
+    }
+}
+
+/// Capsule glass for text controls such as Done. Older iOS: no background (as before).
+struct GlassCapsuleSurface: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.padding(.horizontal, 14).glassEffect(.regular.interactive(), in: Capsule())
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    func glassCircleSurface() -> some View { modifier(GlassCircleSurface()) }
+    func glassCapsuleSurface() -> some View { modifier(GlassCapsuleSurface()) }
 }
