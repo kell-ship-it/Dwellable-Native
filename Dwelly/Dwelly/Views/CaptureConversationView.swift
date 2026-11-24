@@ -789,7 +789,7 @@ struct CaptureConversationView: View {
                             }
                         }
                         .padding(.horizontal, 24)
-                        .padding(.top, headerHeight + 16)
+                        .padding(.top, headerHeight + 36)
                         .padding(.bottom, 24)
                         .background(
                             GeometryReader { geo in
@@ -1082,11 +1082,20 @@ struct CaptureConversationView: View {
                         Theme.background
                             .frame(height: 258)
                             .offset(y: -200)
+                        // T-323 (Nov 23 2026): the fade was only 20pt, so scrolled text dissolved
+                        // abruptly right under the buttons and looked hard-cut. Now 40pt with an
+                        // eased (not linear) curve; the scroll content's top padding below matches.
                         LinearGradient(
-                            colors: [Theme.background, Theme.background.opacity(0)],
+                            stops: [
+                                .init(color: Theme.background, location: 0),
+                                .init(color: Theme.background.opacity(0.85), location: 0.25),
+                                .init(color: Theme.background.opacity(0.45), location: 0.55),
+                                .init(color: Theme.background.opacity(0.12), location: 0.85),
+                                .init(color: Theme.background.opacity(0), location: 1)
+                            ],
                             startPoint: .top, endPoint: .bottom
                         )
-                        .frame(height: 20)
+                        .frame(height: 40)
                         .offset(y: 58)
                     }
                 }
