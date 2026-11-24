@@ -231,20 +231,23 @@ struct TodayView: View {
         return formatter
     }()
 
-    /// T-188: the most recent approved entry this user hasn't opened yet, if any.
-    /// Re-fetched on every appearance rather than cached -- the whole point of this
-    /// card is reacting to a journal that finished synthesizing since Today was last
-    /// shown (e.g. the background retry sweep in SyncManager finishing after the
-    /// user already backed out of a capture).
+    /// T-188, revised Nov 24 2026 (Kell): this card is part of onboarding, not a feed of
+    /// new journals. It only ever shows the person's FIRST journal (the onboarding one).
+    /// Unopened: it stays. Once opened, it stays for 24 hours after that first open, then
+    /// disappears for good. Later journals never take its place (they live in Entries).
     private func loadJournalReady() async {
         guard let entries = try? await apiClient.fetchApprovedJournalEntries(userId: userId) else { return }
         loadFollowUpTile(from: entries)
-        guard let latest = entries.filter({ $0.viewedAt == nil }).max(by: { $0.createdAt < $1.createdAt }) else {
+        guard let first = entries.min(by: { $0.createdAt < $1.createdAt }) else {
             journalReady = nil
             return
         }
-        guard let moment = try? await apiClient.fetchMoment(id: latest.momentId) else { return }
-        journalReady = JournalReadyEntry(moment: moment, entry: latest)
+        if let viewedAt = first.viewedAt, Date().timeIntervalSince(viewedAt) > 24 * 60 * 60 {
+            journalReady = nil
+            return
+        }
+        guard let moment = try? await apiClient.fetchMoment(id: first.momentId) else { return }
+        journalReady = JournalReadyEntry(moment: moment, entry: first)
     }
 
     private var heroCard: some View {
