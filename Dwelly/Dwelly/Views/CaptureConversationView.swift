@@ -3074,6 +3074,10 @@ struct CaptureConversationView: View {
             }
         }
         let moment = Moment(userId: userId, body: Moment.encodeTranscript(savedTurns), createdAt: Date())
+        // Nov 24 2026: mark the Today prompt card this conversation came from as completed.
+        if initialMessageIsPrompt, !initialMessage.isEmpty {
+            TodayPromptCompletions.record(userId: userId, promptTitle: initialMessage, momentId: moment.id)
+        }
 
         do {
             _ = try await apiClient.saveMoment(moment)

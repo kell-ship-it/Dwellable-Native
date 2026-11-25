@@ -51,6 +51,12 @@ struct TodayView: View {
     // journal that just finished synthesizing since the last time this tab was shown.
     @State private var journalReady: JournalReadyEntry?
 
+    // Nov 24 2026 (Kell): completed prompt cards. Re-read on every refresh (a
+    // conversation closing bumps refreshKey). Tapping one opens its journal.
+    @State private var completions: [String: TodayPromptCompletions.Completion] = [:]
+    @State private var openedCompletedMoment: Moment?
+    @State private var showCompletedJournal = false
+
     private var firstName: String? {
         let name = ProfileManager.shared.localProfile(userId: userId).name
         return (name?.isEmpty ?? true) ? nil : name
@@ -129,7 +135,16 @@ struct TodayView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Payment.background.ignoresSafeArea())
-        .task(id: refreshKey) { await loadJournalReady() }
+        .task(id: refreshKey) {
+            refreshCompletions()
+            await loadJournalReady()
+        }
+        .background(
+            NavigationLink(isActive: $showCompletedJournal) {
+                if let openedCompletedMoment { JournalDetailView(moment: openedCompletedMoment) }
+            } label: { EmptyView() }
+            .hidden()
+        )
         .onAppear {
             guard !hasLoadedDailyVerse else { return }
             hasLoadedDailyVerse = true
@@ -154,7 +169,35 @@ struct TodayView: View {
         lifeDomainTile = LifeDomainPromptLibrary.promptForToday()
         intercessionFallback = IntercessionPromptLibrary.promptForToday()
         resolveTileOverlaps()
+        refreshCompletions()
     }
+
+    private func refreshCompletions() {
+        var found: [String: TodayPromptCompletions.Completion] = [:]
+        for tile in tiles {
+            if let c = TodayPromptCompletions.completion(userId: userId, promptTitle: tile.title) {
+                found[tile.title] = c
+            }
+        }
+        completions = found
+    }
+
+    private func openCompletedJournal(_ completion: TodayPromptCompletions.Completion) {
+        Task {
+            guard let moment = try? await apiClient.fetchMoment(id: completion.momentId) else { return }
+            await MainActor.run {
+                openedCompletedMoment = moment
+                showCompletedJournal = true
+            }
+        }
+    }
+
+    private static let completedTimeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.timeStyle = .short
+        f.dateStyle = .none
+        return f
+    }()
 
     /// T-182 (overlap-avoidance, locked `docs/PILLAR_TODAY_PROMPT_TAXONOMY.md` --
     /// "the 3-prompt structure can't show prompts that overlap in subject or
@@ -349,31 +392,38 @@ struct TodayView: View {
     }
 
     private func tileRow(_ tile: (icon: String, category: String, title: String, subtitle: String)) -> some View {
-        Button(action: {
-            onOpenPrompt((title: tile.title, category: tile.category))
+        let completion = completions[tile.title]
+        let isDone = completion != nil
+        return Button(action: {
+            if let completion {
+                openCompletedJournal(completion)
+            } else {
+                onOpenPrompt((title: tile.title, category: tile.category))
+            }
         }) {
             HStack(spacing: 16) {
                 Circle()
-                    .fill(Theme.Payment.pillBackground)
+                    .fill(isDone ? Theme.gold : Theme.Payment.pillBackground)
                     .frame(width: 44, height: 44)
                     .overlay(
-                        Image(systemName: tile.icon)
-                            .font(.system(size: 17))
-                            .foregroundColor(Theme.gold)
+                        Image(systemName: isDone ? "checkmark" : tile.icon)
+                            .font(.system(size: 17, weight: isDone ? .bold : .regular))
+                            .foregroundColor(isDone ? Theme.Payment.backgroundPrimary : Theme.gold)
                     )
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(tile.category.uppercased())
+                    Text(isDone ? "\(tile.category.uppercased()) · CAPTURED" : tile.category.uppercased())
                         .font(.system(size: 10, weight: .semibold))
                         .tracking(1.2)
                         .foregroundColor(Theme.gold)
                     Text(tile.title)
                         .font(.system(size: 16, design: .serif))
-                        .foregroundColor(Theme.Payment.textHeading)
-                        // Wrap to two lines instead of cutting a prompt off mid-question.
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text(tile.subtitle)
+                        .foregroundColor(isDone ? Theme.Payment.textSupporting : Theme.Payment.textHeading)
+                        // Nov 24 2026 (Kell): always one line; shrink slightly to fit
+                        // rather than wrapping.
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                    Text(completion.map { "Captured at \(Self.completedTimeFormatter.string(from: $0.completedAt)) · Read your journal" } ?? tile.subtitle)
                         .font(.system(size: 11))
                         .foregroundColor(Theme.Payment.textSupporting)
                         .lineLimit(1)
@@ -383,7 +433,7 @@ struct TodayView: View {
 
                 Image(systemName: "arrow.right")
                     .font(.system(size: 13))
-                    .foregroundColor(Theme.Payment.textSupporting)
+                    .foregroundColor(isDone ? Theme.gold : Theme.Payment.textSupporting)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 18)
@@ -404,4 +454,50 @@ struct TodayView: View {
 
 #Preview {
     TodayView(userId: "preview-user", onCapture: {}, onOpenPrompt: { _ in })
+}
+
+/// Nov 24 2026 (Kell): a Today prompt card shows a "completed" state once the person
+/// has captured from it today. Stored on the device per user, per local day: the prompt
+/// title maps to the moment it produced, so tapping the completed card opens that journal.
+/// Yesterday's record is ignored, so fresh prompts start open each day.
+enum TodayPromptCompletions {
+    struct Completion: Codable {
+        let momentId: String
+        let completedAt: Date
+    }
+
+    private struct DayRecord: Codable {
+        let day: String
+        var items: [String: Completion]
+    }
+
+    private static func key(_ userId: String) -> String { "todayPromptCompletions.\(userId)" }
+
+    private static func today() -> String {
+        let f = DateFormatter()
+        f.calendar = Calendar.current
+        f.timeZone = .current
+        f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: Date())
+    }
+
+    private static func load(_ userId: String) -> DayRecord {
+        let empty = DayRecord(day: today(), items: [:])
+        guard let data = UserDefaults.standard.data(forKey: key(userId)),
+              let record = try? JSONDecoder().decode(DayRecord.self, from: data),
+              record.day == today() else { return empty }
+        return record
+    }
+
+    static func record(userId: String, promptTitle: String, momentId: String) {
+        var record = load(userId)
+        record.items[promptTitle] = Completion(momentId: momentId, completedAt: Date())
+        if let data = try? JSONEncoder().encode(record) {
+            UserDefaults.standard.set(data, forKey: key(userId))
+        }
+    }
+
+    static func completion(userId: String, promptTitle: String) -> Completion? {
+        load(userId).items[promptTitle]
+    }
 }
