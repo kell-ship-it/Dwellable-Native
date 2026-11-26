@@ -120,9 +120,13 @@ enum JournalSynthesisManager {
         """ : ""
         let closingKey = requestClosing ? """
 
-        "closing": ONE concise sentence, in my own terms, grounded in the concern, need, \
-        joy, uncertainty or takeaway I actually expressed -- at whatever point in the \
-        conversation I reached, however early. No "thanks for sharing", no stock praise, \
+        "closing": ONE concise sentence from Dwelly to me (say "you", never "I"), grounded \
+        in the concern, need, joy, uncertainty or takeaway I actually expressed -- at \
+        whatever point in the conversation I reached, however early. The conversation is \
+        ending here, so if Dwelly's last message asked me a question I won't get to \
+        answer, turn that question into a gentle invitation to keep reflecting on it \
+        later, e.g. "Feel free to keep sitting with how your longing for connection \
+        relates to God's love in your life." No "thanks for sharing", no stock praise, \
         no "here's what I learned", no claiming to understand more than I said, no \
         forced resolution or peace, no question, and no new Bible reference. If what I \
         was working through is still unclear, say so plainly rather than inventing a \
@@ -134,22 +138,25 @@ enum JournalSynthesisManager {
         words and return ONLY a single JSON object (no markdown, no commentary) with \
         these exact keys:
 
-        "rendering": either "synthesize" or "preserve". Choose "preserve" whenever my \
-        own words, exactly as I wrote them, are already the most faithful journal \
-        entry -- including when they're too short, fragmentary, repetitive, or \
-        ambiguous for a shorter/clearer rendering to genuinely add anything. \
-        Repetition, stuttering, brevity, profanity, or unfamiliar/foreign language are \
-        NEVER by themselves a reason to treat something as meaningless -- "help me \
-        help me", "no no no no", and "I hurt I hurt" are real, intentional, repeated-\
-        for-emphasis expressions, not noise, and should be weighed on their actual \
-        content, never their shape. Choose "synthesize" only when a clearer, shorter \
-        rendering would add real value without losing any meaningful detail or \
-        inventing meaning that wasn't there.
+        "rendering": either "synthesize" or "preserve". DEFAULT TO "synthesize": a \
+        journal entry is a clear, first-person reflection, not a transcript. Choose \
+        "synthesize" whenever there is ANY legible meaning in what I said, even when my \
+        words were rambling, spoken out loud, full of filler ("you know", "like"), \
+        speech-to-text mistakes, or drifting between topics. Choose "preserve" ONLY when \
+        my words are already a short, clean entry (one or two sentences) that a rewrite \
+        could not improve, or when there is nothing legible at all. Repetition, \
+        stuttering, brevity, profanity, or unfamiliar/foreign language are NEVER by \
+        themselves a reason to treat something as meaningless -- "help me help me", "no \
+        no no no", and "I hurt I hurt" are real, intentional, repeated-for-emphasis \
+        expressions, not noise, and should be weighed on their actual content.
 
         "body": REQUIRED if rendering is "synthesize" -- a first-person reframing of \
         what I actually said, strictly SHORTER than my own words above, inventing no \
         details/events/imagery I never mentioned, reusing my own actual phrases where \
-        possible. Omit this field entirely (or null) if rendering is "preserve" -- the \
+        possible. Fix obvious speech-to-text mistakes only where the intended word is \
+        clear. Leave out side questions and requests aimed at the app itself (e.g. \
+        "what model are you", "build me a website", "are you still there") -- they are \
+        not part of my reflection. Omit this field entirely (or null) if rendering is "preserve" -- the \
         app already has my original words and will use those verbatim, so do not \
         repeat them here.
 

@@ -50,6 +50,7 @@ struct TodayView: View {
     // fresh every appearance (not cached) since the whole point is reacting to a
     // journal that just finished synthesizing since the last time this tab was shown.
     @State private var journalReady: JournalReadyEntry?
+    @State private var openedJournalReadyId: String?
 
     // Nov 24 2026 (Kell): completed prompt cards. Re-read on every refresh (a
     // conversation closing bumps refreshKey). Tapping one opens its journal.
@@ -234,7 +235,9 @@ struct TodayView: View {
     /// falls back to Intercession (set via `intercessionFallback`, already loaded)
     /// when there's no eligible history at all -- never fabricates a Sustain item.
     private func loadFollowUpTile(from entries: [JournalEntry]) {
-        let eligible = entries.filter { $0.formationEligible && $0.viewedAt != nil }
+        // Kell (Nov 25 2026): never offer a same-day entry; at least 24 hours old.
+        let dayAgo = Date().addingTimeInterval(-24 * 60 * 60)
+        let eligible = entries.filter { $0.formationEligible && $0.viewedAt != nil && $0.createdAt <= dayAgo }
         guard !eligible.isEmpty else {
             followUpTile = nil
             followUpEchoesCluster = nil
@@ -259,8 +262,8 @@ struct TodayView: View {
 
         let headline = picked.title ?? "A moment you captured"
         let timeAgo = Self.relativeTimeAgoFormatter.localizedString(for: picked.createdAt, relativeTo: Date())
-        let subtitle = anniversary != nil ? "From \(timeAgo). Does it still feel the same?" : "Captured \(timeAgo)."
-        followUpTile = ("arrow.uturn.left", "Sustain", "You wrote about \u{201C}\(headline)\u{201D}", subtitle)
+        let subtitle = anniversary != nil ? "You wrote this \(timeAgo). Does it still feel the same?" : "You wrote this \(timeAgo)."
+        followUpTile = ("arrow.uturn.left", "Sustain", headline, subtitle)
         // T-182 (overlap-avoidance): `echoes_mood` per the doc -- the real mood tag
         // already on this entry, not inferred. Only the first tag is used; a journal
         // entry with multiple moods doesn't multiply into multiple exclusions.
@@ -314,14 +317,27 @@ struct TodayView: View {
                 .foregroundColor(Theme.Payment.textSupporting)
                 .fixedSize(horizontal: false, vertical: true)
 
+            // Kell (Nov 25 2026): once today's "Sit with this" is finished, the
+            // button checks off and opens that journal instead of starting over.
+            let sitDone = completions[dailyVerse.question]
             Button(action: {
-                onOpenPrompt((title: dailyVerse.question, category: "Scripture"))
+                if let sitDone {
+                    openCompletedJournal(sitDone)
+                } else {
+                    onOpenPrompt((title: dailyVerse.question, category: "Scripture"))
+                }
             }) {
                 HStack(spacing: 8) {
-                    Text("Sit with this")
+                    if sitDone != nil {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 13, weight: .bold))
+                    }
+                    Text(sitDone == nil ? "Sit with this" : "Done · Read your journal")
                         .font(.system(size: 14, weight: .semibold))
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 13, weight: .semibold))
+                    if sitDone == nil {
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 13, weight: .semibold))
+                    }
                 }
                 .foregroundColor(Theme.Payment.backgroundPrimary)
                 .padding(.horizontal, 18)
@@ -346,15 +362,18 @@ struct TodayView: View {
     /// to the real finished entry instead of a `Button` opening a new capture --
     /// tapping this should land on what's already written, not start something new.
     private func journalReadyCard(_ ready: JournalReadyEntry) -> some View {
-        NavigationLink(destination: JournalDetailView(moment: ready.moment)) {
+        // Kell (Nov 25 2026): checks off once the journal has been opened.
+        let isRead = ready.entry.viewedAt != nil || openedJournalReadyId == ready.entry.id
+        return NavigationLink(destination: JournalDetailView(moment: ready.moment)
+            .onAppear { openedJournalReadyId = ready.entry.id }) {
             HStack(spacing: 16) {
                 Circle()
-                    .fill(Theme.Payment.pillBackground)
+                    .fill(isRead ? Theme.gold : Theme.Payment.pillBackground)
                     .frame(width: 44, height: 44)
                     .overlay(
-                        Image(systemName: "book.closed")
-                            .font(.system(size: 17))
-                            .foregroundColor(Theme.gold)
+                        Image(systemName: isRead ? "checkmark" : "book.closed")
+                            .font(.system(size: 17, weight: isRead ? .bold : .regular))
+                            .foregroundColor(isRead ? Theme.Payment.backgroundPrimary : Theme.gold)
                     )
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -367,7 +386,7 @@ struct TodayView: View {
                         .foregroundColor(Theme.Payment.textHeading)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
-                    Text("Ready to read.")
+                    Text(isRead ? "Read · Open again anytime" : "Ready to read.")
                         .font(.system(size: 11))
                         .foregroundColor(Theme.Payment.textSupporting)
                         .lineLimit(1)
@@ -392,13 +411,17 @@ struct TodayView: View {
     }
 
     private func tileRow(_ tile: (icon: String, category: String, title: String, subtitle: String)) -> some View {
-        let completion = completions[tile.title]
+        // Kell (Nov 25 2026): a Sustain card opens with a real question, not a bare title.
+        let openingText = tile.category == "Sustain"
+            ? "Looking back at \u{201C}\(tile.title)\u{201D}, does it still feel true for you today?"
+            : tile.title
+        let completion = completions[openingText]
         let isDone = completion != nil
         return Button(action: {
             if let completion {
                 openCompletedJournal(completion)
             } else {
-                onOpenPrompt((title: tile.title, category: tile.category))
+                onOpenPrompt((title: openingText, category: tile.category))
             }
         }) {
             HStack(spacing: 16) {
@@ -419,10 +442,9 @@ struct TodayView: View {
                     Text(tile.title)
                         .font(.system(size: 16, design: .serif))
                         .foregroundColor(isDone ? Theme.Payment.textSupporting : Theme.Payment.textHeading)
-                        // Nov 24 2026 (Kell): always one line; shrink slightly to fit
-                        // rather than wrapping.
+                        // Nov 24 2026 (Kell): always one line, same size on every card
+                        // (no shrink-to-fit; long titles end in "…").
                         .lineLimit(1)
-                        .minimumScaleFactor(0.7)
                     Text(completion.map { "Captured at \(Self.completedTimeFormatter.string(from: $0.completedAt)) · Read your journal" } ?? tile.subtitle)
                         .font(.system(size: 11))
                         .foregroundColor(Theme.Payment.textSupporting)

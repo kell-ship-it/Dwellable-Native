@@ -17,7 +17,7 @@ protocol APIClient {
     // layer on top of a moment. `nil` means no entry exists yet for that moment
     // (e.g. a moment saved before this ticket, or synthesis hasn't run).
     func fetchJournalEntry(momentId: String) async throws -> JournalEntry?
-    func saveJournalEntry(_ entry: JournalEntry) async throws -> JournalEntry
+    func saveJournalEntry(_ entry: JournalEntry, clearPhoto: Bool) async throws -> JournalEntry
     // T-159: every pending entry for a user, for the background retry sweep to walk.
     func fetchPendingJournalEntries(userId: String) async throws -> [JournalEntry]
     // T-161: every approved (real, synthesized) entry for a user -- used to count
@@ -232,5 +232,11 @@ struct LLMRequestContext: Equatable {
     }
     static func profile(captureId: String, kind: Kind) -> LLMRequestContext {
         LLMRequestContext(captureId: captureId, requestId: "\(captureId)-profile", kind: kind)
+    }
+}
+
+extension APIClient {
+    func saveJournalEntry(_ entry: JournalEntry) async throws -> JournalEntry {
+        try await saveJournalEntry(entry, clearPhoto: false)
     }
 }

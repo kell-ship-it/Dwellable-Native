@@ -89,6 +89,11 @@ struct JournalDetailView: View {
     // text updates the existing row rather than creating a duplicate.
     @State private var isEditing = false
     @State private var editedBody: String
+    // Kell (Nov 25 2026): the title is editable in Edit mode.
+    @State private var editedTitle = ""
+    // Kell (Nov 25 2026): show the whole entry at once, not piece by piece.
+    @State private var contentReady = false
+    @State private var savedTitleOverride: String?
     @State private var displayBody: String
     @State private var isSaving = false
     @State private var saveErrorMessage: String?
@@ -157,6 +162,10 @@ struct JournalDetailView: View {
     // uploads/clears accordingly and `exitEditMode()` reverts to `photoPath`'s last
     // saved state on Discard, same draft/commit split `draftMoods` already uses.
     @State private var photoChanged = false
+    // Kell (Nov 25 2026): remove a verse in edit mode. Draft until Save, then saved.
+    @State private var verseRemovedDraft = false
+    @State private var verseRemovedSaved = false
+    @State private var showRemoveVerseConfirm = false
     @State private var isUploadingPhoto = false
     @State private var photoErrorMessage: String?
 
@@ -187,13 +196,19 @@ struct JournalDetailView: View {
     }
 
     private var hasUnsavedChanges: Bool {
-        editedBody != displayBody || selectedMoods != (loadedEntry?.moods ?? (meta?.moods ?? [])) || photoChanged
+        editedBody != displayBody || editedTitle.trimmingCharacters(in: .whitespacesAndNewlines) != (effectiveTitle ?? "") || selectedMoods != (loadedEntry?.moods ?? (meta?.moods ?? [])) || photoChanged || verseRemovedDraft
+    }
+
+    private var hasUndoableChanges: Bool {
+        editedBody != displayBody || editedTitle.trimmingCharacters(in: .whitespacesAndNewlines) != (effectiveTitle ?? "") || verseRemovedDraft
     }
 
     private func exitEditMode() {
         isEditing = false
         editedBody = displayBody
+        editedTitle = effectiveTitle ?? ""
         selectedMoods = loadedEntry?.moods ?? (meta?.moods ?? [])
+        verseRemovedDraft = false
         saveErrorMessage = nil
         if photoChanged {
             photoChanged = false
@@ -208,11 +223,16 @@ struct JournalDetailView: View {
     // `loadEntry()` returns, same as title/scripture already do.
     private var isPending: Bool { loadedEntry?.status == "pending" }
 
-    private var effectiveTitle: String? { loadedEntry?.title ?? meta?.title }
-    private var effectiveScriptureQuote: String? { loadedEntry?.scriptureQuote ?? meta?.scriptureQuote }
-    private var effectiveScriptureReference: String? { loadedEntry?.scriptureReference ?? meta?.scriptureReference }
+    private var effectiveTitle: String? { savedTitleOverride ?? loadedEntry?.title ?? meta?.title }
+    private var effectiveScriptureQuote: String? { verseRemovedSaved ? nil : loadedEntry?.scriptureQuote ?? meta?.scriptureQuote }
+    private var effectiveScriptureReference: String? { verseRemovedSaved ? nil : loadedEntry?.scriptureReference ?? meta?.scriptureReference }
 
+    // Kell (Nov 25 2026): the tab bar hides while a journal is open (Figma).
     var body: some View {
+        journalContent.hidesTabBar()
+    }
+
+    private var journalContent: some View {
         VStack(spacing: 0) {
             header
 
@@ -236,6 +256,12 @@ struct JournalDetailView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
                     .padding(.bottom, isEditing ? 100 : 40)
+                }
+                .opacity(contentReady ? 1 : 0)
+            }
+            .overlay {
+                if !contentReady {
+                    ProgressView().tint(Theme.gold)
                 }
             }
         }
@@ -276,12 +302,17 @@ struct JournalDetailView: View {
             .ignoresSafeArea()
         }
         .onChange(of: photoPickerItem) { newItem in
+            guard let newItem else { return }
             Task {
-                if let data = try? await newItem?.loadTransferable(type: Data.self),
+                if let data = try? await newItem.loadTransferable(type: Data.self),
                    let image = UIImage(data: data) {
                     heroImage = image
                     photoChanged = true
+                } else {
+                    photoErrorMessage = "Couldn't open that photo. Try a different one."
                 }
+                // Cleared so picking the same photo again still registers.
+                photoPickerItem = nil
             }
         }
         .task { await loadEntry() }
@@ -319,7 +350,12 @@ struct JournalDetailView: View {
 
     @ViewBuilder
     private var approvedContent: some View {
-                        if let effectiveTitle {
+                        if isEditing {
+                            TextField("Title", text: $editedTitle, axis: .vertical)
+                                .font(.system(size: 28, design: .serif))
+                                .foregroundColor(Theme.Payment.textHeading)
+                                .tint(Theme.gold)
+                        } else if let effectiveTitle {
                             Text(effectiveTitle)
                                 .font(.system(size: 28, design: .serif))
                                 .foregroundColor(Theme.Payment.textHeading)
@@ -332,11 +368,15 @@ struct JournalDetailView: View {
                         }
 
                         if isEditing {
-                            TextEditor(text: $editedBody)
+                            // Kell (Nov 25 2026): a fixed-height editor pushed the verse
+                            // card off screen in edit mode, so the ✕ was unreachable. This
+                            // grows with the writing instead, keeping the verse right below.
+                            TextField("", text: $editedBody, axis: .vertical)
                                 .font(.system(size: 17, weight: .light))
                                 .foregroundColor(Theme.Capture.textBody)
-                                .scrollContentBackground(.hidden)
-                                .background(Color.clear)
+                                .lineSpacing(1.6)
+                                .lineLimit(4...)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                                 // A TextEditor nested inside a ScrollView sizes itself to
                                 // its own minHeight rather than filling available space --
                                 // ScrollView gives children their ideal size, it doesn't
@@ -345,7 +385,6 @@ struct JournalDetailView: View {
                                 // this live (Nov 11 2026) as "the space is very limiting."
                                 // A screen-relative minHeight fills that gap without the
                                 // GeometryReader plumbing a precise fill would need.
-                                .frame(minHeight: UIScreen.main.bounds.height * 0.45)
                         } else {
                             Text(displayBody)
                                 .font(.system(size: 17, weight: .light))
@@ -390,7 +429,7 @@ struct JournalDetailView: View {
                         // body is edited down to fully empty, that's effectively a new
                         // entry, so the verse is dropped from display alongside it rather
                         // than persisting orphaned from nothing.
-                        if !isEditing, !displayBody.isEmpty, let quote = effectiveScriptureQuote, let reference = effectiveScriptureReference {
+                        if !(isEditing && verseRemovedDraft), !displayBody.isEmpty, let quote = effectiveScriptureQuote, let reference = effectiveScriptureReference {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("\u{201C}\(quote)\u{201D}")
                                     .font(.system(size: 16, design: .serif))
@@ -406,7 +445,29 @@ struct JournalDetailView: View {
                             .background(Theme.Capture.badgeBackground)
                             .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.Capture.journalCardBorder, lineWidth: 1))
                             .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .overlay(alignment: .topTrailing) {
+                                if isEditing {
+                                    Button(action: { showRemoveVerseConfirm = true }) {
+                                        Image(systemName: "xmark")
+                                            .font(.system(size: 11, weight: .bold))
+                                            .foregroundColor(Theme.Capture.textPrimary)
+                                            .frame(width: 26, height: 26)
+                                            .background(Theme.Capture.cardBackground)
+                                            .clipShape(Circle())
+                                            .frame(width: 44, height: 44)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .offset(x: 12, y: -12)
+                                    .accessibilityLabel("Remove verse")
+                                }
+                            }
                             .padding(.top, 8)
+                            .confirmationDialog("Remove this verse?", isPresented: $showRemoveVerseConfirm, titleVisibility: .visible) {
+                                Button("Remove verse", role: .destructive) { verseRemovedDraft = true }
+                                Button("Keep it", role: .cancel) {}
+                            } message: {
+                                Text("\(reference) will come off this entry. Your writing stays the same.")
+                            }
                         }
     }
 
@@ -444,12 +505,16 @@ struct JournalDetailView: View {
 
                     HStack(spacing: 16) {
                         Button(action: {
+                            // Kell (Nov 25 2026): undo covers title, body and verse only.
+                            // Moods change in their own sheet, the photo with its own ✕,
+                            // and the top-left ✕ discards everything.
                             editedBody = displayBody
-                            selectedMoods = loadedEntry?.moods ?? (meta?.moods ?? [])
+                            editedTitle = effectiveTitle ?? ""
+                            verseRemovedDraft = false
                         }) {
                             Image(systemName: "arrow.uturn.backward")
                                 .font(.system(size: 17))
-                                .foregroundColor(hasUnsavedChanges ? Theme.Capture.textPrimary : Theme.Capture.textMuted)
+                                .foregroundColor(hasUndoableChanges ? Theme.Capture.textPrimary : Theme.Capture.textMuted)
                                 // Kell caught this live (Nov 16 2026): the save
                                 // checkmark next to this button "populates but
                                 // won't let me click it" -- intermittently, not
@@ -465,7 +530,7 @@ struct JournalDetailView: View {
                                 .frame(width: 44, height: 44)
                                 .contentShape(Rectangle())
                         }
-                        .disabled(!hasUnsavedChanges)
+                        .disabled(!hasUndoableChanges)
 
                         Button(action: { Task { await saveEdit() } }) {
                             if isSaving {
@@ -552,6 +617,7 @@ struct JournalDetailView: View {
                         if !isPending {
                             Button(action: {
                                 editedBody = displayBody
+                                editedTitle = effectiveTitle ?? ""
                                 saveErrorMessage = nil
                                 isEditing = true
                             }) {
@@ -697,7 +763,9 @@ struct JournalDetailView: View {
             // use the thin moodChipBorder outline. Disabled/capped-out chips stay that
             // same outline, just dimmed to 0.4 opacity (pixel-matched from node 286:1647)
             // -- that's what actually signals "you're capped," not a border/fill swap.
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 8)], alignment: .leading, spacing: 8) {
+            // Kell (Nov 25 2026): fixed-width grid cells wrapped longer moods onto two
+            // lines once the checkmark was added. Chips now size to their word and flow.
+            MoodFlowLayout(spacing: 8) {
                 // Kell caught this live (Nov 16 2026): a custom word typed into "Add
                 // your own word" got added to draftMoods and counted toward the 3/3
                 // cap, but never showed up as a chip anywhere in the grid -- there was
@@ -726,6 +794,8 @@ struct JournalDetailView: View {
                                 }
                                 Text(mood)
                                     .font(.system(size: 14))
+                                    .lineLimit(1)
+                                    .fixedSize()
                             }
                         }
                         .buttonStyle(.plain)
@@ -946,18 +1016,18 @@ struct JournalDetailView: View {
     // MARK: - Edit toolbar (photo / camera / mic)
 
     private var editToolbar: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 18) {
             PhotosPicker(selection: $photoPickerItem, matching: .images) {
                 Image(systemName: "photo")
                     .font(.system(size: 16))
-                    .foregroundColor(Theme.Capture.textPrimary)
+                    .foregroundColor(Theme.gold)
                     .frame(width: 40, height: 40)
             }
 
             Button(action: { showCamera = true }) {
                 Image(systemName: "camera")
                     .font(.system(size: 16))
-                    .foregroundColor(Theme.Capture.textPrimary)
+                    .foregroundColor(Theme.gold)
                     .frame(width: 40, height: 40)
             }
 
@@ -968,16 +1038,19 @@ struct JournalDetailView: View {
                 } else {
                     Image(systemName: isRecordingVoiceNote ? "stop.circle.fill" : "mic")
                         .font(.system(size: 16))
-                        .foregroundColor(isRecordingVoiceNote ? Theme.error : Theme.Capture.textPrimary)
+                        .foregroundColor(isRecordingVoiceNote ? Theme.error : Theme.gold)
                         .frame(width: 40, height: 40)
                 }
             }
             .disabled(isTranscribingVoiceNote)
         }
-        .padding(8)
-        .background(Theme.Capture.badgeBackground)
-        .overlay(Capsule().stroke(Theme.Capture.journalCardBorder, lineWidth: 1))
+        // Figma (Kell, Nov 25 2026): gold icons, pinned to the right edge, no border.
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Theme.Capture.cardBackground)
         .clipShape(Capsule())
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .padding(.trailing, 20)
         .padding(.bottom, Theme.Spacing.lg)
     }
 
@@ -994,18 +1067,22 @@ struct JournalDetailView: View {
         guard !trimmed.isEmpty else { return }
         // T-156: a photo-only change (body untouched) still needs to persist, so this
         // can no longer bail out purely on `trimmed == displayBody` the way it used to.
-        guard trimmed != displayBody || photoChanged else {
+        let trimmedTitle = editedTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        let titleChanged = !trimmedTitle.isEmpty && trimmedTitle != (effectiveTitle ?? "")
+        guard trimmed != displayBody || photoChanged || titleChanged || verseRemovedDraft else {
             isEditing = false
             return
         }
         isSaving = true
         saveErrorMessage = nil
         displayBody = editedBody
+        if titleChanged { savedTitleOverride = trimmedTitle }
+        if verseRemovedDraft { verseRemovedSaved = true; verseRemovedDraft = false }
         isEditing = false
         if photoChanged {
             await uploadHeroPhotoIfNeeded()
         }
-        await persistEntry(edited: true)
+        await persistEntry(edited: true, clearPhoto: photoChanged && photoPath == nil)
         photoChanged = false
         isSaving = false
     }
@@ -1057,6 +1134,7 @@ struct JournalDetailView: View {
     /// moment, if an entry exists yet. `meta` (from a just-finished capture) stays the
     /// display fallback until this returns -- see `effectiveTitle` etc. above.
     private func loadEntry() async {
+        defer { withAnimation(.easeOut(duration: 0.2)) { contentReady = true } }
         guard let entry = try? await apiClient.fetchJournalEntry(momentId: moment.id) else { return }
         loadedEntry = entry
         if !entry.moods.isEmpty { selectedMoods = entry.moods }
@@ -1082,7 +1160,7 @@ struct JournalDetailView: View {
     /// `journal_entries`. Safe to call from capture time (no `loadedEntry` yet)
     /// through to a body edit years later (`loadedEntry` already exists) -- upserts
     /// on `moment_id` either way.
-    private func persistEntry(edited: Bool = false) async {
+    private func persistEntry(edited: Bool = false, clearPhoto: Bool = false) async {
         let entry = JournalEntry(
             id: loadedEntry?.id ?? UUID().uuidString,
             momentId: moment.id,
@@ -1111,7 +1189,7 @@ struct JournalDetailView: View {
             // this runs, same as `displayBody`/`selectedMoods` above.
             photoPath: photoPath
         )
-        loadedEntry = try? await apiClient.saveJournalEntry(entry)
+        loadedEntry = try? await apiClient.saveJournalEntry(entry, clearPhoto: clearPhoto)
     }
 
     private func deleteEntry() async {
@@ -1229,5 +1307,35 @@ private extension View {
                 scriptureReference: "Psalm 46:10"
             )
         )
+    }
+}
+
+
+/// Lays chips out left to right, wrapping to a new row only between chips.
+struct MoodFlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0, widest: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x > 0 && x + size.width > maxWidth { x = 0; y += rowHeight + spacing; rowHeight = 0 }
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+            widest = max(widest, x - spacing)
+        }
+        return CGSize(width: proposal.width ?? widest, height: y + rowHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX, y = bounds.minY, rowHeight: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x > bounds.minX && x + size.width > bounds.maxX { x = bounds.minX; y += rowHeight + spacing; rowHeight = 0 }
+            view.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
     }
 }

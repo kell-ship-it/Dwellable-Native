@@ -97,6 +97,7 @@ struct FullBleedVideoPlayer: UIViewRepresentable {
 /// rock + wordmark mark if the video asset isn't bundled, so this never blocks launch.
 struct AppLoadingView: View {
     var onComplete: () -> Void
+    @State private var showWordmark = false
 
     var body: some View {
         ZStack {
@@ -119,28 +120,30 @@ struct AppLoadingView: View {
             Color.clear
                 .task { Task { await TranscriptionManager.shared.setupWhisperKit() } }
 
-            if Bundle.main.url(forResource: "AppLoadingAnimation", withExtension: "mp4") != nil {
-                FullBleedVideoPlayer(
-                    resourceName: "AppLoadingAnimation",
-                    resourceExtension: "mp4",
-                    onFinished: onComplete
-                )
-                .ignoresSafeArea()
-            } else {
-                VStack(spacing: 16) {
-                    Image("DwellyRockIcon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 80, height: 80)
+            // Kell (Nov 25 2026): replaces AppLoadingAnimation.mp4 with the explainer's
+            // closing beat, drawn natively so it's sharp on every screen: the rock sits
+            // alone, then slides left as a white "dwelly" wordmark fades in beside it.
+            HStack(spacing: showWordmark ? 18 : 0) {
+                // Kell (Nov 25 2026): the old icon file had the rock's sides cut off;
+                // this one comes from the full logo source.
+                Image("DwellyRockFull")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 116)
 
+                if showWordmark {
                     Text("dwelly")
-                        .font(.system(size: 32, design: .serif))
-                        .foregroundColor(Theme.Payment.textHeading)
+                        .font(.system(size: 52, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white)
+                        .fixedSize()
+                        .transition(.opacity.combined(with: .move(edge: .trailing)))
                 }
-                .task {
-                    try? await Task.sleep(nanoseconds: 900_000_000)
-                    onComplete()
-                }
+            }
+            .task {
+                try? await Task.sleep(nanoseconds: 700_000_000)
+                withAnimation(.easeInOut(duration: 0.7)) { showWordmark = true }
+                try? await Task.sleep(nanoseconds: 1_600_000_000)
+                onComplete()
             }
         }
     }

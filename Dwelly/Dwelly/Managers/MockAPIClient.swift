@@ -124,7 +124,7 @@ class MockAPIClient: APIClient {
         return storedJournalEntries.first(where: { $0.momentId == momentId })
     }
 
-    func saveJournalEntry(_ entry: JournalEntry) async throws -> JournalEntry {
+    func saveJournalEntry(_ entry: JournalEntry, clearPhoto: Bool = false) async throws -> JournalEntry {
         try await Task.sleep(nanoseconds: 300_000_000)
         if let index = storedJournalEntries.firstIndex(where: { $0.momentId == entry.momentId }) {
             storedJournalEntries[index] = entry

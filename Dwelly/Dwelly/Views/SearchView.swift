@@ -26,6 +26,8 @@ struct SearchView: View {
     @State private var isLoading = true
     @State private var searchText = ""
     @State private var selectedMood: String?
+    // Kell (Nov 25 2026): quick filter to see only starred journals.
+    @State private var starredOnly = false
     @State private var recentSearches: [String] = []
 
     private static let maxRecentSearches = 10
@@ -39,7 +41,7 @@ struct SearchView: View {
     // keyword or a mood filter narrower than "All Moods" -- matches Figma frames
     // 03/04 (both require at least one of the two).
     private var isActiveSearch: Bool {
-        !trimmedQuery.isEmpty || selectedMood != nil
+        !trimmedQuery.isEmpty || selectedMood != nil || starredOnly
     }
 
     private var results: [SearchableEntry] {
@@ -48,7 +50,7 @@ struct SearchView: View {
                 || (searchable.entry.title?.localizedCaseInsensitiveContains(trimmedQuery) ?? false)
                 || (searchable.entry.body?.localizedCaseInsensitiveContains(trimmedQuery) ?? false)
             let matchesMood = selectedMood == nil || searchable.entry.moods.contains(selectedMood!)
-            return matchesQuery && matchesMood
+            return matchesQuery && matchesMood && (!starredOnly || searchable.entry.starred)
         }
     }
 
@@ -56,6 +58,7 @@ struct SearchView: View {
         let countPart = "\(results.count) result\(results.count == 1 ? "" : "s")"
         var parts: [String] = []
         if !trimmedQuery.isEmpty { parts.append("\u{201c}\(trimmedQuery)\u{201d}") }
+        if starredOnly { parts.append("Starred") }
         if let selectedMood { parts.append(selectedMood) }
         return parts.isEmpty ? countPart : "\(countPart) \u{b7} \(parts.joined(separator: " + "))"
     }
@@ -119,6 +122,7 @@ struct SearchView: View {
     private var moodFilterRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
+                moodChip(label: "\u{2605} Starred", isSelected: starredOnly) { starredOnly.toggle() }
                 moodChip(label: "All Moods", isSelected: selectedMood == nil) { selectedMood = nil }
                 ForEach(presetMoods, id: \.self) { mood in
                     moodChip(label: mood, isSelected: selectedMood == mood) {
@@ -298,6 +302,9 @@ struct SearchView: View {
     private var noResultsMessage: String {
         if !trimmedQuery.isEmpty {
             return "No entries match \u{201c}\(trimmedQuery)\u{201d}. Try a different word, or clear the mood filter."
+        }
+        if starredOnly && selectedMood == nil {
+            return "No starred entries yet. Tap the star on any journal to keep it here."
         }
         return "No entries match \(selectedMood ?? "that filter"). Try another mood."
     }

@@ -369,7 +369,7 @@ class SupabaseAPIClient: APIClient {
         return entries.first
     }
 
-    func saveJournalEntry(_ entry: JournalEntry) async throws -> JournalEntry {
+    func saveJournalEntry(_ entry: JournalEntry, clearPhoto: Bool = false) async throws -> JournalEntry {
         let payload = JournalEntryPayload(
             id: entry.id,
             moment_id: entry.momentId,
@@ -391,7 +391,12 @@ class SupabaseAPIClient: APIClient {
             // migration 20261119140000 hasn't been applied yet. Only a true value
             // is ever sent, and nothing sets it true while
             // FormationEligibilityPolicy.isActive is off.
-            profile_excluded: entry.profileExcluded ? true : nil
+            profile_excluded: entry.profileExcluded ? true : nil,
+            // Kell (Nov 25 2026): photos uploaded but never stuck to the entry because
+            // this was never sent. Left out when nil, so other saves that don't
+            // carry the photo can't wipe one that's already attached.
+            // clearPhoto sends an explicit null so a removed photo actually comes off.
+            photo_path: clearPhoto ? NullableString(value: nil) : entry.photoPath.map { NullableString(value: $0) }
         )
         // save-journal-entry encrypts `body` server-side and upserts on the unique
         // moment_id column -- one entry per moment, so saving twice updates the same row.
@@ -1289,6 +1294,18 @@ struct JournalEntryPayload: Codable {
     let formation_eligible: Bool
     let extracted_facts: String?
     let profile_excluded: Bool?
+    let photo_path: NullableString?
+}
+
+/// Encodes nil as JSON null (unlike a plain optional, which is left out).
+struct NullableString: Codable {
+    let value: String?
+    init(value: String?) { self.value = value }
+    init(from decoder: Decoder) throws { value = try decoder.singleValueContainer().decode(String?.self) }
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.singleValueContainer()
+        if let value { try c.encode(value) } else { try c.encodeNil() }
+    }
 }
 
 struct DwellerProfilePayload: Codable {

@@ -27,7 +27,7 @@ struct PrivacyPolicyView: View {
         ("Lawful Disclosure", "We do not sell or share your content with advertisers. We may be legally required to disclose information in response to a valid legal process (such as a subpoena or court order) — we don't promise your data is never disclosed under any circumstance, because that wouldn't be true."),
         ("Retention & Deletion", "You can delete your account at any time from Account Profile, which permanently removes your moments, journal entries, and related data. Safety-check logs are either non-identifying aggregate counts or short-lived technical diagnostics not tied to your account."),
         ("This Isn't a Liability Waiver", "This Privacy Policy describes what we actually do with your data. It does not limit our legal responsibility — that's covered separately in the Terms of Service, and only to the extent the law allows."),
-        ("Your Rights", "Export your data (Post-MVP) or delete your account entirely, anytime, from Account Profile.")
+        ("Your Rights", "Export your data (coming later) or delete your account entirely, anytime, from Account Profile.")
     ]
 
     var body: some View {

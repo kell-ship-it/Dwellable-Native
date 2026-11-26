@@ -216,18 +216,19 @@ struct YourNarrativeCard: View {
             // Nov 24 2026 (Kell): show real progress toward the first narrative, so
             // there's something to look forward to.
             let shown = min(qualifyingReflectionCount, Self.unlockThreshold)
-            VStack(alignment: .leading, spacing: 8) {
-                Text("\(shown) of \(Self.unlockThreshold) reflections")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Theme.gold)
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(Theme.gold.opacity(0.15))
-                        Capsule().fill(Theme.gold)
-                            .frame(width: geo.size.width * CGFloat(shown) / CGFloat(Self.unlockThreshold))
+            // Nov 26 2026 (Kell, option B): dots, with the next one pulsing.
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 10) {
+                    ForEach(0..<Self.unlockThreshold, id: \.self) { i in
+                        if i < shown {
+                            Circle().fill(Theme.gold).frame(width: 12, height: 12)
+                        } else if i == shown {
+                            NextGrowthDot()
+                        } else {
+                            Circle().fill(Theme.gold.opacity(0.18)).frame(width: 12, height: 12)
+                        }
                     }
                 }
-                .frame(height: 4)
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("\(shown) of \(Self.unlockThreshold) reflections toward your spiritual journey")
@@ -262,7 +263,13 @@ struct YourNarrativeCard: View {
         let feedback = (try? await apiClient.fetchNarrativeFeedback(userId: userId)) ?? []
         // T-161/T-164: "Not quite" feedback counts toward the threshold exactly like a
         // captured moment -- same list, same weight, not a separate lesser category.
-        qualifyingReflectionCount = approved.count + feedback.count
+        // Nov 26 2026 (Kell): deleting a journal never removes its dot. Keep the
+        // highest count ever seen for this user and never go below it.
+        let liveCount = approved.count + feedback.count
+        let key = "growthDotsHighWater.\(userId)"
+        let best = max(liveCount, UserDefaults.standard.integer(forKey: key))
+        UserDefaults.standard.set(best, forKey: key)
+        qualifyingReflectionCount = best
 
         if let regenerated = await DwellerProfileManager.regenerateIfNeeded(
             userId: userId,
@@ -305,4 +312,23 @@ struct YourNarrativeCard: View {
     }
     .background(Theme.Payment.background)
     .environment(\.apiClient, apiClient)
+}
+
+/// The pulsing "next" dot on the Growth progress row (option B).
+private struct NextGrowthDot: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    // Driven by the clock, not onAppear, so a card refresh can't cancel the pulse.
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 30, paused: reduceMotion)) { context in
+            let t = context.date.timeIntervalSinceReferenceDate
+            let wave = (cos(t * 2 * .pi / 1.6) + 1) / 2   // 1 -> 0 -> 1 every 1.6s
+            let w = reduceMotion ? 1.0 : wave
+            ZStack {
+                Circle().fill(Theme.gold.opacity(0.1 + 0.55 * w))
+                Circle().stroke(Theme.gold, lineWidth: 2)
+            }
+            .frame(width: 12, height: 12)
+            .shadow(color: Theme.gold.opacity(0.7 * w), radius: 4 * w)
+        }
+    }
 }

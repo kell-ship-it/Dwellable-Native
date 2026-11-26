@@ -30,6 +30,11 @@ struct CaptureBudget {
     /// Cost of the most recently recorded request (the measured whole-turn figure the
     /// next turn's safety overhead is taken from -- conservative, it includes that turn's own transcript).
     private(set) var lastRecordedCost = 0
+    /// Nov 27 2026: the part of the last turn's cost that was NOT reading the
+    /// transcript (reply output + safety checks). `nextTurnCost` already counts the
+    /// transcript reads, so passing the whole `lastRecordedCost` counted them twice
+    /// and ended onboarding a reply early.
+    var lastNonTranscriptCost = 0
 
     init(isOnboarding: Bool) { limit = isOnboarding ? Self.onboardingLimit : Self.regularLimit }
 

@@ -181,7 +181,9 @@ struct AccountProfileView: View {
             // from Member Since's plain heading color (node 711:5005) -- the only
             // gold text in this card, same "one confirmed thing stands out" logic as
             // everywhere else gold is used in this app.
-            if canUpgradeSubscription {
+            // Kell (Nov 25 2026): beta is free, and opening the paywall here got
+            // stuck until the app was closed -- so the row is grayed and not tappable.
+            if canUpgradeSubscription && !PaywallPolicy.isBetaFree {
                 Button(action: presentUpgradeFlow) {
                     profileRow(
                         label: "Subscription",
@@ -193,6 +195,7 @@ struct AccountProfileView: View {
                 .buttonStyle(.plain)
             } else {
                 profileRow(label: "Subscription", value: subscriptionDisplay, valueColor: Theme.gold)
+                    .opacity(PaywallPolicy.isBetaFree ? 0.45 : 1)
             }
         }
         .background(Theme.Payment.surfaceCard)
@@ -206,22 +209,22 @@ struct AccountProfileView: View {
 
     private var settingsCard: some View {
         VStack(spacing: 0) {
-            NavigationLink(destination: SecurityPrivacyView()) {
+            NavigationLink(destination: SecurityPrivacyView().hidesTabBar()) {
                 settingsRow(icon: "shield.checkerboard", title: "Security & Privacy")
             }
             .buttonStyle(.plain)
             Divider().background(Theme.Payment.timelineRail)
-            NavigationLink(destination: NotificationsSettingsView()) {
+            NavigationLink(destination: NotificationsSettingsView().hidesTabBar()) {
                 settingsRow(icon: "bell", title: "Notifications")
             }
             .buttonStyle(.plain)
             Divider().background(Theme.Payment.timelineRail)
-            NavigationLink(destination: FeedbackView()) {
+            NavigationLink(destination: FeedbackView().hidesTabBar()) {
                 settingsRow(icon: "questionmark.circle", title: "Support & Feedback")
             }
             .buttonStyle(.plain)
             Divider().background(Theme.Payment.timelineRail)
-            NavigationLink(destination: LegalAboutView()) {
+            NavigationLink(destination: LegalAboutView().hidesTabBar()) {
                 settingsRow(icon: "doc.text", title: "Legal & About")
             }
             .buttonStyle(.plain)
@@ -231,7 +234,7 @@ struct AccountProfileView: View {
             // Support & Feedback (T-133) are wired now too; Legal & About (T-134) and
             // Recently Deleted are the remaining ones -- see this file's own top comment.
             if let userId = authManager.currentUser?.id {
-                NavigationLink(destination: RecentlyDeletedView(userId: userId)) {
+                NavigationLink(destination: RecentlyDeletedView(userId: userId).hidesTabBar()) {
                     settingsRow(icon: "trash", title: "Recently Deleted")
                 }
                 .buttonStyle(.plain)

@@ -100,7 +100,7 @@ enum IntercessionPromptLibrary {
         TodayPrompt(id: 10, category: "Intercession", icon: "hands.sparkles", title: "Anyone you miss checking in with?", subtitle: "Worth a thought right now.", cluster: "connection"),
         TodayPrompt(id: 11, category: "Intercession", icon: "hands.sparkles", title: "Someone celebrating something lately?", subtitle: "Worth a thought right now.", cluster: "gratitude"),
         TodayPrompt(id: 12, category: "Intercession", icon: "hands.sparkles", title: "Anyone who's been quiet lately?", subtitle: "Worth a thought right now.", cluster: "connection"),
-        TodayPrompt(id: 13, category: "Intercession", icon: "hands.sparkles", title: "Who's walking through a hard season?", subtitle: "Worth a thought right now.", cluster: "connection"),
+        TodayPrompt(id: 13, category: "Intercession", icon: "hands.sparkles", title: "Do you know of anyone walking through a hard season?", subtitle: "Worth a thought right now.", cluster: "connection"),
         TodayPrompt(id: 14, category: "Intercession", icon: "hands.sparkles", title: "Anyone you've lost touch with?", subtitle: "Worth a thought right now.", cluster: "connection"),
         TodayPrompt(id: 15, category: "Intercession", icon: "hands.sparkles", title: "Someone you're grateful for today?", subtitle: "Worth a thought right now.", cluster: "gratitude"),
         TodayPrompt(id: 16, category: "Intercession", icon: "hands.sparkles", title: "Anyone facing a big decision right now?", subtitle: "Worth a thought right now.", cluster: "general-reflection"),

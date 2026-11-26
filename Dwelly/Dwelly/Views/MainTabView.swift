@@ -33,6 +33,7 @@ struct MainTabView: View {
     let syncManager: SyncManager
 
     @StateObject private var paymentManager = PaymentManager.shared
+    @ObservedObject private var tabBarVisibility = TabBarVisibility.shared
     // T-301 (Nov 17 2026): was two separate `@State` vars (`showCapture: Bool` +
     // `presetPrompt: (title:category:)?`), presented via `.fullScreenCover(isPresented:)`.
     // Caught live with a debug print at each step: `attemptCapture(prompt:)` set
@@ -111,7 +112,9 @@ struct MainTabView: View {
                 AccountProfileView(onCapture: { attemptCapture() })
             }
 
-            FloatingTabBar(selected: $selectedTab)
+            if !tabBarVisibility.isHidden {
+                FloatingTabBar(selected: $selectedTab)
+            }
         }
         .onChange(of: captureRequest == nil) { closed in
             if closed { dataRefreshKey += 1 }
@@ -173,6 +176,9 @@ struct MainTabView: View {
             content()
         }
         .opacity(selectedTab == tab ? 1 : 0)
+        // Instant switch (Kell, Nov 24 2026): fading whole screens looked like a
+        // snapshot flicker, so screens swap with no animation; only the pill moves.
+        .transaction { $0.animation = nil }
         .allowsHitTesting(selectedTab == tab)
         // Keeps a hidden tab's own gestures/scroll from fighting the visible one's,
         // and VoiceOver from reading content that isn't actually on screen.
@@ -184,7 +190,7 @@ struct MainTabView: View {
     /// Apple ID has never used its intro offer, show the real trial-start gate;
     /// otherwise (trial already consumed on this Apple ID, any device) go straight
     /// to a non-trial subscribe screen.
-    private static let betaFreeAccess = true
+    private static let betaFreeAccess = PaywallPolicy.isBetaFree
 
     private func attemptCapture(prompt: (title: String, category: String)? = nil) {
         #if DEBUG
@@ -218,6 +224,23 @@ struct MainTabView: View {
     }
 }
 
+/// Screens pushed inside a tab (e.g. an open journal) call `.hidesTabBar()` to remove the
+/// custom tab bar while they're on screen. A count, so overlapping screens can't un-hide it early.
+final class TabBarVisibility: ObservableObject {
+    static let shared = TabBarVisibility()
+    @Published private var hiders = 0
+    var isHidden: Bool { hiders > 0 }
+    func push() { hiders += 1 }
+    func pop() { hiders = max(0, hiders - 1) }
+}
+
+extension View {
+    func hidesTabBar() -> some View {
+        onAppear { TabBarVisibility.shared.push() }
+            .onDisappear { TabBarVisibility.shared.pop() }
+    }
+}
+
 /// Plain-SwiftUI stand-in for the native tab bar -- see `MainTabView`'s own header
 /// comment for why. Matches Figma's `TabBar / 4-Tab` component (dwelly-redesign
 /// jBOzv1vO2C2DSMePqRl4c4, node 428:358) exactly: `background/primary` fill, 32pt
@@ -234,7 +257,7 @@ private struct FloatingTabBar: View {
         HStack(spacing: 18) {
             ForEach(MainTabView.Tab.allCases, id: \.self) { tab in
                 let isSelected = tab == selected
-                Button(action: { withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { selected = tab } }) {
+                Button(action: { selected = tab }) {
                     VStack(spacing: 5) {
                         Image(systemName: tab.icon)
                             .font(.system(size: 21))
@@ -265,6 +288,8 @@ private struct FloatingTabBar: View {
                 .accessibilityAddTraits(isSelected ? [.isSelected] : [])
             }
         }
+        // Spring only the highlight pill and tab colors, not the screens behind them.
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: selected)
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
         .modifier(TabBarSurface())
@@ -287,4 +312,9 @@ private struct TabBarSurface: ViewModifier {
                 .shadow(color: .black.opacity(0.35), radius: 15, x: 0, y: 10)
         }
     }
+}
+
+/// Beta is free: no paywall anywhere. Flip to false when paid plans launch.
+enum PaywallPolicy {
+    static let isBetaFree = true
 }

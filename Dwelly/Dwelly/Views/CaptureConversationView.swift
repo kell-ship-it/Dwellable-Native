@@ -196,6 +196,9 @@ struct CaptureConversationView: View {
     @State private var isSaving = false
     @State private var isSyncPending = false
     @State private var errorMessage: String?
+    // Kell (Nov 25 2026): after a failed reply (e.g. offline), Retry resends the
+    // same last message instead of making the person type something new.
+    @State private var canRetryReply = false
     // MVP input check (Nov 23 2026): a prepared, no-AI clarification for empty or
     // mechanically repeated input. Not a turn: it never counts toward the 3-response
     // onboarding entitlement, never reaches the model, and the original text stays in
@@ -936,6 +939,21 @@ struct CaptureConversationView: View {
                                     .foregroundColor(Theme.error)
                                     .multilineTextAlignment(.center)
                                     .padding(.horizontal, 28)
+                                if canRetryReply {
+                                    Button(action: retryLastReply) {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "arrow.clockwise")
+                                                .font(.system(size: 12, weight: .semibold))
+                                            Text("Retry")
+                                                .font(.system(size: 14, weight: .semibold))
+                                        }
+                                        .foregroundColor(Theme.gold)
+                                        .padding(.horizontal, 16)
+                                        .frame(height: 36)
+                                        .overlay(Capsule().stroke(Theme.gold, lineWidth: 1))
+                                    }
+                                    .accessibilityLabel("Retry sending your last message")
+                                }
                             }
 
                             if isConversationComplete {
@@ -1021,6 +1039,10 @@ struct CaptureConversationView: View {
                                 Button(action: {
                                     if isConversationComplete {
                                         onMomentSaved?()
+                                        dismiss()
+                                    } else if !turns.contains(where: { $0.role == .user && !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
+                                        // Kell (Nov 25 2026): nothing of yours to save yet (only
+                                        // Dwelly's opening question), so just close -- no Save.
                                         dismiss()
                                     } else {
                                         showLeaveConfirmation = true
@@ -1414,11 +1436,16 @@ struct CaptureConversationView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                // Kell (Nov 25 2026): a plain message bubble hugs its text; only the
+                // final bubble (holding the journal preview) spans the full width.
+                .frame(maxWidth: isFinal ? .infinity : nil, alignment: .leading)
                 .background(Theme.Capture.cardBackground)
                 .overlay(RoundedRectangle(cornerRadius: 18).stroke(Theme.Capture.cardBorder.opacity(0.4), lineWidth: 1))
                 .clipShape(RoundedRectangle(cornerRadius: 18))
             }
+            // Keep Dwelly's badge + bubble pinned to the left edge now that the
+            // bubble hugs its text (otherwise the whole thing drifts to center).
+            .frame(maxWidth: .infinity, alignment: .leading)
             // Fix #1: only this one bubble -- the opening prompt-question turn, and
             // only when it actually came from a tapped topic card -- shares the
             // tapped card's matched-geometry id, so it's the one thing SwiftUI
@@ -2800,6 +2827,15 @@ struct CaptureConversationView: View {
         }
     }
 
+    private func retryLastReply() {
+        guard canRetryReply, !isWaitingForDwelly, let last = turns.last, last.role == .user else { return }
+        canRetryReply = false
+        errorMessage = nil
+        pendingRequestId = "req-" + UUID().uuidString
+        safetySession.noteRequestScheduled(userText: last.text)
+        Task { await requestDwellyResponse() }
+    }
+
     private func requestDwellyResponse() async {
         // A finished conversation -- ordinary or Crisis Support -- is closed: no new
         // reply is requested, even if a stale scheduled call arrives after Finish.
@@ -2819,6 +2855,7 @@ struct CaptureConversationView: View {
         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.3)) {
             isWaitingForDwelly = true
             errorMessage = nil
+            canRetryReply = false
         }
 
         // Onboarding's 3rd/final response is the fixed `closingMessage` hand-off (Kell,
@@ -2915,7 +2952,8 @@ struct CaptureConversationView: View {
                         supportNoticeTurnID = turns.last?.id
                     }
                 }
-                errorMessage = "Dwelly couldn't respond just now. You can keep writing, or save what you have."
+                errorMessage = "Dwelly couldn't respond just now. Tap Retry when you're back online, or keep writing."
+                canRetryReply = turns.last?.role == .user
             }
             HTMLLogManager.shared.log("llm-proxy call failed: \(error.localizedDescription)", level: "ERROR")
         }
@@ -2972,6 +3010,7 @@ struct CaptureConversationView: View {
         } else {
             b.recordUnknown(ceiling: ceiling)
         }
+        b.lastNonTranscriptCost = max(0, b.lastRecordedCost - 2 * inputTokens)
         budget = b
     }
 
@@ -2984,7 +3023,7 @@ struct CaptureConversationView: View {
         let transcriptTokens = CaptureBudget.estimateTokens(transcript)
         // Worst case for the next turn: a max-length message (1 token per character is the
         // conservative bound) and the whole turn costing what the last one measured.
-        let next = CaptureBudget.nextTurnCost(transcriptTokens: transcriptTokens, newUserTokens: maxInputLength, safetyOverhead: b.lastRecordedCost)
+        let next = CaptureBudget.nextTurnCost(transcriptTokens: transcriptTokens, newUserTokens: maxInputLength, safetyOverhead: b.lastNonTranscriptCost)
         // The finish will see the transcript AFTER that next turn, so size the reserve for it.
         let growth = String(repeating: "x", count: (maxInputLength + CaptureBudget.mainReplyOutputCeiling) * 3)
         let reserve = CaptureBudget.finishReserve(
