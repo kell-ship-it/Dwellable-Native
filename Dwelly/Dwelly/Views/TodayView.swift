@@ -478,9 +478,10 @@ struct TodayView: View {
                     Text(tile.title)
                         .font(.system(size: 16, design: .serif))
                         .foregroundColor(isDone ? Theme.Payment.textSupporting : Theme.Payment.textHeading)
-                        // Nov 24 2026 (Kell): always one line, same size on every card
-                        // (no shrink-to-fit; long titles end in "…").
-                        .lineLimit(1)
+                        // Nov 27 2026 (Kell): show the whole question, wrapping to a
+                        // second line instead of cutting it off with "…".
+                        .lineLimit(3)
+                        .fixedSize(horizontal: false, vertical: true)
                     Text(completion.map { "Captured at \(Self.completedTimeFormatter.string(from: $0.completedAt)) · Read your journal" } ?? tile.subtitle)
                         .font(.system(size: 11))
                         .foregroundColor(Theme.Payment.textSupporting)

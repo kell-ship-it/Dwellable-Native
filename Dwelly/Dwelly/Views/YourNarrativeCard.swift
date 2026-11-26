@@ -231,7 +231,7 @@ struct YourNarrativeCard: View {
                 }
             }
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("\(shown) of \(Self.unlockThreshold) reflections toward your spiritual journey")
+            .accessibilityLabel("\(shown) of \(Self.unlockThreshold) days of reflection toward your story")
 
             Text("Generated from your own moments.")
                 .font(.system(size: 11))
@@ -266,7 +266,8 @@ struct YourNarrativeCard: View {
         // Nov 27 2026 (Kell): the dots match the journals that remain, so deleting
         // one takes its dot away (no discrepancy with Entries). What the profile
         // already learned from a deleted journal is kept.
-        qualifyingReflectionCount = approved.count + feedback.count
+        // Nov 27 2026 (Kell): one dot per DAY with a counted journal (7 days unlocks).
+        qualifyingReflectionCount = DwellerProfileManager.qualifyingDays(approvedEntries: approved, feedback: feedback)
 
         if let regenerated = await DwellerProfileManager.regenerateIfNeeded(
             userId: userId,

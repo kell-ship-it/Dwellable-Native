@@ -110,7 +110,9 @@ enum DwellerProfileManager {
         let lastUpdate = currentProfile?.updatedAt ?? .distantPast
         let newEntries = approvedEntries.filter { $0.createdAt > lastUpdate }
         let newFeedback = feedback.filter { $0.createdAt > lastUpdate }
-        let qualifyingCount = approvedEntries.count + feedback.count
+        // Nov 27 2026 (Kell): the story unlocks after 7 DIFFERENT DAYS with a counted
+        // journal, not 7 journals -- so it can't be rushed in one sitting.
+        let qualifyingCount = qualifyingDays(approvedEntries: approvedEntries, feedback: feedback)
 
         guard qualifyingCount >= narrativeUnlockThreshold, !(newEntries.isEmpty && newFeedback.isEmpty) else { return nil }
 
@@ -216,6 +218,15 @@ enum DwellerProfileManager {
     /// Formation Intelligence (formation_eligible), so it reflects real patterns rather
     /// than one heavy week. See docs/DWELLER_PROFILE_NARRATIVE_FRAMEWORK.md.
     static let narrativeUnlockThreshold = 7
+
+    /// Number of distinct calendar days (phone's time zone) with at least one counted
+    /// journal or piece of narrative feedback. Days don't need to be consecutive.
+    static func qualifyingDays(approvedEntries: [JournalEntry], feedback: [NarrativeFeedback]) -> Int {
+        let cal = Calendar.current
+        let days = approvedEntries.map { cal.startOfDay(for: $0.createdAt) }
+            + feedback.map { cal.startOfDay(for: $0.createdAt) }
+        return Set(days).count
+    }
     /// Narrative length range in characters (framework doc). The prompt asks for it;
     /// `capNarrative` enforces the upper bound so it can never become a transcript.
     static let narrativeMinChars = 280

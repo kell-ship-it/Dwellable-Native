@@ -17,6 +17,7 @@ struct OnboardingCoordinatorView: View {
 
     @State private var screen: OnboardingScreen
     @State private var showFirstCapture = false
+    @State private var showAdultNotice = false
 
     init(userId: String, userEmail: String?, syncManager: SyncManager, onOnboardingComplete: @escaping () -> Void) {
         self.userId = userId
@@ -42,8 +43,27 @@ struct OnboardingCoordinatorView: View {
             case .preparingSpace:
                 PreparingSpaceView(
                     name: ProfileManager.shared.localProfile(userId: userId).name,
-                    onComplete: { showFirstCapture = true }
+                    onComplete: {
+                        // Nov 27 2026 (Kell): one-time 18+ beta notice right before
+                        // the very first capture.
+                        if UserDefaults.standard.bool(forKey: AdultBetaNoticeView.seenKey(userId)) {
+                            showFirstCapture = true
+                        } else {
+                            showAdultNotice = true
+                        }
+                    }
                 )
+                .overlay {
+                    if showAdultNotice {
+                        AdultBetaNoticeView(onContinue: {
+                            UserDefaults.standard.set(true, forKey: AdultBetaNoticeView.seenKey(userId))
+                            showAdultNotice = false
+                            showFirstCapture = true
+                        })
+                        .transition(.opacity)
+                    }
+                }
+                .animation(.easeInOut(duration: 0.25), value: showAdultNotice)
             }
         }
         .environment(\.colorScheme, .dark)
@@ -78,5 +98,47 @@ struct OnboardingCoordinatorView: View {
     /// stepping back doesn't lose forward progress the user already made.
     private func goBack(to previous: OnboardingScreen) {
         screen = previous
+    }
+}
+
+/// Nov 27 2026 (Kell): shown once, before the first capture. The beta is for adults,
+/// and Dwelly is a reflection space, not a crisis service.
+struct AdultBetaNoticeView: View {
+    var onContinue: () -> Void
+    static func seenKey(_ userId: String) -> String { "adultBetaNoticeSeen.\(userId)" }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Before you begin")
+                    .font(.system(size: 28, weight: .semibold, design: .serif))
+                    .foregroundColor(Theme.Payment.textHeading)
+                Text("Dwelly's beta is for adults 18 and older.")
+                    .font(.system(size: 17))
+                    .foregroundColor(Theme.Payment.textHeading)
+                Text("Dwelly is a place to reflect with God. It isn't a counselor or a crisis service.")
+                    .font(.system(size: 15))
+                    .foregroundColor(Theme.Payment.textSupporting)
+                Text("If you're ever in danger or thinking about hurting yourself, call or text 988 in the US, or your local emergency number. Help is always in Profile under Support & Feedback.")
+                    .font(.system(size: 15))
+                    .foregroundColor(Theme.Payment.textSupporting)
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Spacer()
+            Button(action: onContinue) {
+                Text("I'm 18 or older · Continue")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(Capsule().fill(Theme.gold))
+            }
+        }
+        .padding(.horizontal, 28)
+        .padding(.bottom, 24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.Payment.background.ignoresSafeArea())
     }
 }

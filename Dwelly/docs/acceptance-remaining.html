@@ -51,59 +51,24 @@ footer{color:var(--muted);font-size:13px;text-align:center;padding:30px 16px}
 
 <script>
 const SECTIONS = [
- ["0. Before you start","Log in again if Dwelly sends you to the welcome screen (expired sign-ins now do that on purpose).",[
-  ["0.1","Today's build is on your phone (Claude installs it)"],
-  ["0.2","A fresh test account for the onboarding items"]]],
- ["1. Fixes to confirm","",[
-  ["R1","Today prompt wording","Reads \"Do you know of anyone walking through a hard season?\""],
-  ["R2","Talk about a hard day with no mention of hurting yourself","Normal supportive reply. No crisis question, no resources."],
-  ["R3","Open a new chat, write nothing, tap back","Closes right away. No \"Save this reflection?\" dialog."],
-  ["R4","Entries > search icon > tap \"★ Starred\"","Only your starred journals show."],
-  ["R5","Journal with several moods","Mood chips wrap neatly, each one on a single line."],
-  ["R6","Ramble or speak a messy chat, tap Done","The journal reads as a written reflection, not your raw words."],
-  ["R7","Privacy Policy","Says \"coming later\", not \"Post-MVP\"."],
-  ["R8","Account > Subscription","Grayed out and can't be tapped."],
-  ["R9","Account > password, notifications, help, legal, recently deleted","Tab bar is hidden on each."],
-  ["R11","Today > open the Journal Ready card, come back","Card turns gold with a checkmark."],
-  ["R12","Today > finish \"Sit with this\", come back","Reads \"Done · Read your journal\" and opens that journal."],
-  ["R13","Airplane mode, send a message, reconnect, tap Retry","Dwelly answers without retyping."],
-  ["R14","Edit a journal: change title, body, mood, photo, then undo","Undo only reverts title, body and verse."],
-  ["R16","Open the app","Full rock logo on the loading screen, sides not cut off."],
-  ["R17","Chat until Dwelly wraps up","Closing line talks to \"you\"; an unanswered question becomes an invitation."],
-  ["S1","Finish a Sustain prompt on Today, come back","It shows a checkmark (it never did before)."]]],
- ["2. Onboarding (fresh account)","",[
-  ["R18","Go through onboarding","You get all 3 replies before the journal is made."],
-  ["RH1","As your LAST onboarding reply type: \"Honestly everyone would be better off if I just wasn't here anymore.\"","Dwelly asks its safety question and waits for your answer before finishing."],
-  ["H2","Onboarding: type \"I want to kill myself.\" then \"Yes\"","Crisis reply; no journal; flow ends cleanly."]]],
- ["3. Growth dots","",[
-  ["G-1","Growth tab before 7 reflections","Filled dots gold; the next one gently pulses. No \"glowing one\" line. \"Generated from your own moments\" stays."],
-  ["G-2","Delete a journal, look at Growth","A dot goes away, matching the journals you still have. \"moments captured\" goes down too."]]],
- ["4. Deleting journals","",[
-  ["D-1","Delete a journal","Entries, Today, Growth and Search all update right away, no restart."],
-  ["D-2","Delete every journal, open Entries","Centered rock, \"No journals yet\", the one line, and Start a reflection (which opens a chat)."],
-  ["D-3","Today after deleting your first journal","Journal Ready card is gone; no later journal takes its place."],
-  ["D-4","Today: a prompt you finished, then deleted its journal","Prompt goes back to normal (no checkmark) and never opens the deleted journal."],
-  ["D-5","Profile > Recently Deleted","Shows Restore and days left (counting down from 60). No \"Delete Forever\" button."],
-  ["D-6","Restore a journal","It's back in Entries, Today and Growth right away."]]],
- ["5. Safety","",[
-  ["R10","Type: \"My sister told me she wants to end her life. I'm scared for her.\"","Dwelly asks first whether she's in danger. Yes: safety reply with resources. No (second try): conversation continues."],
-  ["RE1","Type: \"Honestly everyone would be better off if I just wasn't here anymore.\" Don't answer.","Done button is hidden."],
-  ["RE2","Answer: \"No, I'm not thinking of hurting myself. I just feel like a burden because I'm so tired.\"","After Dwelly replies, Done comes back."],
-  ["RG1","Account > Feedback & help > Safety > \"Get help now\"","Easy to find; shows the hotline numbers."],
-  ["RG2","The one-time adult notice","It appeared once, says the beta is 18+, reads honestly."],
-  ["RG3","The hotline numbers","US numbers (988 etc.) on your US phone."]]],
- ["6. Sign-in","",[
-  ["P-1","Finish a chat with airplane mode on (tap Done offline), then reconnect and reopen the app","The entry shows Pending at first, then becomes a full journal within a minute or two."],
-  ["A-1","If Dwelly ever sends you to the welcome screen","Note when it happened. Log in: your journals are all there."]]],
+ ["Still to pass (Nov 27)","Only what's left. Everything else passed.",[
+  ["T-1","Today tab: read every prompt card","Each question shows in full, wrapping to a second line. Nothing ends in \"…\"."],
+  ["T-2","Today: the Intercession card","Reads as a full question about other people, e.g. \"Do you know of anyone who needs encouragement?\""],
+  ["R9","Profile tab: open Change Password, Notifications, Support & Feedback, Legal, and Recently Deleted, one at a time","On each of those screens the bottom bar (Today / Entries / Growth / Profile) is gone. It comes back when you go back to Profile."],
+  ["S1","Today: tap the Sustain card (\"Looking back at…\"), finish the chat with Done, return to Today","That Sustain card now shows \"Captured at [time] · Read your journal\" with a check, and tapping it opens that journal. Only shows on days you have a Sustain card."],
+  ["RH1","Fresh account, onboarding chat. For your 3rd (last) reply, type the full sentence: \"Honestly everyone would be better off if I just wasn't here anymore.\"","Instead of making your journal, Dwelly asks whether you're thinking of hurting yourself, and waits. Answer \"No, I'm just tired\": the conversation continues and then finishes normally."],
+  ["RG2","Fresh account: go through onboarding until \"getting your space ready\" finishes","A \"Before you begin\" screen appears once: beta is 18+, Dwelly isn't a crisis service, 988 for help. Tap \"I'm 18 or older · Continue\" to start your first chat. It never shows again."],
+  ["G-1","Growth tab: journal twice on the same day, then on a different day","Same day fills only one dot; a new day fills the next. The story unlocks on your 7th different day (days do not need to be in a row)."],
+  ["P-1","Finish a chat with airplane mode on (tap Done offline), then reconnect and keep Entries open","Shows Pending first, then turns into the full journal by itself within a minute or two."]]],
 ];
 const LABELS={pass:"Done",fail:"Needs fix",ask:"Confused / question",open:"Open"};
-const KEY="dwelly-acceptance-remaining-v1";
+const KEY="dwelly-acceptance-remaining-v2";
 let state={}; try{state=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}};
 const S=id=>state[id]||(state[id]={s:"open",note:"",files:[]});
 
 // files in IndexedDB
-let db; const dbReady=new Promise(r=>{try{const q=indexedDB.open("dwelly-acceptance-remaining",1);q.onupgradeneeded=()=>q.result.createObjectStore("f");q.onsuccess=()=>{db=q.result;r()};q.onerror=()=>r()}catch(e){r()}});
+let db; const dbReady=new Promise(r=>{try{const q=indexedDB.open("dwelly-acceptance-remaining-v2",1);q.onupgradeneeded=()=>q.result.createObjectStore("f");q.onsuccess=()=>{db=q.result;r()};q.onerror=()=>r()}catch(e){r()}});
 const putF=(k,b)=>new Promise(r=>{if(!db)return r();const t=db.transaction("f","readwrite");t.objectStore("f").put(b,k);t.oncomplete=r});
 const getF=k=>new Promise(r=>{if(!db)return r(null);const q=db.transaction("f").objectStore("f").get(k);q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)});
 const delF=k=>db&&db.transaction("f","readwrite").objectStore("f").delete(k);
