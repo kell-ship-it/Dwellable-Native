@@ -138,6 +138,7 @@ struct TodayView: View {
         .background(Theme.Payment.background.ignoresSafeArea())
         .task(id: refreshKey) {
             refreshCompletions()
+            await dropDeletedCompletions()
             await loadJournalReady()
         }
         .background(
@@ -173,19 +174,45 @@ struct TodayView: View {
         refreshCompletions()
     }
 
+    /// The text a tile actually opens the conversation with -- the key its
+    /// completion is saved under. Sustain tiles open with a longer question, so
+    /// keying by `tile.title` meant a finished Sustain prompt never checked off.
+    private func openingText(for tile: (icon: String, category: String, title: String, subtitle: String)) -> String {
+        tile.category == "Sustain"
+            ? "Looking back at \u{201C}\(tile.title)\u{201D}, does it still feel true for you today?"
+            : tile.title
+    }
+
     private func refreshCompletions() {
         var found: [String: TodayPromptCompletions.Completion] = [:]
-        for tile in tiles {
-            if let c = TodayPromptCompletions.completion(userId: userId, promptTitle: tile.title) {
-                found[tile.title] = c
+        let keys = tiles.map { openingText(for: $0) } + [dailyVerse.question]
+        for key in keys {
+            if let c = TodayPromptCompletions.completion(userId: userId, promptTitle: key) {
+                found[key] = c
             }
         }
         completions = found
     }
 
+    /// Nov 27 2026: a prompt finished into a journal that was later deleted goes
+    /// back to its normal, unchecked state instead of opening the deleted journal.
+    private func dropDeletedCompletions() async {
+        var kept = completions
+        for (key, c) in completions {
+            if let m = try? await apiClient.fetchMoment(id: c.momentId), m.deletedAt != nil {
+                kept[key] = nil
+            }
+        }
+        completions = kept
+    }
+
     private func openCompletedJournal(_ completion: TodayPromptCompletions.Completion) {
         Task {
-            guard let moment = try? await apiClient.fetchMoment(id: completion.momentId) else { return }
+            guard let moment = try? await apiClient.fetchMoment(id: completion.momentId), moment.deletedAt == nil else {
+                await MainActor.run { refreshCompletions() }
+                await dropDeletedCompletions()
+                return
+            }
             await MainActor.run {
                 openedCompletedMoment = moment
                 showCompletedJournal = true
@@ -284,7 +311,16 @@ struct TodayView: View {
     private func loadJournalReady() async {
         guard let entries = try? await apiClient.fetchApprovedJournalEntries(userId: userId) else { return }
         loadFollowUpTile(from: entries)
-        guard let first = entries.min(by: { $0.createdAt < $1.createdAt }) else {
+        // Nov 27 2026: Journal Ready is only ever the person's FIRST journal. Pin
+        // its id the first time we see it; if that journal is deleted the card
+        // goes away instead of a later journal taking its place.
+        let firstKey = "journalReadyFirstMomentId.\(userId)"
+        if UserDefaults.standard.string(forKey: firstKey) == nil,
+           let oldest = entries.min(by: { $0.createdAt < $1.createdAt }) {
+            UserDefaults.standard.set(oldest.momentId, forKey: firstKey)
+        }
+        let pinned = UserDefaults.standard.string(forKey: firstKey)
+        guard let first = entries.first(where: { $0.momentId == pinned }) else {
             journalReady = nil
             return
         }

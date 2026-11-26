@@ -82,6 +82,9 @@ struct SearchView: View {
             recentSearches = UserDefaults.standard.stringArray(forKey: recentSearchesKey) ?? []
             await loadEntries()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .journalsChanged)) { _ in
+            Task { await loadEntries() }
+        }
     }
 
     // MARK: - Header

@@ -44,6 +44,11 @@ struct AppView: View {
             .task {
                 await evaluateOnboardingGate(userId: user.id, email: user.email)
             }
+            // Nov 27 2026: a sign-in that can't be renewed goes back to sign in,
+            // instead of every tab saying "check your connection".
+            .onReceive(NotificationCenter.default.publisher(for: .sessionExpired)) { _ in
+                Task { await authManager.signOut() }
+            }
             .onAppear {
                 // Set real userId on SyncManager (replaces placeholder "app-sync")
                 syncManager.updateUserId(user.id)

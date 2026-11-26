@@ -3,7 +3,7 @@ import SwiftUI
 /// T-176: browse/restore soft-deleted journal entries, reached from Settings (not from
 /// the Entries list itself -- Kell's explicit call, keeps the active list uncluttered).
 /// Soft delete itself (`moments.deleted_at`) was built in T-158; this is the one place a
-/// user can actually see and act on what's sitting in that 30-day window, plus the one
+/// user can actually see and act on what's sitting in that 60-day window, plus the one
 /// place "Delete Forever" is genuinely, irreversibly permanent (unlike Delete Entry,
 /// which this screen's own existence is what makes recoverable).
 ///
@@ -30,7 +30,7 @@ struct RecentlyDeletedView: View {
     @State private var momentPendingPermanentDelete: Moment?
     @State private var errorMessage: String?
 
-    private static let thirtyDays: TimeInterval = 30 * 24 * 60 * 60
+    private static let retentionWindow: TimeInterval = 60 * 24 * 60 * 60  // Nov 27 2026 (Kell): 60 days
 
     var body: some View {
         ZStack {
@@ -136,12 +136,16 @@ struct RecentlyDeletedView: View {
                 }
                 .disabled(restoringId != nil)
 
-                Button(action: { momentPendingPermanentDelete = moment }) {
-                    Text("Delete Forever")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(Theme.Payment.errorRed)
+                // Nov 27 2026 (Kell): "Delete Forever" is off for launch. Deleted
+                // journals stay here 60 days, then are removed automatically.
+                if Self.allowsDeleteForever {
+                    Button(action: { momentPendingPermanentDelete = moment }) {
+                        Text("Delete Forever")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(Theme.Payment.errorRed)
+                    }
+                    .disabled(restoringId != nil)
                 }
-                .disabled(restoringId != nil)
             }
             .padding(.top, 4)
         }
@@ -151,10 +155,12 @@ struct RecentlyDeletedView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
+    static let allowsDeleteForever = false
+
     private func daysRemaining(for moment: Moment) -> Int {
-        guard let deletedAt = moment.deletedAt else { return 30 }
+        guard let deletedAt = moment.deletedAt else { return 60 }
         let elapsed = Date().timeIntervalSince(deletedAt)
-        let remaining = Self.thirtyDays - elapsed
+        let remaining = Self.retentionWindow - elapsed
         return max(0, Int(ceil(remaining / 86400)))
     }
 
@@ -182,6 +188,7 @@ struct RecentlyDeletedView: View {
         do {
             try await apiClient.restoreMoment(id: moment.id)
             deletedMoments.removeAll { $0.id == moment.id }
+            NotificationCenter.default.post(name: .journalsChanged, object: nil)
         } catch {
             errorMessage = "Couldn't restore — check your connection and try again."
         }

@@ -200,6 +200,9 @@ class SupabaseAPIClient: APIClient {
                         // token left the user optimistically "signed in" with a
                         // permanently broken session and no path back to Welcome.
                         hlog("JWT refresh failed — session cannot be renewed: \(error.localizedDescription)", "ERROR")
+                        // Nov 27 2026: tell the app so it sends the person back to sign
+                        // in, instead of every screen showing "check your connection".
+                        NotificationCenter.default.post(name: .sessionExpired, object: nil)
                         throw APIError.unauthorized
                     }
                     return try await makeRequest(method: method, endpoint: endpoint, body: body,
@@ -207,6 +210,7 @@ class SupabaseAPIClient: APIClient {
                                                  preferHeader: preferHeader, isRetry: true)
                 }
                 hlog("JWT refresh failed or no refresh token — user must log in again", "ERROR")
+                NotificationCenter.default.post(name: .sessionExpired, object: nil)
                 throw APIError.unauthorized
             case 404:
                 throw APIError.notFound
@@ -1577,4 +1581,10 @@ class CertificatePinningDelegate: NSObject, URLSessionDelegate {
             completionHandler(.cancelAuthenticationChallenge, nil)
         }
     }
+}
+
+
+extension Notification.Name {
+    /// Posted when the saved sign-in can no longer be renewed; AppView signs out.
+    static let sessionExpired = Notification.Name("dwelly.sessionExpired")
 }

@@ -90,6 +90,37 @@ struct EntriesView: View {
                 }
                 .padding(.horizontal, 32)
                 Spacer()
+            } else if entries.isEmpty {
+                // Nov 27 2026 (Kell, option B): one centered empty state whether the
+                // person never got a journal (e.g. first chat ended in safety) or
+                // deleted every one.
+                Spacer()
+                VStack(spacing: 14) {
+                    Image("DwellyRockFull")
+                        .resizable().scaledToFit()
+                        .frame(width: 88)
+                        .accessibilityHidden(true)
+                    Text("No journals yet")
+                        .font(.system(size: 22, weight: .semibold, design: .serif))
+                        .foregroundColor(Theme.Payment.textHeading)
+                    Text("Talk through your day with Dwelly. It becomes a journal here.")
+                        .font(.system(size: 15))
+                        .foregroundColor(Theme.Payment.textSupporting)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 280)
+                    Button(action: onCapture) {
+                        Text("Start a reflection")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 22).padding(.vertical, 12)
+                            .background(Capsule().fill(Theme.gold))
+                    }
+                    .padding(.top, 4)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 32)
+                Spacer()
+                Spacer()
             } else {
                 ScrollView {
                     VStack(spacing: 0) {
@@ -413,7 +444,8 @@ struct EntriesView: View {
         if !hasLoadedOnce {
             isLoading = true
         }
-        loadError = nil
+        // Nov 27 2026: keep whatever is on screen until this load finishes, so
+        // a repeat failure doesn't flash the empty state between error messages.
         do {
             async let moments = apiClient.fetchMoments(userId: userId)
             async let pending = apiClient.fetchPendingJournalEntries(userId: userId)
@@ -431,6 +463,7 @@ struct EntriesView: View {
 
             await MainActor.run {
                 entries = merged
+                loadError = nil
                 isLoading = false
                 hasLoadedOnce = true
             }

@@ -263,13 +263,10 @@ struct YourNarrativeCard: View {
         let feedback = (try? await apiClient.fetchNarrativeFeedback(userId: userId)) ?? []
         // T-161/T-164: "Not quite" feedback counts toward the threshold exactly like a
         // captured moment -- same list, same weight, not a separate lesser category.
-        // Nov 26 2026 (Kell): deleting a journal never removes its dot. Keep the
-        // highest count ever seen for this user and never go below it.
-        let liveCount = approved.count + feedback.count
-        let key = "growthDotsHighWater.\(userId)"
-        let best = max(liveCount, UserDefaults.standard.integer(forKey: key))
-        UserDefaults.standard.set(best, forKey: key)
-        qualifyingReflectionCount = best
+        // Nov 27 2026 (Kell): the dots match the journals that remain, so deleting
+        // one takes its dot away (no discrepancy with Entries). What the profile
+        // already learned from a deleted journal is kept.
+        qualifyingReflectionCount = approved.count + feedback.count
 
         if let regenerated = await DwellerProfileManager.regenerateIfNeeded(
             userId: userId,

@@ -119,6 +119,10 @@ struct MainTabView: View {
         .onChange(of: captureRequest == nil) { closed in
             if closed { dataRefreshKey += 1 }
         }
+        // Nov 27 2026: a delete or restore refreshes Today and Growth right away.
+        .onReceive(NotificationCenter.default.publisher(for: .journalsChanged)) { _ in
+            dataRefreshKey += 1
+        }
         .fullScreenCover(isPresented: $showSearch) {
             NavigationStack {
                 SearchView(userId: userId, syncManager: syncManager, onDismiss: { showSearch = false })
@@ -317,4 +321,9 @@ private struct TabBarSurface: ViewModifier {
 /// Beta is free: no paywall anywhere. Flip to false when paid plans launch.
 enum PaywallPolicy {
     static let isBetaFree = true
+}
+
+extension Notification.Name {
+    /// Posted after a journal is deleted or restored, so every tab reloads.
+    static let journalsChanged = Notification.Name("dwelly.journalsChanged")
 }

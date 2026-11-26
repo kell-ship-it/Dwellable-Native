@@ -280,7 +280,7 @@ struct JournalDetailView: View {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) { Task { await deleteEntry() } }
         } message: {
-            Text("This entry will move to Recently Deleted in Settings and be permanently removed after 30 days. You can restore it before then.")
+            Text("This entry will move to Recently Deleted in Settings and be permanently removed after 60 days. You can restore it before then.")
         }
         .alert("Discard changes?", isPresented: $showDiscardConfirmation) {
             Button("Keep Editing", role: .cancel) {}
@@ -1197,6 +1197,7 @@ struct JournalDetailView: View {
         deleteErrorMessage = nil
         do {
             try await apiClient.deleteMoment(id: moment.id)
+            NotificationCenter.default.post(name: .journalsChanged, object: nil)
             dismiss()
         } catch {
             deleteErrorMessage = "Couldn't delete — check your connection and try again."
