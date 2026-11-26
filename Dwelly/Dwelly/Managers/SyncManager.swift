@@ -118,7 +118,22 @@ class SyncManager: ObservableObject {
     /// just leaves it pending for the next sweep, not an error surfaced anywhere.
     func retryPendingJournalEntries() async {
         guard isOnline else { return }
-        guard let pending = try? await apiClient.fetchPendingJournalEntries(userId: userId), !pending.isEmpty else { return }
+        var pending = (try? await apiClient.fetchPendingJournalEntries(userId: userId)) ?? []
+
+        // Nov 27 2026 (Kell): a reflection finished while offline saves its words
+        // later, but its "pending" journal row never reached the server, so nothing
+        // retried it and Entries said "Pending" forever. Treat any recent moment with
+        // no journal row at all as pending too. Limited to the last 14 days so old
+        // pre-journal moments are never re-processed.
+        if let moments = try? await apiClient.fetchMoments(userId: userId),
+           let approved = try? await apiClient.fetchApprovedJournalEntries(userId: userId) {
+            let known = Set((pending + approved).map(\.momentId))
+            let cutoff = Date(timeIntervalSinceNow: -14 * 24 * 60 * 60)
+            for m in moments where m.createdAt > cutoff && !known.contains(m.id) {
+                pending.append(JournalEntry(momentId: m.id, userId: userId, status: "pending", profileExcluded: false))
+            }
+        }
+        guard !pending.isEmpty else { return }
 
         for entry in pending {
             guard let moment = try? await apiClient.fetchMoment(id: entry.momentId) else { continue }
@@ -149,6 +164,9 @@ class SyncManager: ObservableObject {
                 feedProfile: { await DwellerProfileManager.updateRunningSummary(newEntryBody: $0, userId: self.userId, apiClient: self.apiClient) }
             )
         }
+        // Nov 27 2026: let every tab (Entries included) show the finished journal
+        // without the person leaving and coming back.
+        await MainActor.run { NotificationCenter.default.post(name: .journalsChanged, object: nil) }
     }
 
     /// T-176: the actual 30-day purge the Recently Deleted screen's own copy promises
@@ -158,6 +176,10 @@ class SyncManager: ObservableObject {
     /// `retryPendingJournalEntries` (piggyback here + DwellyApp's BGTaskScheduler job),
     /// sharing this one sweep rather than a second parallel background system.
     func purgeExpiredDeletedMoments() async {
+        // Nov 27 2026 (Kell): erasing deleted journals now happens on the server
+        // (erase-expired-journals, 60 days, photos included). This old 30-day client
+        // sweep would have erased them early, so it is switched off.
+        return
         guard isOnline else { return }
         guard let deleted = try? await apiClient.fetchDeletedMoments(userId: userId), !deleted.isEmpty else { return }
 

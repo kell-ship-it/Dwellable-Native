@@ -128,6 +128,7 @@ struct EntriesView: View {
                         entryList
                     }
                 }
+                .refreshable { await loadEntries() }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -155,6 +156,9 @@ struct EntriesView: View {
         // all. Collapsed to one plain trigger -- no `id` to race, nothing to
         // cancel.
         .onAppear { Task { await loadEntries() } }
+        .onReceive(NotificationCenter.default.publisher(for: .journalsChanged)) { _ in
+            Task { await loadEntries() }
+        }
         .onChange(of: isActive) { active in
             if active { Task { await loadEntries() } }
         }
